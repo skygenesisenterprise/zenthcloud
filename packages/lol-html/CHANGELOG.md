@@ -1,0 +1,254 @@
+# Changelog
+
+## v3.0.3
+
+- Fixed value_source_location() for attributes without a value.
+- Fixed handling of never-matching empty attr selectors: `[att^=""]`, `[att$=""]`, `[att*=""]`
+- Fixed `Attribute::value_source_location()` returning a bogus span for attributes written
+  without a value (e.g. `<div hidden>`): it now returns `None` for them. Previously it
+  returned a zero-length span pointing at the start of the parser's current buffer — or
+  `None`, depending on where the tag fell relative to a `write()` boundary — and in the
+  `None` case `name_source_location()` was also absent. Attribute source locations no
+  longer depend on how the input was chunked.
+- Made memory limit stricter for attributes.
+- Improved performance of deeply nested end tag handlers.
+
+## v3.0.2
+
+- Improved performance of parsing tags with many attributes split across many input chunks.
+
+## v3.0.1
+
+- Improved performance of selector matching on deeply nested elements and on stray end tags.
+- Fixed element handlers never running for SVG and MathML integration-point elements when
+  the preceding tag matched no selector.
+- Fixed attribute selectors with an uppercase attribute name: `[HREF]` silently matched
+  nothing and `[HREF=x]` was rejected as a namespaced selector.
+- Fixed `:nth-of-type()` counting custom elements spelled with different ASCII case as
+  distinct types.
+
+## v3.0.0
+
+- Added `MemorySettings::with_graceful_bail_out_on_memory_limit_exceeded()`: when set, the
+  rewriter flushes every input byte it has received but not yet emitted to the sink (as-is)
+  before returning `MemoryLimitExceededError`, so callers can continue the response by
+  writing subsequent bytes directly to their downstream sink instead of breaking it.
+- Added `Settings::with_graceful_bail_out_on_content_handler_error()`: symmetric to the
+  memory setting above, but for `RewritingError::ContentHandlerError`. When set, the
+  rewriter flushes remaining input bytes before propagating a handler error, preserving
+  the response. Currently exposed via the Rust API only; the C API still uses the original
+  behavior.
+- Added `Settings::append_bail_out_handler()` and the matching `bail_out!` macro,
+  `BailOut` rewritable unit, and `BailOutHandler` / `BailOutHandlerSend` type aliases.
+  Bail-out handlers fire immediately before the raw flush of remaining unparsed input on a
+  graceful bail-out (memory or content-handler error). Handlers receive the
+  `RewritingError` and a `BailOut` through which they can append final bytes to the sink
+  via `BailOut::append(content, content_type)`. Intended for handlers that buffer state
+  across the document (e.g. text-buffering handlers that defer emission) and need to
+  flush that state on bail-out.
+- Marked `RewritingError` `#[non_exhaustive]` so future error variants can be added without
+  a major version bump. External callers can still `match` on it, but must include a
+  catch-all `_ =>` arm.
+- Reworked `Settings`, `MemorySettings` and `RewriteStrSettings` to use a consuming-builder
+  API. Fields are now private; construction is via `::new()` plus chained `with_*` setters
+  and `append_*` methods for the content-handler vectors. This makes future field additions
+  non-breaking. Migration:
+  ```rust
+  // before
+  Settings {
+      element_content_handlers: vec![element!("div", |el| { /* ... */ Ok(()) })],
+      strict: false,
+      ..Settings::new()
+  }
+  // after
+  Settings::new()
+      .with_strict(false)
+      .append_element_content_handler(element!("div", |el| { /* ... */ Ok(()) }))
+  ```
+- Renamed the internal-use feature `integration_test` to `_integration_test`. The leading
+  underscore signals to `cargo-semver-checks` and similar tools that the feature is not
+  part of the public API.
+- `Comment::set_text` now also rejects `--!>`, a leading `>`, and a leading `->`, which
+  WHATWG-conformant browsers treat as comment terminators. Previously only `-->` was
+  rejected, so a caller passing attacker-influenced data could let an attacker break out
+  of the comment and inject HTML (security fix).
+
+## v2.9.0
+
+- Added `OutputSink::set_encoding`
+- Fixed `rewrite_str` to ignore non-UTF-8 encoding declarations (it takes a UTF-8 string)
+- Added source locations to individual attributes
+- Updated `selectors` dependency
+
+## v2.8.1
+
+- Reduced allocations
+
+## v2.8.0
+
+- Added `on_end_tag` convenience method
+- Added support for nested `:not()` with simple selectors.
+- Updated `selectors`
+
+## v2.7.2
+
+- Replaced several panicking assertions with gracefully reported errors, especially in the C API
+
+## v2.7.1
+
+- Performance improvements.
+- Updated dependencies.
+
+## v2.7.0
+
+- Improve type generation in js-api.
+- Updated dependencies.
+
+## v2.6.0
+
+- Added source code locations to the C and JS APIs
+- Significant performance improvements and code size reductions
+
+## v2.5.0
+
+- Source code locations for tags and other tokens.
+- Document text chunks and escaping of attributes.
+- Selector validation improvements.
+
+## v2.4.0
+
+ - Upgraded `selectors` and `cssparser`.
+
+## v2.3.0
+
+ - Added `element.onEndTag` to JS bindings.
+ - Refactored TextDecoder and token construction to avoid heap allocations.
+ - Added fast paths for UTF-8 rewrites.
+
+## v2.2.0
+
+ - Updated cssparser and selectors dependencies
+ - Adopted `cargo-c` for building the C API
+ - Added WASM/JS API
+ - An invalid `/>` syntax will be removed when content is added to an HTML element
+
+## v2.1.0
+
+- Added streaming handlers.
+- Only allow changing the charset once with the `<meta>` tag, in accordance with the HTML spec.
+- Fixed parsing of invalid elements in `<svg>` and `<math>`.
+
+## v2.0.0
+
+- Added the ability for the rewriter to be [`Send`](https://doc.rust-lang.org/std/marker/trait.Send.html).
+  The `send` module contains the utilities for that.
+
+## v1.2.1
+
+- Remove unmaintained `safemem` dependency.
+
+## v1.2.0
+
+- Expose `is_self_closing` and `can_have_content` in C api.
+- Make `ElementContentHandlers` and `DocumentContentHandlers` fields public.
+- Add missing docs to public API.
+
+## v1.1.1
+
+### Fixed
+
+- Ensure that `TagScanner::is_in_end_tag` resets when changing parsers.
+
+## v1.1.0
+
+### Added
+
+- Added ability to get the tag and attribute names with the original casing.
+
+## v1.0.1
+
+### Fixed
+
+- The C API's new `lol_html_element_add_end_tag_handler()` function now sets the last error retrievable by `lol_html_take_last_error()` if it is called on an element that can have no end tag.
+
+## v1.0.0
+
+Yes, you got that right: this is the first 1.x release!  From now on you should expect this project to adhere to
+the semantic versioning spec (we have been somewhat relaxed about that in the past).
+
+### Added
+
+* Added `Element::end_tag_handlers()` which allows better control over the end tag handlers.
+
+### Changed
+
+* Removed `Element::on_end_tag()` and `Element::add_on_end_tag()` in favor of the newly added
+  `Element::end_tag_handlers()`.
+
+## v0.4.0
+
+### Added
+
+- Added method `TextChunk::as_mut_str()` and `TextChunk::set_str()` for in-place modifications to the text in a
+  `TextChunk`. (#175)
+
+### Changed
+
+- Modified method `Element::on_end_tag()` to support multiple handlers. This is a breaking change since the old
+  semantics of the method was to overwrite any previously set handler. (#177)
+
+## v0.3.3
+
+### Added
+
+- Support dynamic charset change on meta tags in HtmlRewriter. (#162)
+- Add `Element::can_have_content()`. (#163)
+
+## v0.3.2
+
+### Added
+
+- Add `Doctype::remove`. (#129)
+- Add `Element::start_tag()` and `Element::is_self_closing()`. (#148)
+- Add mutation methods to `StartTag` and `EndTag`. (#148)
+- Implement `Eq` for all types that implement `PartialEq`. (#146)
+
+### Fixed
+
+- Changed the HTML parser to more closely match the spec. This only affects rewriters which modify HTML comments. (#128)
+
+## v0.3.1
+
+### Added
+
+- Add `Element::on_end_tag` (#97, #107, #124)
+
+### Changed
+
+- Change string allocators in the C API to return `lol_html_str_t`, not `lol_html_str_t*`. This was necessary to fix a memory leak in `lol_html_str_free`. (#115)
+- Update dependencies (#98, #103)
+
+### Fixed
+
+- Fix memory leaks in C API (#113, #115)
+
+## v0.3.0
+- Add unofficial Go bindings to the README (#77)
+- Update dependencies (#73)
+- Take `self` in HtmlRewriter::end (#68)
+- Refactor HTMLRewriter Settings to make `HTMLRewriter::new` infallible (#70)
+- Allow using `element!` in a separate expression from `rewrite_str` (#69)
+- Update to hashbrown 0.9 (#64)
+- Add Send+Sync constraint for ContentHandler Error
+- feat: Allow using either Settings or RewriteStrSettings (#57)
+- Fix unhappy clippy (#60)
+- Compile literal attribute name lowercase instead of value (#51)
+- Use more memory efficient nth-of-type tracking. (#49)
+- Minor cleanup from :nth-child (#48)
+- Add support for :nth-child selectors (#47)
+
+## v0.2.0
+- Added: `DocumentContentHandlers::end`.
+
+## v0.1.0
+- Initial release
