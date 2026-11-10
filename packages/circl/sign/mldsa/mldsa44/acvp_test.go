@@ -1,0 +1,163 @@
+// Code generated from acvp.templ.go. DO NOT EDIT.
+
+package mldsa44
+
+import (
+	"bytes"
+	"encoding/json"
+	"testing"
+
+	"github.com/cloudflare/circl/internal/test"
+)
+
+func TestACVP(t *testing.T) {
+	for _, sub := range []string{
+		"keyGen",
+		"sigGen",
+		"sigVer",
+	} {
+		t.Run(sub, func(t *testing.T) {
+			testACVP(t, sub)
+		})
+	}
+}
+
+// nolint:funlen,gocyclo
+func testACVP(t *testing.T, sub string) {
+	vectors := test.ReadACVP(t, "../testdata/ML-DSA-"+sub+"-FIPS204")
+
+	scheme := Scheme()
+
+	for _, rawGroup := range vectors.Groups {
+		var abstractGroup struct {
+			TestType string `json:"testType"`
+		}
+		if err := json.Unmarshal(rawGroup, &abstractGroup); err != nil {
+			t.Fatal(err)
+		}
+		switch {
+		case abstractGroup.TestType == "AFT" && sub == "keyGen":
+			var group struct {
+				TgID         int    `json:"tgId"`
+				ParameterSet string `json:"parameterSet"`
+				Tests        []struct {
+					TcID int           `json:"tcId"`
+					Seed test.HexBytes `json:"seed"`
+				}
+			}
+			if err := json.Unmarshal(rawGroup, &group); err != nil {
+				t.Fatal(err)
+			}
+
+			if group.ParameterSet != scheme.Name() {
+				continue
+			}
+
+			for _, tst := range group.Tests {
+				var result struct {
+					Pk test.HexBytes `json:"pk"`
+					Sk test.HexBytes `json:"sk"`
+				}
+				vectors.Result(t, tst.TcID, &result)
+
+				pk, sk := scheme.DeriveKey(tst.Seed)
+
+				pk2, err := scheme.UnmarshalBinaryPublicKey(result.Pk)
+				if err != nil {
+					t.Fatalf("tc=%d: %v", tst.TcID, err)
+				}
+				sk2, err := scheme.UnmarshalBinaryPrivateKey(result.Sk)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				if !pk.Equal(pk2) {
+					t.Fatal("pk does not match")
+				}
+				if !sk.Equal(sk2) {
+					t.Fatal("sk does not match")
+				}
+			}
+		case abstractGroup.TestType == "AFT" && sub == "sigGen":
+			var group struct {
+				TgID          int    `json:"tgId"`
+				ParameterSet  string `json:"parameterSet"`
+				Deterministic bool   `json:"deterministic"`
+				Tests         []struct {
+					TcID    int           `json:"tcId"`
+					Sk      test.HexBytes `json:"sk"`
+					Message test.HexBytes `json:"message"`
+					Rnd     test.HexBytes `json:"rnd"`
+				}
+			}
+			if err := json.Unmarshal(rawGroup, &group); err != nil {
+				t.Fatal(err)
+			}
+
+			if group.ParameterSet != scheme.Name() {
+				continue
+			}
+
+			for _, tst := range group.Tests {
+				var result struct {
+					Signature test.HexBytes `json:"signature"`
+				}
+				vectors.Result(t, tst.TcID, &result)
+
+				sk, err := scheme.UnmarshalBinaryPrivateKey(tst.Sk)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				var rnd [32]byte
+				if !group.Deterministic {
+					copy(rnd[:], tst.Rnd)
+				}
+
+				sig2 := sk.(*PrivateKey).unsafeSignInternal(tst.Message, rnd)
+
+				if !bytes.Equal(sig2, result.Signature) {
+					t.Fatalf("signature doesn't match: %x ≠ %x",
+						sig2, result.Signature)
+				}
+			}
+		case abstractGroup.TestType == "AFT" && sub == "sigVer":
+			var group struct {
+				TgID         int           `json:"tgId"`
+				ParameterSet string        `json:"parameterSet"`
+				Pk           test.HexBytes `json:"pk"`
+				Tests        []struct {
+					TcID      int           `json:"tcId"`
+					Message   test.HexBytes `json:"message"`
+					Signature test.HexBytes `json:"signature"`
+				}
+			}
+			if err := json.Unmarshal(rawGroup, &group); err != nil {
+				t.Fatal(err)
+			}
+
+			if group.ParameterSet != scheme.Name() {
+				continue
+			}
+
+			pk, err := scheme.UnmarshalBinaryPublicKey(group.Pk)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for _, tst := range group.Tests {
+				var result struct {
+					TestPassed bool `json:"testPassed"`
+				}
+				vectors.Result(t, tst.TcID, &result)
+
+				passed2 := unsafeVerifyInternal(pk.(*PublicKey), tst.Message, tst.Signature)
+				if passed2 != result.TestPassed {
+					t.Fatalf("verification %v ≠ %v", passed2, result.TestPassed)
+				}
+			}
+		default:
+			t.Fatalf("unknown type %s for %s", abstractGroup.TestType, sub)
+		}
+	}
+}
