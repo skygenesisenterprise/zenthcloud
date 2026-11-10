@@ -1,0 +1,31 @@
+name = "puppeteer-test-workers"
+main = "src/server/index.ts"
+workers_dev = false
+compatibility_flags = ["nodejs_compat"]
+compatibility_date = "2026-04-04"
+upload_source_maps = true
+
+routes = [
+  { pattern = "puppeteer-test-workers.rendering.cfdata.org", custom_domain = true },
+  { pattern = "puppeteer-test-workers-cross-origin.rendering.cfdata.org", custom_domain = true },
+]
+
+[browser]
+binding = "BROWSER"
+remote = true
+
+[assets]
+directory = "../../../submodules/puppeteer/test/assets"
+binding = "ASSETS"
+run_worker_first = true
+
+[version_metadata]
+binding = "CF_VERSION_METADATA"
+
+[[durable_objects.bindings]]
+name = "TESTS_SERVER"
+class_name = "TestsServer"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["TestsServer"]

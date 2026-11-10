@@ -1,0 +1,426 @@
+diff --git a/packages/playwright-core/src/client/browser.ts b/packages/playwright-core/src/client/browser.ts
+index 368e518bb..c198ff67d 100644
+--- a/packages/playwright-core/src/client/browser.ts
++++ b/packages/playwright-core/src/client/browser.ts
+@@ -60,7 +60,13 @@ export class Browser extends ChannelOwner<channels.BrowserChannel> implements ap
+     return this._browserType;
+   }
+ 
+-  async newContext(options: BrowserContextOptions = {}): Promise<BrowserContext> {
++  async newContext(
++    options: BrowserContextOptions = {},
++  ): Promise<BrowserContext> {
++    if (!options.userAgent) {
++      options.userAgent =
++        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36";
++    }
+     return await this._innerNewContext(options, false);
+   }
+ 
+diff --git a/packages/playwright-core/src/client/channelOwner.ts b/packages/playwright-core/src/client/channelOwner.ts
+index f6ed9d166..07faa7d31 100644
+--- a/packages/playwright-core/src/client/channelOwner.ts
++++ b/packages/playwright-core/src/client/channelOwner.ts
+@@ -22,6 +22,7 @@ import { currentZone } from '@utils/zones';
+ import { ValidationError, maybeFindValidator } from '@protocol/validator';
+ import { EventEmitter } from './eventEmitter';
+ import { captureLibraryStackTrace } from './clientStackTrace';
++import { apiCallZone } from '@playwright-cloudflare/cloudflare/apiCallZone';
+ 
+ import type { ClientInstrumentation } from './clientInstrumentation';
+ import type { Connection } from './connection';
+@@ -192,8 +193,10 @@ export abstract class ChannelOwner<T extends channels.Channel = channels.Channel
+     if (existingApiZone)
+       return await func(existingApiZone);
+ 
++    const apiCall = apiCallZone.getStore();
++
+     const stackTrace = captureLibraryStackTrace();
+-    const apiZone: ApiZone = { title: options?.title, apiName: stackTrace.apiName, frames: stackTrace.frames, internal: options?.internal ?? false, reported: false, userData: undefined, stepId: undefined };
++    const apiZone: ApiZone = { title: options?.title, apiName: apiCall?.apiName ?? stackTrace.apiName, frames: stackTrace.frames, internal: options?.internal ?? false, reported: false, userData: undefined, stepId: undefined };
+ 
+     try {
+       const result = await currentZone().with('apiZone', apiZone).run(async () => await func(apiZone));
+diff --git a/packages/playwright-core/src/client/clientHelper.ts b/packages/playwright-core/src/client/clientHelper.ts
+index 89037e342..2b2cb7ce3 100644
+--- a/packages/playwright-core/src/client/clientHelper.ts
++++ b/packages/playwright-core/src/client/clientHelper.ts
+@@ -32,7 +32,9 @@ export function envObjectToArray(env: NodeJS.ProcessEnv): { name: string, value:
+ 
+ export async function evaluationScript(fun: Function | string | { path?: string, content?: string }, arg?: any, addSourceUrl: boolean = true): Promise<string> {
+   if (typeof fun === 'function') {
+-    const source = fun.toString();
++    // function is most likely bundled with wrangler, which uses esbuild with keepNames enabled.
++    // See: https://github.com/cloudflare/workers-sdk/issues/7107
++    const source = `((__name => (${fun.toString()}))(t => t))`;
+     const argString = Object.is(arg, undefined) ? 'undefined' : JSON.stringify(arg);
+     return `(${source})(${argString})`;
+   }
+@@ -64,7 +66,10 @@ export async function initScriptSourceWithExposedFunctions(fun: Function, arg: a
+   await Promise.all(exposePromises);
+   // Bindings backing the functions are registered through their own init scripts
+   // that are guaranteed to run first, so the controller is available here.
+-  return `(${fun.toString()})(globalThis['${kBindingsControllerProperty}'].parseInitScriptArg(${JSON.stringify(serialized)}))`;
++  // function is most likely bundled with wrangler, which uses esbuild with keepNames enabled.
++  // See: https://github.com/cloudflare/workers-sdk/issues/7107
++  const source = `((__name => (${fun.toString()}))(t => t))`;
++  return `(${source})(globalThis['${kBindingsControllerProperty}'].parseInitScriptArg(${JSON.stringify(serialized)}))`;
+ }
+ 
+ export function addSourceUrlToScript(source: string, path: string): string {
+diff --git a/packages/playwright-core/src/package.ts b/packages/playwright-core/src/package.ts
+index 180f16392..2e2bbee9b 100644
+--- a/packages/playwright-core/src/package.ts
++++ b/packages/playwright-core/src/package.ts
+@@ -19,7 +19,8 @@ import path from 'path';
+ // Use a dynamic path so esbuild does not statically resolve and inline
+ // package.json into coreBundle.js.
+ export const packageRoot = path.join(__dirname, '..');
+-export const packageJSON = require(path.join(packageRoot, 'package.json'));
++// PATCH static require, so the bundler can include package.json (Workers cannot read it at runtime)
++export const packageJSON = require('../package.json');
+ export const binPath = path.join(packageRoot, 'bin');
+ 
+ export function libPath(...parts: string[]): string {
+diff --git a/packages/playwright-core/src/server/chromium/chromium.ts b/packages/playwright-core/src/server/chromium/chromium.ts
+index 68d0a9096..57671e7f5 100644
+--- a/packages/playwright-core/src/server/chromium/chromium.ts
++++ b/packages/playwright-core/src/server/chromium/chromium.ts
+@@ -112,10 +112,12 @@ export class Chromium extends BrowserType {
+       throw e;
+     }
+     const closeAndWait = async () => await chromeTransport.closeAndWait();
+-    return this._connectOverCDPImpl(progress, chromeTransport, closeAndWait, options, onClose);
++    // Only connections with ?persistent in the endpoint URL get a persistent default context.
++    const persistent = new URL(endpointURL).searchParams.has('persistent');
++    return this._connectOverCDPImpl(progress, chromeTransport, closeAndWait, { ...options, persistent }, onClose);
+   }
+ 
+-  private async _connectOverCDPImpl(progress: Progress, transport: ConnectionTransport, closeAndWait: () => Promise<void>, options: types.LaunchOptions & { isLocal?: boolean, noDefaults?: boolean, artifactsDir?: string }, onClose?: () => Promise<void>) {
++  private async _connectOverCDPImpl(progress: Progress, transport: ConnectionTransport, closeAndWait: () => Promise<void>, options: types.LaunchOptions & { isLocal?: boolean, noDefaults?: boolean, artifactsDir?: string, persistent?: boolean }, onClose?: () => Promise<void>) {
+     let artifactsDir: string;
+     const tempDirectories: string[] = [];
+     if (options.artifactsDir) {
+@@ -138,8 +140,10 @@ export class Chromium extends BrowserType {
+ 
+     try {
+       const browserProcess: BrowserProcess = { close: doClose, kill: doClose };
+-      const persistent: types.BrowserContextOptions = {
+-        noDefaultViewport: true,
++      // in cloudflare workers, noDefaultViewport will set height to 1px, which is not what we want
++      const noDefaultViewport = globalThis.navigator?.userAgent !== 'Cloudflare-Workers';
++      const persistent: types.BrowserContextOptions | undefined = options.persistent === false ? undefined : {
++        noDefaultViewport,
+         ...(options.noDefaults ? { acceptDownloads: 'internal-browser-default' as const } : {}),
+       };
+       const browserOptions: BrowserOptions = {
+@@ -156,7 +160,8 @@ export class Chromium extends BrowserType {
+         originalLaunchOptions: {},
+         noDefaults: options.noDefaults,
+       };
+-      validateBrowserContextOptions(persistent, browserOptions);
++      if (persistent)
++        validateBrowserContextOptions(persistent, browserOptions);
+       const browser = await progress.race(CRBrowser.connect(this.attribution.playwright, transport, browserOptions));
+       if (!options.isLocal)
+         browser._isBrowserCollocatedWithServer = false;
+diff --git a/packages/playwright-core/src/server/chromium/crBrowser.ts b/packages/playwright-core/src/server/chromium/crBrowser.ts
+index ba563a4b5..03b9b8da2 100644
+--- a/packages/playwright-core/src/server/chromium/crBrowser.ts
++++ b/packages/playwright-core/src/server/chromium/crBrowser.ts
+@@ -562,6 +562,9 @@ export class CRBrowserContext extends BrowserContext<CREventsMap> {
+     // Ongoing downloads cause crashes in Edge, so cancel them first.
+     await Promise.all([...this._downloads].map(download => download.cancel().catch(() => {})));
+ 
++    // PATCH ensure all pages are closed before closing the context
++    await Promise.all(this._crPages().map(page => page.closePage(true))).catch(() => {});
++
+     await this._browser._session.send('Target.disposeBrowserContext', { browserContextId: this._browserContextId });
+     this._browser._contexts.delete(this._browserContextId);
+     for (const [targetId, serviceWorker] of this._browser._serviceWorkers) {
+diff --git a/packages/playwright-core/src/server/chromium/crDragDrop.ts b/packages/playwright-core/src/server/chromium/crDragDrop.ts
+index e104741a9..453e60721 100644
+--- a/packages/playwright-core/src/server/chromium/crDragDrop.ts
++++ b/packages/playwright-core/src/server/chromium/crDragDrop.ts
+@@ -93,7 +93,8 @@ export class DragManager {
+ 
+     try {
+       let expectingDrag = false;
+-      await progress.race(this._crPage._page.safeNonStallingEvaluateInAllFrames(`(${setupDragListeners.toString()})()`, 'utility'));
++      const scriptSource = `((__name => (${setupDragListeners.toString()}))(t => t))`;
++      await progress.race(this._crPage._page.safeNonStallingEvaluateInAllFrames(`(${scriptSource})()`, 'utility'));
+       client.on('Input.dragIntercepted', onDragIntercepted!);
+       await progress.race(client.send('Input.setInterceptDrags', { enabled: true }));
+       try {
+diff --git a/packages/playwright-core/src/server/chromium/crNetworkManager.ts b/packages/playwright-core/src/server/chromium/crNetworkManager.ts
+index 1c720b582..8b5523403 100644
+--- a/packages/playwright-core/src/server/chromium/crNetworkManager.ts
++++ b/packages/playwright-core/src/server/chromium/crNetworkManager.ts
+@@ -515,6 +515,15 @@ export class CRNetworkManager {
+       return;
+     this._maybeUpdateRequestSession(sessionInfo, request);
+     const response = request.request._existingResponse();
++    if (response && event.errorText === 'net::ERR_HTTP_RESPONSE_CODE_FAILURE') {
++      // Preserve the received HTTP response instead of aborting its navigation.
++      response.setTransferSize(null);
++      response.setEncodedBodySize(null);
++      response._requestFinished(helper.secondsToRoundishMillis(event.timestamp - request._timestamp));
++      this._deleteRequest(request);
++      (this._page?.frameManager || this._serviceWorker)!.reportRequestFinished(request.request, response);
++      return;
++    }
+     if (response) {
+       response.setTransferSize(null);
+       response.setEncodedBodySize(null);
+diff --git a/packages/playwright-core/src/server/chromium/crPage.ts b/packages/playwright-core/src/server/chromium/crPage.ts
+index b462b0b22..cefe2e862 100644
+--- a/packages/playwright-core/src/server/chromium/crPage.ts
++++ b/packages/playwright-core/src/server/chromium/crPage.ts
+@@ -566,6 +566,10 @@ class FrameSession {
+     const response = await this._client.send('Page.navigate', { url, referrer, frameId: frame._id, referrerPolicy: 'unsafeUrl' });
+     if (response.isDownload)
+       throw new frames.NavigationAbortedError(response.loaderId, 'Download is starting');
++    // Browser Rendering reports valid HTTP error responses as navigation errors.
++    // Let the normal navigation lifecycle wait for commit and waitUntil.
++    if (response.errorText === 'net::ERR_HTTP_RESPONSE_CODE_FAILURE')
++      return { newDocumentId: response.loaderId };
+     if (response.errorText)
+       throw new frames.NavigationAbortedError(response.loaderId, `${response.errorText} at ${url}`);
+     return { newDocumentId: response.loaderId };
+diff --git a/packages/playwright-core/src/server/javascript.ts b/packages/playwright-core/src/server/javascript.ts
+index 17aaf1683..b60703b6d 100644
+--- a/packages/playwright-core/src/server/javascript.ts
++++ b/packages/playwright-core/src/server/javascript.ts
+@@ -303,24 +303,77 @@ export function parseUnserializableValue(unserializableValue: string): any {
+     return -0;
+ }
+ 
++// Classifies Function#toString output without new Function. Function and class
++// expressions and arrows (including async arrows) are valid as-is; only
++// method shorthand such as `foo() {}`, `async foo() {}` or `*gen() {}` is not.
++function isMethodShorthand(expression: string): boolean {
++  if (/^(?:async\s+)?function\b/.test(expression) || /^class\b/.test(expression))
++    return false;
++  const asyncPrefix = /^async(?=[\s(])\s*/.exec(expression);
++  const rest = asyncPrefix ? expression.substring(asyncPrefix[0].length) : expression;
++  if (/^[A-Za-z_$][\w$]*\s*=>/.test(rest))
++    return false;
++  if (rest.startsWith('(')) {
++    // `async (a) => a` is an arrow; `async() {}` is a method named async.
++    const end = closingParenIndex(rest);
++    if (end === -1 || /^\s*=>/.test(rest.substring(end + 1)))
++      return false;
++    return !!asyncPrefix;
++  }
++  return /^(?:\*\s*)?(?:[A-Za-z_$][\w$]*|\[[^\]]+\])\s*\(/.test(rest);
++}
++
++function closingParenIndex(text: string): number {
++  let depth = 0;
++  let quote: string | undefined;
++  for (let i = 0; i < text.length; i++) {
++    const char = text[i];
++    if (quote) {
++      if (char === '\\')
++        i++;
++      else if (char === quote)
++        quote = undefined;
++    } else if (char === '"' || char === '\'' || char === '`') {
++      quote = char;
++    } else if (char === '(') {
++      depth++;
++    } else if (char === ')' && --depth === 0) {
++      return i;
++    }
++  }
++  return -1;
++}
++
+ export function normalizeEvaluationExpression(expression: string, isFunction: boolean | undefined): string {
+   expression = expression.trim();
+ 
+   if (isFunction) {
+-    try {
+-      new Function('(' + expression + ')');
+-    } catch (e1) {
+-      // This means we might have a function shorthand. Try another
+-      // time prefixing 'function '.
+-      if (expression.startsWith('async '))
+-        expression = 'async function ' + expression.substring('async '.length);
+-      else
+-        expression = 'function ' + expression;
++    if (globalThis.navigator?.userAgent === 'Cloudflare-Workers') {
++      // Workers cannot use new Function, so detect and normalize method shorthand directly.
++      // All other Function#toString forms (functions, classes, and arrows) are already expressions.
++      if (isMethodShorthand(expression)) {
++        if (expression.startsWith('async '))
++          expression = 'async function ' + expression.substring('async '.length);
++        else
++          expression = 'function ' + expression;
++      }
++      expression = `((__name => (${expression}))(t => t))`;
++    } else {
+       try {
+-        new Function('(' + expression  + ')');
+-      } catch (e2) {
+-        // We tried hard to serialize, but there's a weird beast here.
+-        throw new Error('Passed function is not well-serializable!');
++        new Function('(' + expression + ')');
++      } catch (e1) {
++        // This means we might have a function shorthand. Try another
++        // time prefixing 'function '.
++        if (expression.startsWith('async '))
++          expression = 'async function ' + expression.substring('async '.length);
++        else
++          expression = 'function ' + expression;
++        try {
++          new Function('(' + expression  + ')');
++        } catch (e2) {
++          // We tried hard to serialize, but there's a weird beast here.
++          throw new Error('Passed function is not well-serializable!');
++        }
+       }
+     }
+   }
+diff --git a/packages/playwright-core/src/server/localUtils.ts b/packages/playwright-core/src/server/localUtils.ts
+index c2b36758a..469aba38b 100644
+--- a/packages/playwright-core/src/server/localUtils.ts
++++ b/packages/playwright-core/src/server/localUtils.ts
+@@ -82,8 +82,13 @@ export async function zip(progress: Progress, stackSessions: Map<string, StackSe
+     // New file, just compress the entries.
+     await progress.race(fs.promises.mkdir(path.dirname(params.zipFile), { recursive: true }));
+     zipFile.end(undefined, () => {
+-      zipFile.outputStream.pipe(fs.createWriteStream(params.zipFile))
+-          .on('close', () => promise.resolve())
++      const chunks: Buffer[] = [];
++      zipFile.outputStream
++          .on('data', data => chunks.push(data))
++          .on('close', () => {
++            fs.writeFileSync(params.zipFile, Buffer.concat(chunks));
++            promise.resolve();
++          })
+           .on('error', error => promise.reject(error));
+     });
+     await progress.race(promise);
+@@ -106,9 +111,12 @@ export async function zip(progress: Progress, stackSessions: Map<string, StackSe
+ 
+     const finalizeRepack = () => {
+       zipFile.end(undefined, () => {
+-        zipFile.outputStream.pipe(fs.createWriteStream(params.zipFile))
++        const chunks: Buffer[] = [];
++        zipFile.outputStream
++            .on('data', data => chunks.push(data))
+             .on('close', () => {
+               fs.promises.unlink(tempFile).then(() => {
++                fs.writeFileSync(params.zipFile, Buffer.concat(chunks));
+                 promise.resolve();
+               }).catch(error => promise.reject(error));
+             })
+diff --git a/packages/playwright-core/src/server/registry/index.ts b/packages/playwright-core/src/server/registry/index.ts
+index 2b6e0141a..7ef2a581c 100644
+--- a/packages/playwright-core/src/server/registry/index.ts
++++ b/packages/playwright-core/src/server/registry/index.ts
+@@ -1568,6 +1568,7 @@ function lowercaseAllKeys(json: any): any {
+   return result;
+ }
+ 
+-export const registry = new Registry(require(path.join(packageRoot, 'browsers.json')));
++// PATCH static require, so the bundler can include browsers.json (Workers cannot read it at runtime)
++export const registry = new Registry(require('../../../browsers.json'));
+ 
+ export { runOopDownloadBrowserMain } from './oopDownloadBrowserMain';
+diff --git a/packages/playwright-core/src/server/screenshotter.ts b/packages/playwright-core/src/server/screenshotter.ts
+index d96c32c5f..d9561092e 100644
+--- a/packages/playwright-core/src/server/screenshotter.ts
++++ b/packages/playwright-core/src/server/screenshotter.ts
+@@ -252,7 +252,8 @@ export class Screenshotter {
+     if (disableAnimations)
+       progress.log('  disabled all CSS animations');
+     const syncAnimations = this._page.delegate.shouldToggleStyleSheetToSyncAnimations();
+-    await progress.race(this._page.safeNonStallingEvaluateInAllFrames('(' + inPagePrepareForScreenshots.toString() + `)(${JSON.stringify(screenshotStyle)}, ${hideCaret}, ${disableAnimations}, ${syncAnimations})`, 'utility'));
++    const script = `((__name => (${inPagePrepareForScreenshots.toString()}))(t => t))`;
++    await progress.race(this._page.safeNonStallingEvaluateInAllFrames('(' + script + `)(${JSON.stringify(screenshotStyle)}, ${hideCaret}, ${disableAnimations}, ${syncAnimations})`, 'utility'));
+     try {
+       if (!process.env.PW_TEST_SCREENSHOT_NO_FONTS_READY) {
+         progress.log('waiting for fonts to load...');
+diff --git a/packages/playwright-core/src/server/trace/recorder/snapshotter.ts b/packages/playwright-core/src/server/trace/recorder/snapshotter.ts
+index 90c2f3432..88181532a 100644
+--- a/packages/playwright-core/src/server/trace/recorder/snapshotter.ts
++++ b/packages/playwright-core/src/server/trace/recorder/snapshotter.ts
+@@ -94,7 +94,8 @@ export class Snapshotter {
+     ];
+ 
+     const { javaScriptEnabled } = this._context._options;
+-    const initScriptSource = `(${frameSnapshotStreamer})("${this._snapshotStreamer}", ${javaScriptEnabled || javaScriptEnabled === undefined})`;
++    const initScript = `((__name => (${frameSnapshotStreamer}))(t => t))`;
++    const initScriptSource = `(${initScript})("${this._snapshotStreamer}", ${javaScriptEnabled || javaScriptEnabled === undefined})`;
+     this._initScript = await this._context.addInitScript(progress, initScriptSource);
+     await progress.race(this._context.safeNonStallingEvaluateInAllFrames(initScriptSource, 'main'));
+   }
+diff --git a/packages/playwright/src/common/configLoader.ts b/packages/playwright/src/common/configLoader.ts
+index f9ec65451..6ba9d2c91 100644
+--- a/packages/playwright/src/common/configLoader.ts
++++ b/packages/playwright/src/common/configLoader.ts
+@@ -118,7 +118,8 @@ export async function loadConfig(location: ConfigLocation, overrides?: ConfigCLI
+   // 3. Load transform options from the playwright config.
+   const babelPlugins = (userConfig as any)['@playwright/test']?.babelPlugins || [];
+   const external = userConfig.build?.external || [];
+-  const jsxImportSource = path.dirname(require.resolve('playwright'));
++  // PATCH require.resolve is not available in Cloudflare Workers, where the transform is not used
++  const jsxImportSource = typeof require.resolve === 'function' ? path.dirname(require.resolve('playwright')) : undefined;
+   await setTransformConfig({ babelPlugins, external, jsxImportSource });
+   if (!overrides?.tsconfig)
+     await setSingleTSConfig(fullConfig?.singleTSConfigPath);
+diff --git a/packages/playwright/src/package.ts b/packages/playwright/src/package.ts
+index fdd2c47f2..4b2ba3f87 100644
+--- a/packages/playwright/src/package.ts
++++ b/packages/playwright/src/package.ts
+@@ -19,7 +19,8 @@ import path from 'path';
+ // Use a dynamic path so esbuild does not statically resolve and inline
+ // package.json into coreBundle.js.
+ export const packageRoot = path.join(__dirname, '..');
+-export const packageJSON = require(path.join(packageRoot, 'package.json'));
++// PATCH static require, so the bundler can include package.json (Workers cannot read it at runtime)
++export const packageJSON = require('../package.json');
+ 
+ export function libPath(...parts: string[]): string {
+   return path.join(packageRoot, 'lib', ...parts);
+diff --git a/packages/utils/crypto.ts b/packages/utils/crypto.ts
+index c5ed49e8a..ca1c42a8d 100644
+--- a/packages/utils/crypto.ts
++++ b/packages/utils/crypto.ts
+@@ -19,7 +19,13 @@ import crypto from 'crypto';
+ import { assert } from '@isomorphic/assert';
+ 
+ export function createGuid(): string {
+-  return crypto.randomBytes(16).toString('hex');
++  // crypto.randomBytes fails in Cloudflare Workers:
++  // Uncaught Error: Disallowed operation called within global scope. Asynchronous I/O
++  // (ex: fetch() or connect()), setting a timeout, and generating random values are not allowed within
++  // global scope. To fix this error, perform this operation within a handler.
++  return Array.from({ length: 16 }, () => Math.floor(Math.random() * 256))
++      .map(byte => byte.toString(16).padStart(2, '0'))
++      .join('');
+ }
+ 
+ export function calculateSha1(buffer: Buffer | string): string {
+diff --git a/packages/utils/serializedFS.ts b/packages/utils/serializedFS.ts
+index 994ebf22e..bec9e2908 100644
+--- a/packages/utils/serializedFS.ts
++++ b/packages/utils/serializedFS.ts
+@@ -165,9 +165,13 @@ export class SerializedFS {
+         for (const entry of op.entries)
+           zipFile.addFile(entry.value, entry.name);
+         zipFile.end();
++        const chunks: Buffer[] = [];
+         zipFile.outputStream
+-            .pipe(fs.createWriteStream(op.zipFileName))
+-            .on('close', () => result.resolve())
++            .on('data', data => chunks.push(data))
++            .on('close', () => {
++              fs.writeFileSync(op.zipFileName, Buffer.concat(chunks));
++              result.resolve();
++            })
+             .on('error', error => result.reject(error));
+         await result;
+         return;

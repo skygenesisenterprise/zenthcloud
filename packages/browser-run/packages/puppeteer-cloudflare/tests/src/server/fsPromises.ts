@@ -1,0 +1,37 @@
+import {promises} from 'node:fs';
+
+export {promises} from 'node:fs';
+
+export const {
+  access,
+  appendFile,
+  chmod,
+  chown,
+  constants,
+  copyFile,
+  cp,
+  glob,
+  lchown,
+  link,
+  lstat,
+  lutimes,
+  mkdir,
+  mkdtemp,
+  open,
+  opendir,
+  readdir,
+  readFile,
+  readlink,
+  realpath,
+  rename,
+  rm,
+  rmdir,
+  stat,
+  statfs,
+  symlink,
+  truncate,
+  unlink,
+  utimes,
+  watch,
+  writeFile,
+} = promises;
