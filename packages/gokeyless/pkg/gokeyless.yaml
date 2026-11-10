@@ -1,0 +1,38 @@
+# Set the log level (0 = DEBUG, 5 = FATAL).
+loglevel: 1
+
+# Hostname must match the key server hostname that was configured in the
+# Cloudflare dashboard during custom certificate upload.
+hostname:
+
+# Zone ID can be found on the Cloudflare dashboard 'Overview' tab.
+zone_id:
+
+# Preferred credential used to request the server authentication certificate:
+# a Cloudflare API token scoped Zone > SSL and Certificates > Edit. See
+# https://developers.cloudflare.com/fundamentals/api/get-started/create-token/
+api_token:
+
+# Deprecated: the legacy Origin CA Service Key (found on the Cloudflare
+# dashboard under the 'My Profile' section). Prefer api_token above. Only one
+# of api_token or origin_ca_api_key needs to be set.
+origin_ca_api_key:
+
+# Configure one or more private key directories.
+private_key_stores:
+- dir: /etc/keyless/keys
+
+# Optionally customize the location of the certificates used for mutual
+# authentication with Cloudflare keyless clients.
+auth_cert: /etc/keyless/server.pem
+auth_key: /etc/keyless/server-key.pem
+auth_csr: /etc/keyless/server.csr
+cloudflare_ca_cert: /etc/keyless/keyless_cacert.pem
+
+# Optionally customize the listen ports.
+port: 2407
+metrics_port: 2406
+
+# Optionally write the PID to a file (note that sysv-based systems will
+# ignore this value and always use /var/run/gokeyless.pid).
+pid_file:
