@@ -1,0 +1,128 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package organizations
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"slices"
+
+	"github.com/cloudflare/cloudflare-go/v7/accounts"
+	"github.com/cloudflare/cloudflare-go/v7/internal/apijson"
+	"github.com/cloudflare/cloudflare-go/v7/internal/param"
+	"github.com/cloudflare/cloudflare-go/v7/internal/requestconfig"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+	"github.com/cloudflare/cloudflare-go/v7/shared"
+)
+
+// OrganizationProfileService contains methods and other services that help with
+// interacting with the cloudflare API.
+//
+// Note, unlike clients, this service does not read variables from the environment
+// automatically. You should not instantiate this service directly, and instead use
+// the [NewOrganizationProfileService] method instead.
+type OrganizationProfileService struct {
+	Options []option.RequestOption
+}
+
+// NewOrganizationProfileService generates a new service that applies the given
+// options to each request. These options are applied after the parent client's
+// options (if there is one), and before any request-specific options.
+func NewOrganizationProfileService(opts ...option.RequestOption) (r *OrganizationProfileService) {
+	r = &OrganizationProfileService{}
+	r.Options = opts
+	return
+}
+
+// Partially updates the business profile (name, email, phone, address, and
+// external metadata) associated with this organization's customer record, creating
+// the profile if it does not exist. Changes apply to every account and
+// organization sharing that profile. Omitted, empty, or null fields are left
+// unchanged. Each profile field is limited to 1,000 UTF-8 bytes. Only available to
+// members of the organization.
+func (r *OrganizationProfileService) Update(ctx context.Context, organizationID string, body OrganizationProfileUpdateParams, opts ...option.RequestOption) (err error) {
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
+	if organizationID == "" {
+		err = errors.New("missing required organization_id parameter")
+		return err
+	}
+	path := fmt.Sprintf("organizations/%s/profile", organizationID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, body, nil, opts...)
+	return err
+}
+
+// Retrieves the business profile (name, email, phone, address, and external
+// metadata) associated with this organization's customer record. Profiles can be
+// shared across accounts and organizations. Only available to members of the
+// organization.
+func (r *OrganizationProfileService) Get(ctx context.Context, organizationID string, opts ...option.RequestOption) (res *accounts.AccountProfile, err error) {
+	var env OrganizationProfileGetResponseEnvelope
+	opts = slices.Concat(r.Options, opts)
+	if organizationID == "" {
+		err = errors.New("missing required organization_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("organizations/%s/profile", organizationID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &env, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = &env.Result
+	return res, nil
+}
+
+type OrganizationProfileUpdateParams struct {
+	BusinessAddress  param.Field[string] `json:"business_address"`
+	BusinessEmail    param.Field[string] `json:"business_email"`
+	BusinessName     param.Field[string] `json:"business_name"`
+	BusinessPhone    param.Field[string] `json:"business_phone"`
+	ExternalMetadata param.Field[string] `json:"external_metadata"`
+}
+
+func (r OrganizationProfileUpdateParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type OrganizationProfileGetResponseEnvelope struct {
+	Errors   []interface{}                                 `json:"errors" api:"required"`
+	Messages []shared.ResponseInfo                         `json:"messages" api:"required"`
+	Result   accounts.AccountProfile                       `json:"result" api:"required"`
+	Success  OrganizationProfileGetResponseEnvelopeSuccess `json:"success" api:"required"`
+	JSON     organizationProfileGetResponseEnvelopeJSON    `json:"-"`
+}
+
+// organizationProfileGetResponseEnvelopeJSON contains the JSON metadata for the
+// struct [OrganizationProfileGetResponseEnvelope]
+type organizationProfileGetResponseEnvelopeJSON struct {
+	Errors      apijson.Field
+	Messages    apijson.Field
+	Result      apijson.Field
+	Success     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *OrganizationProfileGetResponseEnvelope) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r organizationProfileGetResponseEnvelopeJSON) RawJSON() string {
+	return r.raw
+}
+
+type OrganizationProfileGetResponseEnvelopeSuccess bool
+
+const (
+	OrganizationProfileGetResponseEnvelopeSuccessTrue OrganizationProfileGetResponseEnvelopeSuccess = true
+)
+
+func (r OrganizationProfileGetResponseEnvelopeSuccess) IsKnown() bool {
+	switch r {
+	case OrganizationProfileGetResponseEnvelopeSuccessTrue:
+		return true
+	}
+	return false
+}

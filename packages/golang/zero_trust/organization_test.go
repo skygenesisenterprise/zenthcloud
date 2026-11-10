@@ -1,0 +1,212 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zero_trust_test
+
+import (
+	"context"
+	"errors"
+	"os"
+	"testing"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/internal/testutil"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
+)
+
+func TestOrganizationNewWithOptionalParams(t *testing.T) {
+	t.Skip("TODO: investigate broken test")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.ZeroTrust.Organizations.New(context.TODO(), zero_trust.OrganizationNewParams{
+		AccountID:                              cloudflare.F("account_id"),
+		AllowAuthenticateViaWARP:               cloudflare.F(true),
+		AuthDomain:                             cloudflare.F("test.cloudflareaccess.com"),
+		AutoRedirectToIdentity:                 cloudflare.F(true),
+		DenyUnmatchedRequests:                  cloudflare.F(true),
+		DenyUnmatchedRequestsExemptedZoneNames: cloudflare.F([]string{"example.com"}),
+		DisableEndUserAppCreation:              cloudflare.F(false),
+		IsUIReadOnly:                           cloudflare.F(true),
+		LoginDesign: cloudflare.F(zero_trust.LoginDesignParam{
+			BackgroundColor: cloudflare.F("#c5ed1b"),
+			FooterText:      cloudflare.F("This is an example description."),
+			HeaderText:      cloudflare.F("This is an example description."),
+			LogoPath:        cloudflare.F("https://example.com/logo.png"),
+			TextColor:       cloudflare.F("#c5ed1b"),
+		}),
+		MfaConfig: cloudflare.F(zero_trust.OrganizationNewParamsMfaConfig{
+			AllowedAuthenticators:      cloudflare.F([]zero_trust.OrganizationNewParamsMfaConfigAllowedAuthenticator{zero_trust.OrganizationNewParamsMfaConfigAllowedAuthenticatorTotp, zero_trust.OrganizationNewParamsMfaConfigAllowedAuthenticatorBiometrics, zero_trust.OrganizationNewParamsMfaConfigAllowedAuthenticatorSecurityKey}),
+			AmrMatchingSessionDuration: cloudflare.F("12h"),
+			RequiredAaguids:            cloudflare.F("2fc0579f-8113-47ea-b116-bb5a8db9202a"),
+			SessionDuration:            cloudflare.F("24h"),
+		}),
+		MfaPivKeyRequirements: cloudflare.F(zero_trust.OrganizationNewParamsMfaPivKeyRequirements{
+			PinPolicy:         cloudflare.F(zero_trust.OrganizationNewParamsMfaPivKeyRequirementsPinPolicyAlways),
+			RequireFipsDevice: cloudflare.F(true),
+			SSHKeySize:        cloudflare.F([]zero_trust.OrganizationNewParamsMfaPivKeyRequirementsSSHKeySize{zero_trust.OrganizationNewParamsMfaPivKeyRequirementsSSHKeySize256, zero_trust.OrganizationNewParamsMfaPivKeyRequirementsSSHKeySize2048}),
+			SSHKeyType:        cloudflare.F([]zero_trust.OrganizationNewParamsMfaPivKeyRequirementsSSHKeyType{zero_trust.OrganizationNewParamsMfaPivKeyRequirementsSSHKeyTypeEcdsa, zero_trust.OrganizationNewParamsMfaPivKeyRequirementsSSHKeyTypeRSA}),
+			TouchPolicy:       cloudflare.F(zero_trust.OrganizationNewParamsMfaPivKeyRequirementsTouchPolicyAlways),
+		}),
+		MfaRequiredForAllApps: cloudflare.F(false),
+		Name:                  cloudflare.F("Widget Corps Internal Applications"),
+		ServiceTokenInactivity: cloudflare.F(zero_trust.OrganizationNewParamsServiceTokenInactivity{
+			Action:                  cloudflare.F(zero_trust.OrganizationNewParamsServiceTokenInactivityActionDisable),
+			Enabled:                 cloudflare.F(true),
+			InactivityThresholdDays: cloudflare.F(int64(30)),
+		}),
+		SessionDuration:                cloudflare.F("24h"),
+		StrictServiceTokenAuth:         cloudflare.F(true),
+		UIReadOnlyToggleReason:         cloudflare.F("Temporarily turn off the UI read only lock to make a change via the UI"),
+		UserSeatExpirationInactiveTime: cloudflare.F("730h"),
+		WARPAuthNonBrowser401:          cloudflare.F(false),
+		WARPAuthSessionDuration:        cloudflare.F("24h"),
+	})
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestOrganizationUpdateWithOptionalParams(t *testing.T) {
+	t.Skip("TODO: investigate broken test")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.ZeroTrust.Organizations.Update(context.TODO(), zero_trust.OrganizationUpdateParams{
+		AccountID:                cloudflare.F("account_id"),
+		AllowAuthenticateViaWARP: cloudflare.F(true),
+		AuthDomain:               cloudflare.F("test.cloudflareaccess.com"),
+		AutoRedirectToIdentity:   cloudflare.F(true),
+		CustomPages: cloudflare.F(zero_trust.OrganizationUpdateParamsCustomPages{
+			Forbidden:      cloudflare.F("699d98642c564d2e855e9661899b7252"),
+			IdentityDenied: cloudflare.F("699d98642c564d2e855e9661899b7252"),
+		}),
+		DenyUnmatchedRequests:                  cloudflare.F(true),
+		DenyUnmatchedRequestsExemptedZoneNames: cloudflare.F([]string{"example.com"}),
+		DisableEndUserAppCreation:              cloudflare.F(false),
+		IsUIReadOnly:                           cloudflare.F(true),
+		LoginDesign: cloudflare.F(zero_trust.LoginDesignParam{
+			BackgroundColor: cloudflare.F("#c5ed1b"),
+			FooterText:      cloudflare.F("This is an example description."),
+			HeaderText:      cloudflare.F("This is an example description."),
+			LogoPath:        cloudflare.F("https://example.com/logo.png"),
+			TextColor:       cloudflare.F("#c5ed1b"),
+		}),
+		MfaConfig: cloudflare.F(zero_trust.OrganizationUpdateParamsMfaConfig{
+			AllowedAuthenticators:      cloudflare.F([]zero_trust.OrganizationUpdateParamsMfaConfigAllowedAuthenticator{zero_trust.OrganizationUpdateParamsMfaConfigAllowedAuthenticatorTotp, zero_trust.OrganizationUpdateParamsMfaConfigAllowedAuthenticatorBiometrics, zero_trust.OrganizationUpdateParamsMfaConfigAllowedAuthenticatorSecurityKey}),
+			AmrMatchingSessionDuration: cloudflare.F("12h"),
+			RequiredAaguids:            cloudflare.F("2fc0579f-8113-47ea-b116-bb5a8db9202a"),
+			SessionDuration:            cloudflare.F("24h"),
+		}),
+		MfaPivKeyRequirements: cloudflare.F(zero_trust.OrganizationUpdateParamsMfaPivKeyRequirements{
+			PinPolicy:         cloudflare.F(zero_trust.OrganizationUpdateParamsMfaPivKeyRequirementsPinPolicyAlways),
+			RequireFipsDevice: cloudflare.F(true),
+			SSHKeySize:        cloudflare.F([]zero_trust.OrganizationUpdateParamsMfaPivKeyRequirementsSSHKeySize{zero_trust.OrganizationUpdateParamsMfaPivKeyRequirementsSSHKeySize256, zero_trust.OrganizationUpdateParamsMfaPivKeyRequirementsSSHKeySize2048}),
+			SSHKeyType:        cloudflare.F([]zero_trust.OrganizationUpdateParamsMfaPivKeyRequirementsSSHKeyType{zero_trust.OrganizationUpdateParamsMfaPivKeyRequirementsSSHKeyTypeEcdsa, zero_trust.OrganizationUpdateParamsMfaPivKeyRequirementsSSHKeyTypeRSA}),
+			TouchPolicy:       cloudflare.F(zero_trust.OrganizationUpdateParamsMfaPivKeyRequirementsTouchPolicyAlways),
+		}),
+		MfaRequiredForAllApps: cloudflare.F(false),
+		Name:                  cloudflare.F("Widget Corps Internal Applications"),
+		ServiceTokenInactivity: cloudflare.F(zero_trust.OrganizationUpdateParamsServiceTokenInactivity{
+			Action:                  cloudflare.F(zero_trust.OrganizationUpdateParamsServiceTokenInactivityActionDisable),
+			Enabled:                 cloudflare.F(true),
+			InactivityThresholdDays: cloudflare.F(int64(30)),
+		}),
+		SessionDuration:                cloudflare.F("24h"),
+		StrictServiceTokenAuth:         cloudflare.F(true),
+		UIReadOnlyToggleReason:         cloudflare.F("Temporarily turn off the UI read only lock to make a change via the UI"),
+		UserSeatExpirationInactiveTime: cloudflare.F("730h"),
+		WARPAuthNonBrowser401:          cloudflare.F(false),
+		WARPAuthSessionDuration:        cloudflare.F("24h"),
+	})
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestOrganizationListWithOptionalParams(t *testing.T) {
+	t.Skip("TODO: investigate broken test")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.ZeroTrust.Organizations.List(context.TODO(), zero_trust.OrganizationListParams{
+		AccountID: cloudflare.F("account_id"),
+	})
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestOrganizationRevokeUsersWithOptionalParams(t *testing.T) {
+	t.Skip("TODO: investigate broken test")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.ZeroTrust.Organizations.RevokeUsers(context.TODO(), zero_trust.OrganizationRevokeUsersParams{
+		Email:             cloudflare.F("test@example.com"),
+		AccountID:         cloudflare.F("account_id"),
+		QueryDevices:      cloudflare.F(true),
+		BodyDevices:       cloudflare.F(true),
+		UserUID:           cloudflare.F("699d98642c564d2e855e9661899b7252"),
+		WARPSessionReauth: cloudflare.F(true),
+	})
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}

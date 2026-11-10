@@ -1,0 +1,115 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package cloudforce_one
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"net/url"
+	"slices"
+
+	"github.com/cloudflare/cloudflare-go/v7/internal/apijson"
+	"github.com/cloudflare/cloudflare-go/v7/internal/apiquery"
+	"github.com/cloudflare/cloudflare-go/v7/internal/param"
+	"github.com/cloudflare/cloudflare-go/v7/internal/requestconfig"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+)
+
+// ThreatEventIndicatorTypeService contains methods and other services that help
+// with interacting with the cloudflare API.
+//
+// Note, unlike clients, this service does not read variables from the environment
+// automatically. You should not instantiate this service directly, and instead use
+// the [NewThreatEventIndicatorTypeService] method instead.
+type ThreatEventIndicatorTypeService struct {
+	Options []option.RequestOption
+}
+
+// NewThreatEventIndicatorTypeService generates a new service that applies the
+// given options to each request. These options are applied after the parent
+// client's options (if there is one), and before any request-specific options.
+func NewThreatEventIndicatorTypeService(opts ...option.RequestOption) (r *ThreatEventIndicatorTypeService) {
+	r = &ThreatEventIndicatorTypeService{}
+	r.Options = opts
+	return
+}
+
+// Lists the indicator types used in the datasets given by `datasetIds`, which
+// accepts dataset UUIDs or one scope value used alone. Without `datasetIds`, every
+// dataset you can read is included, analytics datasets too.
+func (r *ThreatEventIndicatorTypeService) List(ctx context.Context, params ThreatEventIndicatorTypeListParams, opts ...option.RequestOption) (res *ThreatEventIndicatorTypeListResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if params.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/cloudforce-one/events/indicator-types", params.AccountID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
+	return res, err
+}
+
+type ThreatEventIndicatorTypeListResponse struct {
+	Items ThreatEventIndicatorTypeListResponseItems `json:"items" api:"required"`
+	Type  string                                    `json:"type" api:"required"`
+	JSON  threatEventIndicatorTypeListResponseJSON  `json:"-"`
+}
+
+// threatEventIndicatorTypeListResponseJSON contains the JSON metadata for the
+// struct [ThreatEventIndicatorTypeListResponse]
+type threatEventIndicatorTypeListResponseJSON struct {
+	Items       apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ThreatEventIndicatorTypeListResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r threatEventIndicatorTypeListResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+type ThreatEventIndicatorTypeListResponseItems struct {
+	Type string                                        `json:"type" api:"required"`
+	JSON threatEventIndicatorTypeListResponseItemsJSON `json:"-"`
+}
+
+// threatEventIndicatorTypeListResponseItemsJSON contains the JSON metadata for the
+// struct [ThreatEventIndicatorTypeListResponseItems]
+type threatEventIndicatorTypeListResponseItemsJSON struct {
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ThreatEventIndicatorTypeListResponseItems) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r threatEventIndicatorTypeListResponseItemsJSON) RawJSON() string {
+	return r.raw
+}
+
+type ThreatEventIndicatorTypeListParams struct {
+	// Account ID.
+	AccountID param.Field[string] `path:"account_id" api:"required"`
+	// Dataset UUIDs to query, or one standalone scope value: 'operational' for
+	// readable intelligence datasets (isAnalytics=false), 'analytics' for readable
+	// analytics datasets (isAnalytics=true), or 'all'/'\*' for every readable dataset
+	// including analytics datasets. If not provided, queries all accessible datasets,
+	// including analytics datasets.
+	DatasetIDs param.Field[[]string] `query:"datasetIds"`
+}
+
+// URLQuery serializes [ThreatEventIndicatorTypeListParams]'s query parameters as
+// `url.Values`.
+func (r ThreatEventIndicatorTypeListParams) URLQuery() (v url.Values) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
+		NestedFormat: apiquery.NestedQueryFormatDots,
+	})
+}

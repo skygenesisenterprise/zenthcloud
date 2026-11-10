@@ -1,0 +1,241 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package ai_gateway
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"net/url"
+	"slices"
+	"time"
+
+	"github.com/cloudflare/cloudflare-go/v7/internal/apijson"
+	"github.com/cloudflare/cloudflare-go/v7/internal/apiquery"
+	"github.com/cloudflare/cloudflare-go/v7/internal/param"
+	"github.com/cloudflare/cloudflare-go/v7/internal/requestconfig"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+	"github.com/cloudflare/cloudflare-go/v7/packages/pagination"
+)
+
+// ProviderConfigService contains methods and other services that help with
+// interacting with the cloudflare API.
+//
+// Note, unlike clients, this service does not read variables from the environment
+// automatically. You should not instantiate this service directly, and instead use
+// the [NewProviderConfigService] method instead.
+type ProviderConfigService struct {
+	Options []option.RequestOption
+}
+
+// NewProviderConfigService generates a new service that applies the given options
+// to each request. These options are applied after the parent client's options (if
+// there is one), and before any request-specific options.
+func NewProviderConfigService(opts ...option.RequestOption) (r *ProviderConfigService) {
+	r = &ProviderConfigService{}
+	r.Options = opts
+	return
+}
+
+// Stores an upstream AI provider API key for an AI Gateway in the Secrets Store
+// configured on the gateway, with an optional rate limit. Pass `secret` to store a
+// new key, or omit it to use an existing Secrets Store secret.
+func (r *ProviderConfigService) New(ctx context.Context, gatewayID string, params ProviderConfigNewParams, opts ...option.RequestOption) (res *ProviderConfigNewResponse, err error) {
+	var env ProviderConfigNewResponseEnvelope
+	opts = slices.Concat(r.Options, opts)
+	if params.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	if gatewayID == "" {
+		err = errors.New("missing required gateway_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/ai-gateway/gateways/%s/provider_configs", params.AccountID, gatewayID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &env, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = &env.Result
+	return res, nil
+}
+
+// Lists the provider keys stored for an AI Gateway. Responses show a masked
+// preview of each key, never the key itself.
+func (r *ProviderConfigService) List(ctx context.Context, gatewayID string, params ProviderConfigListParams, opts ...option.RequestOption) (res *pagination.V4PagePaginationArray[ProviderConfigListResponse], err error) {
+	var raw *http.Response
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if params.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	if gatewayID == "" {
+		err = errors.New("missing required gateway_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/ai-gateway/gateways/%s/provider_configs", params.AccountID, gatewayID)
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
+	if err != nil {
+		return nil, err
+	}
+	err = cfg.Execute()
+	if err != nil {
+		return nil, err
+	}
+	res.SetPageConfig(cfg, raw)
+	return res, nil
+}
+
+// Lists the provider keys stored for an AI Gateway. Responses show a masked
+// preview of each key, never the key itself.
+func (r *ProviderConfigService) ListAutoPaging(ctx context.Context, gatewayID string, params ProviderConfigListParams, opts ...option.RequestOption) *pagination.V4PagePaginationArrayAutoPager[ProviderConfigListResponse] {
+	return pagination.NewV4PagePaginationArrayAutoPager(r.List(ctx, gatewayID, params, opts...))
+}
+
+type ProviderConfigNewResponse struct {
+	ID            string `json:"id" api:"required"`
+	Alias         string `json:"alias" api:"required"`
+	DefaultConfig bool   `json:"default_config" api:"required"`
+	// Unique identifier of the AI Gateway within the account.
+	GatewayID     string    `json:"gateway_id" api:"required"`
+	ModifiedAt    time.Time `json:"modified_at" api:"required" format:"date-time"`
+	ProviderSlug  string    `json:"provider_slug" api:"required"`
+	SecretID      string    `json:"secret_id" api:"required"`
+	SecretPreview string    `json:"secret_preview" api:"required"`
+	// UTC date (YYYY-MM-DD) the gateway last selected this key to authenticate a
+	// request to the provider, whether or not the request succeeded. Updated at most
+	// once a day. Null if the gateway has not used the key since this field was
+	// introduced.
+	LastUsedAt      time.Time                     `json:"last_used_at" api:"nullable" format:"date"`
+	RateLimit       float64                       `json:"rate_limit"`
+	RateLimitPeriod float64                       `json:"rate_limit_period"`
+	JSON            providerConfigNewResponseJSON `json:"-"`
+}
+
+// providerConfigNewResponseJSON contains the JSON metadata for the struct
+// [ProviderConfigNewResponse]
+type providerConfigNewResponseJSON struct {
+	ID              apijson.Field
+	Alias           apijson.Field
+	DefaultConfig   apijson.Field
+	GatewayID       apijson.Field
+	ModifiedAt      apijson.Field
+	ProviderSlug    apijson.Field
+	SecretID        apijson.Field
+	SecretPreview   apijson.Field
+	LastUsedAt      apijson.Field
+	RateLimit       apijson.Field
+	RateLimitPeriod apijson.Field
+	raw             string
+	ExtraFields     map[string]apijson.Field
+}
+
+func (r *ProviderConfigNewResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r providerConfigNewResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+type ProviderConfigListResponse struct {
+	ID            string `json:"id" api:"required"`
+	Alias         string `json:"alias" api:"required"`
+	DefaultConfig bool   `json:"default_config" api:"required"`
+	// Unique identifier of the AI Gateway within the account.
+	GatewayID     string    `json:"gateway_id" api:"required"`
+	ModifiedAt    time.Time `json:"modified_at" api:"required" format:"date-time"`
+	ProviderSlug  string    `json:"provider_slug" api:"required"`
+	SecretID      string    `json:"secret_id" api:"required"`
+	SecretPreview string    `json:"secret_preview" api:"required"`
+	// UTC date (YYYY-MM-DD) the gateway last selected this key to authenticate a
+	// request to the provider, whether or not the request succeeded. Updated at most
+	// once a day. Null if the gateway has not used the key since this field was
+	// introduced.
+	LastUsedAt      time.Time                      `json:"last_used_at" api:"nullable" format:"date"`
+	RateLimit       float64                        `json:"rate_limit"`
+	RateLimitPeriod float64                        `json:"rate_limit_period"`
+	JSON            providerConfigListResponseJSON `json:"-"`
+}
+
+// providerConfigListResponseJSON contains the JSON metadata for the struct
+// [ProviderConfigListResponse]
+type providerConfigListResponseJSON struct {
+	ID              apijson.Field
+	Alias           apijson.Field
+	DefaultConfig   apijson.Field
+	GatewayID       apijson.Field
+	ModifiedAt      apijson.Field
+	ProviderSlug    apijson.Field
+	SecretID        apijson.Field
+	SecretPreview   apijson.Field
+	LastUsedAt      apijson.Field
+	RateLimit       apijson.Field
+	RateLimitPeriod apijson.Field
+	raw             string
+	ExtraFields     map[string]apijson.Field
+}
+
+func (r *ProviderConfigListResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r providerConfigListResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+type ProviderConfigNewParams struct {
+	AccountID       param.Field[string]  `path:"account_id" api:"required"`
+	Alias           param.Field[string]  `json:"alias" api:"required"`
+	DefaultConfig   param.Field[bool]    `json:"default_config" api:"required"`
+	ProviderSlug    param.Field[string]  `json:"provider_slug" api:"required"`
+	RateLimit       param.Field[float64] `json:"rate_limit"`
+	RateLimitPeriod param.Field[float64] `json:"rate_limit_period"`
+	// Provider API key to store in the Secrets Store configured on the gateway.
+	Secret   param.Field[string] `json:"secret"`
+	SecretID param.Field[string] `json:"secret_id"`
+}
+
+func (r ProviderConfigNewParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ProviderConfigNewResponseEnvelope struct {
+	Result  ProviderConfigNewResponse             `json:"result" api:"required"`
+	Success bool                                  `json:"success" api:"required"`
+	JSON    providerConfigNewResponseEnvelopeJSON `json:"-"`
+}
+
+// providerConfigNewResponseEnvelopeJSON contains the JSON metadata for the struct
+// [ProviderConfigNewResponseEnvelope]
+type providerConfigNewResponseEnvelopeJSON struct {
+	Result      apijson.Field
+	Success     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ProviderConfigNewResponseEnvelope) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r providerConfigNewResponseEnvelopeJSON) RawJSON() string {
+	return r.raw
+}
+
+type ProviderConfigListParams struct {
+	AccountID param.Field[string] `path:"account_id" api:"required"`
+	Page      param.Field[int64]  `query:"page"`
+	PerPage   param.Field[int64]  `query:"per_page"`
+}
+
+// URLQuery serializes [ProviderConfigListParams]'s query parameters as
+// `url.Values`.
+func (r ProviderConfigListParams) URLQuery() (v url.Values) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
+		NestedFormat: apiquery.NestedQueryFormatDots,
+	})
+}

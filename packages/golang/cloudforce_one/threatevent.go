@@ -1,0 +1,1281 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package cloudforce_one
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"net/url"
+	"slices"
+	"time"
+
+	"github.com/cloudflare/cloudflare-go/v7/internal/apijson"
+	"github.com/cloudflare/cloudflare-go/v7/internal/apiquery"
+	"github.com/cloudflare/cloudflare-go/v7/internal/param"
+	"github.com/cloudflare/cloudflare-go/v7/internal/requestconfig"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+)
+
+// ThreatEventService contains methods and other services that help with
+// interacting with the cloudflare API.
+//
+// Note, unlike clients, this service does not read variables from the environment
+// automatically. You should not instantiate this service directly, and instead use
+// the [NewThreatEventService] method instead.
+type ThreatEventService struct {
+	Options          []option.RequestOption
+	Aggregate        *ThreatEventAggregateService
+	Graphql          *ThreatEventGraphqlService
+	Graph            *ThreatEventGraphService
+	Queries          *ThreatEventQueryService
+	Relationships    *ThreatEventRelationshipService
+	Indicators       *ThreatEventIndicatorService
+	Attackers        *ThreatEventAttackerService
+	Categories       *ThreatEventCategoryService
+	Countries        *ThreatEventCountryService
+	Crons            *ThreatEventCronService
+	Datasets         *ThreatEventDatasetService
+	Raw              *ThreatEventRawService
+	Relate           *ThreatEventRelateService
+	Tags             *ThreatEventTagService
+	EventTags        *ThreatEventEventTagService
+	TargetIndustries *ThreatEventTargetIndustryService
+	Insights         *ThreatEventInsightService
+}
+
+// NewThreatEventService generates a new service that applies the given options to
+// each request. These options are applied after the parent client's options (if
+// there is one), and before any request-specific options.
+func NewThreatEventService(opts ...option.RequestOption) (r *ThreatEventService) {
+	r = &ThreatEventService{}
+	r.Options = opts
+	r.Aggregate = NewThreatEventAggregateService(opts...)
+	r.Graphql = NewThreatEventGraphqlService(opts...)
+	r.Graph = NewThreatEventGraphService(opts...)
+	r.Queries = NewThreatEventQueryService(opts...)
+	r.Relationships = NewThreatEventRelationshipService(opts...)
+	r.Indicators = NewThreatEventIndicatorService(opts...)
+	r.Attackers = NewThreatEventAttackerService(opts...)
+	r.Categories = NewThreatEventCategoryService(opts...)
+	r.Countries = NewThreatEventCountryService(opts...)
+	r.Crons = NewThreatEventCronService(opts...)
+	r.Datasets = NewThreatEventDatasetService(opts...)
+	r.Raw = NewThreatEventRawService(opts...)
+	r.Relate = NewThreatEventRelateService(opts...)
+	r.Tags = NewThreatEventTagService(opts...)
+	r.EventTags = NewThreatEventEventTagService(opts...)
+	r.TargetIndustries = NewThreatEventTargetIndustryService(opts...)
+	r.Insights = NewThreatEventInsightService(opts...)
+	return
+}
+
+// Creates an event in the dataset given by `datasetId`. Omitting `datasetId` is
+// deprecated: the event is created in the default Cloudforce One Threat Events
+// dataset, and a future release will reject the request. To create a dataset, use
+// `threat-intel datasets create`.
+func (r *ThreatEventService) New(ctx context.Context, params ThreatEventNewParams, opts ...option.RequestOption) (res *ThreatEventNewResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if params.PathAccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/cloudforce-one/events/create", params.PathAccountID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
+	return res, err
+}
+
+// Lists events, with filters passed as query parameters. `datasetId` accepts
+// dataset UUIDs or one scope value used alone: `all` (or `*`) and `operational`
+// select the intelligence datasets you can read, and `analytics` selects the
+// analytics datasets you can read. A scope value covers at most 50 datasets.
+// Without `datasetId`, the default Cloudforce One Threat Events dataset is used.
+// To send filters in a JSON body instead, use `threat-intel events search`.
+func (r *ThreatEventService) List(ctx context.Context, params ThreatEventListParams, opts ...option.RequestOption) (res *[]ThreatEventListResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if params.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/cloudforce-one/events", params.AccountID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &res, opts...)
+	return res, err
+}
+
+// Creates multiple events in one dataset. `datasetId` is required; to find dataset
+// IDs, use `threat-intel datasets list`. Set `includeCreatedEvents` to return the
+// UUIDs of the created events.
+func (r *ThreatEventService) BulkNew(ctx context.Context, params ThreatEventBulkNewParams, opts ...option.RequestOption) (res *ThreatEventBulkNewResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if params.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/cloudforce-one/events/create/bulk", params.AccountID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
+	return res, err
+}
+
+// Legacy. Use `threat-intel events bulk-create` (`POST /events/create/bulk`) and
+// `threat-intel events relationships create` (`POST /events/relationships/create`)
+// instead.
+//
+// Deprecated: This endpoint is deprecated and will be removed in a future version.
+func (r *ThreatEventService) BulkNewRelationships(ctx context.Context, params ThreatEventBulkNewRelationshipsParams, opts ...option.RequestOption) (res *ThreatEventBulkNewRelationshipsResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if params.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/cloudforce-one/events/create/bulk/relationships", params.AccountID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
+	return res, err
+}
+
+// Updates the given fields of an event and leaves the other fields unchanged.
+// `datasetId` is required.
+func (r *ThreatEventService) Edit(ctx context.Context, eventID string, params ThreatEventEditParams, opts ...option.RequestOption) (res *ThreatEventEditResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if params.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	if eventID == "" {
+		err = errors.New("missing required event_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/cloudforce-one/events/%s", params.AccountID, eventID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, params, &res, opts...)
+	return res, err
+}
+
+// Legacy. Use `threat-intel events get`
+// (`GET /events/dataset/{dataset_id}/events/{event_id}`) instead.
+//
+// Deprecated: Use datasets.events.get instead (GET
+// /accounts/{account_id}/cloudforce-one/events/dataset/{dataset_id}/events/{event_id}).
+func (r *ThreatEventService) Get(ctx context.Context, eventID string, query ThreatEventGetParams, opts ...option.RequestOption) (res *ThreatEventGetResponse, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if query.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	if eventID == "" {
+		err = errors.New("missing required event_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/cloudforce-one/events/%s", query.AccountID, eventID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
+	return res, err
+}
+
+type ThreatEventNewResponse struct {
+	Attacker              string                     `json:"attacker" api:"required"`
+	AttackerCountry       string                     `json:"attackerCountry" api:"required"`
+	AttackerCountryAlpha3 string                     `json:"attackerCountryAlpha3" api:"required"`
+	Category              string                     `json:"category" api:"required"`
+	DatasetID             string                     `json:"datasetId" api:"required"`
+	Date                  string                     `json:"date" api:"required"`
+	Event                 string                     `json:"event" api:"required"`
+	HasChildren           bool                       `json:"hasChildren" api:"required"`
+	Indicator             string                     `json:"indicator" api:"required"`
+	IndicatorType         string                     `json:"indicatorType" api:"required"`
+	IndicatorTypeID       float64                    `json:"indicatorTypeId" api:"required"`
+	KillChain             float64                    `json:"killChain" api:"required"`
+	MitreAttack           []string                   `json:"mitreAttack" api:"required"`
+	MitreCapec            []string                   `json:"mitreCapec" api:"required"`
+	NumReferenced         float64                    `json:"numReferenced" api:"required"`
+	NumReferences         float64                    `json:"numReferences" api:"required"`
+	RawID                 string                     `json:"rawId" api:"required"`
+	Referenced            []string                   `json:"referenced" api:"required"`
+	ReferencedIDs         []float64                  `json:"referencedIds" api:"required"`
+	References            []string                   `json:"references" api:"required"`
+	ReferencesIDs         []float64                  `json:"referencesIds" api:"required"`
+	Tags                  []string                   `json:"tags" api:"required"`
+	TargetCountry         string                     `json:"targetCountry" api:"required"`
+	TargetCountryAlpha3   string                     `json:"targetCountryAlpha3" api:"required"`
+	TargetIndustry        string                     `json:"targetIndustry" api:"required"`
+	TLP                   string                     `json:"tlp" api:"required"`
+	UUID                  string                     `json:"uuid" api:"required"`
+	Insight               string                     `json:"insight"`
+	ReleasabilityID       string                     `json:"releasabilityId"`
+	JSON                  threatEventNewResponseJSON `json:"-"`
+}
+
+// threatEventNewResponseJSON contains the JSON metadata for the struct
+// [ThreatEventNewResponse]
+type threatEventNewResponseJSON struct {
+	Attacker              apijson.Field
+	AttackerCountry       apijson.Field
+	AttackerCountryAlpha3 apijson.Field
+	Category              apijson.Field
+	DatasetID             apijson.Field
+	Date                  apijson.Field
+	Event                 apijson.Field
+	HasChildren           apijson.Field
+	Indicator             apijson.Field
+	IndicatorType         apijson.Field
+	IndicatorTypeID       apijson.Field
+	KillChain             apijson.Field
+	MitreAttack           apijson.Field
+	MitreCapec            apijson.Field
+	NumReferenced         apijson.Field
+	NumReferences         apijson.Field
+	RawID                 apijson.Field
+	Referenced            apijson.Field
+	ReferencedIDs         apijson.Field
+	References            apijson.Field
+	ReferencesIDs         apijson.Field
+	Tags                  apijson.Field
+	TargetCountry         apijson.Field
+	TargetCountryAlpha3   apijson.Field
+	TargetIndustry        apijson.Field
+	TLP                   apijson.Field
+	UUID                  apijson.Field
+	Insight               apijson.Field
+	ReleasabilityID       apijson.Field
+	raw                   string
+	ExtraFields           map[string]apijson.Field
+}
+
+func (r *ThreatEventNewResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r threatEventNewResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+type ThreatEventListResponse struct {
+	Attacker              string                      `json:"attacker" api:"required"`
+	AttackerCountry       string                      `json:"attackerCountry" api:"required"`
+	AttackerCountryAlpha3 string                      `json:"attackerCountryAlpha3" api:"required"`
+	Category              string                      `json:"category" api:"required"`
+	DatasetID             string                      `json:"datasetId" api:"required"`
+	Date                  string                      `json:"date" api:"required"`
+	Event                 string                      `json:"event" api:"required"`
+	HasChildren           bool                        `json:"hasChildren" api:"required"`
+	Indicator             string                      `json:"indicator" api:"required"`
+	IndicatorType         string                      `json:"indicatorType" api:"required"`
+	IndicatorTypeID       float64                     `json:"indicatorTypeId" api:"required"`
+	KillChain             float64                     `json:"killChain" api:"required"`
+	MitreAttack           []string                    `json:"mitreAttack" api:"required"`
+	MitreCapec            []string                    `json:"mitreCapec" api:"required"`
+	NumReferenced         float64                     `json:"numReferenced" api:"required"`
+	NumReferences         float64                     `json:"numReferences" api:"required"`
+	RawID                 string                      `json:"rawId" api:"required"`
+	Referenced            []string                    `json:"referenced" api:"required"`
+	ReferencedIDs         []float64                   `json:"referencedIds" api:"required"`
+	References            []string                    `json:"references" api:"required"`
+	ReferencesIDs         []float64                   `json:"referencesIds" api:"required"`
+	Tags                  []string                    `json:"tags" api:"required"`
+	TargetCountry         string                      `json:"targetCountry" api:"required"`
+	TargetCountryAlpha3   string                      `json:"targetCountryAlpha3" api:"required"`
+	TargetIndustry        string                      `json:"targetIndustry" api:"required"`
+	TLP                   string                      `json:"tlp" api:"required"`
+	UUID                  string                      `json:"uuid" api:"required"`
+	Insight               string                      `json:"insight"`
+	ReleasabilityID       string                      `json:"releasabilityId"`
+	JSON                  threatEventListResponseJSON `json:"-"`
+}
+
+// threatEventListResponseJSON contains the JSON metadata for the struct
+// [ThreatEventListResponse]
+type threatEventListResponseJSON struct {
+	Attacker              apijson.Field
+	AttackerCountry       apijson.Field
+	AttackerCountryAlpha3 apijson.Field
+	Category              apijson.Field
+	DatasetID             apijson.Field
+	Date                  apijson.Field
+	Event                 apijson.Field
+	HasChildren           apijson.Field
+	Indicator             apijson.Field
+	IndicatorType         apijson.Field
+	IndicatorTypeID       apijson.Field
+	KillChain             apijson.Field
+	MitreAttack           apijson.Field
+	MitreCapec            apijson.Field
+	NumReferenced         apijson.Field
+	NumReferences         apijson.Field
+	RawID                 apijson.Field
+	Referenced            apijson.Field
+	ReferencedIDs         apijson.Field
+	References            apijson.Field
+	ReferencesIDs         apijson.Field
+	Tags                  apijson.Field
+	TargetCountry         apijson.Field
+	TargetCountryAlpha3   apijson.Field
+	TargetIndustry        apijson.Field
+	TLP                   apijson.Field
+	UUID                  apijson.Field
+	Insight               apijson.Field
+	ReleasabilityID       apijson.Field
+	raw                   string
+	ExtraFields           map[string]apijson.Field
+}
+
+func (r *ThreatEventListResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r threatEventListResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+// Detailed result of bulk event creation with auto-tag management
+type ThreatEventBulkNewResponse struct {
+	// Number of events created
+	CreatedEventsCount float64 `json:"createdEventsCount" api:"required"`
+	// Number of new tags created in SoT
+	CreatedTagsCount float64 `json:"createdTagsCount" api:"required"`
+	// Number of errors encountered
+	ErrorCount float64 `json:"errorCount" api:"required"`
+	// Number of indicators queued for async processing
+	QueuedIndicatorsCount float64 `json:"queuedIndicatorsCount" api:"required"`
+	// Correlation ID for async indicator processing
+	CreateBulkEventsRequestID string `json:"createBulkEventsRequestId" format:"uuid"`
+	// Array of created events with UUIDs and shard locations. Only present when
+	// includeCreatedEvents=true
+	CreatedEvents []ThreatEventBulkNewResponseCreatedEvent `json:"createdEvents"`
+	// Array of error details
+	Errors []ThreatEventBulkNewResponseError `json:"errors"`
+	JSON   threatEventBulkNewResponseJSON    `json:"-"`
+}
+
+// threatEventBulkNewResponseJSON contains the JSON metadata for the struct
+// [ThreatEventBulkNewResponse]
+type threatEventBulkNewResponseJSON struct {
+	CreatedEventsCount        apijson.Field
+	CreatedTagsCount          apijson.Field
+	ErrorCount                apijson.Field
+	QueuedIndicatorsCount     apijson.Field
+	CreateBulkEventsRequestID apijson.Field
+	CreatedEvents             apijson.Field
+	Errors                    apijson.Field
+	raw                       string
+	ExtraFields               map[string]apijson.Field
+}
+
+func (r *ThreatEventBulkNewResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r threatEventBulkNewResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+type ThreatEventBulkNewResponseCreatedEvent struct {
+	// Original index in the input data array
+	EventIndex float64 `json:"eventIndex" api:"required"`
+	// Dataset ID of the shard where the event was created
+	ShardID string `json:"shardId" api:"required"`
+	// UUID of the created event
+	UUID string                                     `json:"uuid" api:"required" format:"uuid"`
+	JSON threatEventBulkNewResponseCreatedEventJSON `json:"-"`
+}
+
+// threatEventBulkNewResponseCreatedEventJSON contains the JSON metadata for the
+// struct [ThreatEventBulkNewResponseCreatedEvent]
+type threatEventBulkNewResponseCreatedEventJSON struct {
+	EventIndex  apijson.Field
+	ShardID     apijson.Field
+	UUID        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ThreatEventBulkNewResponseCreatedEvent) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r threatEventBulkNewResponseCreatedEventJSON) RawJSON() string {
+	return r.raw
+}
+
+type ThreatEventBulkNewResponseError struct {
+	// Error message
+	Error string `json:"error" api:"required"`
+	// Index of the event that caused the error
+	EventIndex float64                             `json:"eventIndex" api:"required"`
+	JSON       threatEventBulkNewResponseErrorJSON `json:"-"`
+}
+
+// threatEventBulkNewResponseErrorJSON contains the JSON metadata for the struct
+// [ThreatEventBulkNewResponseError]
+type threatEventBulkNewResponseErrorJSON struct {
+	Error       apijson.Field
+	EventIndex  apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ThreatEventBulkNewResponseError) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r threatEventBulkNewResponseErrorJSON) RawJSON() string {
+	return r.raw
+}
+
+// Result of bulk relationship creation operation
+type ThreatEventBulkNewRelationshipsResponse struct {
+	// Number of events created
+	CreatedEventsCount float64 `json:"createdEventsCount" api:"required"`
+	// Number of indicators created
+	CreatedIndicatorsCount float64 `json:"createdIndicatorsCount" api:"required"`
+	// Number of relationships created
+	CreatedRelationshipsCount float64 `json:"createdRelationshipsCount" api:"required"`
+	// Number of errors encountered
+	ErrorCount float64 `json:"errorCount" api:"required"`
+	// Array of error details
+	Errors []ThreatEventBulkNewRelationshipsResponseError `json:"errors"`
+	JSON   threatEventBulkNewRelationshipsResponseJSON    `json:"-"`
+}
+
+// threatEventBulkNewRelationshipsResponseJSON contains the JSON metadata for the
+// struct [ThreatEventBulkNewRelationshipsResponse]
+type threatEventBulkNewRelationshipsResponseJSON struct {
+	CreatedEventsCount        apijson.Field
+	CreatedIndicatorsCount    apijson.Field
+	CreatedRelationshipsCount apijson.Field
+	ErrorCount                apijson.Field
+	Errors                    apijson.Field
+	raw                       string
+	ExtraFields               map[string]apijson.Field
+}
+
+func (r *ThreatEventBulkNewRelationshipsResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r threatEventBulkNewRelationshipsResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+type ThreatEventBulkNewRelationshipsResponseError struct {
+	// Error message
+	Error string `json:"error" api:"required"`
+	// Index of the event that caused the error
+	EventIndex float64                                          `json:"eventIndex" api:"required"`
+	JSON       threatEventBulkNewRelationshipsResponseErrorJSON `json:"-"`
+}
+
+// threatEventBulkNewRelationshipsResponseErrorJSON contains the JSON metadata for
+// the struct [ThreatEventBulkNewRelationshipsResponseError]
+type threatEventBulkNewRelationshipsResponseErrorJSON struct {
+	Error       apijson.Field
+	EventIndex  apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ThreatEventBulkNewRelationshipsResponseError) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r threatEventBulkNewRelationshipsResponseErrorJSON) RawJSON() string {
+	return r.raw
+}
+
+type ThreatEventEditResponse struct {
+	Attacker              string                      `json:"attacker" api:"required"`
+	AttackerCountry       string                      `json:"attackerCountry" api:"required"`
+	AttackerCountryAlpha3 string                      `json:"attackerCountryAlpha3" api:"required"`
+	Category              string                      `json:"category" api:"required"`
+	DatasetID             string                      `json:"datasetId" api:"required"`
+	Date                  string                      `json:"date" api:"required"`
+	Event                 string                      `json:"event" api:"required"`
+	HasChildren           bool                        `json:"hasChildren" api:"required"`
+	Indicator             string                      `json:"indicator" api:"required"`
+	IndicatorType         string                      `json:"indicatorType" api:"required"`
+	IndicatorTypeID       float64                     `json:"indicatorTypeId" api:"required"`
+	KillChain             float64                     `json:"killChain" api:"required"`
+	MitreAttack           []string                    `json:"mitreAttack" api:"required"`
+	MitreCapec            []string                    `json:"mitreCapec" api:"required"`
+	NumReferenced         float64                     `json:"numReferenced" api:"required"`
+	NumReferences         float64                     `json:"numReferences" api:"required"`
+	RawID                 string                      `json:"rawId" api:"required"`
+	Referenced            []string                    `json:"referenced" api:"required"`
+	ReferencedIDs         []float64                   `json:"referencedIds" api:"required"`
+	References            []string                    `json:"references" api:"required"`
+	ReferencesIDs         []float64                   `json:"referencesIds" api:"required"`
+	Tags                  []string                    `json:"tags" api:"required"`
+	TargetCountry         string                      `json:"targetCountry" api:"required"`
+	TargetCountryAlpha3   string                      `json:"targetCountryAlpha3" api:"required"`
+	TargetIndustry        string                      `json:"targetIndustry" api:"required"`
+	TLP                   string                      `json:"tlp" api:"required"`
+	UUID                  string                      `json:"uuid" api:"required"`
+	Insight               string                      `json:"insight"`
+	ReleasabilityID       string                      `json:"releasabilityId"`
+	JSON                  threatEventEditResponseJSON `json:"-"`
+}
+
+// threatEventEditResponseJSON contains the JSON metadata for the struct
+// [ThreatEventEditResponse]
+type threatEventEditResponseJSON struct {
+	Attacker              apijson.Field
+	AttackerCountry       apijson.Field
+	AttackerCountryAlpha3 apijson.Field
+	Category              apijson.Field
+	DatasetID             apijson.Field
+	Date                  apijson.Field
+	Event                 apijson.Field
+	HasChildren           apijson.Field
+	Indicator             apijson.Field
+	IndicatorType         apijson.Field
+	IndicatorTypeID       apijson.Field
+	KillChain             apijson.Field
+	MitreAttack           apijson.Field
+	MitreCapec            apijson.Field
+	NumReferenced         apijson.Field
+	NumReferences         apijson.Field
+	RawID                 apijson.Field
+	Referenced            apijson.Field
+	ReferencedIDs         apijson.Field
+	References            apijson.Field
+	ReferencesIDs         apijson.Field
+	Tags                  apijson.Field
+	TargetCountry         apijson.Field
+	TargetCountryAlpha3   apijson.Field
+	TargetIndustry        apijson.Field
+	TLP                   apijson.Field
+	UUID                  apijson.Field
+	Insight               apijson.Field
+	ReleasabilityID       apijson.Field
+	raw                   string
+	ExtraFields           map[string]apijson.Field
+}
+
+func (r *ThreatEventEditResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r threatEventEditResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+type ThreatEventGetResponse struct {
+	Attacker              string                     `json:"attacker" api:"required"`
+	AttackerCountry       string                     `json:"attackerCountry" api:"required"`
+	AttackerCountryAlpha3 string                     `json:"attackerCountryAlpha3" api:"required"`
+	Category              string                     `json:"category" api:"required"`
+	DatasetID             string                     `json:"datasetId" api:"required"`
+	Date                  string                     `json:"date" api:"required"`
+	Event                 string                     `json:"event" api:"required"`
+	HasChildren           bool                       `json:"hasChildren" api:"required"`
+	Indicator             string                     `json:"indicator" api:"required"`
+	IndicatorType         string                     `json:"indicatorType" api:"required"`
+	IndicatorTypeID       float64                    `json:"indicatorTypeId" api:"required"`
+	KillChain             float64                    `json:"killChain" api:"required"`
+	MitreAttack           []string                   `json:"mitreAttack" api:"required"`
+	MitreCapec            []string                   `json:"mitreCapec" api:"required"`
+	NumReferenced         float64                    `json:"numReferenced" api:"required"`
+	NumReferences         float64                    `json:"numReferences" api:"required"`
+	RawID                 string                     `json:"rawId" api:"required"`
+	Referenced            []string                   `json:"referenced" api:"required"`
+	ReferencedIDs         []float64                  `json:"referencedIds" api:"required"`
+	References            []string                   `json:"references" api:"required"`
+	ReferencesIDs         []float64                  `json:"referencesIds" api:"required"`
+	Tags                  []string                   `json:"tags" api:"required"`
+	TargetCountry         string                     `json:"targetCountry" api:"required"`
+	TargetCountryAlpha3   string                     `json:"targetCountryAlpha3" api:"required"`
+	TargetIndustry        string                     `json:"targetIndustry" api:"required"`
+	TLP                   string                     `json:"tlp" api:"required"`
+	UUID                  string                     `json:"uuid" api:"required"`
+	Insight               string                     `json:"insight"`
+	ReleasabilityID       string                     `json:"releasabilityId"`
+	JSON                  threatEventGetResponseJSON `json:"-"`
+}
+
+// threatEventGetResponseJSON contains the JSON metadata for the struct
+// [ThreatEventGetResponse]
+type threatEventGetResponseJSON struct {
+	Attacker              apijson.Field
+	AttackerCountry       apijson.Field
+	AttackerCountryAlpha3 apijson.Field
+	Category              apijson.Field
+	DatasetID             apijson.Field
+	Date                  apijson.Field
+	Event                 apijson.Field
+	HasChildren           apijson.Field
+	Indicator             apijson.Field
+	IndicatorType         apijson.Field
+	IndicatorTypeID       apijson.Field
+	KillChain             apijson.Field
+	MitreAttack           apijson.Field
+	MitreCapec            apijson.Field
+	NumReferenced         apijson.Field
+	NumReferences         apijson.Field
+	RawID                 apijson.Field
+	Referenced            apijson.Field
+	ReferencedIDs         apijson.Field
+	References            apijson.Field
+	ReferencesIDs         apijson.Field
+	Tags                  apijson.Field
+	TargetCountry         apijson.Field
+	TargetCountryAlpha3   apijson.Field
+	TargetIndustry        apijson.Field
+	TLP                   apijson.Field
+	UUID                  apijson.Field
+	Insight               apijson.Field
+	ReleasabilityID       apijson.Field
+	raw                   string
+	ExtraFields           map[string]apijson.Field
+}
+
+func (r *ThreatEventGetResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r threatEventGetResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+type ThreatEventNewParams struct {
+	// Account ID.
+	PathAccountID   param.Field[string]                  `path:"account_id" api:"required"`
+	Category        param.Field[string]                  `json:"category" api:"required"`
+	Date            param.Field[time.Time]               `json:"date" api:"required" format:"date-time"`
+	Event           param.Field[string]                  `json:"event" api:"required"`
+	Raw             param.Field[ThreatEventNewParamsRaw] `json:"raw" api:"required"`
+	TLP             param.Field[string]                  `json:"tlp" api:"required"`
+	BodyAccountID   param.Field[float64]                 `json:"accountId"`
+	Attacker        param.Field[string]                  `json:"attacker"`
+	AttackerCountry param.Field[string]                  `json:"attackerCountry"`
+	DatasetID       param.Field[string]                  `json:"datasetId"`
+	Indicator       param.Field[string]                  `json:"indicator"`
+	// Array of indicators for this event. Supports multiple indicators per event for
+	// complex scenarios.
+	Indicators    param.Field[[]ThreatEventNewParamsIndicator] `json:"indicators"`
+	IndicatorType param.Field[string]                          `json:"indicatorType"`
+	Insight       param.Field[string]                          `json:"insight"`
+	// Controlled provenance for an event and its indicators derived from a Threat
+	// Signals article.
+	Source         param.Field[ThreatEventNewParamsSource] `json:"source"`
+	Tags           param.Field[[]string]                   `json:"tags"`
+	TargetCountry  param.Field[string]                     `json:"targetCountry"`
+	TargetIndustry param.Field[string]                     `json:"targetIndustry"`
+}
+
+func (r ThreatEventNewParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ThreatEventNewParamsRaw struct {
+	Data   param.Field[map[string]interface{}] `json:"data" api:"required"`
+	Source param.Field[string]                 `json:"source"`
+	TLP    param.Field[string]                 `json:"tlp"`
+}
+
+func (r ThreatEventNewParamsRaw) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ThreatEventNewParamsIndicator struct {
+	// The type of indicator (e.g., DOMAIN, IP, JA3, HASH)
+	IndicatorType param.Field[string] `json:"indicatorType" api:"required"`
+	// The indicator value (e.g., domain name, IP address, hash)
+	Value param.Field[string] `json:"value" api:"required"`
+}
+
+func (r ThreatEventNewParamsIndicator) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Controlled provenance for an event and its indicators derived from a Threat
+// Signals article.
+type ThreatEventNewParamsSource struct {
+	ResourceID   param.Field[string]                                 `json:"resourceId" api:"required" format:"uuid"`
+	ResourceType param.Field[ThreatEventNewParamsSourceResourceType] `json:"resourceType" api:"required"`
+	System       param.Field[ThreatEventNewParamsSourceSystem]       `json:"system" api:"required"`
+	// Threat Signals article title; null for historical provenance without a stored
+	// title.
+	Title param.Field[string] `json:"title"`
+}
+
+func (r ThreatEventNewParamsSource) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ThreatEventNewParamsSourceResourceType string
+
+const (
+	ThreatEventNewParamsSourceResourceTypeArticle ThreatEventNewParamsSourceResourceType = "article"
+)
+
+func (r ThreatEventNewParamsSourceResourceType) IsKnown() bool {
+	switch r {
+	case ThreatEventNewParamsSourceResourceTypeArticle:
+		return true
+	}
+	return false
+}
+
+type ThreatEventNewParamsSourceSystem string
+
+const (
+	ThreatEventNewParamsSourceSystemThreatSignals ThreatEventNewParamsSourceSystem = "threat-signals"
+)
+
+func (r ThreatEventNewParamsSourceSystem) IsKnown() bool {
+	switch r {
+	case ThreatEventNewParamsSourceSystemThreatSignals:
+		return true
+	}
+	return false
+}
+
+type ThreatEventListParams struct {
+	// Account ID.
+	AccountID param.Field[string] `path:"account_id" api:"required"`
+	// Cache strategy. 'from-graph' serves results from the graph-node KV cache when
+	// all requested UUIDs are cached; falls back to normal path on partial/zero hit.
+	Cache param.Field[ThreatEventListParamsCache] `query:"cache"`
+	// Cursor for pagination. When provided, filters are embedded in the cursor so you
+	// only need to pass cursor and pageSize. Returned in the previous response's
+	// result_info.cursor field. Use cursor-based pagination for deep pagination
+	// (beyond 100,000 records) or for optimal performance.
+	Cursor param.Field[string] `query:"cursor"`
+	// Dataset UUIDs to query, or one standalone scope value: 'all'/'\*' or
+	// 'operational' for readable intelligence datasets (isAnalytics=false), or
+	// 'analytics' for readable analytics datasets (isAnalytics=true). Scope values
+	// query at most 50 datasets. If not provided, uses the default dataset.
+	DatasetID    param.Field[[]string]                    `query:"datasetId"`
+	ForceRefresh param.Field[bool]                        `query:"forceRefresh"`
+	Format       param.Field[ThreatEventListParamsFormat] `query:"format"`
+	Order        param.Field[ThreatEventListParamsOrder]  `query:"order"`
+	OrderBy      param.Field[string]                      `query:"orderBy"`
+	// Page number (1-indexed) for offset-based pagination. Limited to offset of
+	// 100,000 records. For deep pagination, use cursor-based pagination instead.
+	Page param.Field[float64] `query:"page"`
+	// Number of results per page. Maximum 25,000.
+	PageSize param.Field[float64] `query:"pageSize"`
+	// JSON-encoded. Structured search as a JSON array of {field, op, value} objects,
+	// AND'd together. Max 10 conditions per request. `in` and `notIn` take an array of
+	// up to 100 values. Exclusions: `not` drops events without a value for the field;
+	// `notIn` and `notContains` keep them. On intelligence datasets, a `notIn` list
+	// containing `"unknown"` also drops them; analytics datasets treat `"unknown"` as
+	// a literal value.
+	Search param.Field[[]ThreatEventListParamsSearchUnion] `query:"search"`
+	// JSON-encoded. OR branches of structured search filters. Filters within a branch
+	// are AND'd, branches are OR'd, and the result is AND'd with `search`:
+	// `AND(search) AND OR(AND(branch 1), ...)`. Max 8 branches of 1-10 conditions
+	// each. Not supported for analytics datasets, and `indicator` filters are not yet
+	// supported inside branches. Cursor pages carry the original branches, so do not
+	// resend them with `cursor`.
+	SearchBranches param.Field[[][]ThreatEventListParamsSearchBranchUnion] `query:"searchBranches"`
+}
+
+// URLQuery serializes [ThreatEventListParams]'s query parameters as `url.Values`.
+func (r ThreatEventListParams) URLQuery() (v url.Values) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
+		NestedFormat: apiquery.NestedQueryFormatDots,
+	})
+}
+
+// Cache strategy. 'from-graph' serves results from the graph-node KV cache when
+// all requested UUIDs are cached; falls back to normal path on partial/zero hit.
+type ThreatEventListParamsCache string
+
+const (
+	ThreatEventListParamsCacheFromGraph ThreatEventListParamsCache = "from-graph"
+)
+
+func (r ThreatEventListParamsCache) IsKnown() bool {
+	switch r {
+	case ThreatEventListParamsCacheFromGraph:
+		return true
+	}
+	return false
+}
+
+type ThreatEventListParamsFormat string
+
+const (
+	ThreatEventListParamsFormatJson  ThreatEventListParamsFormat = "json"
+	ThreatEventListParamsFormatStix2 ThreatEventListParamsFormat = "stix2"
+	ThreatEventListParamsFormatTaxii ThreatEventListParamsFormat = "taxii"
+)
+
+func (r ThreatEventListParamsFormat) IsKnown() bool {
+	switch r {
+	case ThreatEventListParamsFormatJson, ThreatEventListParamsFormatStix2, ThreatEventListParamsFormatTaxii:
+		return true
+	}
+	return false
+}
+
+type ThreatEventListParamsOrder string
+
+const (
+	ThreatEventListParamsOrderAsc  ThreatEventListParamsOrder = "asc"
+	ThreatEventListParamsOrderDesc ThreatEventListParamsOrder = "desc"
+)
+
+func (r ThreatEventListParamsOrder) IsKnown() bool {
+	switch r {
+	case ThreatEventListParamsOrderAsc, ThreatEventListParamsOrderDesc:
+		return true
+	}
+	return false
+}
+
+type ThreatEventListParamsSearch struct {
+	Field param.Field[ThreatEventListParamsSearchField] `json:"field" api:"required"`
+	Op    param.Field[ThreatEventListParamsSearchOp]    `json:"op" api:"required"`
+	Value param.Field[interface{}]                      `json:"value" api:"required"`
+}
+
+func (r ThreatEventListParamsSearch) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ThreatEventListParamsSearch) implementsThreatEventListParamsSearchUnion() {}
+
+// Satisfied by [cloudforce_one.ThreatEventListParamsSearchObject],
+// [cloudforce_one.ThreatEventListParamsSearchObject],
+// [cloudforce_one.ThreatEventListParamsSearchObject],
+// [cloudforce_one.ThreatEventListParamsSearchObject],
+// [cloudforce_one.ThreatEventListParamsSearchObject],
+// [cloudforce_one.ThreatEventListParamsSearchObject],
+// [ThreatEventListParamsSearch].
+type ThreatEventListParamsSearchUnion interface {
+	implementsThreatEventListParamsSearchUnion()
+}
+
+type ThreatEventListParamsSearchObject struct {
+	Field param.Field[ThreatEventListParamsSearchObjectField] `query:"field" api:"required"`
+	Op    param.Field[ThreatEventListParamsSearchObjectOp]    `query:"op" api:"required"`
+	Value param.Field[string]                                 `query:"value" api:"required"`
+}
+
+// URLQuery serializes [ThreatEventListParamsSearchObject]'s query parameters as
+// `url.Values`.
+func (r ThreatEventListParamsSearchObject) URLQuery() (v url.Values) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
+		NestedFormat: apiquery.NestedQueryFormatDots,
+	})
+}
+
+func (r ThreatEventListParamsSearchObject) implementsThreatEventListParamsSearchUnion() {}
+
+type ThreatEventListParamsSearchObjectField string
+
+const (
+	ThreatEventListParamsSearchObjectFieldAttacker        ThreatEventListParamsSearchObjectField = "attacker"
+	ThreatEventListParamsSearchObjectFieldAttackerCountry ThreatEventListParamsSearchObjectField = "attackerCountry"
+	ThreatEventListParamsSearchObjectFieldCategory        ThreatEventListParamsSearchObjectField = "category"
+	ThreatEventListParamsSearchObjectFieldCreatedAt       ThreatEventListParamsSearchObjectField = "createdAt"
+	ThreatEventListParamsSearchObjectFieldDate            ThreatEventListParamsSearchObjectField = "date"
+	ThreatEventListParamsSearchObjectFieldEvent           ThreatEventListParamsSearchObjectField = "event"
+	ThreatEventListParamsSearchObjectFieldIndicator       ThreatEventListParamsSearchObjectField = "indicator"
+	ThreatEventListParamsSearchObjectFieldIndicatorType   ThreatEventListParamsSearchObjectField = "indicatorType"
+	ThreatEventListParamsSearchObjectFieldMitreAttack     ThreatEventListParamsSearchObjectField = "mitreAttack"
+	ThreatEventListParamsSearchObjectFieldMitreCapec      ThreatEventListParamsSearchObjectField = "mitreCapec"
+	ThreatEventListParamsSearchObjectFieldTags            ThreatEventListParamsSearchObjectField = "tags"
+	ThreatEventListParamsSearchObjectFieldTargetCountry   ThreatEventListParamsSearchObjectField = "targetCountry"
+	ThreatEventListParamsSearchObjectFieldTargetIndustry  ThreatEventListParamsSearchObjectField = "targetIndustry"
+	ThreatEventListParamsSearchObjectFieldTLP             ThreatEventListParamsSearchObjectField = "tlp"
+	ThreatEventListParamsSearchObjectFieldUUID            ThreatEventListParamsSearchObjectField = "uuid"
+)
+
+func (r ThreatEventListParamsSearchObjectField) IsKnown() bool {
+	switch r {
+	case ThreatEventListParamsSearchObjectFieldAttacker, ThreatEventListParamsSearchObjectFieldAttackerCountry, ThreatEventListParamsSearchObjectFieldCategory, ThreatEventListParamsSearchObjectFieldCreatedAt, ThreatEventListParamsSearchObjectFieldDate, ThreatEventListParamsSearchObjectFieldEvent, ThreatEventListParamsSearchObjectFieldIndicator, ThreatEventListParamsSearchObjectFieldIndicatorType, ThreatEventListParamsSearchObjectFieldMitreAttack, ThreatEventListParamsSearchObjectFieldMitreCapec, ThreatEventListParamsSearchObjectFieldTags, ThreatEventListParamsSearchObjectFieldTargetCountry, ThreatEventListParamsSearchObjectFieldTargetIndustry, ThreatEventListParamsSearchObjectFieldTLP, ThreatEventListParamsSearchObjectFieldUUID:
+		return true
+	}
+	return false
+}
+
+type ThreatEventListParamsSearchObjectOp string
+
+const (
+	ThreatEventListParamsSearchObjectOpEquals      ThreatEventListParamsSearchObjectOp = "equals"
+	ThreatEventListParamsSearchObjectOpNot         ThreatEventListParamsSearchObjectOp = "not"
+	ThreatEventListParamsSearchObjectOpGt          ThreatEventListParamsSearchObjectOp = "gt"
+	ThreatEventListParamsSearchObjectOpGte         ThreatEventListParamsSearchObjectOp = "gte"
+	ThreatEventListParamsSearchObjectOpLt          ThreatEventListParamsSearchObjectOp = "lt"
+	ThreatEventListParamsSearchObjectOpLte         ThreatEventListParamsSearchObjectOp = "lte"
+	ThreatEventListParamsSearchObjectOpLike        ThreatEventListParamsSearchObjectOp = "like"
+	ThreatEventListParamsSearchObjectOpContains    ThreatEventListParamsSearchObjectOp = "contains"
+	ThreatEventListParamsSearchObjectOpStartsWith  ThreatEventListParamsSearchObjectOp = "startsWith"
+	ThreatEventListParamsSearchObjectOpEndsWith    ThreatEventListParamsSearchObjectOp = "endsWith"
+	ThreatEventListParamsSearchObjectOpFind        ThreatEventListParamsSearchObjectOp = "find"
+	ThreatEventListParamsSearchObjectOpNotContains ThreatEventListParamsSearchObjectOp = "notContains"
+)
+
+func (r ThreatEventListParamsSearchObjectOp) IsKnown() bool {
+	switch r {
+	case ThreatEventListParamsSearchObjectOpEquals, ThreatEventListParamsSearchObjectOpNot, ThreatEventListParamsSearchObjectOpGt, ThreatEventListParamsSearchObjectOpGte, ThreatEventListParamsSearchObjectOpLt, ThreatEventListParamsSearchObjectOpLte, ThreatEventListParamsSearchObjectOpLike, ThreatEventListParamsSearchObjectOpContains, ThreatEventListParamsSearchObjectOpStartsWith, ThreatEventListParamsSearchObjectOpEndsWith, ThreatEventListParamsSearchObjectOpFind, ThreatEventListParamsSearchObjectOpNotContains:
+		return true
+	}
+	return false
+}
+
+type ThreatEventListParamsSearchField string
+
+const (
+	ThreatEventListParamsSearchFieldAttacker        ThreatEventListParamsSearchField = "attacker"
+	ThreatEventListParamsSearchFieldAttackerCountry ThreatEventListParamsSearchField = "attackerCountry"
+	ThreatEventListParamsSearchFieldCategory        ThreatEventListParamsSearchField = "category"
+	ThreatEventListParamsSearchFieldCreatedAt       ThreatEventListParamsSearchField = "createdAt"
+	ThreatEventListParamsSearchFieldDate            ThreatEventListParamsSearchField = "date"
+	ThreatEventListParamsSearchFieldEvent           ThreatEventListParamsSearchField = "event"
+	ThreatEventListParamsSearchFieldIndicator       ThreatEventListParamsSearchField = "indicator"
+	ThreatEventListParamsSearchFieldIndicatorType   ThreatEventListParamsSearchField = "indicatorType"
+	ThreatEventListParamsSearchFieldMitreAttack     ThreatEventListParamsSearchField = "mitreAttack"
+	ThreatEventListParamsSearchFieldMitreCapec      ThreatEventListParamsSearchField = "mitreCapec"
+	ThreatEventListParamsSearchFieldTags            ThreatEventListParamsSearchField = "tags"
+	ThreatEventListParamsSearchFieldTargetCountry   ThreatEventListParamsSearchField = "targetCountry"
+	ThreatEventListParamsSearchFieldTargetIndustry  ThreatEventListParamsSearchField = "targetIndustry"
+	ThreatEventListParamsSearchFieldTLP             ThreatEventListParamsSearchField = "tlp"
+	ThreatEventListParamsSearchFieldUUID            ThreatEventListParamsSearchField = "uuid"
+	ThreatEventListParamsSearchFieldKillChain       ThreatEventListParamsSearchField = "killChain"
+	ThreatEventListParamsSearchFieldHasChildren     ThreatEventListParamsSearchField = "hasChildren"
+)
+
+func (r ThreatEventListParamsSearchField) IsKnown() bool {
+	switch r {
+	case ThreatEventListParamsSearchFieldAttacker, ThreatEventListParamsSearchFieldAttackerCountry, ThreatEventListParamsSearchFieldCategory, ThreatEventListParamsSearchFieldCreatedAt, ThreatEventListParamsSearchFieldDate, ThreatEventListParamsSearchFieldEvent, ThreatEventListParamsSearchFieldIndicator, ThreatEventListParamsSearchFieldIndicatorType, ThreatEventListParamsSearchFieldMitreAttack, ThreatEventListParamsSearchFieldMitreCapec, ThreatEventListParamsSearchFieldTags, ThreatEventListParamsSearchFieldTargetCountry, ThreatEventListParamsSearchFieldTargetIndustry, ThreatEventListParamsSearchFieldTLP, ThreatEventListParamsSearchFieldUUID, ThreatEventListParamsSearchFieldKillChain, ThreatEventListParamsSearchFieldHasChildren:
+		return true
+	}
+	return false
+}
+
+type ThreatEventListParamsSearchOp string
+
+const (
+	ThreatEventListParamsSearchOpEquals      ThreatEventListParamsSearchOp = "equals"
+	ThreatEventListParamsSearchOpNot         ThreatEventListParamsSearchOp = "not"
+	ThreatEventListParamsSearchOpGt          ThreatEventListParamsSearchOp = "gt"
+	ThreatEventListParamsSearchOpGte         ThreatEventListParamsSearchOp = "gte"
+	ThreatEventListParamsSearchOpLt          ThreatEventListParamsSearchOp = "lt"
+	ThreatEventListParamsSearchOpLte         ThreatEventListParamsSearchOp = "lte"
+	ThreatEventListParamsSearchOpLike        ThreatEventListParamsSearchOp = "like"
+	ThreatEventListParamsSearchOpContains    ThreatEventListParamsSearchOp = "contains"
+	ThreatEventListParamsSearchOpStartsWith  ThreatEventListParamsSearchOp = "startsWith"
+	ThreatEventListParamsSearchOpEndsWith    ThreatEventListParamsSearchOp = "endsWith"
+	ThreatEventListParamsSearchOpFind        ThreatEventListParamsSearchOp = "find"
+	ThreatEventListParamsSearchOpNotContains ThreatEventListParamsSearchOp = "notContains"
+	ThreatEventListParamsSearchOpIn          ThreatEventListParamsSearchOp = "in"
+	ThreatEventListParamsSearchOpNotIn       ThreatEventListParamsSearchOp = "notIn"
+)
+
+func (r ThreatEventListParamsSearchOp) IsKnown() bool {
+	switch r {
+	case ThreatEventListParamsSearchOpEquals, ThreatEventListParamsSearchOpNot, ThreatEventListParamsSearchOpGt, ThreatEventListParamsSearchOpGte, ThreatEventListParamsSearchOpLt, ThreatEventListParamsSearchOpLte, ThreatEventListParamsSearchOpLike, ThreatEventListParamsSearchOpContains, ThreatEventListParamsSearchOpStartsWith, ThreatEventListParamsSearchOpEndsWith, ThreatEventListParamsSearchOpFind, ThreatEventListParamsSearchOpNotContains, ThreatEventListParamsSearchOpIn, ThreatEventListParamsSearchOpNotIn:
+		return true
+	}
+	return false
+}
+
+type ThreatEventListParamsSearchBranch struct {
+	Field param.Field[ThreatEventListParamsSearchBranchesField] `json:"field" api:"required"`
+	Op    param.Field[ThreatEventListParamsSearchBranchesOp]    `json:"op" api:"required"`
+	Value param.Field[interface{}]                              `json:"value" api:"required"`
+}
+
+func (r ThreatEventListParamsSearchBranch) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ThreatEventListParamsSearchBranch) implementsThreatEventListParamsSearchBranchUnion() {}
+
+// Satisfied by [cloudforce_one.ThreatEventListParamsSearchBranchesObject],
+// [cloudforce_one.ThreatEventListParamsSearchBranchesObject],
+// [cloudforce_one.ThreatEventListParamsSearchBranchesObject],
+// [cloudforce_one.ThreatEventListParamsSearchBranchesObject],
+// [cloudforce_one.ThreatEventListParamsSearchBranchesObject],
+// [cloudforce_one.ThreatEventListParamsSearchBranchesObject],
+// [ThreatEventListParamsSearchBranch].
+type ThreatEventListParamsSearchBranchUnion interface {
+	implementsThreatEventListParamsSearchBranchUnion()
+}
+
+type ThreatEventListParamsSearchBranchesObject struct {
+	Field param.Field[ThreatEventListParamsSearchBranchesObjectField] `query:"field" api:"required"`
+	Op    param.Field[ThreatEventListParamsSearchBranchesObjectOp]    `query:"op" api:"required"`
+	Value param.Field[string]                                         `query:"value" api:"required"`
+}
+
+// URLQuery serializes [ThreatEventListParamsSearchBranchesObject]'s query
+// parameters as `url.Values`.
+func (r ThreatEventListParamsSearchBranchesObject) URLQuery() (v url.Values) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
+		NestedFormat: apiquery.NestedQueryFormatDots,
+	})
+}
+
+func (r ThreatEventListParamsSearchBranchesObject) implementsThreatEventListParamsSearchBranchUnion() {
+}
+
+type ThreatEventListParamsSearchBranchesObjectField string
+
+const (
+	ThreatEventListParamsSearchBranchesObjectFieldAttacker        ThreatEventListParamsSearchBranchesObjectField = "attacker"
+	ThreatEventListParamsSearchBranchesObjectFieldAttackerCountry ThreatEventListParamsSearchBranchesObjectField = "attackerCountry"
+	ThreatEventListParamsSearchBranchesObjectFieldCategory        ThreatEventListParamsSearchBranchesObjectField = "category"
+	ThreatEventListParamsSearchBranchesObjectFieldCreatedAt       ThreatEventListParamsSearchBranchesObjectField = "createdAt"
+	ThreatEventListParamsSearchBranchesObjectFieldDate            ThreatEventListParamsSearchBranchesObjectField = "date"
+	ThreatEventListParamsSearchBranchesObjectFieldEvent           ThreatEventListParamsSearchBranchesObjectField = "event"
+	ThreatEventListParamsSearchBranchesObjectFieldIndicator       ThreatEventListParamsSearchBranchesObjectField = "indicator"
+	ThreatEventListParamsSearchBranchesObjectFieldIndicatorType   ThreatEventListParamsSearchBranchesObjectField = "indicatorType"
+	ThreatEventListParamsSearchBranchesObjectFieldMitreAttack     ThreatEventListParamsSearchBranchesObjectField = "mitreAttack"
+	ThreatEventListParamsSearchBranchesObjectFieldMitreCapec      ThreatEventListParamsSearchBranchesObjectField = "mitreCapec"
+	ThreatEventListParamsSearchBranchesObjectFieldTags            ThreatEventListParamsSearchBranchesObjectField = "tags"
+	ThreatEventListParamsSearchBranchesObjectFieldTargetCountry   ThreatEventListParamsSearchBranchesObjectField = "targetCountry"
+	ThreatEventListParamsSearchBranchesObjectFieldTargetIndustry  ThreatEventListParamsSearchBranchesObjectField = "targetIndustry"
+	ThreatEventListParamsSearchBranchesObjectFieldTLP             ThreatEventListParamsSearchBranchesObjectField = "tlp"
+	ThreatEventListParamsSearchBranchesObjectFieldUUID            ThreatEventListParamsSearchBranchesObjectField = "uuid"
+)
+
+func (r ThreatEventListParamsSearchBranchesObjectField) IsKnown() bool {
+	switch r {
+	case ThreatEventListParamsSearchBranchesObjectFieldAttacker, ThreatEventListParamsSearchBranchesObjectFieldAttackerCountry, ThreatEventListParamsSearchBranchesObjectFieldCategory, ThreatEventListParamsSearchBranchesObjectFieldCreatedAt, ThreatEventListParamsSearchBranchesObjectFieldDate, ThreatEventListParamsSearchBranchesObjectFieldEvent, ThreatEventListParamsSearchBranchesObjectFieldIndicator, ThreatEventListParamsSearchBranchesObjectFieldIndicatorType, ThreatEventListParamsSearchBranchesObjectFieldMitreAttack, ThreatEventListParamsSearchBranchesObjectFieldMitreCapec, ThreatEventListParamsSearchBranchesObjectFieldTags, ThreatEventListParamsSearchBranchesObjectFieldTargetCountry, ThreatEventListParamsSearchBranchesObjectFieldTargetIndustry, ThreatEventListParamsSearchBranchesObjectFieldTLP, ThreatEventListParamsSearchBranchesObjectFieldUUID:
+		return true
+	}
+	return false
+}
+
+type ThreatEventListParamsSearchBranchesObjectOp string
+
+const (
+	ThreatEventListParamsSearchBranchesObjectOpEquals      ThreatEventListParamsSearchBranchesObjectOp = "equals"
+	ThreatEventListParamsSearchBranchesObjectOpNot         ThreatEventListParamsSearchBranchesObjectOp = "not"
+	ThreatEventListParamsSearchBranchesObjectOpGt          ThreatEventListParamsSearchBranchesObjectOp = "gt"
+	ThreatEventListParamsSearchBranchesObjectOpGte         ThreatEventListParamsSearchBranchesObjectOp = "gte"
+	ThreatEventListParamsSearchBranchesObjectOpLt          ThreatEventListParamsSearchBranchesObjectOp = "lt"
+	ThreatEventListParamsSearchBranchesObjectOpLte         ThreatEventListParamsSearchBranchesObjectOp = "lte"
+	ThreatEventListParamsSearchBranchesObjectOpLike        ThreatEventListParamsSearchBranchesObjectOp = "like"
+	ThreatEventListParamsSearchBranchesObjectOpContains    ThreatEventListParamsSearchBranchesObjectOp = "contains"
+	ThreatEventListParamsSearchBranchesObjectOpStartsWith  ThreatEventListParamsSearchBranchesObjectOp = "startsWith"
+	ThreatEventListParamsSearchBranchesObjectOpEndsWith    ThreatEventListParamsSearchBranchesObjectOp = "endsWith"
+	ThreatEventListParamsSearchBranchesObjectOpFind        ThreatEventListParamsSearchBranchesObjectOp = "find"
+	ThreatEventListParamsSearchBranchesObjectOpNotContains ThreatEventListParamsSearchBranchesObjectOp = "notContains"
+)
+
+func (r ThreatEventListParamsSearchBranchesObjectOp) IsKnown() bool {
+	switch r {
+	case ThreatEventListParamsSearchBranchesObjectOpEquals, ThreatEventListParamsSearchBranchesObjectOpNot, ThreatEventListParamsSearchBranchesObjectOpGt, ThreatEventListParamsSearchBranchesObjectOpGte, ThreatEventListParamsSearchBranchesObjectOpLt, ThreatEventListParamsSearchBranchesObjectOpLte, ThreatEventListParamsSearchBranchesObjectOpLike, ThreatEventListParamsSearchBranchesObjectOpContains, ThreatEventListParamsSearchBranchesObjectOpStartsWith, ThreatEventListParamsSearchBranchesObjectOpEndsWith, ThreatEventListParamsSearchBranchesObjectOpFind, ThreatEventListParamsSearchBranchesObjectOpNotContains:
+		return true
+	}
+	return false
+}
+
+type ThreatEventListParamsSearchBranchesField string
+
+const (
+	ThreatEventListParamsSearchBranchesFieldAttacker        ThreatEventListParamsSearchBranchesField = "attacker"
+	ThreatEventListParamsSearchBranchesFieldAttackerCountry ThreatEventListParamsSearchBranchesField = "attackerCountry"
+	ThreatEventListParamsSearchBranchesFieldCategory        ThreatEventListParamsSearchBranchesField = "category"
+	ThreatEventListParamsSearchBranchesFieldCreatedAt       ThreatEventListParamsSearchBranchesField = "createdAt"
+	ThreatEventListParamsSearchBranchesFieldDate            ThreatEventListParamsSearchBranchesField = "date"
+	ThreatEventListParamsSearchBranchesFieldEvent           ThreatEventListParamsSearchBranchesField = "event"
+	ThreatEventListParamsSearchBranchesFieldIndicator       ThreatEventListParamsSearchBranchesField = "indicator"
+	ThreatEventListParamsSearchBranchesFieldIndicatorType   ThreatEventListParamsSearchBranchesField = "indicatorType"
+	ThreatEventListParamsSearchBranchesFieldMitreAttack     ThreatEventListParamsSearchBranchesField = "mitreAttack"
+	ThreatEventListParamsSearchBranchesFieldMitreCapec      ThreatEventListParamsSearchBranchesField = "mitreCapec"
+	ThreatEventListParamsSearchBranchesFieldTags            ThreatEventListParamsSearchBranchesField = "tags"
+	ThreatEventListParamsSearchBranchesFieldTargetCountry   ThreatEventListParamsSearchBranchesField = "targetCountry"
+	ThreatEventListParamsSearchBranchesFieldTargetIndustry  ThreatEventListParamsSearchBranchesField = "targetIndustry"
+	ThreatEventListParamsSearchBranchesFieldTLP             ThreatEventListParamsSearchBranchesField = "tlp"
+	ThreatEventListParamsSearchBranchesFieldUUID            ThreatEventListParamsSearchBranchesField = "uuid"
+	ThreatEventListParamsSearchBranchesFieldKillChain       ThreatEventListParamsSearchBranchesField = "killChain"
+	ThreatEventListParamsSearchBranchesFieldHasChildren     ThreatEventListParamsSearchBranchesField = "hasChildren"
+)
+
+func (r ThreatEventListParamsSearchBranchesField) IsKnown() bool {
+	switch r {
+	case ThreatEventListParamsSearchBranchesFieldAttacker, ThreatEventListParamsSearchBranchesFieldAttackerCountry, ThreatEventListParamsSearchBranchesFieldCategory, ThreatEventListParamsSearchBranchesFieldCreatedAt, ThreatEventListParamsSearchBranchesFieldDate, ThreatEventListParamsSearchBranchesFieldEvent, ThreatEventListParamsSearchBranchesFieldIndicator, ThreatEventListParamsSearchBranchesFieldIndicatorType, ThreatEventListParamsSearchBranchesFieldMitreAttack, ThreatEventListParamsSearchBranchesFieldMitreCapec, ThreatEventListParamsSearchBranchesFieldTags, ThreatEventListParamsSearchBranchesFieldTargetCountry, ThreatEventListParamsSearchBranchesFieldTargetIndustry, ThreatEventListParamsSearchBranchesFieldTLP, ThreatEventListParamsSearchBranchesFieldUUID, ThreatEventListParamsSearchBranchesFieldKillChain, ThreatEventListParamsSearchBranchesFieldHasChildren:
+		return true
+	}
+	return false
+}
+
+type ThreatEventListParamsSearchBranchesOp string
+
+const (
+	ThreatEventListParamsSearchBranchesOpEquals      ThreatEventListParamsSearchBranchesOp = "equals"
+	ThreatEventListParamsSearchBranchesOpNot         ThreatEventListParamsSearchBranchesOp = "not"
+	ThreatEventListParamsSearchBranchesOpGt          ThreatEventListParamsSearchBranchesOp = "gt"
+	ThreatEventListParamsSearchBranchesOpGte         ThreatEventListParamsSearchBranchesOp = "gte"
+	ThreatEventListParamsSearchBranchesOpLt          ThreatEventListParamsSearchBranchesOp = "lt"
+	ThreatEventListParamsSearchBranchesOpLte         ThreatEventListParamsSearchBranchesOp = "lte"
+	ThreatEventListParamsSearchBranchesOpLike        ThreatEventListParamsSearchBranchesOp = "like"
+	ThreatEventListParamsSearchBranchesOpContains    ThreatEventListParamsSearchBranchesOp = "contains"
+	ThreatEventListParamsSearchBranchesOpStartsWith  ThreatEventListParamsSearchBranchesOp = "startsWith"
+	ThreatEventListParamsSearchBranchesOpEndsWith    ThreatEventListParamsSearchBranchesOp = "endsWith"
+	ThreatEventListParamsSearchBranchesOpFind        ThreatEventListParamsSearchBranchesOp = "find"
+	ThreatEventListParamsSearchBranchesOpNotContains ThreatEventListParamsSearchBranchesOp = "notContains"
+	ThreatEventListParamsSearchBranchesOpIn          ThreatEventListParamsSearchBranchesOp = "in"
+	ThreatEventListParamsSearchBranchesOpNotIn       ThreatEventListParamsSearchBranchesOp = "notIn"
+)
+
+func (r ThreatEventListParamsSearchBranchesOp) IsKnown() bool {
+	switch r {
+	case ThreatEventListParamsSearchBranchesOpEquals, ThreatEventListParamsSearchBranchesOpNot, ThreatEventListParamsSearchBranchesOpGt, ThreatEventListParamsSearchBranchesOpGte, ThreatEventListParamsSearchBranchesOpLt, ThreatEventListParamsSearchBranchesOpLte, ThreatEventListParamsSearchBranchesOpLike, ThreatEventListParamsSearchBranchesOpContains, ThreatEventListParamsSearchBranchesOpStartsWith, ThreatEventListParamsSearchBranchesOpEndsWith, ThreatEventListParamsSearchBranchesOpFind, ThreatEventListParamsSearchBranchesOpNotContains, ThreatEventListParamsSearchBranchesOpIn, ThreatEventListParamsSearchBranchesOpNotIn:
+		return true
+	}
+	return false
+}
+
+type ThreatEventBulkNewParams struct {
+	// Account ID.
+	AccountID param.Field[string]                         `path:"account_id" api:"required"`
+	Data      param.Field[[]ThreatEventBulkNewParamsData] `json:"data" api:"required"`
+	DatasetID param.Field[string]                         `json:"datasetId" api:"required"`
+	// When true, response includes array of created event UUIDs and shard IDs. Useful
+	// for tracking which events were created and where.
+	IncludeCreatedEvents param.Field[bool] `json:"includeCreatedEvents"`
+}
+
+func (r ThreatEventBulkNewParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ThreatEventBulkNewParamsData struct {
+	Category        param.Field[string]                          `json:"category" api:"required"`
+	Date            param.Field[time.Time]                       `json:"date" api:"required" format:"date-time"`
+	Event           param.Field[string]                          `json:"event" api:"required"`
+	Raw             param.Field[ThreatEventBulkNewParamsDataRaw] `json:"raw" api:"required"`
+	TLP             param.Field[string]                          `json:"tlp" api:"required"`
+	AccountID       param.Field[float64]                         `json:"accountId"`
+	Attacker        param.Field[string]                          `json:"attacker"`
+	AttackerCountry param.Field[string]                          `json:"attackerCountry"`
+	DatasetID       param.Field[string]                          `json:"datasetId"`
+	Indicator       param.Field[string]                          `json:"indicator"`
+	// Array of indicators for this event. Supports multiple indicators per event for
+	// complex scenarios.
+	Indicators     param.Field[[]ThreatEventBulkNewParamsDataIndicator] `json:"indicators"`
+	IndicatorType  param.Field[string]                                  `json:"indicatorType"`
+	Insight        param.Field[string]                                  `json:"insight"`
+	Tags           param.Field[[]string]                                `json:"tags"`
+	TargetCountry  param.Field[string]                                  `json:"targetCountry"`
+	TargetIndustry param.Field[string]                                  `json:"targetIndustry"`
+}
+
+func (r ThreatEventBulkNewParamsData) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ThreatEventBulkNewParamsDataRaw struct {
+	Data   param.Field[map[string]interface{}] `json:"data" api:"required"`
+	Source param.Field[string]                 `json:"source"`
+	TLP    param.Field[string]                 `json:"tlp"`
+}
+
+func (r ThreatEventBulkNewParamsDataRaw) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ThreatEventBulkNewParamsDataIndicator struct {
+	// The type of indicator (e.g., DOMAIN, IP, JA3, HASH)
+	IndicatorType param.Field[string] `json:"indicatorType" api:"required"`
+	// The indicator value (e.g., domain name, IP address, hash)
+	Value param.Field[string] `json:"value" api:"required"`
+}
+
+func (r ThreatEventBulkNewParamsDataIndicator) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ThreatEventBulkNewRelationshipsParams struct {
+	// Account ID.
+	AccountID param.Field[string]                                      `path:"account_id" api:"required"`
+	Data      param.Field[[]ThreatEventBulkNewRelationshipsParamsData] `json:"data" api:"required"`
+	DatasetID param.Field[string]                                      `json:"datasetId" api:"required"`
+}
+
+func (r ThreatEventBulkNewRelationshipsParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ThreatEventBulkNewRelationshipsParamsData struct {
+	Category        param.Field[string]                                       `json:"category" api:"required"`
+	Date            param.Field[time.Time]                                    `json:"date" api:"required" format:"date-time"`
+	Event           param.Field[string]                                       `json:"event" api:"required"`
+	Raw             param.Field[ThreatEventBulkNewRelationshipsParamsDataRaw] `json:"raw" api:"required"`
+	TLP             param.Field[string]                                       `json:"tlp" api:"required"`
+	AccountID       param.Field[float64]                                      `json:"accountId"`
+	Attacker        param.Field[string]                                       `json:"attacker"`
+	AttackerCountry param.Field[string]                                       `json:"attackerCountry"`
+	DatasetID       param.Field[string]                                       `json:"datasetId"`
+	Indicator       param.Field[string]                                       `json:"indicator"`
+	// Array of indicators for this event. Supports multiple indicators per event for
+	// complex scenarios.
+	Indicators     param.Field[[]ThreatEventBulkNewRelationshipsParamsDataIndicator] `json:"indicators"`
+	IndicatorType  param.Field[string]                                               `json:"indicatorType"`
+	Insight        param.Field[string]                                               `json:"insight"`
+	Tags           param.Field[[]string]                                             `json:"tags"`
+	TargetCountry  param.Field[string]                                               `json:"targetCountry"`
+	TargetIndustry param.Field[string]                                               `json:"targetIndustry"`
+}
+
+func (r ThreatEventBulkNewRelationshipsParamsData) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ThreatEventBulkNewRelationshipsParamsDataRaw struct {
+	Data   param.Field[map[string]interface{}] `json:"data" api:"required"`
+	Source param.Field[string]                 `json:"source"`
+	TLP    param.Field[string]                 `json:"tlp"`
+}
+
+func (r ThreatEventBulkNewRelationshipsParamsDataRaw) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ThreatEventBulkNewRelationshipsParamsDataIndicator struct {
+	// The type of indicator (e.g., DOMAIN, IP, JA3, HASH)
+	IndicatorType param.Field[string] `json:"indicatorType" api:"required"`
+	// The indicator value (e.g., domain name, IP address, hash)
+	Value param.Field[string] `json:"value" api:"required"`
+}
+
+func (r ThreatEventBulkNewRelationshipsParamsDataIndicator) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ThreatEventEditParams struct {
+	// Account ID.
+	AccountID param.Field[string] `path:"account_id" api:"required"`
+	// Dataset ID containing the event to update.
+	DatasetID       param.Field[string]                   `json:"datasetId" api:"required"`
+	Attacker        param.Field[string]                   `json:"attacker"`
+	AttackerCountry param.Field[string]                   `json:"attackerCountry"`
+	Category        param.Field[string]                   `json:"category"`
+	CreatedAt       param.Field[time.Time]                `json:"createdAt" format:"date-time"`
+	Date            param.Field[time.Time]                `json:"date" format:"date-time"`
+	Event           param.Field[string]                   `json:"event"`
+	Indicator       param.Field[string]                   `json:"indicator"`
+	IndicatorType   param.Field[string]                   `json:"indicatorType"`
+	Insight         param.Field[string]                   `json:"insight"`
+	Raw             param.Field[ThreatEventEditParamsRaw] `json:"raw"`
+	TargetCountry   param.Field[string]                   `json:"targetCountry"`
+	TargetIndustry  param.Field[string]                   `json:"targetIndustry"`
+	TLP             param.Field[string]                   `json:"tlp"`
+}
+
+func (r ThreatEventEditParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ThreatEventEditParamsRaw struct {
+	Data   param.Field[map[string]interface{}] `json:"data"`
+	Source param.Field[string]                 `json:"source"`
+	TLP    param.Field[string]                 `json:"tlp"`
+}
+
+func (r ThreatEventEditParamsRaw) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ThreatEventGetParams struct {
+	// Account ID.
+	AccountID param.Field[string] `path:"account_id" api:"required"`
+}

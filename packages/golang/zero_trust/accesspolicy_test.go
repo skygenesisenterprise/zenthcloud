@@ -1,0 +1,233 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zero_trust_test
+
+import (
+	"context"
+	"errors"
+	"os"
+	"testing"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/internal/testutil"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
+)
+
+func TestAccessPolicyNewWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.ZeroTrust.Access.Policies.New(context.TODO(), zero_trust.AccessPolicyNewParams{
+		AccountID: cloudflare.F("023e105f4ecef8ad9ca31a8372d0c353"),
+		Decision:  cloudflare.F(zero_trust.DecisionAllow),
+		Include: cloudflare.F([]zero_trust.AccessRuleUnionParam{zero_trust.CertificateRuleParam{
+			Certificate: cloudflare.F(zero_trust.CertificateRuleCertificateParam{}),
+		}}),
+		Name: cloudflare.F("Allow devs"),
+		ApprovalGroups: cloudflare.F([]zero_trust.ApprovalGroupParam{{
+			ApprovalsNeeded: cloudflare.F(1.000000),
+			EmailAddresses:  cloudflare.F([]string{"test1@cloudflare.com", "test2@cloudflare.com"}),
+			EmailListUUID:   cloudflare.F("email_list_uuid"),
+		}, {
+			ApprovalsNeeded: cloudflare.F(3.000000),
+			EmailAddresses:  cloudflare.F([]string{"test@cloudflare.com", "test2@cloudflare.com"}),
+			EmailListUUID:   cloudflare.F("597147a1-976b-4ef2-9af0-81d5d007fc34"),
+		}}),
+		ApprovalRequired: cloudflare.F(true),
+		ConnectionRules: cloudflare.F(zero_trust.AccessPolicyNewParamsConnectionRules{
+			RDP: cloudflare.F(zero_trust.AccessPolicyNewParamsConnectionRulesRDP{
+				AllowedClipboardLocalToRemoteFormats: cloudflare.F([]zero_trust.AccessPolicyNewParamsConnectionRulesRDPAllowedClipboardLocalToRemoteFormat{zero_trust.AccessPolicyNewParamsConnectionRulesRDPAllowedClipboardLocalToRemoteFormatText, zero_trust.AccessPolicyNewParamsConnectionRulesRDPAllowedClipboardLocalToRemoteFormatFile}),
+				AllowedClipboardRemoteToLocalFormats: cloudflare.F([]zero_trust.AccessPolicyNewParamsConnectionRulesRDPAllowedClipboardRemoteToLocalFormat{zero_trust.AccessPolicyNewParamsConnectionRulesRDPAllowedClipboardRemoteToLocalFormatText, zero_trust.AccessPolicyNewParamsConnectionRulesRDPAllowedClipboardRemoteToLocalFormatFile}),
+			}),
+		}),
+		Exclude: cloudflare.F([]zero_trust.AccessRuleUnionParam{zero_trust.CertificateRuleParam{
+			Certificate: cloudflare.F(zero_trust.CertificateRuleCertificateParam{}),
+		}}),
+		IsolationRequired: cloudflare.F(false),
+		MfaConfig: cloudflare.F(zero_trust.AccessPolicyNewParamsMfaConfig{
+			AllowedAuthenticators: cloudflare.F([]zero_trust.AccessPolicyNewParamsMfaConfigAllowedAuthenticator{zero_trust.AccessPolicyNewParamsMfaConfigAllowedAuthenticatorTotp, zero_trust.AccessPolicyNewParamsMfaConfigAllowedAuthenticatorBiometrics, zero_trust.AccessPolicyNewParamsMfaConfigAllowedAuthenticatorSecurityKey}),
+			MfaDisabled:           cloudflare.F(false),
+			SessionDuration:       cloudflare.F("24h"),
+		}),
+		PolicyResolutionAccountID:    cloudflare.F("policy_resolution_account_id"),
+		PurposeJustificationPrompt:   cloudflare.F("Please enter a justification for entering this protected domain."),
+		PurposeJustificationRequired: cloudflare.F(true),
+		Require: cloudflare.F([]zero_trust.AccessRuleUnionParam{zero_trust.CertificateRuleParam{
+			Certificate: cloudflare.F(zero_trust.CertificateRuleCertificateParam{}),
+		}}),
+		SessionDuration: cloudflare.F("24h"),
+	})
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAccessPolicyUpdateWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.ZeroTrust.Access.Policies.Update(
+		context.TODO(),
+		"f174e90a-fafe-4643-bbbc-4a0ed4fc8415",
+		zero_trust.AccessPolicyUpdateParams{
+			AccountID: cloudflare.F("023e105f4ecef8ad9ca31a8372d0c353"),
+			Decision:  cloudflare.F(zero_trust.DecisionAllow),
+			Include: cloudflare.F([]zero_trust.AccessRuleUnionParam{zero_trust.CertificateRuleParam{
+				Certificate: cloudflare.F(zero_trust.CertificateRuleCertificateParam{}),
+			}}),
+			Name: cloudflare.F("Allow devs"),
+			ApprovalGroups: cloudflare.F([]zero_trust.ApprovalGroupParam{{
+				ApprovalsNeeded: cloudflare.F(1.000000),
+				EmailAddresses:  cloudflare.F([]string{"test1@cloudflare.com", "test2@cloudflare.com"}),
+				EmailListUUID:   cloudflare.F("email_list_uuid"),
+			}, {
+				ApprovalsNeeded: cloudflare.F(3.000000),
+				EmailAddresses:  cloudflare.F([]string{"test@cloudflare.com", "test2@cloudflare.com"}),
+				EmailListUUID:   cloudflare.F("597147a1-976b-4ef2-9af0-81d5d007fc34"),
+			}}),
+			ApprovalRequired: cloudflare.F(true),
+			ConnectionRules: cloudflare.F(zero_trust.AccessPolicyUpdateParamsConnectionRules{
+				RDP: cloudflare.F(zero_trust.AccessPolicyUpdateParamsConnectionRulesRDP{
+					AllowedClipboardLocalToRemoteFormats: cloudflare.F([]zero_trust.AccessPolicyUpdateParamsConnectionRulesRDPAllowedClipboardLocalToRemoteFormat{zero_trust.AccessPolicyUpdateParamsConnectionRulesRDPAllowedClipboardLocalToRemoteFormatText, zero_trust.AccessPolicyUpdateParamsConnectionRulesRDPAllowedClipboardLocalToRemoteFormatFile}),
+					AllowedClipboardRemoteToLocalFormats: cloudflare.F([]zero_trust.AccessPolicyUpdateParamsConnectionRulesRDPAllowedClipboardRemoteToLocalFormat{zero_trust.AccessPolicyUpdateParamsConnectionRulesRDPAllowedClipboardRemoteToLocalFormatText, zero_trust.AccessPolicyUpdateParamsConnectionRulesRDPAllowedClipboardRemoteToLocalFormatFile}),
+				}),
+			}),
+			Exclude: cloudflare.F([]zero_trust.AccessRuleUnionParam{zero_trust.CertificateRuleParam{
+				Certificate: cloudflare.F(zero_trust.CertificateRuleCertificateParam{}),
+			}}),
+			IsolationRequired: cloudflare.F(false),
+			MfaConfig: cloudflare.F(zero_trust.AccessPolicyUpdateParamsMfaConfig{
+				AllowedAuthenticators: cloudflare.F([]zero_trust.AccessPolicyUpdateParamsMfaConfigAllowedAuthenticator{zero_trust.AccessPolicyUpdateParamsMfaConfigAllowedAuthenticatorTotp, zero_trust.AccessPolicyUpdateParamsMfaConfigAllowedAuthenticatorBiometrics, zero_trust.AccessPolicyUpdateParamsMfaConfigAllowedAuthenticatorSecurityKey}),
+				MfaDisabled:           cloudflare.F(false),
+				SessionDuration:       cloudflare.F("24h"),
+			}),
+			PolicyResolutionAccountID:    cloudflare.F("policy_resolution_account_id"),
+			PurposeJustificationPrompt:   cloudflare.F("Please enter a justification for entering this protected domain."),
+			PurposeJustificationRequired: cloudflare.F(true),
+			Require: cloudflare.F([]zero_trust.AccessRuleUnionParam{zero_trust.CertificateRuleParam{
+				Certificate: cloudflare.F(zero_trust.CertificateRuleCertificateParam{}),
+			}}),
+			SessionDuration: cloudflare.F("24h"),
+		},
+	)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAccessPolicyListWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.ZeroTrust.Access.Policies.List(context.TODO(), zero_trust.AccessPolicyListParams{
+		AccountID: cloudflare.F("023e105f4ecef8ad9ca31a8372d0c353"),
+		Page:      cloudflare.F(int64(0)),
+		PerPage:   cloudflare.F(int64(1000)),
+	})
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAccessPolicyDelete(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.ZeroTrust.Access.Policies.Delete(
+		context.TODO(),
+		"f174e90a-fafe-4643-bbbc-4a0ed4fc8415",
+		zero_trust.AccessPolicyDeleteParams{
+			AccountID: cloudflare.F("023e105f4ecef8ad9ca31a8372d0c353"),
+		},
+	)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestAccessPolicyGet(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.ZeroTrust.Access.Policies.Get(
+		context.TODO(),
+		"f174e90a-fafe-4643-bbbc-4a0ed4fc8415",
+		zero_trust.AccessPolicyGetParams{
+			AccountID: cloudflare.F("023e105f4ecef8ad9ca31a8372d0c353"),
+		},
+	)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}

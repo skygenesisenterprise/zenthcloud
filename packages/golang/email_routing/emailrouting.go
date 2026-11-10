@@ -1,0 +1,1267 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package email_routing
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"slices"
+	"time"
+
+	"github.com/cloudflare/cloudflare-go/v7/internal/apijson"
+	"github.com/cloudflare/cloudflare-go/v7/internal/param"
+	"github.com/cloudflare/cloudflare-go/v7/internal/requestconfig"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+)
+
+// EmailRoutingService contains methods and other services that help with
+// interacting with the cloudflare API.
+//
+// Note, unlike clients, this service does not read variables from the environment
+// automatically. You should not instantiate this service directly, and instead use
+// the [NewEmailRoutingService] method instead.
+type EmailRoutingService struct {
+	Options      []option.RequestOption
+	DNS          *DNSService
+	Rules        *RuleService
+	AccountRules *AccountRuleService
+	Addresses    *AddressService
+}
+
+// NewEmailRoutingService generates a new service that applies the given options to
+// each request. These options are applied after the parent client's options (if
+// there is one), and before any request-specific options.
+func NewEmailRoutingService(opts ...option.RequestOption) (r *EmailRoutingService) {
+	r = &EmailRoutingService{}
+	r.Options = opts
+	r.DNS = NewDNSService(opts...)
+	r.Rules = NewRuleService(opts...)
+	r.AccountRules = NewAccountRuleService(opts...)
+	r.Addresses = NewAddressService(opts...)
+	return
+}
+
+// Apply the provided settings to your Email Routing zone. Omitted settings retain
+// their current values, as with PATCH.
+func (r *EmailRoutingService) Update(ctx context.Context, params EmailRoutingUpdateParams, opts ...option.RequestOption) (res *Settings, err error) {
+	var env EmailRoutingUpdateResponseEnvelope
+	opts = slices.Concat(r.Options, opts)
+	if params.ZoneID.Value == "" {
+		err = errors.New("missing required zone_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("zones/%s/email/routing", params.ZoneID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, params, &env, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = &env.Result
+	return res, nil
+}
+
+// Disable your Email Routing zone. Also removes additional MX records previously
+// required for Email Routing to work.
+//
+// Deprecated: deprecated
+func (r *EmailRoutingService) Disable(ctx context.Context, body EmailRoutingDisableParams, opts ...option.RequestOption) (res *Settings, err error) {
+	var env EmailRoutingDisableResponseEnvelope
+	opts = slices.Concat(r.Options, opts)
+	if body.ZoneID.Value == "" {
+		err = errors.New("missing required zone_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("zones/%s/email/routing/disable", body.ZoneID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &env, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = &env.Result
+	return res, nil
+}
+
+// Update the settings for your Email Routing zone.
+func (r *EmailRoutingService) Edit(ctx context.Context, params EmailRoutingEditParams, opts ...option.RequestOption) (res *Settings, err error) {
+	var env EmailRoutingEditResponseEnvelope
+	opts = slices.Concat(r.Options, opts)
+	if params.ZoneID.Value == "" {
+		err = errors.New("missing required zone_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("zones/%s/email/routing", params.ZoneID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, params, &env, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = &env.Result
+	return res, nil
+}
+
+// Enable you Email Routing zone. Add and lock the necessary MX and SPF records.
+//
+// Deprecated: deprecated
+func (r *EmailRoutingService) Enable(ctx context.Context, body EmailRoutingEnableParams, opts ...option.RequestOption) (res *Settings, err error) {
+	var env EmailRoutingEnableResponseEnvelope
+	opts = slices.Concat(r.Options, opts)
+	if body.ZoneID.Value == "" {
+		err = errors.New("missing required zone_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("zones/%s/email/routing/enable", body.ZoneID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &env, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = &env.Result
+	return res, nil
+}
+
+// Get information about the settings for your Email Routing zone.
+func (r *EmailRoutingService) Get(ctx context.Context, query EmailRoutingGetParams, opts ...option.RequestOption) (res *Settings, err error) {
+	var env EmailRoutingGetResponseEnvelope
+	opts = slices.Concat(r.Options, opts)
+	if query.ZoneID.Value == "" {
+		err = errors.New("missing required zone_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("zones/%s/email/routing", query.ZoneID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &env, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = &env.Result
+	return res, nil
+}
+
+// Unlock MX records previously locked by Email Routing. Deprecated - use PATCH
+// /zones/{zone_id}/email/routing/dns instead.
+//
+// Deprecated: This endpoint is deprecated. Use PATCH
+// /zones/{zone_id}/email/routing/dns instead.
+func (r *EmailRoutingService) Unlock(ctx context.Context, params EmailRoutingUnlockParams, opts ...option.RequestOption) (res *Settings, err error) {
+	var env EmailRoutingUnlockResponseEnvelope
+	opts = slices.Concat(r.Options, opts)
+	if params.ZoneID.Value == "" {
+		err = errors.New("missing required zone_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("zones/%s/email/routing/unlock", params.ZoneID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &env, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = &env.Result
+	return res, nil
+}
+
+type Settings struct {
+	// Email Routing settings identifier.
+	ID string `json:"id" api:"required"`
+	// State of the zone settings for Email Routing.
+	Enabled SettingsEnabled `json:"enabled" api:"required"`
+	// Domain of your zone.
+	Name string `json:"name" api:"required"`
+	// The date and time the settings have been created.
+	Created time.Time `json:"created" format:"date-time"`
+	// The date and time the settings have been modified.
+	Modified time.Time `json:"modified" format:"date-time"`
+	// Flag to check if the user skipped the configuration wizard.
+	SkipWizard SettingsSkipWizard `json:"skip_wizard"`
+	// Show the state of your account, and the type or configuration error.
+	Status SettingsStatus `json:"status"`
+	// Whether subaddressing (plus-addressing) is honored when matching incoming mail
+	// against routing rules.
+	SupportSubaddress SettingsSupportSubaddress `json:"support_subaddress"`
+	// Email Routing settings tag. (Deprecated, replaced by Email Routing settings
+	// identifier)
+	//
+	// Deprecated: deprecated
+	Tag  string       `json:"tag"`
+	JSON settingsJSON `json:"-"`
+}
+
+// settingsJSON contains the JSON metadata for the struct [Settings]
+type settingsJSON struct {
+	ID                apijson.Field
+	Enabled           apijson.Field
+	Name              apijson.Field
+	Created           apijson.Field
+	Modified          apijson.Field
+	SkipWizard        apijson.Field
+	Status            apijson.Field
+	SupportSubaddress apijson.Field
+	Tag               apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
+}
+
+func (r *Settings) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r settingsJSON) RawJSON() string {
+	return r.raw
+}
+
+// State of the zone settings for Email Routing.
+type SettingsEnabled bool
+
+const (
+	SettingsEnabledTrue  SettingsEnabled = true
+	SettingsEnabledFalse SettingsEnabled = false
+)
+
+func (r SettingsEnabled) IsKnown() bool {
+	switch r {
+	case SettingsEnabledTrue, SettingsEnabledFalse:
+		return true
+	}
+	return false
+}
+
+// Flag to check if the user skipped the configuration wizard.
+type SettingsSkipWizard bool
+
+const (
+	SettingsSkipWizardTrue  SettingsSkipWizard = true
+	SettingsSkipWizardFalse SettingsSkipWizard = false
+)
+
+func (r SettingsSkipWizard) IsKnown() bool {
+	switch r {
+	case SettingsSkipWizardTrue, SettingsSkipWizardFalse:
+		return true
+	}
+	return false
+}
+
+// Show the state of your account, and the type or configuration error.
+type SettingsStatus string
+
+const (
+	SettingsStatusReady               SettingsStatus = "ready"
+	SettingsStatusUnconfigured        SettingsStatus = "unconfigured"
+	SettingsStatusMisconfigured       SettingsStatus = "misconfigured"
+	SettingsStatusMisconfiguredLocked SettingsStatus = "misconfigured/locked"
+	SettingsStatusUnlocked            SettingsStatus = "unlocked"
+)
+
+func (r SettingsStatus) IsKnown() bool {
+	switch r {
+	case SettingsStatusReady, SettingsStatusUnconfigured, SettingsStatusMisconfigured, SettingsStatusMisconfiguredLocked, SettingsStatusUnlocked:
+		return true
+	}
+	return false
+}
+
+// Whether subaddressing (plus-addressing) is honored when matching incoming mail
+// against routing rules.
+type SettingsSupportSubaddress bool
+
+const (
+	SettingsSupportSubaddressTrue  SettingsSupportSubaddress = true
+	SettingsSupportSubaddressFalse SettingsSupportSubaddress = false
+)
+
+func (r SettingsSupportSubaddress) IsKnown() bool {
+	switch r {
+	case SettingsSupportSubaddressTrue, SettingsSupportSubaddressFalse:
+		return true
+	}
+	return false
+}
+
+type EmailRoutingUpdateParams struct {
+	// Identifier.
+	ZoneID param.Field[string] `path:"zone_id" api:"required"`
+	// State of your zone Email Routing settings. No-op on this endpoint - use
+	// `POST`/`DELETE /zones/{zone_id}/email/routing/dns`.
+	Enabled param.Field[EmailRoutingUpdateParamsEnabled] `json:"enabled"`
+	// Flag to check if the user skipped the configuration wizard.
+	SkipWizard param.Field[EmailRoutingUpdateParamsSkipWizard] `json:"skip_wizard"`
+	// Whether subaddressing (plus-addressing) is honored when matching incoming mail
+	// against routing rules.
+	SupportSubaddress param.Field[EmailRoutingUpdateParamsSupportSubaddress] `json:"support_subaddress"`
+}
+
+func (r EmailRoutingUpdateParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// State of your zone Email Routing settings. No-op on this endpoint - use
+// `POST`/`DELETE /zones/{zone_id}/email/routing/dns`.
+type EmailRoutingUpdateParamsEnabled bool
+
+const (
+	EmailRoutingUpdateParamsEnabledTrue  EmailRoutingUpdateParamsEnabled = true
+	EmailRoutingUpdateParamsEnabledFalse EmailRoutingUpdateParamsEnabled = false
+)
+
+func (r EmailRoutingUpdateParamsEnabled) IsKnown() bool {
+	switch r {
+	case EmailRoutingUpdateParamsEnabledTrue, EmailRoutingUpdateParamsEnabledFalse:
+		return true
+	}
+	return false
+}
+
+// Flag to check if the user skipped the configuration wizard.
+type EmailRoutingUpdateParamsSkipWizard bool
+
+const (
+	EmailRoutingUpdateParamsSkipWizardTrue  EmailRoutingUpdateParamsSkipWizard = true
+	EmailRoutingUpdateParamsSkipWizardFalse EmailRoutingUpdateParamsSkipWizard = false
+)
+
+func (r EmailRoutingUpdateParamsSkipWizard) IsKnown() bool {
+	switch r {
+	case EmailRoutingUpdateParamsSkipWizardTrue, EmailRoutingUpdateParamsSkipWizardFalse:
+		return true
+	}
+	return false
+}
+
+// Whether subaddressing (plus-addressing) is honored when matching incoming mail
+// against routing rules.
+type EmailRoutingUpdateParamsSupportSubaddress bool
+
+const (
+	EmailRoutingUpdateParamsSupportSubaddressTrue  EmailRoutingUpdateParamsSupportSubaddress = true
+	EmailRoutingUpdateParamsSupportSubaddressFalse EmailRoutingUpdateParamsSupportSubaddress = false
+)
+
+func (r EmailRoutingUpdateParamsSupportSubaddress) IsKnown() bool {
+	switch r {
+	case EmailRoutingUpdateParamsSupportSubaddressTrue, EmailRoutingUpdateParamsSupportSubaddressFalse:
+		return true
+	}
+	return false
+}
+
+type EmailRoutingUpdateResponseEnvelope struct {
+	Errors   []EmailRoutingUpdateResponseEnvelopeErrors   `json:"errors" api:"required"`
+	Messages []EmailRoutingUpdateResponseEnvelopeMessages `json:"messages" api:"required"`
+	// Whether the API call was successful.
+	Success EmailRoutingUpdateResponseEnvelopeSuccess `json:"success" api:"required"`
+	Result  Settings                                  `json:"result"`
+	JSON    emailRoutingUpdateResponseEnvelopeJSON    `json:"-"`
+}
+
+// emailRoutingUpdateResponseEnvelopeJSON contains the JSON metadata for the struct
+// [EmailRoutingUpdateResponseEnvelope]
+type emailRoutingUpdateResponseEnvelopeJSON struct {
+	Errors      apijson.Field
+	Messages    apijson.Field
+	Success     apijson.Field
+	Result      apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *EmailRoutingUpdateResponseEnvelope) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingUpdateResponseEnvelopeJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingUpdateResponseEnvelopeErrors struct {
+	Code             int64                                          `json:"code" api:"required"`
+	Message          string                                         `json:"message" api:"required"`
+	DocumentationURL string                                         `json:"documentation_url"`
+	Source           EmailRoutingUpdateResponseEnvelopeErrorsSource `json:"source"`
+	JSON             emailRoutingUpdateResponseEnvelopeErrorsJSON   `json:"-"`
+}
+
+// emailRoutingUpdateResponseEnvelopeErrorsJSON contains the JSON metadata for the
+// struct [EmailRoutingUpdateResponseEnvelopeErrors]
+type emailRoutingUpdateResponseEnvelopeErrorsJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *EmailRoutingUpdateResponseEnvelopeErrors) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingUpdateResponseEnvelopeErrorsJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingUpdateResponseEnvelopeErrorsSource struct {
+	Pointer string                                             `json:"pointer"`
+	JSON    emailRoutingUpdateResponseEnvelopeErrorsSourceJSON `json:"-"`
+}
+
+// emailRoutingUpdateResponseEnvelopeErrorsSourceJSON contains the JSON metadata
+// for the struct [EmailRoutingUpdateResponseEnvelopeErrorsSource]
+type emailRoutingUpdateResponseEnvelopeErrorsSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *EmailRoutingUpdateResponseEnvelopeErrorsSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingUpdateResponseEnvelopeErrorsSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingUpdateResponseEnvelopeMessages struct {
+	Code             int64                                            `json:"code" api:"required"`
+	Message          string                                           `json:"message" api:"required"`
+	DocumentationURL string                                           `json:"documentation_url"`
+	Source           EmailRoutingUpdateResponseEnvelopeMessagesSource `json:"source"`
+	JSON             emailRoutingUpdateResponseEnvelopeMessagesJSON   `json:"-"`
+}
+
+// emailRoutingUpdateResponseEnvelopeMessagesJSON contains the JSON metadata for
+// the struct [EmailRoutingUpdateResponseEnvelopeMessages]
+type emailRoutingUpdateResponseEnvelopeMessagesJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *EmailRoutingUpdateResponseEnvelopeMessages) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingUpdateResponseEnvelopeMessagesJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingUpdateResponseEnvelopeMessagesSource struct {
+	Pointer string                                               `json:"pointer"`
+	JSON    emailRoutingUpdateResponseEnvelopeMessagesSourceJSON `json:"-"`
+}
+
+// emailRoutingUpdateResponseEnvelopeMessagesSourceJSON contains the JSON metadata
+// for the struct [EmailRoutingUpdateResponseEnvelopeMessagesSource]
+type emailRoutingUpdateResponseEnvelopeMessagesSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *EmailRoutingUpdateResponseEnvelopeMessagesSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingUpdateResponseEnvelopeMessagesSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+// Whether the API call was successful.
+type EmailRoutingUpdateResponseEnvelopeSuccess bool
+
+const (
+	EmailRoutingUpdateResponseEnvelopeSuccessTrue EmailRoutingUpdateResponseEnvelopeSuccess = true
+)
+
+func (r EmailRoutingUpdateResponseEnvelopeSuccess) IsKnown() bool {
+	switch r {
+	case EmailRoutingUpdateResponseEnvelopeSuccessTrue:
+		return true
+	}
+	return false
+}
+
+type EmailRoutingDisableParams struct {
+	// Identifier.
+	ZoneID param.Field[string] `path:"zone_id" api:"required"`
+}
+
+type EmailRoutingDisableResponseEnvelope struct {
+	Errors   []EmailRoutingDisableResponseEnvelopeErrors   `json:"errors" api:"required"`
+	Messages []EmailRoutingDisableResponseEnvelopeMessages `json:"messages" api:"required"`
+	// Whether the API call was successful.
+	Success EmailRoutingDisableResponseEnvelopeSuccess `json:"success" api:"required"`
+	Result  Settings                                   `json:"result"`
+	JSON    emailRoutingDisableResponseEnvelopeJSON    `json:"-"`
+}
+
+// emailRoutingDisableResponseEnvelopeJSON contains the JSON metadata for the
+// struct [EmailRoutingDisableResponseEnvelope]
+type emailRoutingDisableResponseEnvelopeJSON struct {
+	Errors      apijson.Field
+	Messages    apijson.Field
+	Success     apijson.Field
+	Result      apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *EmailRoutingDisableResponseEnvelope) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingDisableResponseEnvelopeJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingDisableResponseEnvelopeErrors struct {
+	Code             int64                                           `json:"code" api:"required"`
+	Message          string                                          `json:"message" api:"required"`
+	DocumentationURL string                                          `json:"documentation_url"`
+	Source           EmailRoutingDisableResponseEnvelopeErrorsSource `json:"source"`
+	JSON             emailRoutingDisableResponseEnvelopeErrorsJSON   `json:"-"`
+}
+
+// emailRoutingDisableResponseEnvelopeErrorsJSON contains the JSON metadata for the
+// struct [EmailRoutingDisableResponseEnvelopeErrors]
+type emailRoutingDisableResponseEnvelopeErrorsJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *EmailRoutingDisableResponseEnvelopeErrors) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingDisableResponseEnvelopeErrorsJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingDisableResponseEnvelopeErrorsSource struct {
+	Pointer string                                              `json:"pointer"`
+	JSON    emailRoutingDisableResponseEnvelopeErrorsSourceJSON `json:"-"`
+}
+
+// emailRoutingDisableResponseEnvelopeErrorsSourceJSON contains the JSON metadata
+// for the struct [EmailRoutingDisableResponseEnvelopeErrorsSource]
+type emailRoutingDisableResponseEnvelopeErrorsSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *EmailRoutingDisableResponseEnvelopeErrorsSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingDisableResponseEnvelopeErrorsSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingDisableResponseEnvelopeMessages struct {
+	Code             int64                                             `json:"code" api:"required"`
+	Message          string                                            `json:"message" api:"required"`
+	DocumentationURL string                                            `json:"documentation_url"`
+	Source           EmailRoutingDisableResponseEnvelopeMessagesSource `json:"source"`
+	JSON             emailRoutingDisableResponseEnvelopeMessagesJSON   `json:"-"`
+}
+
+// emailRoutingDisableResponseEnvelopeMessagesJSON contains the JSON metadata for
+// the struct [EmailRoutingDisableResponseEnvelopeMessages]
+type emailRoutingDisableResponseEnvelopeMessagesJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *EmailRoutingDisableResponseEnvelopeMessages) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingDisableResponseEnvelopeMessagesJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingDisableResponseEnvelopeMessagesSource struct {
+	Pointer string                                                `json:"pointer"`
+	JSON    emailRoutingDisableResponseEnvelopeMessagesSourceJSON `json:"-"`
+}
+
+// emailRoutingDisableResponseEnvelopeMessagesSourceJSON contains the JSON metadata
+// for the struct [EmailRoutingDisableResponseEnvelopeMessagesSource]
+type emailRoutingDisableResponseEnvelopeMessagesSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *EmailRoutingDisableResponseEnvelopeMessagesSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingDisableResponseEnvelopeMessagesSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+// Whether the API call was successful.
+type EmailRoutingDisableResponseEnvelopeSuccess bool
+
+const (
+	EmailRoutingDisableResponseEnvelopeSuccessTrue EmailRoutingDisableResponseEnvelopeSuccess = true
+)
+
+func (r EmailRoutingDisableResponseEnvelopeSuccess) IsKnown() bool {
+	switch r {
+	case EmailRoutingDisableResponseEnvelopeSuccessTrue:
+		return true
+	}
+	return false
+}
+
+type EmailRoutingEditParams struct {
+	// Identifier.
+	ZoneID param.Field[string] `path:"zone_id" api:"required"`
+	// State of your zone Email Routing settings. No-op on this endpoint - use
+	// `POST`/`DELETE /zones/{zone_id}/email/routing/dns`.
+	Enabled param.Field[EmailRoutingEditParamsEnabled] `json:"enabled"`
+	// Flag to check if the user skipped the configuration wizard.
+	SkipWizard param.Field[EmailRoutingEditParamsSkipWizard] `json:"skip_wizard"`
+	// Whether subaddressing (plus-addressing) is honored when matching incoming mail
+	// against routing rules.
+	SupportSubaddress param.Field[EmailRoutingEditParamsSupportSubaddress] `json:"support_subaddress"`
+}
+
+func (r EmailRoutingEditParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// State of your zone Email Routing settings. No-op on this endpoint - use
+// `POST`/`DELETE /zones/{zone_id}/email/routing/dns`.
+type EmailRoutingEditParamsEnabled bool
+
+const (
+	EmailRoutingEditParamsEnabledTrue  EmailRoutingEditParamsEnabled = true
+	EmailRoutingEditParamsEnabledFalse EmailRoutingEditParamsEnabled = false
+)
+
+func (r EmailRoutingEditParamsEnabled) IsKnown() bool {
+	switch r {
+	case EmailRoutingEditParamsEnabledTrue, EmailRoutingEditParamsEnabledFalse:
+		return true
+	}
+	return false
+}
+
+// Flag to check if the user skipped the configuration wizard.
+type EmailRoutingEditParamsSkipWizard bool
+
+const (
+	EmailRoutingEditParamsSkipWizardTrue  EmailRoutingEditParamsSkipWizard = true
+	EmailRoutingEditParamsSkipWizardFalse EmailRoutingEditParamsSkipWizard = false
+)
+
+func (r EmailRoutingEditParamsSkipWizard) IsKnown() bool {
+	switch r {
+	case EmailRoutingEditParamsSkipWizardTrue, EmailRoutingEditParamsSkipWizardFalse:
+		return true
+	}
+	return false
+}
+
+// Whether subaddressing (plus-addressing) is honored when matching incoming mail
+// against routing rules.
+type EmailRoutingEditParamsSupportSubaddress bool
+
+const (
+	EmailRoutingEditParamsSupportSubaddressTrue  EmailRoutingEditParamsSupportSubaddress = true
+	EmailRoutingEditParamsSupportSubaddressFalse EmailRoutingEditParamsSupportSubaddress = false
+)
+
+func (r EmailRoutingEditParamsSupportSubaddress) IsKnown() bool {
+	switch r {
+	case EmailRoutingEditParamsSupportSubaddressTrue, EmailRoutingEditParamsSupportSubaddressFalse:
+		return true
+	}
+	return false
+}
+
+type EmailRoutingEditResponseEnvelope struct {
+	Errors   []EmailRoutingEditResponseEnvelopeErrors   `json:"errors" api:"required"`
+	Messages []EmailRoutingEditResponseEnvelopeMessages `json:"messages" api:"required"`
+	// Whether the API call was successful.
+	Success EmailRoutingEditResponseEnvelopeSuccess `json:"success" api:"required"`
+	Result  Settings                                `json:"result"`
+	JSON    emailRoutingEditResponseEnvelopeJSON    `json:"-"`
+}
+
+// emailRoutingEditResponseEnvelopeJSON contains the JSON metadata for the struct
+// [EmailRoutingEditResponseEnvelope]
+type emailRoutingEditResponseEnvelopeJSON struct {
+	Errors      apijson.Field
+	Messages    apijson.Field
+	Success     apijson.Field
+	Result      apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *EmailRoutingEditResponseEnvelope) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingEditResponseEnvelopeJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingEditResponseEnvelopeErrors struct {
+	Code             int64                                        `json:"code" api:"required"`
+	Message          string                                       `json:"message" api:"required"`
+	DocumentationURL string                                       `json:"documentation_url"`
+	Source           EmailRoutingEditResponseEnvelopeErrorsSource `json:"source"`
+	JSON             emailRoutingEditResponseEnvelopeErrorsJSON   `json:"-"`
+}
+
+// emailRoutingEditResponseEnvelopeErrorsJSON contains the JSON metadata for the
+// struct [EmailRoutingEditResponseEnvelopeErrors]
+type emailRoutingEditResponseEnvelopeErrorsJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *EmailRoutingEditResponseEnvelopeErrors) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingEditResponseEnvelopeErrorsJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingEditResponseEnvelopeErrorsSource struct {
+	Pointer string                                           `json:"pointer"`
+	JSON    emailRoutingEditResponseEnvelopeErrorsSourceJSON `json:"-"`
+}
+
+// emailRoutingEditResponseEnvelopeErrorsSourceJSON contains the JSON metadata for
+// the struct [EmailRoutingEditResponseEnvelopeErrorsSource]
+type emailRoutingEditResponseEnvelopeErrorsSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *EmailRoutingEditResponseEnvelopeErrorsSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingEditResponseEnvelopeErrorsSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingEditResponseEnvelopeMessages struct {
+	Code             int64                                          `json:"code" api:"required"`
+	Message          string                                         `json:"message" api:"required"`
+	DocumentationURL string                                         `json:"documentation_url"`
+	Source           EmailRoutingEditResponseEnvelopeMessagesSource `json:"source"`
+	JSON             emailRoutingEditResponseEnvelopeMessagesJSON   `json:"-"`
+}
+
+// emailRoutingEditResponseEnvelopeMessagesJSON contains the JSON metadata for the
+// struct [EmailRoutingEditResponseEnvelopeMessages]
+type emailRoutingEditResponseEnvelopeMessagesJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *EmailRoutingEditResponseEnvelopeMessages) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingEditResponseEnvelopeMessagesJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingEditResponseEnvelopeMessagesSource struct {
+	Pointer string                                             `json:"pointer"`
+	JSON    emailRoutingEditResponseEnvelopeMessagesSourceJSON `json:"-"`
+}
+
+// emailRoutingEditResponseEnvelopeMessagesSourceJSON contains the JSON metadata
+// for the struct [EmailRoutingEditResponseEnvelopeMessagesSource]
+type emailRoutingEditResponseEnvelopeMessagesSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *EmailRoutingEditResponseEnvelopeMessagesSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingEditResponseEnvelopeMessagesSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+// Whether the API call was successful.
+type EmailRoutingEditResponseEnvelopeSuccess bool
+
+const (
+	EmailRoutingEditResponseEnvelopeSuccessTrue EmailRoutingEditResponseEnvelopeSuccess = true
+)
+
+func (r EmailRoutingEditResponseEnvelopeSuccess) IsKnown() bool {
+	switch r {
+	case EmailRoutingEditResponseEnvelopeSuccessTrue:
+		return true
+	}
+	return false
+}
+
+type EmailRoutingEnableParams struct {
+	// Identifier.
+	ZoneID param.Field[string] `path:"zone_id" api:"required"`
+}
+
+type EmailRoutingEnableResponseEnvelope struct {
+	Errors   []EmailRoutingEnableResponseEnvelopeErrors   `json:"errors" api:"required"`
+	Messages []EmailRoutingEnableResponseEnvelopeMessages `json:"messages" api:"required"`
+	// Whether the API call was successful.
+	Success EmailRoutingEnableResponseEnvelopeSuccess `json:"success" api:"required"`
+	Result  Settings                                  `json:"result"`
+	JSON    emailRoutingEnableResponseEnvelopeJSON    `json:"-"`
+}
+
+// emailRoutingEnableResponseEnvelopeJSON contains the JSON metadata for the struct
+// [EmailRoutingEnableResponseEnvelope]
+type emailRoutingEnableResponseEnvelopeJSON struct {
+	Errors      apijson.Field
+	Messages    apijson.Field
+	Success     apijson.Field
+	Result      apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *EmailRoutingEnableResponseEnvelope) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingEnableResponseEnvelopeJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingEnableResponseEnvelopeErrors struct {
+	Code             int64                                          `json:"code" api:"required"`
+	Message          string                                         `json:"message" api:"required"`
+	DocumentationURL string                                         `json:"documentation_url"`
+	Source           EmailRoutingEnableResponseEnvelopeErrorsSource `json:"source"`
+	JSON             emailRoutingEnableResponseEnvelopeErrorsJSON   `json:"-"`
+}
+
+// emailRoutingEnableResponseEnvelopeErrorsJSON contains the JSON metadata for the
+// struct [EmailRoutingEnableResponseEnvelopeErrors]
+type emailRoutingEnableResponseEnvelopeErrorsJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *EmailRoutingEnableResponseEnvelopeErrors) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingEnableResponseEnvelopeErrorsJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingEnableResponseEnvelopeErrorsSource struct {
+	Pointer string                                             `json:"pointer"`
+	JSON    emailRoutingEnableResponseEnvelopeErrorsSourceJSON `json:"-"`
+}
+
+// emailRoutingEnableResponseEnvelopeErrorsSourceJSON contains the JSON metadata
+// for the struct [EmailRoutingEnableResponseEnvelopeErrorsSource]
+type emailRoutingEnableResponseEnvelopeErrorsSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *EmailRoutingEnableResponseEnvelopeErrorsSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingEnableResponseEnvelopeErrorsSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingEnableResponseEnvelopeMessages struct {
+	Code             int64                                            `json:"code" api:"required"`
+	Message          string                                           `json:"message" api:"required"`
+	DocumentationURL string                                           `json:"documentation_url"`
+	Source           EmailRoutingEnableResponseEnvelopeMessagesSource `json:"source"`
+	JSON             emailRoutingEnableResponseEnvelopeMessagesJSON   `json:"-"`
+}
+
+// emailRoutingEnableResponseEnvelopeMessagesJSON contains the JSON metadata for
+// the struct [EmailRoutingEnableResponseEnvelopeMessages]
+type emailRoutingEnableResponseEnvelopeMessagesJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *EmailRoutingEnableResponseEnvelopeMessages) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingEnableResponseEnvelopeMessagesJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingEnableResponseEnvelopeMessagesSource struct {
+	Pointer string                                               `json:"pointer"`
+	JSON    emailRoutingEnableResponseEnvelopeMessagesSourceJSON `json:"-"`
+}
+
+// emailRoutingEnableResponseEnvelopeMessagesSourceJSON contains the JSON metadata
+// for the struct [EmailRoutingEnableResponseEnvelopeMessagesSource]
+type emailRoutingEnableResponseEnvelopeMessagesSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *EmailRoutingEnableResponseEnvelopeMessagesSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingEnableResponseEnvelopeMessagesSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+// Whether the API call was successful.
+type EmailRoutingEnableResponseEnvelopeSuccess bool
+
+const (
+	EmailRoutingEnableResponseEnvelopeSuccessTrue EmailRoutingEnableResponseEnvelopeSuccess = true
+)
+
+func (r EmailRoutingEnableResponseEnvelopeSuccess) IsKnown() bool {
+	switch r {
+	case EmailRoutingEnableResponseEnvelopeSuccessTrue:
+		return true
+	}
+	return false
+}
+
+type EmailRoutingGetParams struct {
+	// Identifier.
+	ZoneID param.Field[string] `path:"zone_id" api:"required"`
+}
+
+type EmailRoutingGetResponseEnvelope struct {
+	Errors   []EmailRoutingGetResponseEnvelopeErrors   `json:"errors" api:"required"`
+	Messages []EmailRoutingGetResponseEnvelopeMessages `json:"messages" api:"required"`
+	// Whether the API call was successful.
+	Success EmailRoutingGetResponseEnvelopeSuccess `json:"success" api:"required"`
+	Result  Settings                               `json:"result"`
+	JSON    emailRoutingGetResponseEnvelopeJSON    `json:"-"`
+}
+
+// emailRoutingGetResponseEnvelopeJSON contains the JSON metadata for the struct
+// [EmailRoutingGetResponseEnvelope]
+type emailRoutingGetResponseEnvelopeJSON struct {
+	Errors      apijson.Field
+	Messages    apijson.Field
+	Success     apijson.Field
+	Result      apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *EmailRoutingGetResponseEnvelope) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingGetResponseEnvelopeJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingGetResponseEnvelopeErrors struct {
+	Code             int64                                       `json:"code" api:"required"`
+	Message          string                                      `json:"message" api:"required"`
+	DocumentationURL string                                      `json:"documentation_url"`
+	Source           EmailRoutingGetResponseEnvelopeErrorsSource `json:"source"`
+	JSON             emailRoutingGetResponseEnvelopeErrorsJSON   `json:"-"`
+}
+
+// emailRoutingGetResponseEnvelopeErrorsJSON contains the JSON metadata for the
+// struct [EmailRoutingGetResponseEnvelopeErrors]
+type emailRoutingGetResponseEnvelopeErrorsJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *EmailRoutingGetResponseEnvelopeErrors) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingGetResponseEnvelopeErrorsJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingGetResponseEnvelopeErrorsSource struct {
+	Pointer string                                          `json:"pointer"`
+	JSON    emailRoutingGetResponseEnvelopeErrorsSourceJSON `json:"-"`
+}
+
+// emailRoutingGetResponseEnvelopeErrorsSourceJSON contains the JSON metadata for
+// the struct [EmailRoutingGetResponseEnvelopeErrorsSource]
+type emailRoutingGetResponseEnvelopeErrorsSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *EmailRoutingGetResponseEnvelopeErrorsSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingGetResponseEnvelopeErrorsSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingGetResponseEnvelopeMessages struct {
+	Code             int64                                         `json:"code" api:"required"`
+	Message          string                                        `json:"message" api:"required"`
+	DocumentationURL string                                        `json:"documentation_url"`
+	Source           EmailRoutingGetResponseEnvelopeMessagesSource `json:"source"`
+	JSON             emailRoutingGetResponseEnvelopeMessagesJSON   `json:"-"`
+}
+
+// emailRoutingGetResponseEnvelopeMessagesJSON contains the JSON metadata for the
+// struct [EmailRoutingGetResponseEnvelopeMessages]
+type emailRoutingGetResponseEnvelopeMessagesJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *EmailRoutingGetResponseEnvelopeMessages) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingGetResponseEnvelopeMessagesJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingGetResponseEnvelopeMessagesSource struct {
+	Pointer string                                            `json:"pointer"`
+	JSON    emailRoutingGetResponseEnvelopeMessagesSourceJSON `json:"-"`
+}
+
+// emailRoutingGetResponseEnvelopeMessagesSourceJSON contains the JSON metadata for
+// the struct [EmailRoutingGetResponseEnvelopeMessagesSource]
+type emailRoutingGetResponseEnvelopeMessagesSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *EmailRoutingGetResponseEnvelopeMessagesSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingGetResponseEnvelopeMessagesSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+// Whether the API call was successful.
+type EmailRoutingGetResponseEnvelopeSuccess bool
+
+const (
+	EmailRoutingGetResponseEnvelopeSuccessTrue EmailRoutingGetResponseEnvelopeSuccess = true
+)
+
+func (r EmailRoutingGetResponseEnvelopeSuccess) IsKnown() bool {
+	switch r {
+	case EmailRoutingGetResponseEnvelopeSuccessTrue:
+		return true
+	}
+	return false
+}
+
+type EmailRoutingUnlockParams struct {
+	// Identifier.
+	ZoneID param.Field[string] `path:"zone_id" api:"required"`
+	// Domain of your zone.
+	Name param.Field[string] `json:"name"`
+}
+
+func (r EmailRoutingUnlockParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type EmailRoutingUnlockResponseEnvelope struct {
+	Errors   []EmailRoutingUnlockResponseEnvelopeErrors   `json:"errors" api:"required"`
+	Messages []EmailRoutingUnlockResponseEnvelopeMessages `json:"messages" api:"required"`
+	// Whether the API call was successful.
+	Success EmailRoutingUnlockResponseEnvelopeSuccess `json:"success" api:"required"`
+	Result  Settings                                  `json:"result"`
+	JSON    emailRoutingUnlockResponseEnvelopeJSON    `json:"-"`
+}
+
+// emailRoutingUnlockResponseEnvelopeJSON contains the JSON metadata for the struct
+// [EmailRoutingUnlockResponseEnvelope]
+type emailRoutingUnlockResponseEnvelopeJSON struct {
+	Errors      apijson.Field
+	Messages    apijson.Field
+	Success     apijson.Field
+	Result      apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *EmailRoutingUnlockResponseEnvelope) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingUnlockResponseEnvelopeJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingUnlockResponseEnvelopeErrors struct {
+	Code             int64                                          `json:"code" api:"required"`
+	Message          string                                         `json:"message" api:"required"`
+	DocumentationURL string                                         `json:"documentation_url"`
+	Source           EmailRoutingUnlockResponseEnvelopeErrorsSource `json:"source"`
+	JSON             emailRoutingUnlockResponseEnvelopeErrorsJSON   `json:"-"`
+}
+
+// emailRoutingUnlockResponseEnvelopeErrorsJSON contains the JSON metadata for the
+// struct [EmailRoutingUnlockResponseEnvelopeErrors]
+type emailRoutingUnlockResponseEnvelopeErrorsJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *EmailRoutingUnlockResponseEnvelopeErrors) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingUnlockResponseEnvelopeErrorsJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingUnlockResponseEnvelopeErrorsSource struct {
+	Pointer string                                             `json:"pointer"`
+	JSON    emailRoutingUnlockResponseEnvelopeErrorsSourceJSON `json:"-"`
+}
+
+// emailRoutingUnlockResponseEnvelopeErrorsSourceJSON contains the JSON metadata
+// for the struct [EmailRoutingUnlockResponseEnvelopeErrorsSource]
+type emailRoutingUnlockResponseEnvelopeErrorsSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *EmailRoutingUnlockResponseEnvelopeErrorsSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingUnlockResponseEnvelopeErrorsSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingUnlockResponseEnvelopeMessages struct {
+	Code             int64                                            `json:"code" api:"required"`
+	Message          string                                           `json:"message" api:"required"`
+	DocumentationURL string                                           `json:"documentation_url"`
+	Source           EmailRoutingUnlockResponseEnvelopeMessagesSource `json:"source"`
+	JSON             emailRoutingUnlockResponseEnvelopeMessagesJSON   `json:"-"`
+}
+
+// emailRoutingUnlockResponseEnvelopeMessagesJSON contains the JSON metadata for
+// the struct [EmailRoutingUnlockResponseEnvelopeMessages]
+type emailRoutingUnlockResponseEnvelopeMessagesJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *EmailRoutingUnlockResponseEnvelopeMessages) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingUnlockResponseEnvelopeMessagesJSON) RawJSON() string {
+	return r.raw
+}
+
+type EmailRoutingUnlockResponseEnvelopeMessagesSource struct {
+	Pointer string                                               `json:"pointer"`
+	JSON    emailRoutingUnlockResponseEnvelopeMessagesSourceJSON `json:"-"`
+}
+
+// emailRoutingUnlockResponseEnvelopeMessagesSourceJSON contains the JSON metadata
+// for the struct [EmailRoutingUnlockResponseEnvelopeMessagesSource]
+type emailRoutingUnlockResponseEnvelopeMessagesSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *EmailRoutingUnlockResponseEnvelopeMessagesSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r emailRoutingUnlockResponseEnvelopeMessagesSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+// Whether the API call was successful.
+type EmailRoutingUnlockResponseEnvelopeSuccess bool
+
+const (
+	EmailRoutingUnlockResponseEnvelopeSuccessTrue EmailRoutingUnlockResponseEnvelopeSuccess = true
+)
+
+func (r EmailRoutingUnlockResponseEnvelopeSuccess) IsKnown() bool {
+	switch r {
+	case EmailRoutingUnlockResponseEnvelopeSuccessTrue:
+		return true
+	}
+	return false
+}

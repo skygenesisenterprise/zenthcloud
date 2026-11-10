@@ -1,0 +1,7718 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package workers
+
+import (
+	"bytes"
+	"context"
+	"errors"
+	"fmt"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"net/url"
+	"reflect"
+	"slices"
+	"time"
+
+	"github.com/cloudflare/cloudflare-go/v7/internal/apiform"
+	"github.com/cloudflare/cloudflare-go/v7/internal/apijson"
+	"github.com/cloudflare/cloudflare-go/v7/internal/apiquery"
+	"github.com/cloudflare/cloudflare-go/v7/internal/param"
+	"github.com/cloudflare/cloudflare-go/v7/internal/requestconfig"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+	"github.com/cloudflare/cloudflare-go/v7/packages/pagination"
+	"github.com/tidwall/gjson"
+)
+
+// ScriptService contains methods and other services that help with interacting
+// with the cloudflare API.
+//
+// Note, unlike clients, this service does not read variables from the environment
+// automatically. You should not instantiate this service directly, and instead use
+// the [NewScriptService] method instead.
+type ScriptService struct {
+	Options                  []option.RequestOption
+	Assets                   *ScriptAssetService
+	Subdomain                *ScriptSubdomainService
+	Schedules                *ScriptScheduleService
+	Tail                     *ScriptTailService
+	Content                  *ScriptContentService
+	Settings                 *ScriptSettingService
+	Deployments              *ScriptDeploymentService
+	Versions                 *ScriptVersionService
+	Secrets                  *ScriptSecretService
+	ScriptAndVersionSettings *ScriptScriptAndVersionSettingService
+}
+
+// NewScriptService generates a new service that applies the given options to each
+// request. These options are applied after the parent client's options (if there
+// is one), and before any request-specific options.
+func NewScriptService(opts ...option.RequestOption) (r *ScriptService) {
+	r = &ScriptService{}
+	r.Options = opts
+	r.Assets = NewScriptAssetService(opts...)
+	r.Subdomain = NewScriptSubdomainService(opts...)
+	r.Schedules = NewScriptScheduleService(opts...)
+	r.Tail = NewScriptTailService(opts...)
+	r.Content = NewScriptContentService(opts...)
+	r.Settings = NewScriptSettingService(opts...)
+	r.Deployments = NewScriptDeploymentService(opts...)
+	r.Versions = NewScriptVersionService(opts...)
+	r.Secrets = NewScriptSecretService(opts...)
+	r.ScriptAndVersionSettings = NewScriptScriptAndVersionSettingService(opts...)
+	return
+}
+
+// Upload Worker code and configuration. For ES module and other module-based
+// Workers, use `multipart/form-data` with a JSON `metadata` part whose
+// `main_module` field names the entrypoint file. Upload each module as a separate
+// file part; JavaScript ES module parts use the `application/javascript+module`
+// content type.
+//
+// Raw `application/javascript` and `text/javascript` request bodies accept only
+// legacy service-worker syntax using `addEventListener`. They do not accept ES
+// module syntax such as `export default`. To upload a module Worker, use the
+// multipart request format instead.
+//
+// Learn more about multipart metadata in the
+// [documentation](https://developers.cloudflare.com/workers/configuration/multipart-upload-metadata/).
+func (r *ScriptService) Update(ctx context.Context, scriptName string, params ScriptUpdateParams, opts ...option.RequestOption) (res *ScriptUpdateResponse, err error) {
+	var env ScriptUpdateResponseEnvelope
+	opts = slices.Concat(r.Options, opts)
+	if params.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	if scriptName == "" {
+		err = errors.New("missing required script_name parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/workers/scripts/%s", params.AccountID, scriptName)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, params, &env, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = &env.Result
+	return res, nil
+}
+
+// Fetch a list of uploaded Worker scripts.
+func (r *ScriptService) List(ctx context.Context, params ScriptListParams, opts ...option.RequestOption) (res *pagination.SinglePage[ScriptListResponse], err error) {
+	var raw *http.Response
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if params.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/workers/scripts", params.AccountID)
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
+	if err != nil {
+		return nil, err
+	}
+	err = cfg.Execute()
+	if err != nil {
+		return nil, err
+	}
+	res.SetPageConfig(cfg, raw)
+	return res, nil
+}
+
+// Fetch a list of uploaded Worker scripts.
+func (r *ScriptService) ListAutoPaging(ctx context.Context, params ScriptListParams, opts ...option.RequestOption) *pagination.SinglePageAutoPager[ScriptListResponse] {
+	return pagination.NewSinglePageAutoPager(r.List(ctx, params, opts...))
+}
+
+// Delete your worker. This call has no response body on a successful delete.
+func (r *ScriptService) Delete(ctx context.Context, scriptName string, params ScriptDeleteParams, opts ...option.RequestOption) (res *ScriptDeleteResponse, err error) {
+	var env ScriptDeleteResponseEnvelope
+	opts = slices.Concat(r.Options, opts)
+	if params.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	if scriptName == "" {
+		err = errors.New("missing required script_name parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/workers/scripts/%s", params.AccountID, scriptName)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, params, &env, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = &env.Result
+	return res, nil
+}
+
+// Fetch raw content for a Worker script. Note this is the original script content,
+// not JSON encoded.
+func (r *ScriptService) Get(ctx context.Context, scriptName string, query ScriptGetParams, opts ...option.RequestOption) (res *string, err error) {
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithHeader("Accept", "application/javascript")}, opts...)
+	if query.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	if scriptName == "" {
+		err = errors.New("missing required script_name parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/workers/scripts/%s", query.AccountID, scriptName)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
+	return res, err
+}
+
+// Search for Worker scripts in an account.
+func (r *ScriptService) Search(ctx context.Context, params ScriptSearchParams, opts ...option.RequestOption) (res *[]ScriptSearchResponse, err error) {
+	var env ScriptSearchResponseEnvelope
+	opts = slices.Concat(r.Options, opts)
+	if params.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/workers/scripts-search", params.AccountID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &env, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = &env.Result
+	return res, nil
+}
+
+type Script struct {
+	// The name used to identify the script.
+	ID string `json:"id"`
+	// Global CacheW configuration for the Worker. When caching is on, the platform
+	// provisions a `cloudflare.app` zone for the Worker. A `type: worker` entry in the
+	// `exports` map can override this value for a single entrypoint.
+	CacheOptions ScriptCacheOptions `json:"cache_options"`
+	// Date indicating targeted support in the Workers runtime. Backwards incompatible
+	// fixes to the runtime following this date will not affect this Worker.
+	CompatibilityDate string `json:"compatibility_date"`
+	// Flags that enable or disable certain features in the Workers runtime. Used to
+	// enable upcoming features or opt in or out of specific changes not included in a
+	// `compatibility_date`.
+	CompatibilityFlags []string `json:"compatibility_flags"`
+	// When the script was created.
+	CreatedOn time.Time `json:"created_on" format:"date-time"`
+	// Hashed script content, can be used in a If-None-Match header when updating.
+	Etag string `json:"etag"`
+	// Declarative exports for the Worker's most recent version, including Durable
+	// Object classes (with their `storage` backend) and named Worker entrypoints.
+	// Tombstoned lifecycle entries are omitted, so only live exports (`created` and
+	// `expecting-transfer`) are returned.
+	Exports map[string]ScriptExport `json:"exports"`
+	// The names of handlers exported as part of the default export.
+	Handlers []string `json:"handlers"`
+	// Whether a Worker contains assets.
+	HasAssets bool `json:"has_assets"`
+	// Whether a Worker contains modules.
+	HasModules bool `json:"has_modules"`
+	// The client most recently used to deploy this Worker.
+	LastDeployedFrom string `json:"last_deployed_from"`
+	// Whether Logpush is turned on for the Worker.
+	Logpush bool `json:"logpush"`
+	// The tag of the Durable Object migration that was most recently applied for this
+	// Worker.
+	MigrationTag string `json:"migration_tag"`
+	// When the script was last modified.
+	ModifiedOn time.Time `json:"modified_on" format:"date-time"`
+	// Named exports, such as Durable Object class implementations and named
+	// entrypoints.
+	NamedHandlers []ScriptNamedHandler `json:"named_handlers"`
+	// Observability settings for the Worker.
+	Observability ScriptObservability `json:"observability"`
+	// Configuration for
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	// Specify mode='smart' for Smart Placement, or one of region/hostname/host.
+	Placement ScriptPlacement `json:"placement"`
+	// Configuration for
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	// Specify mode='smart' for Smart Placement, or one of region/hostname/host.
+	//
+	// Deprecated: deprecated
+	PlacementMode ScriptPlacementMode `json:"placement_mode"`
+	// Status of
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	//
+	// Deprecated: deprecated
+	PlacementStatus ScriptPlacementStatus `json:"placement_status"`
+	// The immutable ID of the script.
+	Tag string `json:"tag"`
+	// Tags associated with the Worker.
+	Tags []string `json:"tags" api:"nullable"`
+	// List of Workers that will consume logs from the attached Worker.
+	TailConsumers []ConsumerScript `json:"tail_consumers" api:"nullable"`
+	// Usage model for the Worker invocations.
+	UsageModel ScriptUsageModel `json:"usage_model"`
+	JSON       scriptJSON       `json:"-"`
+}
+
+// scriptJSON contains the JSON metadata for the struct [Script]
+type scriptJSON struct {
+	ID                 apijson.Field
+	CacheOptions       apijson.Field
+	CompatibilityDate  apijson.Field
+	CompatibilityFlags apijson.Field
+	CreatedOn          apijson.Field
+	Etag               apijson.Field
+	Exports            apijson.Field
+	Handlers           apijson.Field
+	HasAssets          apijson.Field
+	HasModules         apijson.Field
+	LastDeployedFrom   apijson.Field
+	Logpush            apijson.Field
+	MigrationTag       apijson.Field
+	ModifiedOn         apijson.Field
+	NamedHandlers      apijson.Field
+	Observability      apijson.Field
+	Placement          apijson.Field
+	PlacementMode      apijson.Field
+	PlacementStatus    apijson.Field
+	Tag                apijson.Field
+	Tags               apijson.Field
+	TailConsumers      apijson.Field
+	UsageModel         apijson.Field
+	raw                string
+	ExtraFields        map[string]apijson.Field
+}
+
+func (r *Script) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptJSON) RawJSON() string {
+	return r.raw
+}
+
+// Global CacheW configuration for the Worker. When caching is on, the platform
+// provisions a `cloudflare.app` zone for the Worker. A `type: worker` entry in the
+// `exports` map can override this value for a single entrypoint.
+type ScriptCacheOptions struct {
+	// Whether caching is enabled for this Worker.
+	Enabled bool `json:"enabled" api:"required"`
+	// Whether cached responses are shared across Worker version uploads. This is
+	// independent of `enabled`. It can stay true while caching is off, so the
+	// preference survives turning caching off and back on.
+	CrossVersionCache bool                   `json:"cross_version_cache"`
+	JSON              scriptCacheOptionsJSON `json:"-"`
+}
+
+// scriptCacheOptionsJSON contains the JSON metadata for the struct
+// [ScriptCacheOptions]
+type scriptCacheOptionsJSON struct {
+	Enabled           apijson.Field
+	CrossVersionCache apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
+}
+
+func (r *ScriptCacheOptions) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptCacheOptionsJSON) RawJSON() string {
+	return r.raw
+}
+
+// A single entry in the `exports` map, keyed by export name (a `WorkerEntrypoint`
+// class name, a Durable Object class name, or `default` for the Worker's default
+// export). The `type` discriminator selects the top-level shape: `worker`
+// entrypoint entries may carry `cache` configuration, while `durable-object`
+// entries are further refined by the optional `state` field (default `created`).
+// Tombstone states (`deleted`, `renamed`, `transferred`) express destructive
+// lifecycle operations declaratively; `expecting-transfer` is the live target side
+// of a transfer. The server validates the exact per-(type, state) field
+// combinations; fields not listed for a variant are rejected.
+type ScriptExport struct {
+	// Marks this entry as a Worker entrypoint export.
+	Type ScriptExportsType `json:"type" api:"required"`
+	// This field can have the runtime type of [ScriptExportsWorkersWorkerExportCache].
+	Cache interface{} `json:"cache"`
+	// Name of the container (declared in the upload's `metadata.containers`) that
+	// backs this Durable Object. When set, the namespace is container-enabled. Valid
+	// only on live entries.
+	Container string `json:"container"`
+	// Live export. May be omitted; defaults to `created`.
+	State ScriptExportsState `json:"state"`
+	// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+	// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+	// already exists as KV-backed; the `exports` flow never provisions a new
+	// `legacy-kv` namespace.
+	Storage ScriptExportsStorage `json:"storage"`
+	// The source script name to receive the namespace from. Must be in the same
+	// account and dispatch-namespace context. Present on reads for
+	// `expecting-transfer` entries.
+	TransferFrom string           `json:"transfer_from"`
+	JSON         scriptExportJSON `json:"-"`
+	union        ScriptExportsUnion
+}
+
+// scriptExportJSON contains the JSON metadata for the struct [ScriptExport]
+type scriptExportJSON struct {
+	Type         apijson.Field
+	Cache        apijson.Field
+	Container    apijson.Field
+	State        apijson.Field
+	Storage      apijson.Field
+	TransferFrom apijson.Field
+	raw          string
+	ExtraFields  map[string]apijson.Field
+}
+
+func (r scriptExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r *ScriptExport) UnmarshalJSON(data []byte) (err error) {
+	*r = ScriptExport{}
+	err = apijson.UnmarshalRoot(data, &r.union)
+	if err != nil {
+		return err
+	}
+	return apijson.Port(r.union, &r)
+}
+
+// AsUnion returns a [ScriptExportsUnion] interface which you can cast to the
+// specific types for more type safety.
+//
+// Possible runtime types of the union are [ScriptExportsWorkersWorkerExport],
+// [ScriptExportsWorkersDurableObjectExport],
+// [ScriptExportsWorkersDurableObjectDeletedExport],
+// [ScriptExportsWorkersDurableObjectRenamedExport],
+// [ScriptExportsWorkersDurableObjectTransferredExport],
+// [ScriptExportsWorkersDurableObjectExpectingTransferExport].
+func (r ScriptExport) AsUnion() ScriptExportsUnion {
+	return r.union
+}
+
+// A single entry in the `exports` map, keyed by export name (a `WorkerEntrypoint`
+// class name, a Durable Object class name, or `default` for the Worker's default
+// export). The `type` discriminator selects the top-level shape: `worker`
+// entrypoint entries may carry `cache` configuration, while `durable-object`
+// entries are further refined by the optional `state` field (default `created`).
+// Tombstone states (`deleted`, `renamed`, `transferred`) express destructive
+// lifecycle operations declaratively; `expecting-transfer` is the live target side
+// of a transfer. The server validates the exact per-(type, state) field
+// combinations; fields not listed for a variant are rejected.
+//
+// Union satisfied by [ScriptExportsWorkersWorkerExport],
+// [ScriptExportsWorkersDurableObjectExport],
+// [ScriptExportsWorkersDurableObjectDeletedExport],
+// [ScriptExportsWorkersDurableObjectRenamedExport],
+// [ScriptExportsWorkersDurableObjectTransferredExport] or
+// [ScriptExportsWorkersDurableObjectExpectingTransferExport].
+type ScriptExportsUnion interface {
+	implementsScriptExport()
+}
+
+func init() {
+	apijson.RegisterUnion(
+		reflect.TypeOf((*ScriptExportsUnion)(nil)).Elem(),
+		"type",
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ScriptExportsWorkersWorkerExport{}),
+			DiscriminatorValue: "worker",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ScriptExportsWorkersDurableObjectExport{}),
+			DiscriminatorValue: "durable-object",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ScriptExportsWorkersDurableObjectDeletedExport{}),
+			DiscriminatorValue: "durable-object",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ScriptExportsWorkersDurableObjectRenamedExport{}),
+			DiscriminatorValue: "durable-object",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ScriptExportsWorkersDurableObjectTransferredExport{}),
+			DiscriminatorValue: "durable-object",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ScriptExportsWorkersDurableObjectExpectingTransferExport{}),
+			DiscriminatorValue: "durable-object",
+		},
+	)
+}
+
+// A named Worker entrypoint export (`type: worker`). Worker entrypoints are always
+// live (`state: created`) and carry no storage or lifecycle fields. The optional
+// `cache` block overrides the Worker's global `cache_options.enabled` for this
+// entrypoint.
+type ScriptExportsWorkersWorkerExport struct {
+	// Marks this entry as a Worker entrypoint export.
+	Type ScriptExportsWorkersWorkerExportType `json:"type" api:"required"`
+	// Cache override for this entrypoint. Overrides the Worker's global
+	// `cache_options.enabled` for this entrypoint only.
+	Cache ScriptExportsWorkersWorkerExportCache `json:"cache"`
+	// Live export. May be omitted; defaults to `created`.
+	State ScriptExportsWorkersWorkerExportState `json:"state"`
+	JSON  scriptExportsWorkersWorkerExportJSON  `json:"-"`
+}
+
+// scriptExportsWorkersWorkerExportJSON contains the JSON metadata for the struct
+// [ScriptExportsWorkersWorkerExport]
+type scriptExportsWorkersWorkerExportJSON struct {
+	Type        apijson.Field
+	Cache       apijson.Field
+	State       apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptExportsWorkersWorkerExport) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptExportsWorkersWorkerExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptExportsWorkersWorkerExport) implementsScriptExport() {}
+
+// Marks this entry as a Worker entrypoint export.
+type ScriptExportsWorkersWorkerExportType string
+
+const (
+	ScriptExportsWorkersWorkerExportTypeWorker ScriptExportsWorkersWorkerExportType = "worker"
+)
+
+func (r ScriptExportsWorkersWorkerExportType) IsKnown() bool {
+	switch r {
+	case ScriptExportsWorkersWorkerExportTypeWorker:
+		return true
+	}
+	return false
+}
+
+// Cache override for this entrypoint. Overrides the Worker's global
+// `cache_options.enabled` for this entrypoint only.
+type ScriptExportsWorkersWorkerExportCache struct {
+	// Whether caching is enabled for this entrypoint.
+	Enabled bool                                      `json:"enabled" api:"required"`
+	JSON    scriptExportsWorkersWorkerExportCacheJSON `json:"-"`
+}
+
+// scriptExportsWorkersWorkerExportCacheJSON contains the JSON metadata for the
+// struct [ScriptExportsWorkersWorkerExportCache]
+type scriptExportsWorkersWorkerExportCacheJSON struct {
+	Enabled     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptExportsWorkersWorkerExportCache) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptExportsWorkersWorkerExportCacheJSON) RawJSON() string {
+	return r.raw
+}
+
+// Live export. May be omitted; defaults to `created`.
+type ScriptExportsWorkersWorkerExportState string
+
+const (
+	ScriptExportsWorkersWorkerExportStateCreated ScriptExportsWorkersWorkerExportState = "created"
+)
+
+func (r ScriptExportsWorkersWorkerExportState) IsKnown() bool {
+	switch r {
+	case ScriptExportsWorkersWorkerExportStateCreated:
+		return true
+	}
+	return false
+}
+
+// A live Durable Object export (`state: created`, the default). The platform
+// auto-provisions the namespace on first deploy, matches it on subsequent deploys,
+// and never mutates or deletes it as a side effect of a code-only change.
+// `storage` is required; `renamed_to`, `transferred_to` and `transfer_from` are
+// not allowed on a live entry.
+type ScriptExportsWorkersDurableObjectExport struct {
+	// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+	// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+	// already exists as KV-backed; the `exports` flow never provisions a new
+	// `legacy-kv` namespace.
+	Storage ScriptExportsWorkersDurableObjectExportStorage `json:"storage" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type ScriptExportsWorkersDurableObjectExportType `json:"type" api:"required"`
+	// Name of the container (declared in the upload's `metadata.containers`) that
+	// backs this Durable Object. When set, the namespace is container-enabled. Valid
+	// only on live entries.
+	Container string `json:"container"`
+	// Live export. May be omitted; defaults to `created`.
+	State ScriptExportsWorkersDurableObjectExportState `json:"state"`
+	JSON  scriptExportsWorkersDurableObjectExportJSON  `json:"-"`
+}
+
+// scriptExportsWorkersDurableObjectExportJSON contains the JSON metadata for the
+// struct [ScriptExportsWorkersDurableObjectExport]
+type scriptExportsWorkersDurableObjectExportJSON struct {
+	Storage     apijson.Field
+	Type        apijson.Field
+	Container   apijson.Field
+	State       apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptExportsWorkersDurableObjectExport) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptExportsWorkersDurableObjectExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptExportsWorkersDurableObjectExport) implementsScriptExport() {}
+
+// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+// already exists as KV-backed; the `exports` flow never provisions a new
+// `legacy-kv` namespace.
+type ScriptExportsWorkersDurableObjectExportStorage string
+
+const (
+	ScriptExportsWorkersDurableObjectExportStorageSqlite   ScriptExportsWorkersDurableObjectExportStorage = "sqlite"
+	ScriptExportsWorkersDurableObjectExportStorageLegacyKV ScriptExportsWorkersDurableObjectExportStorage = "legacy-kv"
+)
+
+func (r ScriptExportsWorkersDurableObjectExportStorage) IsKnown() bool {
+	switch r {
+	case ScriptExportsWorkersDurableObjectExportStorageSqlite, ScriptExportsWorkersDurableObjectExportStorageLegacyKV:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptExportsWorkersDurableObjectExportType string
+
+const (
+	ScriptExportsWorkersDurableObjectExportTypeDurableObject ScriptExportsWorkersDurableObjectExportType = "durable-object"
+)
+
+func (r ScriptExportsWorkersDurableObjectExportType) IsKnown() bool {
+	switch r {
+	case ScriptExportsWorkersDurableObjectExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// Live export. May be omitted; defaults to `created`.
+type ScriptExportsWorkersDurableObjectExportState string
+
+const (
+	ScriptExportsWorkersDurableObjectExportStateCreated ScriptExportsWorkersDurableObjectExportState = "created"
+)
+
+func (r ScriptExportsWorkersDurableObjectExportState) IsKnown() bool {
+	switch r {
+	case ScriptExportsWorkersDurableObjectExportStateCreated:
+		return true
+	}
+	return false
+}
+
+// A `deleted` tombstone: retires the provisioned namespace for this class and all
+// of its data. The class must be absent from the uploaded code and no other Worker
+// in the account may bind to the namespace, otherwise the deploy is rejected. No
+// other fields are allowed. Deletion is irreversible.
+type ScriptExportsWorkersDurableObjectDeletedExport struct {
+	// Tombstone that deletes the namespace.
+	State ScriptExportsWorkersDurableObjectDeletedExportState `json:"state" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type ScriptExportsWorkersDurableObjectDeletedExportType `json:"type" api:"required"`
+	JSON scriptExportsWorkersDurableObjectDeletedExportJSON `json:"-"`
+}
+
+// scriptExportsWorkersDurableObjectDeletedExportJSON contains the JSON metadata
+// for the struct [ScriptExportsWorkersDurableObjectDeletedExport]
+type scriptExportsWorkersDurableObjectDeletedExportJSON struct {
+	State       apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptExportsWorkersDurableObjectDeletedExport) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptExportsWorkersDurableObjectDeletedExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptExportsWorkersDurableObjectDeletedExport) implementsScriptExport() {}
+
+// Tombstone that deletes the namespace.
+type ScriptExportsWorkersDurableObjectDeletedExportState string
+
+const (
+	ScriptExportsWorkersDurableObjectDeletedExportStateDeleted ScriptExportsWorkersDurableObjectDeletedExportState = "deleted"
+)
+
+func (r ScriptExportsWorkersDurableObjectDeletedExportState) IsKnown() bool {
+	switch r {
+	case ScriptExportsWorkersDurableObjectDeletedExportStateDeleted:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptExportsWorkersDurableObjectDeletedExportType string
+
+const (
+	ScriptExportsWorkersDurableObjectDeletedExportTypeDurableObject ScriptExportsWorkersDurableObjectDeletedExportType = "durable-object"
+)
+
+func (r ScriptExportsWorkersDurableObjectDeletedExportType) IsKnown() bool {
+	switch r {
+	case ScriptExportsWorkersDurableObjectDeletedExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// A `renamed` tombstone: rewrites the provisioned namespace's class name from this
+// map key to `renamed_to`. The source class may stay in code during the rollout
+// window (an info notice is emitted). `storage`, `transferred_to` and
+// `transfer_from` are not allowed.
+type ScriptExportsWorkersDurableObjectRenamedExport struct {
+	// Tombstone that renames the namespace's class.
+	State ScriptExportsWorkersDurableObjectRenamedExportState `json:"state" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type ScriptExportsWorkersDurableObjectRenamedExportType `json:"type" api:"required"`
+	JSON scriptExportsWorkersDurableObjectRenamedExportJSON `json:"-"`
+}
+
+// scriptExportsWorkersDurableObjectRenamedExportJSON contains the JSON metadata
+// for the struct [ScriptExportsWorkersDurableObjectRenamedExport]
+type scriptExportsWorkersDurableObjectRenamedExportJSON struct {
+	State       apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptExportsWorkersDurableObjectRenamedExport) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptExportsWorkersDurableObjectRenamedExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptExportsWorkersDurableObjectRenamedExport) implementsScriptExport() {}
+
+// Tombstone that renames the namespace's class.
+type ScriptExportsWorkersDurableObjectRenamedExportState string
+
+const (
+	ScriptExportsWorkersDurableObjectRenamedExportStateRenamed ScriptExportsWorkersDurableObjectRenamedExportState = "renamed"
+)
+
+func (r ScriptExportsWorkersDurableObjectRenamedExportState) IsKnown() bool {
+	switch r {
+	case ScriptExportsWorkersDurableObjectRenamedExportStateRenamed:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptExportsWorkersDurableObjectRenamedExportType string
+
+const (
+	ScriptExportsWorkersDurableObjectRenamedExportTypeDurableObject ScriptExportsWorkersDurableObjectRenamedExportType = "durable-object"
+)
+
+func (r ScriptExportsWorkersDurableObjectRenamedExportType) IsKnown() bool {
+	switch r {
+	case ScriptExportsWorkersDurableObjectRenamedExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// A `transferred` tombstone (source side of a two-phase transfer): hands ownership
+// of the provisioned namespace to another script in the same account, named by
+// `transferred_to`. The target must have already deployed a matching
+// `expecting-transfer` entry. The source class may stay in code during the rollout
+// window (an info notice is emitted). `storage`, `renamed_to` and `transfer_from`
+// are not allowed.
+type ScriptExportsWorkersDurableObjectTransferredExport struct {
+	// Tombstone that transfers the namespace to another script.
+	State ScriptExportsWorkersDurableObjectTransferredExportState `json:"state" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type ScriptExportsWorkersDurableObjectTransferredExportType `json:"type" api:"required"`
+	JSON scriptExportsWorkersDurableObjectTransferredExportJSON `json:"-"`
+}
+
+// scriptExportsWorkersDurableObjectTransferredExportJSON contains the JSON
+// metadata for the struct [ScriptExportsWorkersDurableObjectTransferredExport]
+type scriptExportsWorkersDurableObjectTransferredExportJSON struct {
+	State       apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptExportsWorkersDurableObjectTransferredExport) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptExportsWorkersDurableObjectTransferredExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptExportsWorkersDurableObjectTransferredExport) implementsScriptExport() {}
+
+// Tombstone that transfers the namespace to another script.
+type ScriptExportsWorkersDurableObjectTransferredExportState string
+
+const (
+	ScriptExportsWorkersDurableObjectTransferredExportStateTransferred ScriptExportsWorkersDurableObjectTransferredExportState = "transferred"
+)
+
+func (r ScriptExportsWorkersDurableObjectTransferredExportState) IsKnown() bool {
+	switch r {
+	case ScriptExportsWorkersDurableObjectTransferredExportStateTransferred:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptExportsWorkersDurableObjectTransferredExportType string
+
+const (
+	ScriptExportsWorkersDurableObjectTransferredExportTypeDurableObject ScriptExportsWorkersDurableObjectTransferredExportType = "durable-object"
+)
+
+func (r ScriptExportsWorkersDurableObjectTransferredExportType) IsKnown() bool {
+	switch r {
+	case ScriptExportsWorkersDurableObjectTransferredExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// The target side of a two-phase transfer (`state: expecting-transfer`). Declares
+// that this script expects to receive a namespace for this class from the
+// `transfer_from` script. This is a live entry, not a tombstone: bindings resolve
+// through the source's namespace until the source commits with a `transferred`
+// tombstone. `storage` and `transfer_from` are required; `renamed_to` and
+// `transferred_to` are not allowed.
+type ScriptExportsWorkersDurableObjectExpectingTransferExport struct {
+	// Target side of a two-phase transfer.
+	State ScriptExportsWorkersDurableObjectExpectingTransferExportState `json:"state" api:"required"`
+	// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+	// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+	// already exists as KV-backed; the `exports` flow never provisions a new
+	// `legacy-kv` namespace.
+	Storage ScriptExportsWorkersDurableObjectExpectingTransferExportStorage `json:"storage" api:"required"`
+	// The source script name to receive the namespace from. Must be in the same
+	// account and dispatch-namespace context. Present on reads for
+	// `expecting-transfer` entries.
+	TransferFrom string `json:"transfer_from" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type ScriptExportsWorkersDurableObjectExpectingTransferExportType `json:"type" api:"required"`
+	// Name of the container (declared in the upload's `metadata.containers`) that
+	// backs this Durable Object once the transfer settles. Valid only on live entries.
+	Container string                                                       `json:"container"`
+	JSON      scriptExportsWorkersDurableObjectExpectingTransferExportJSON `json:"-"`
+}
+
+// scriptExportsWorkersDurableObjectExpectingTransferExportJSON contains the JSON
+// metadata for the struct
+// [ScriptExportsWorkersDurableObjectExpectingTransferExport]
+type scriptExportsWorkersDurableObjectExpectingTransferExportJSON struct {
+	State        apijson.Field
+	Storage      apijson.Field
+	TransferFrom apijson.Field
+	Type         apijson.Field
+	Container    apijson.Field
+	raw          string
+	ExtraFields  map[string]apijson.Field
+}
+
+func (r *ScriptExportsWorkersDurableObjectExpectingTransferExport) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptExportsWorkersDurableObjectExpectingTransferExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptExportsWorkersDurableObjectExpectingTransferExport) implementsScriptExport() {}
+
+// Target side of a two-phase transfer.
+type ScriptExportsWorkersDurableObjectExpectingTransferExportState string
+
+const (
+	ScriptExportsWorkersDurableObjectExpectingTransferExportStateExpectingTransfer ScriptExportsWorkersDurableObjectExpectingTransferExportState = "expecting-transfer"
+)
+
+func (r ScriptExportsWorkersDurableObjectExpectingTransferExportState) IsKnown() bool {
+	switch r {
+	case ScriptExportsWorkersDurableObjectExpectingTransferExportStateExpectingTransfer:
+		return true
+	}
+	return false
+}
+
+// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+// already exists as KV-backed; the `exports` flow never provisions a new
+// `legacy-kv` namespace.
+type ScriptExportsWorkersDurableObjectExpectingTransferExportStorage string
+
+const (
+	ScriptExportsWorkersDurableObjectExpectingTransferExportStorageSqlite   ScriptExportsWorkersDurableObjectExpectingTransferExportStorage = "sqlite"
+	ScriptExportsWorkersDurableObjectExpectingTransferExportStorageLegacyKV ScriptExportsWorkersDurableObjectExpectingTransferExportStorage = "legacy-kv"
+)
+
+func (r ScriptExportsWorkersDurableObjectExpectingTransferExportStorage) IsKnown() bool {
+	switch r {
+	case ScriptExportsWorkersDurableObjectExpectingTransferExportStorageSqlite, ScriptExportsWorkersDurableObjectExpectingTransferExportStorageLegacyKV:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptExportsWorkersDurableObjectExpectingTransferExportType string
+
+const (
+	ScriptExportsWorkersDurableObjectExpectingTransferExportTypeDurableObject ScriptExportsWorkersDurableObjectExpectingTransferExportType = "durable-object"
+)
+
+func (r ScriptExportsWorkersDurableObjectExpectingTransferExportType) IsKnown() bool {
+	switch r {
+	case ScriptExportsWorkersDurableObjectExpectingTransferExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Worker entrypoint export.
+type ScriptExportsType string
+
+const (
+	ScriptExportsTypeWorker        ScriptExportsType = "worker"
+	ScriptExportsTypeDurableObject ScriptExportsType = "durable-object"
+)
+
+func (r ScriptExportsType) IsKnown() bool {
+	switch r {
+	case ScriptExportsTypeWorker, ScriptExportsTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// Live export. May be omitted; defaults to `created`.
+type ScriptExportsState string
+
+const (
+	ScriptExportsStateCreated           ScriptExportsState = "created"
+	ScriptExportsStateDeleted           ScriptExportsState = "deleted"
+	ScriptExportsStateRenamed           ScriptExportsState = "renamed"
+	ScriptExportsStateTransferred       ScriptExportsState = "transferred"
+	ScriptExportsStateExpectingTransfer ScriptExportsState = "expecting-transfer"
+)
+
+func (r ScriptExportsState) IsKnown() bool {
+	switch r {
+	case ScriptExportsStateCreated, ScriptExportsStateDeleted, ScriptExportsStateRenamed, ScriptExportsStateTransferred, ScriptExportsStateExpectingTransfer:
+		return true
+	}
+	return false
+}
+
+// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+// already exists as KV-backed; the `exports` flow never provisions a new
+// `legacy-kv` namespace.
+type ScriptExportsStorage string
+
+const (
+	ScriptExportsStorageSqlite   ScriptExportsStorage = "sqlite"
+	ScriptExportsStorageLegacyKV ScriptExportsStorage = "legacy-kv"
+)
+
+func (r ScriptExportsStorage) IsKnown() bool {
+	switch r {
+	case ScriptExportsStorageSqlite, ScriptExportsStorageLegacyKV:
+		return true
+	}
+	return false
+}
+
+type ScriptNamedHandler struct {
+	// The names of handlers exported as part of the named export.
+	Handlers []string `json:"handlers"`
+	// The name of the export.
+	Name string                 `json:"name"`
+	JSON scriptNamedHandlerJSON `json:"-"`
+}
+
+// scriptNamedHandlerJSON contains the JSON metadata for the struct
+// [ScriptNamedHandler]
+type scriptNamedHandlerJSON struct {
+	Handlers    apijson.Field
+	Name        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptNamedHandler) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptNamedHandlerJSON) RawJSON() string {
+	return r.raw
+}
+
+// Observability settings for the Worker.
+type ScriptObservability struct {
+	// Whether observability is enabled for the Worker.
+	Enabled bool `json:"enabled" api:"required"`
+	// The sampling rate for incoming requests. From 0 to 1 (1 = 100%, 0.1 = 10%).
+	// Default is 1.
+	HeadSamplingRate float64 `json:"head_sampling_rate" api:"nullable"`
+	// Real-time Issues settings for the Worker.
+	Issues ScriptObservabilityIssues `json:"issues" api:"nullable"`
+	// Log settings for the Worker.
+	Logs ScriptObservabilityLogs `json:"logs" api:"nullable"`
+	// Whether query strings are removed from request URLs in logs and traces.
+	RedactQueryString bool `json:"redact_query_string"`
+	// Trace settings for the Worker.
+	Traces ScriptObservabilityTraces `json:"traces" api:"nullable"`
+	JSON   scriptObservabilityJSON   `json:"-"`
+}
+
+// scriptObservabilityJSON contains the JSON metadata for the struct
+// [ScriptObservability]
+type scriptObservabilityJSON struct {
+	Enabled           apijson.Field
+	HeadSamplingRate  apijson.Field
+	Issues            apijson.Field
+	Logs              apijson.Field
+	RedactQueryString apijson.Field
+	Traces            apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
+}
+
+func (r *ScriptObservability) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptObservabilityJSON) RawJSON() string {
+	return r.raw
+}
+
+// Real-time Issues settings for the Worker.
+type ScriptObservabilityIssues struct {
+	// Whether real-time Issues are enabled for the Worker.
+	Enabled bool                          `json:"enabled"`
+	JSON    scriptObservabilityIssuesJSON `json:"-"`
+}
+
+// scriptObservabilityIssuesJSON contains the JSON metadata for the struct
+// [ScriptObservabilityIssues]
+type scriptObservabilityIssuesJSON struct {
+	Enabled     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptObservabilityIssues) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptObservabilityIssuesJSON) RawJSON() string {
+	return r.raw
+}
+
+// Log settings for the Worker.
+type ScriptObservabilityLogs struct {
+	// Whether logs are enabled for the Worker.
+	Enabled bool `json:"enabled" api:"required"`
+	// Whether
+	// [invocation logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#invocation-logs)
+	// are enabled for the Worker.
+	InvocationLogs bool `json:"invocation_logs" api:"required"`
+	// A list of destinations where logs will be exported to.
+	Destinations []string `json:"destinations"`
+	// The sampling rate for logs. From 0 to 1 (1 = 100%, 0.1 = 10%). Default is 1.
+	HeadSamplingRate float64 `json:"head_sampling_rate" api:"nullable"`
+	// Whether log persistence is enabled for the Worker.
+	Persist bool                        `json:"persist"`
+	JSON    scriptObservabilityLogsJSON `json:"-"`
+}
+
+// scriptObservabilityLogsJSON contains the JSON metadata for the struct
+// [ScriptObservabilityLogs]
+type scriptObservabilityLogsJSON struct {
+	Enabled          apijson.Field
+	InvocationLogs   apijson.Field
+	Destinations     apijson.Field
+	HeadSamplingRate apijson.Field
+	Persist          apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *ScriptObservabilityLogs) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptObservabilityLogsJSON) RawJSON() string {
+	return r.raw
+}
+
+// Trace settings for the Worker.
+type ScriptObservabilityTraces struct {
+	// A list of destinations where traces will be exported to.
+	Destinations []string `json:"destinations"`
+	// Whether traces are enabled for the Worker.
+	Enabled bool `json:"enabled"`
+	// The sampling rate for traces. From 0 to 1 (1 = 100%, 0.1 = 10%). Default is 1.
+	HeadSamplingRate float64 `json:"head_sampling_rate" api:"nullable"`
+	// Whether trace persistence is enabled for the Worker.
+	Persist bool `json:"persist"`
+	// Controls how inbound trace context (traceparent/tracestate) headers on incoming
+	// requests are handled. "authenticated" honors inbound trace context only when
+	// accompanied by a valid trace auth token. "accept" unconditionally accepts
+	// inbound trace context. Requires the trace propagation feature to be enabled.
+	// Returns null when the trace propagation feature is not enabled for the account.
+	PropagationPolicy ScriptObservabilityTracesPropagationPolicy `json:"propagation_policy" api:"nullable"`
+	JSON              scriptObservabilityTracesJSON              `json:"-"`
+}
+
+// scriptObservabilityTracesJSON contains the JSON metadata for the struct
+// [ScriptObservabilityTraces]
+type scriptObservabilityTracesJSON struct {
+	Destinations      apijson.Field
+	Enabled           apijson.Field
+	HeadSamplingRate  apijson.Field
+	Persist           apijson.Field
+	PropagationPolicy apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
+}
+
+func (r *ScriptObservabilityTraces) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptObservabilityTracesJSON) RawJSON() string {
+	return r.raw
+}
+
+// Controls how inbound trace context (traceparent/tracestate) headers on incoming
+// requests are handled. "authenticated" honors inbound trace context only when
+// accompanied by a valid trace auth token. "accept" unconditionally accepts
+// inbound trace context. Requires the trace propagation feature to be enabled.
+// Returns null when the trace propagation feature is not enabled for the account.
+type ScriptObservabilityTracesPropagationPolicy string
+
+const (
+	ScriptObservabilityTracesPropagationPolicyAuthenticated ScriptObservabilityTracesPropagationPolicy = "authenticated"
+	ScriptObservabilityTracesPropagationPolicyAccept        ScriptObservabilityTracesPropagationPolicy = "accept"
+)
+
+func (r ScriptObservabilityTracesPropagationPolicy) IsKnown() bool {
+	switch r {
+	case ScriptObservabilityTracesPropagationPolicyAuthenticated, ScriptObservabilityTracesPropagationPolicyAccept:
+		return true
+	}
+	return false
+}
+
+// Configuration for
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+// Specify mode='smart' for Smart Placement, or one of region/hostname/host.
+type ScriptPlacement struct {
+	// TCP host and port for targeted placement.
+	Host string `json:"host"`
+	// HTTP hostname for targeted placement.
+	Hostname string `json:"hostname"`
+	// The last time the script was analyzed for
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	LastAnalyzedAt time.Time `json:"last_analyzed_at" format:"date-time"`
+	// Enables
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	Mode ScriptPlacementMode `json:"mode"`
+	// Cloud region for targeted placement in format 'provider:region'.
+	Region string `json:"region"`
+	// Status of
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	Status ScriptPlacementStatus `json:"status"`
+	// This field can have the runtime type of [[]ScriptPlacementObjectTarget].
+	Target interface{}         `json:"target"`
+	JSON   scriptPlacementJSON `json:"-"`
+	union  ScriptPlacementUnion
+}
+
+// scriptPlacementJSON contains the JSON metadata for the struct [ScriptPlacement]
+type scriptPlacementJSON struct {
+	Host           apijson.Field
+	Hostname       apijson.Field
+	LastAnalyzedAt apijson.Field
+	Mode           apijson.Field
+	Region         apijson.Field
+	Status         apijson.Field
+	Target         apijson.Field
+	raw            string
+	ExtraFields    map[string]apijson.Field
+}
+
+func (r scriptPlacementJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r *ScriptPlacement) UnmarshalJSON(data []byte) (err error) {
+	*r = ScriptPlacement{}
+	err = apijson.UnmarshalRoot(data, &r.union)
+	if err != nil {
+		return err
+	}
+	return apijson.Port(r.union, &r)
+}
+
+// AsUnion returns a [ScriptPlacementUnion] interface which you can cast to the
+// specific types for more type safety.
+//
+// Possible runtime types of the union are [ScriptPlacementObject],
+// [ScriptPlacementObject], [ScriptPlacementObject], [ScriptPlacementObject],
+// [ScriptPlacementObject], [ScriptPlacementObject], [ScriptPlacementObject],
+// [ScriptPlacementObject].
+func (r ScriptPlacement) AsUnion() ScriptPlacementUnion {
+	return r.union
+}
+
+// Configuration for
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+// Specify mode='smart' for Smart Placement, or one of region/hostname/host.
+//
+// Union satisfied by [ScriptPlacementObject], [ScriptPlacementObject],
+// [ScriptPlacementObject], [ScriptPlacementObject], [ScriptPlacementObject],
+// [ScriptPlacementObject], [ScriptPlacementObject] or [ScriptPlacementObject].
+type ScriptPlacementUnion interface {
+	implementsScriptPlacement()
+}
+
+func init() {
+	apijson.RegisterUnion(
+		reflect.TypeOf((*ScriptPlacementUnion)(nil)).Elem(),
+		"",
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptPlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptPlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptPlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptPlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptPlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptPlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptPlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptPlacementObject{}),
+		},
+	)
+}
+
+type ScriptPlacementObject struct {
+	// Enables
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	Mode ScriptPlacementObjectMode `json:"mode" api:"required"`
+	// The last time the script was analyzed for
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	LastAnalyzedAt time.Time `json:"last_analyzed_at" format:"date-time"`
+	// Status of
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	Status ScriptPlacementObjectStatus `json:"status"`
+	JSON   scriptPlacementObjectJSON   `json:"-"`
+}
+
+// scriptPlacementObjectJSON contains the JSON metadata for the struct
+// [ScriptPlacementObject]
+type scriptPlacementObjectJSON struct {
+	Mode           apijson.Field
+	LastAnalyzedAt apijson.Field
+	Status         apijson.Field
+	raw            string
+	ExtraFields    map[string]apijson.Field
+}
+
+func (r *ScriptPlacementObject) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptPlacementObjectJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptPlacementObject) implementsScriptPlacement() {}
+
+// Enables
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+type ScriptPlacementObjectMode string
+
+const (
+	ScriptPlacementObjectModeSmart ScriptPlacementObjectMode = "smart"
+)
+
+func (r ScriptPlacementObjectMode) IsKnown() bool {
+	switch r {
+	case ScriptPlacementObjectModeSmart:
+		return true
+	}
+	return false
+}
+
+// Status of
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+type ScriptPlacementObjectStatus string
+
+const (
+	ScriptPlacementObjectStatusSuccess                 ScriptPlacementObjectStatus = "SUCCESS"
+	ScriptPlacementObjectStatusUnsupportedApplication  ScriptPlacementObjectStatus = "UNSUPPORTED_APPLICATION"
+	ScriptPlacementObjectStatusInsufficientInvocations ScriptPlacementObjectStatus = "INSUFFICIENT_INVOCATIONS"
+)
+
+func (r ScriptPlacementObjectStatus) IsKnown() bool {
+	switch r {
+	case ScriptPlacementObjectStatusSuccess, ScriptPlacementObjectStatusUnsupportedApplication, ScriptPlacementObjectStatusInsufficientInvocations:
+		return true
+	}
+	return false
+}
+
+// Enables
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+type ScriptPlacementMode string
+
+const (
+	ScriptPlacementModeSmart    ScriptPlacementMode = "smart"
+	ScriptPlacementModeTargeted ScriptPlacementMode = "targeted"
+)
+
+func (r ScriptPlacementMode) IsKnown() bool {
+	switch r {
+	case ScriptPlacementModeSmart, ScriptPlacementModeTargeted:
+		return true
+	}
+	return false
+}
+
+// Status of
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+type ScriptPlacementStatus string
+
+const (
+	ScriptPlacementStatusSuccess                 ScriptPlacementStatus = "SUCCESS"
+	ScriptPlacementStatusUnsupportedApplication  ScriptPlacementStatus = "UNSUPPORTED_APPLICATION"
+	ScriptPlacementStatusInsufficientInvocations ScriptPlacementStatus = "INSUFFICIENT_INVOCATIONS"
+)
+
+func (r ScriptPlacementStatus) IsKnown() bool {
+	switch r {
+	case ScriptPlacementStatusSuccess, ScriptPlacementStatusUnsupportedApplication, ScriptPlacementStatusInsufficientInvocations:
+		return true
+	}
+	return false
+}
+
+// Usage model for the Worker invocations.
+type ScriptUsageModel string
+
+const (
+	ScriptUsageModelStandard ScriptUsageModel = "standard"
+	ScriptUsageModelBundled  ScriptUsageModel = "bundled"
+	ScriptUsageModelUnbound  ScriptUsageModel = "unbound"
+)
+
+func (r ScriptUsageModel) IsKnown() bool {
+	switch r {
+	case ScriptUsageModelStandard, ScriptUsageModelBundled, ScriptUsageModelUnbound:
+		return true
+	}
+	return false
+}
+
+type ScriptSetting struct {
+	// Whether Logpush is turned on for the Worker.
+	Logpush bool `json:"logpush"`
+	// Observability settings for the Worker.
+	Observability ScriptSettingObservability `json:"observability" api:"nullable"`
+	// Tags associated with the Worker.
+	Tags []string `json:"tags" api:"nullable"`
+	// List of Workers that will consume logs from the attached Worker.
+	TailConsumers []ConsumerScript  `json:"tail_consumers" api:"nullable"`
+	JSON          scriptSettingJSON `json:"-"`
+}
+
+// scriptSettingJSON contains the JSON metadata for the struct [ScriptSetting]
+type scriptSettingJSON struct {
+	Logpush       apijson.Field
+	Observability apijson.Field
+	Tags          apijson.Field
+	TailConsumers apijson.Field
+	raw           string
+	ExtraFields   map[string]apijson.Field
+}
+
+func (r *ScriptSetting) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptSettingJSON) RawJSON() string {
+	return r.raw
+}
+
+// Observability settings for the Worker.
+type ScriptSettingObservability struct {
+	// Whether observability is enabled for the Worker.
+	Enabled bool `json:"enabled" api:"required"`
+	// The sampling rate for incoming requests. From 0 to 1 (1 = 100%, 0.1 = 10%).
+	// Default is 1.
+	HeadSamplingRate float64 `json:"head_sampling_rate" api:"nullable"`
+	// Real-time Issues settings for the Worker.
+	Issues ScriptSettingObservabilityIssues `json:"issues" api:"nullable"`
+	// Log settings for the Worker.
+	Logs ScriptSettingObservabilityLogs `json:"logs" api:"nullable"`
+	// Whether query strings are removed from request URLs in logs and traces.
+	RedactQueryString bool `json:"redact_query_string"`
+	// Trace settings for the Worker.
+	Traces ScriptSettingObservabilityTraces `json:"traces" api:"nullable"`
+	JSON   scriptSettingObservabilityJSON   `json:"-"`
+}
+
+// scriptSettingObservabilityJSON contains the JSON metadata for the struct
+// [ScriptSettingObservability]
+type scriptSettingObservabilityJSON struct {
+	Enabled           apijson.Field
+	HeadSamplingRate  apijson.Field
+	Issues            apijson.Field
+	Logs              apijson.Field
+	RedactQueryString apijson.Field
+	Traces            apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
+}
+
+func (r *ScriptSettingObservability) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptSettingObservabilityJSON) RawJSON() string {
+	return r.raw
+}
+
+// Real-time Issues settings for the Worker.
+type ScriptSettingObservabilityIssues struct {
+	// Whether real-time Issues are enabled for the Worker.
+	Enabled bool                                 `json:"enabled"`
+	JSON    scriptSettingObservabilityIssuesJSON `json:"-"`
+}
+
+// scriptSettingObservabilityIssuesJSON contains the JSON metadata for the struct
+// [ScriptSettingObservabilityIssues]
+type scriptSettingObservabilityIssuesJSON struct {
+	Enabled     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptSettingObservabilityIssues) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptSettingObservabilityIssuesJSON) RawJSON() string {
+	return r.raw
+}
+
+// Log settings for the Worker.
+type ScriptSettingObservabilityLogs struct {
+	// Whether logs are enabled for the Worker.
+	Enabled bool `json:"enabled" api:"required"`
+	// Whether
+	// [invocation logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#invocation-logs)
+	// are enabled for the Worker.
+	InvocationLogs bool `json:"invocation_logs" api:"required"`
+	// A list of destinations where logs will be exported to.
+	Destinations []string `json:"destinations"`
+	// The sampling rate for logs. From 0 to 1 (1 = 100%, 0.1 = 10%). Default is 1.
+	HeadSamplingRate float64 `json:"head_sampling_rate" api:"nullable"`
+	// Whether log persistence is enabled for the Worker.
+	Persist bool                               `json:"persist"`
+	JSON    scriptSettingObservabilityLogsJSON `json:"-"`
+}
+
+// scriptSettingObservabilityLogsJSON contains the JSON metadata for the struct
+// [ScriptSettingObservabilityLogs]
+type scriptSettingObservabilityLogsJSON struct {
+	Enabled          apijson.Field
+	InvocationLogs   apijson.Field
+	Destinations     apijson.Field
+	HeadSamplingRate apijson.Field
+	Persist          apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *ScriptSettingObservabilityLogs) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptSettingObservabilityLogsJSON) RawJSON() string {
+	return r.raw
+}
+
+// Trace settings for the Worker.
+type ScriptSettingObservabilityTraces struct {
+	// A list of destinations where traces will be exported to.
+	Destinations []string `json:"destinations"`
+	// Whether traces are enabled for the Worker.
+	Enabled bool `json:"enabled"`
+	// The sampling rate for traces. From 0 to 1 (1 = 100%, 0.1 = 10%). Default is 1.
+	HeadSamplingRate float64 `json:"head_sampling_rate" api:"nullable"`
+	// Whether trace persistence is enabled for the Worker.
+	Persist bool `json:"persist"`
+	// Controls how inbound trace context (traceparent/tracestate) headers on incoming
+	// requests are handled. "authenticated" honors inbound trace context only when
+	// accompanied by a valid trace auth token. "accept" unconditionally accepts
+	// inbound trace context. Requires the trace propagation feature to be enabled.
+	// Returns null when the trace propagation feature is not enabled for the account.
+	PropagationPolicy ScriptSettingObservabilityTracesPropagationPolicy `json:"propagation_policy" api:"nullable"`
+	JSON              scriptSettingObservabilityTracesJSON              `json:"-"`
+}
+
+// scriptSettingObservabilityTracesJSON contains the JSON metadata for the struct
+// [ScriptSettingObservabilityTraces]
+type scriptSettingObservabilityTracesJSON struct {
+	Destinations      apijson.Field
+	Enabled           apijson.Field
+	HeadSamplingRate  apijson.Field
+	Persist           apijson.Field
+	PropagationPolicy apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
+}
+
+func (r *ScriptSettingObservabilityTraces) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptSettingObservabilityTracesJSON) RawJSON() string {
+	return r.raw
+}
+
+// Controls how inbound trace context (traceparent/tracestate) headers on incoming
+// requests are handled. "authenticated" honors inbound trace context only when
+// accompanied by a valid trace auth token. "accept" unconditionally accepts
+// inbound trace context. Requires the trace propagation feature to be enabled.
+// Returns null when the trace propagation feature is not enabled for the account.
+type ScriptSettingObservabilityTracesPropagationPolicy string
+
+const (
+	ScriptSettingObservabilityTracesPropagationPolicyAuthenticated ScriptSettingObservabilityTracesPropagationPolicy = "authenticated"
+	ScriptSettingObservabilityTracesPropagationPolicyAccept        ScriptSettingObservabilityTracesPropagationPolicy = "accept"
+)
+
+func (r ScriptSettingObservabilityTracesPropagationPolicy) IsKnown() bool {
+	switch r {
+	case ScriptSettingObservabilityTracesPropagationPolicyAuthenticated, ScriptSettingObservabilityTracesPropagationPolicyAccept:
+		return true
+	}
+	return false
+}
+
+type ScriptSettingParam struct {
+	// Whether Logpush is turned on for the Worker.
+	Logpush param.Field[bool] `json:"logpush"`
+	// Observability settings for the Worker.
+	Observability param.Field[ScriptSettingObservabilityParam] `json:"observability"`
+	// Tags associated with the Worker.
+	Tags param.Field[[]string] `json:"tags"`
+	// List of Workers that will consume logs from the attached Worker.
+	TailConsumers param.Field[[]ConsumerScriptParam] `json:"tail_consumers"`
+}
+
+func (r ScriptSettingParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Observability settings for the Worker.
+type ScriptSettingObservabilityParam struct {
+	// Whether observability is enabled for the Worker.
+	Enabled param.Field[bool] `json:"enabled" api:"required"`
+	// The sampling rate for incoming requests. From 0 to 1 (1 = 100%, 0.1 = 10%).
+	// Default is 1.
+	HeadSamplingRate param.Field[float64] `json:"head_sampling_rate"`
+	// Real-time Issues settings for the Worker.
+	Issues param.Field[ScriptSettingObservabilityIssuesParam] `json:"issues"`
+	// Log settings for the Worker.
+	Logs param.Field[ScriptSettingObservabilityLogsParam] `json:"logs"`
+	// Whether query strings are removed from request URLs in logs and traces.
+	RedactQueryString param.Field[bool] `json:"redact_query_string"`
+	// Trace settings for the Worker.
+	Traces param.Field[ScriptSettingObservabilityTracesParam] `json:"traces"`
+}
+
+func (r ScriptSettingObservabilityParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Real-time Issues settings for the Worker.
+type ScriptSettingObservabilityIssuesParam struct {
+	// Whether real-time Issues are enabled for the Worker.
+	Enabled param.Field[bool] `json:"enabled"`
+}
+
+func (r ScriptSettingObservabilityIssuesParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Log settings for the Worker.
+type ScriptSettingObservabilityLogsParam struct {
+	// Whether logs are enabled for the Worker.
+	Enabled param.Field[bool] `json:"enabled" api:"required"`
+	// Whether
+	// [invocation logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#invocation-logs)
+	// are enabled for the Worker.
+	InvocationLogs param.Field[bool] `json:"invocation_logs" api:"required"`
+	// A list of destinations where logs will be exported to.
+	Destinations param.Field[[]string] `json:"destinations"`
+	// The sampling rate for logs. From 0 to 1 (1 = 100%, 0.1 = 10%). Default is 1.
+	HeadSamplingRate param.Field[float64] `json:"head_sampling_rate"`
+	// Whether log persistence is enabled for the Worker.
+	Persist param.Field[bool] `json:"persist"`
+}
+
+func (r ScriptSettingObservabilityLogsParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Trace settings for the Worker.
+type ScriptSettingObservabilityTracesParam struct {
+	// A list of destinations where traces will be exported to.
+	Destinations param.Field[[]string] `json:"destinations"`
+	// Whether traces are enabled for the Worker.
+	Enabled param.Field[bool] `json:"enabled"`
+	// The sampling rate for traces. From 0 to 1 (1 = 100%, 0.1 = 10%). Default is 1.
+	HeadSamplingRate param.Field[float64] `json:"head_sampling_rate"`
+	// Whether trace persistence is enabled for the Worker.
+	Persist param.Field[bool] `json:"persist"`
+	// Controls how inbound trace context (traceparent/tracestate) headers on incoming
+	// requests are handled. "authenticated" honors inbound trace context only when
+	// accompanied by a valid trace auth token. "accept" unconditionally accepts
+	// inbound trace context. Requires the trace propagation feature to be enabled.
+	// Returns null when the trace propagation feature is not enabled for the account.
+	PropagationPolicy param.Field[ScriptSettingObservabilityTracesPropagationPolicy] `json:"propagation_policy"`
+}
+
+func (r ScriptSettingObservabilityTracesParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ScriptUpdateResponse struct {
+	StartupTimeMs int64 `json:"startup_time_ms" api:"required"`
+	// The name used to identify the script.
+	ID string `json:"id"`
+	// Global CacheW configuration for the Worker. When caching is on, the platform
+	// provisions a `cloudflare.app` zone for the Worker. A `type: worker` entry in the
+	// `exports` map can override this value for a single entrypoint.
+	CacheOptions ScriptUpdateResponseCacheOptions `json:"cache_options"`
+	// Date indicating targeted support in the Workers runtime. Backwards incompatible
+	// fixes to the runtime following this date will not affect this Worker.
+	CompatibilityDate string `json:"compatibility_date"`
+	// Flags that enable or disable certain features in the Workers runtime. Used to
+	// enable upcoming features or opt in or out of specific changes not included in a
+	// `compatibility_date`.
+	CompatibilityFlags []string `json:"compatibility_flags"`
+	// When the script was created.
+	CreatedOn time.Time `json:"created_on" format:"date-time"`
+	// The entry point for the script.
+	EntryPoint string `json:"entry_point"`
+	// Hashed script content, can be used in a If-None-Match header when updating.
+	Etag string `json:"etag"`
+	// Declarative exports for the Worker's most recent version, including Durable
+	// Object classes (with their `storage` backend) and named Worker entrypoints.
+	// Tombstoned lifecycle entries are omitted, so only live exports (`created` and
+	// `expecting-transfer`) are returned.
+	Exports map[string]ScriptUpdateResponseExport `json:"exports"`
+	// The names of handlers exported as part of the default export.
+	Handlers []string `json:"handlers"`
+	// Whether a Worker contains assets.
+	HasAssets bool `json:"has_assets"`
+	// Whether a Worker contains modules.
+	HasModules bool `json:"has_modules"`
+	// The client most recently used to deploy this Worker.
+	LastDeployedFrom string `json:"last_deployed_from"`
+	// Whether Logpush is turned on for the Worker.
+	Logpush bool `json:"logpush"`
+	// The tag of the Durable Object migration that was most recently applied for this
+	// Worker.
+	MigrationTag string `json:"migration_tag"`
+	// When the script was last modified.
+	ModifiedOn time.Time `json:"modified_on" format:"date-time"`
+	// Named exports, such as Durable Object class implementations and named
+	// entrypoints.
+	NamedHandlers []ScriptUpdateResponseNamedHandler `json:"named_handlers"`
+	// Observability settings for the Worker.
+	Observability ScriptUpdateResponseObservability `json:"observability"`
+	// Configuration for
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	// Specify mode='smart' for Smart Placement, or one of region/hostname/host.
+	Placement ScriptUpdateResponsePlacement `json:"placement"`
+	// Deprecated: deprecated
+	PlacementMode ScriptUpdateResponsePlacementMode `json:"placement_mode"`
+	// Deprecated: deprecated
+	PlacementStatus ScriptUpdateResponsePlacementStatus `json:"placement_status"`
+	// The immutable ID of the script.
+	Tag string `json:"tag"`
+	// Tags associated with the Worker.
+	Tags []string `json:"tags" api:"nullable"`
+	// List of Workers that will consume logs from the attached Worker.
+	TailConsumers []ConsumerScript `json:"tail_consumers" api:"nullable"`
+	// Usage model for the Worker invocations.
+	UsageModel ScriptUpdateResponseUsageModel `json:"usage_model"`
+	JSON       scriptUpdateResponseJSON       `json:"-"`
+}
+
+// scriptUpdateResponseJSON contains the JSON metadata for the struct
+// [ScriptUpdateResponse]
+type scriptUpdateResponseJSON struct {
+	StartupTimeMs      apijson.Field
+	ID                 apijson.Field
+	CacheOptions       apijson.Field
+	CompatibilityDate  apijson.Field
+	CompatibilityFlags apijson.Field
+	CreatedOn          apijson.Field
+	EntryPoint         apijson.Field
+	Etag               apijson.Field
+	Exports            apijson.Field
+	Handlers           apijson.Field
+	HasAssets          apijson.Field
+	HasModules         apijson.Field
+	LastDeployedFrom   apijson.Field
+	Logpush            apijson.Field
+	MigrationTag       apijson.Field
+	ModifiedOn         apijson.Field
+	NamedHandlers      apijson.Field
+	Observability      apijson.Field
+	Placement          apijson.Field
+	PlacementMode      apijson.Field
+	PlacementStatus    apijson.Field
+	Tag                apijson.Field
+	Tags               apijson.Field
+	TailConsumers      apijson.Field
+	UsageModel         apijson.Field
+	raw                string
+	ExtraFields        map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+// Global CacheW configuration for the Worker. When caching is on, the platform
+// provisions a `cloudflare.app` zone for the Worker. A `type: worker` entry in the
+// `exports` map can override this value for a single entrypoint.
+type ScriptUpdateResponseCacheOptions struct {
+	// Whether caching is enabled for this Worker.
+	Enabled bool `json:"enabled" api:"required"`
+	// Whether cached responses are shared across Worker version uploads. This is
+	// independent of `enabled`. It can stay true while caching is off, so the
+	// preference survives turning caching off and back on.
+	CrossVersionCache bool                                 `json:"cross_version_cache"`
+	JSON              scriptUpdateResponseCacheOptionsJSON `json:"-"`
+}
+
+// scriptUpdateResponseCacheOptionsJSON contains the JSON metadata for the struct
+// [ScriptUpdateResponseCacheOptions]
+type scriptUpdateResponseCacheOptionsJSON struct {
+	Enabled           apijson.Field
+	CrossVersionCache apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponseCacheOptions) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseCacheOptionsJSON) RawJSON() string {
+	return r.raw
+}
+
+// A single entry in the `exports` map, keyed by export name (a `WorkerEntrypoint`
+// class name, a Durable Object class name, or `default` for the Worker's default
+// export). The `type` discriminator selects the top-level shape: `worker`
+// entrypoint entries may carry `cache` configuration, while `durable-object`
+// entries are further refined by the optional `state` field (default `created`).
+// Tombstone states (`deleted`, `renamed`, `transferred`) express destructive
+// lifecycle operations declaratively; `expecting-transfer` is the live target side
+// of a transfer. The server validates the exact per-(type, state) field
+// combinations; fields not listed for a variant are rejected.
+type ScriptUpdateResponseExport struct {
+	// Marks this entry as a Worker entrypoint export.
+	Type ScriptUpdateResponseExportsType `json:"type" api:"required"`
+	// This field can have the runtime type of
+	// [ScriptUpdateResponseExportsWorkersWorkerExportCache].
+	Cache interface{} `json:"cache"`
+	// Name of the container (declared in the upload's `metadata.containers`) that
+	// backs this Durable Object. When set, the namespace is container-enabled. Valid
+	// only on live entries.
+	Container string `json:"container"`
+	// Live export. May be omitted; defaults to `created`.
+	State ScriptUpdateResponseExportsState `json:"state"`
+	// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+	// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+	// already exists as KV-backed; the `exports` flow never provisions a new
+	// `legacy-kv` namespace.
+	Storage ScriptUpdateResponseExportsStorage `json:"storage"`
+	// The source script name to receive the namespace from. Must be in the same
+	// account and dispatch-namespace context. Present on reads for
+	// `expecting-transfer` entries.
+	TransferFrom string                         `json:"transfer_from"`
+	JSON         scriptUpdateResponseExportJSON `json:"-"`
+	union        ScriptUpdateResponseExportsUnion
+}
+
+// scriptUpdateResponseExportJSON contains the JSON metadata for the struct
+// [ScriptUpdateResponseExport]
+type scriptUpdateResponseExportJSON struct {
+	Type         apijson.Field
+	Cache        apijson.Field
+	Container    apijson.Field
+	State        apijson.Field
+	Storage      apijson.Field
+	TransferFrom apijson.Field
+	raw          string
+	ExtraFields  map[string]apijson.Field
+}
+
+func (r scriptUpdateResponseExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r *ScriptUpdateResponseExport) UnmarshalJSON(data []byte) (err error) {
+	*r = ScriptUpdateResponseExport{}
+	err = apijson.UnmarshalRoot(data, &r.union)
+	if err != nil {
+		return err
+	}
+	return apijson.Port(r.union, &r)
+}
+
+// AsUnion returns a [ScriptUpdateResponseExportsUnion] interface which you can
+// cast to the specific types for more type safety.
+//
+// Possible runtime types of the union are
+// [ScriptUpdateResponseExportsWorkersWorkerExport],
+// [ScriptUpdateResponseExportsWorkersDurableObjectExport],
+// [ScriptUpdateResponseExportsWorkersDurableObjectDeletedExport],
+// [ScriptUpdateResponseExportsWorkersDurableObjectRenamedExport],
+// [ScriptUpdateResponseExportsWorkersDurableObjectTransferredExport],
+// [ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExport].
+func (r ScriptUpdateResponseExport) AsUnion() ScriptUpdateResponseExportsUnion {
+	return r.union
+}
+
+// A single entry in the `exports` map, keyed by export name (a `WorkerEntrypoint`
+// class name, a Durable Object class name, or `default` for the Worker's default
+// export). The `type` discriminator selects the top-level shape: `worker`
+// entrypoint entries may carry `cache` configuration, while `durable-object`
+// entries are further refined by the optional `state` field (default `created`).
+// Tombstone states (`deleted`, `renamed`, `transferred`) express destructive
+// lifecycle operations declaratively; `expecting-transfer` is the live target side
+// of a transfer. The server validates the exact per-(type, state) field
+// combinations; fields not listed for a variant are rejected.
+//
+// Union satisfied by [ScriptUpdateResponseExportsWorkersWorkerExport],
+// [ScriptUpdateResponseExportsWorkersDurableObjectExport],
+// [ScriptUpdateResponseExportsWorkersDurableObjectDeletedExport],
+// [ScriptUpdateResponseExportsWorkersDurableObjectRenamedExport],
+// [ScriptUpdateResponseExportsWorkersDurableObjectTransferredExport] or
+// [ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExport].
+type ScriptUpdateResponseExportsUnion interface {
+	implementsScriptUpdateResponseExport()
+}
+
+func init() {
+	apijson.RegisterUnion(
+		reflect.TypeOf((*ScriptUpdateResponseExportsUnion)(nil)).Elem(),
+		"type",
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ScriptUpdateResponseExportsWorkersWorkerExport{}),
+			DiscriminatorValue: "worker",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ScriptUpdateResponseExportsWorkersDurableObjectExport{}),
+			DiscriminatorValue: "durable-object",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ScriptUpdateResponseExportsWorkersDurableObjectDeletedExport{}),
+			DiscriminatorValue: "durable-object",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ScriptUpdateResponseExportsWorkersDurableObjectRenamedExport{}),
+			DiscriminatorValue: "durable-object",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ScriptUpdateResponseExportsWorkersDurableObjectTransferredExport{}),
+			DiscriminatorValue: "durable-object",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExport{}),
+			DiscriminatorValue: "durable-object",
+		},
+	)
+}
+
+// A named Worker entrypoint export (`type: worker`). Worker entrypoints are always
+// live (`state: created`) and carry no storage or lifecycle fields. The optional
+// `cache` block overrides the Worker's global `cache_options.enabled` for this
+// entrypoint.
+type ScriptUpdateResponseExportsWorkersWorkerExport struct {
+	// Marks this entry as a Worker entrypoint export.
+	Type ScriptUpdateResponseExportsWorkersWorkerExportType `json:"type" api:"required"`
+	// Cache override for this entrypoint. Overrides the Worker's global
+	// `cache_options.enabled` for this entrypoint only.
+	Cache ScriptUpdateResponseExportsWorkersWorkerExportCache `json:"cache"`
+	// Live export. May be omitted; defaults to `created`.
+	State ScriptUpdateResponseExportsWorkersWorkerExportState `json:"state"`
+	JSON  scriptUpdateResponseExportsWorkersWorkerExportJSON  `json:"-"`
+}
+
+// scriptUpdateResponseExportsWorkersWorkerExportJSON contains the JSON metadata
+// for the struct [ScriptUpdateResponseExportsWorkersWorkerExport]
+type scriptUpdateResponseExportsWorkersWorkerExportJSON struct {
+	Type        apijson.Field
+	Cache       apijson.Field
+	State       apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponseExportsWorkersWorkerExport) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseExportsWorkersWorkerExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptUpdateResponseExportsWorkersWorkerExport) implementsScriptUpdateResponseExport() {}
+
+// Marks this entry as a Worker entrypoint export.
+type ScriptUpdateResponseExportsWorkersWorkerExportType string
+
+const (
+	ScriptUpdateResponseExportsWorkersWorkerExportTypeWorker ScriptUpdateResponseExportsWorkersWorkerExportType = "worker"
+)
+
+func (r ScriptUpdateResponseExportsWorkersWorkerExportType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseExportsWorkersWorkerExportTypeWorker:
+		return true
+	}
+	return false
+}
+
+// Cache override for this entrypoint. Overrides the Worker's global
+// `cache_options.enabled` for this entrypoint only.
+type ScriptUpdateResponseExportsWorkersWorkerExportCache struct {
+	// Whether caching is enabled for this entrypoint.
+	Enabled bool                                                    `json:"enabled" api:"required"`
+	JSON    scriptUpdateResponseExportsWorkersWorkerExportCacheJSON `json:"-"`
+}
+
+// scriptUpdateResponseExportsWorkersWorkerExportCacheJSON contains the JSON
+// metadata for the struct [ScriptUpdateResponseExportsWorkersWorkerExportCache]
+type scriptUpdateResponseExportsWorkersWorkerExportCacheJSON struct {
+	Enabled     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponseExportsWorkersWorkerExportCache) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseExportsWorkersWorkerExportCacheJSON) RawJSON() string {
+	return r.raw
+}
+
+// Live export. May be omitted; defaults to `created`.
+type ScriptUpdateResponseExportsWorkersWorkerExportState string
+
+const (
+	ScriptUpdateResponseExportsWorkersWorkerExportStateCreated ScriptUpdateResponseExportsWorkersWorkerExportState = "created"
+)
+
+func (r ScriptUpdateResponseExportsWorkersWorkerExportState) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseExportsWorkersWorkerExportStateCreated:
+		return true
+	}
+	return false
+}
+
+// A live Durable Object export (`state: created`, the default). The platform
+// auto-provisions the namespace on first deploy, matches it on subsequent deploys,
+// and never mutates or deletes it as a side effect of a code-only change.
+// `storage` is required; `renamed_to`, `transferred_to` and `transfer_from` are
+// not allowed on a live entry.
+type ScriptUpdateResponseExportsWorkersDurableObjectExport struct {
+	// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+	// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+	// already exists as KV-backed; the `exports` flow never provisions a new
+	// `legacy-kv` namespace.
+	Storage ScriptUpdateResponseExportsWorkersDurableObjectExportStorage `json:"storage" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type ScriptUpdateResponseExportsWorkersDurableObjectExportType `json:"type" api:"required"`
+	// Name of the container (declared in the upload's `metadata.containers`) that
+	// backs this Durable Object. When set, the namespace is container-enabled. Valid
+	// only on live entries.
+	Container string `json:"container"`
+	// Live export. May be omitted; defaults to `created`.
+	State ScriptUpdateResponseExportsWorkersDurableObjectExportState `json:"state"`
+	JSON  scriptUpdateResponseExportsWorkersDurableObjectExportJSON  `json:"-"`
+}
+
+// scriptUpdateResponseExportsWorkersDurableObjectExportJSON contains the JSON
+// metadata for the struct [ScriptUpdateResponseExportsWorkersDurableObjectExport]
+type scriptUpdateResponseExportsWorkersDurableObjectExportJSON struct {
+	Storage     apijson.Field
+	Type        apijson.Field
+	Container   apijson.Field
+	State       apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponseExportsWorkersDurableObjectExport) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseExportsWorkersDurableObjectExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptUpdateResponseExportsWorkersDurableObjectExport) implementsScriptUpdateResponseExport() {
+}
+
+// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+// already exists as KV-backed; the `exports` flow never provisions a new
+// `legacy-kv` namespace.
+type ScriptUpdateResponseExportsWorkersDurableObjectExportStorage string
+
+const (
+	ScriptUpdateResponseExportsWorkersDurableObjectExportStorageSqlite   ScriptUpdateResponseExportsWorkersDurableObjectExportStorage = "sqlite"
+	ScriptUpdateResponseExportsWorkersDurableObjectExportStorageLegacyKV ScriptUpdateResponseExportsWorkersDurableObjectExportStorage = "legacy-kv"
+)
+
+func (r ScriptUpdateResponseExportsWorkersDurableObjectExportStorage) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseExportsWorkersDurableObjectExportStorageSqlite, ScriptUpdateResponseExportsWorkersDurableObjectExportStorageLegacyKV:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptUpdateResponseExportsWorkersDurableObjectExportType string
+
+const (
+	ScriptUpdateResponseExportsWorkersDurableObjectExportTypeDurableObject ScriptUpdateResponseExportsWorkersDurableObjectExportType = "durable-object"
+)
+
+func (r ScriptUpdateResponseExportsWorkersDurableObjectExportType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseExportsWorkersDurableObjectExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// Live export. May be omitted; defaults to `created`.
+type ScriptUpdateResponseExportsWorkersDurableObjectExportState string
+
+const (
+	ScriptUpdateResponseExportsWorkersDurableObjectExportStateCreated ScriptUpdateResponseExportsWorkersDurableObjectExportState = "created"
+)
+
+func (r ScriptUpdateResponseExportsWorkersDurableObjectExportState) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseExportsWorkersDurableObjectExportStateCreated:
+		return true
+	}
+	return false
+}
+
+// A `deleted` tombstone: retires the provisioned namespace for this class and all
+// of its data. The class must be absent from the uploaded code and no other Worker
+// in the account may bind to the namespace, otherwise the deploy is rejected. No
+// other fields are allowed. Deletion is irreversible.
+type ScriptUpdateResponseExportsWorkersDurableObjectDeletedExport struct {
+	// Tombstone that deletes the namespace.
+	State ScriptUpdateResponseExportsWorkersDurableObjectDeletedExportState `json:"state" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type ScriptUpdateResponseExportsWorkersDurableObjectDeletedExportType `json:"type" api:"required"`
+	JSON scriptUpdateResponseExportsWorkersDurableObjectDeletedExportJSON `json:"-"`
+}
+
+// scriptUpdateResponseExportsWorkersDurableObjectDeletedExportJSON contains the
+// JSON metadata for the struct
+// [ScriptUpdateResponseExportsWorkersDurableObjectDeletedExport]
+type scriptUpdateResponseExportsWorkersDurableObjectDeletedExportJSON struct {
+	State       apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponseExportsWorkersDurableObjectDeletedExport) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseExportsWorkersDurableObjectDeletedExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptUpdateResponseExportsWorkersDurableObjectDeletedExport) implementsScriptUpdateResponseExport() {
+}
+
+// Tombstone that deletes the namespace.
+type ScriptUpdateResponseExportsWorkersDurableObjectDeletedExportState string
+
+const (
+	ScriptUpdateResponseExportsWorkersDurableObjectDeletedExportStateDeleted ScriptUpdateResponseExportsWorkersDurableObjectDeletedExportState = "deleted"
+)
+
+func (r ScriptUpdateResponseExportsWorkersDurableObjectDeletedExportState) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseExportsWorkersDurableObjectDeletedExportStateDeleted:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptUpdateResponseExportsWorkersDurableObjectDeletedExportType string
+
+const (
+	ScriptUpdateResponseExportsWorkersDurableObjectDeletedExportTypeDurableObject ScriptUpdateResponseExportsWorkersDurableObjectDeletedExportType = "durable-object"
+)
+
+func (r ScriptUpdateResponseExportsWorkersDurableObjectDeletedExportType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseExportsWorkersDurableObjectDeletedExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// A `renamed` tombstone: rewrites the provisioned namespace's class name from this
+// map key to `renamed_to`. The source class may stay in code during the rollout
+// window (an info notice is emitted). `storage`, `transferred_to` and
+// `transfer_from` are not allowed.
+type ScriptUpdateResponseExportsWorkersDurableObjectRenamedExport struct {
+	// Tombstone that renames the namespace's class.
+	State ScriptUpdateResponseExportsWorkersDurableObjectRenamedExportState `json:"state" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type ScriptUpdateResponseExportsWorkersDurableObjectRenamedExportType `json:"type" api:"required"`
+	JSON scriptUpdateResponseExportsWorkersDurableObjectRenamedExportJSON `json:"-"`
+}
+
+// scriptUpdateResponseExportsWorkersDurableObjectRenamedExportJSON contains the
+// JSON metadata for the struct
+// [ScriptUpdateResponseExportsWorkersDurableObjectRenamedExport]
+type scriptUpdateResponseExportsWorkersDurableObjectRenamedExportJSON struct {
+	State       apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponseExportsWorkersDurableObjectRenamedExport) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseExportsWorkersDurableObjectRenamedExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptUpdateResponseExportsWorkersDurableObjectRenamedExport) implementsScriptUpdateResponseExport() {
+}
+
+// Tombstone that renames the namespace's class.
+type ScriptUpdateResponseExportsWorkersDurableObjectRenamedExportState string
+
+const (
+	ScriptUpdateResponseExportsWorkersDurableObjectRenamedExportStateRenamed ScriptUpdateResponseExportsWorkersDurableObjectRenamedExportState = "renamed"
+)
+
+func (r ScriptUpdateResponseExportsWorkersDurableObjectRenamedExportState) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseExportsWorkersDurableObjectRenamedExportStateRenamed:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptUpdateResponseExportsWorkersDurableObjectRenamedExportType string
+
+const (
+	ScriptUpdateResponseExportsWorkersDurableObjectRenamedExportTypeDurableObject ScriptUpdateResponseExportsWorkersDurableObjectRenamedExportType = "durable-object"
+)
+
+func (r ScriptUpdateResponseExportsWorkersDurableObjectRenamedExportType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseExportsWorkersDurableObjectRenamedExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// A `transferred` tombstone (source side of a two-phase transfer): hands ownership
+// of the provisioned namespace to another script in the same account, named by
+// `transferred_to`. The target must have already deployed a matching
+// `expecting-transfer` entry. The source class may stay in code during the rollout
+// window (an info notice is emitted). `storage`, `renamed_to` and `transfer_from`
+// are not allowed.
+type ScriptUpdateResponseExportsWorkersDurableObjectTransferredExport struct {
+	// Tombstone that transfers the namespace to another script.
+	State ScriptUpdateResponseExportsWorkersDurableObjectTransferredExportState `json:"state" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type ScriptUpdateResponseExportsWorkersDurableObjectTransferredExportType `json:"type" api:"required"`
+	JSON scriptUpdateResponseExportsWorkersDurableObjectTransferredExportJSON `json:"-"`
+}
+
+// scriptUpdateResponseExportsWorkersDurableObjectTransferredExportJSON contains
+// the JSON metadata for the struct
+// [ScriptUpdateResponseExportsWorkersDurableObjectTransferredExport]
+type scriptUpdateResponseExportsWorkersDurableObjectTransferredExportJSON struct {
+	State       apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponseExportsWorkersDurableObjectTransferredExport) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseExportsWorkersDurableObjectTransferredExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptUpdateResponseExportsWorkersDurableObjectTransferredExport) implementsScriptUpdateResponseExport() {
+}
+
+// Tombstone that transfers the namespace to another script.
+type ScriptUpdateResponseExportsWorkersDurableObjectTransferredExportState string
+
+const (
+	ScriptUpdateResponseExportsWorkersDurableObjectTransferredExportStateTransferred ScriptUpdateResponseExportsWorkersDurableObjectTransferredExportState = "transferred"
+)
+
+func (r ScriptUpdateResponseExportsWorkersDurableObjectTransferredExportState) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseExportsWorkersDurableObjectTransferredExportStateTransferred:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptUpdateResponseExportsWorkersDurableObjectTransferredExportType string
+
+const (
+	ScriptUpdateResponseExportsWorkersDurableObjectTransferredExportTypeDurableObject ScriptUpdateResponseExportsWorkersDurableObjectTransferredExportType = "durable-object"
+)
+
+func (r ScriptUpdateResponseExportsWorkersDurableObjectTransferredExportType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseExportsWorkersDurableObjectTransferredExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// The target side of a two-phase transfer (`state: expecting-transfer`). Declares
+// that this script expects to receive a namespace for this class from the
+// `transfer_from` script. This is a live entry, not a tombstone: bindings resolve
+// through the source's namespace until the source commits with a `transferred`
+// tombstone. `storage` and `transfer_from` are required; `renamed_to` and
+// `transferred_to` are not allowed.
+type ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExport struct {
+	// Target side of a two-phase transfer.
+	State ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportState `json:"state" api:"required"`
+	// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+	// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+	// already exists as KV-backed; the `exports` flow never provisions a new
+	// `legacy-kv` namespace.
+	Storage ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportStorage `json:"storage" api:"required"`
+	// The source script name to receive the namespace from. Must be in the same
+	// account and dispatch-namespace context. Present on reads for
+	// `expecting-transfer` entries.
+	TransferFrom string `json:"transfer_from" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportType `json:"type" api:"required"`
+	// Name of the container (declared in the upload's `metadata.containers`) that
+	// backs this Durable Object once the transfer settles. Valid only on live entries.
+	Container string                                                                     `json:"container"`
+	JSON      scriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportJSON `json:"-"`
+}
+
+// scriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportJSON
+// contains the JSON metadata for the struct
+// [ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExport]
+type scriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportJSON struct {
+	State        apijson.Field
+	Storage      apijson.Field
+	TransferFrom apijson.Field
+	Type         apijson.Field
+	Container    apijson.Field
+	raw          string
+	ExtraFields  map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExport) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExport) implementsScriptUpdateResponseExport() {
+}
+
+// Target side of a two-phase transfer.
+type ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportState string
+
+const (
+	ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportStateExpectingTransfer ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportState = "expecting-transfer"
+)
+
+func (r ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportState) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportStateExpectingTransfer:
+		return true
+	}
+	return false
+}
+
+// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+// already exists as KV-backed; the `exports` flow never provisions a new
+// `legacy-kv` namespace.
+type ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportStorage string
+
+const (
+	ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportStorageSqlite   ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportStorage = "sqlite"
+	ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportStorageLegacyKV ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportStorage = "legacy-kv"
+)
+
+func (r ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportStorage) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportStorageSqlite, ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportStorageLegacyKV:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportType string
+
+const (
+	ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportTypeDurableObject ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportType = "durable-object"
+)
+
+func (r ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseExportsWorkersDurableObjectExpectingTransferExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Worker entrypoint export.
+type ScriptUpdateResponseExportsType string
+
+const (
+	ScriptUpdateResponseExportsTypeWorker        ScriptUpdateResponseExportsType = "worker"
+	ScriptUpdateResponseExportsTypeDurableObject ScriptUpdateResponseExportsType = "durable-object"
+)
+
+func (r ScriptUpdateResponseExportsType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseExportsTypeWorker, ScriptUpdateResponseExportsTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// Live export. May be omitted; defaults to `created`.
+type ScriptUpdateResponseExportsState string
+
+const (
+	ScriptUpdateResponseExportsStateCreated           ScriptUpdateResponseExportsState = "created"
+	ScriptUpdateResponseExportsStateDeleted           ScriptUpdateResponseExportsState = "deleted"
+	ScriptUpdateResponseExportsStateRenamed           ScriptUpdateResponseExportsState = "renamed"
+	ScriptUpdateResponseExportsStateTransferred       ScriptUpdateResponseExportsState = "transferred"
+	ScriptUpdateResponseExportsStateExpectingTransfer ScriptUpdateResponseExportsState = "expecting-transfer"
+)
+
+func (r ScriptUpdateResponseExportsState) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseExportsStateCreated, ScriptUpdateResponseExportsStateDeleted, ScriptUpdateResponseExportsStateRenamed, ScriptUpdateResponseExportsStateTransferred, ScriptUpdateResponseExportsStateExpectingTransfer:
+		return true
+	}
+	return false
+}
+
+// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+// already exists as KV-backed; the `exports` flow never provisions a new
+// `legacy-kv` namespace.
+type ScriptUpdateResponseExportsStorage string
+
+const (
+	ScriptUpdateResponseExportsStorageSqlite   ScriptUpdateResponseExportsStorage = "sqlite"
+	ScriptUpdateResponseExportsStorageLegacyKV ScriptUpdateResponseExportsStorage = "legacy-kv"
+)
+
+func (r ScriptUpdateResponseExportsStorage) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseExportsStorageSqlite, ScriptUpdateResponseExportsStorageLegacyKV:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateResponseNamedHandler struct {
+	// The names of handlers exported as part of the named export.
+	Handlers []string `json:"handlers"`
+	// The name of the export.
+	Name string                               `json:"name"`
+	JSON scriptUpdateResponseNamedHandlerJSON `json:"-"`
+}
+
+// scriptUpdateResponseNamedHandlerJSON contains the JSON metadata for the struct
+// [ScriptUpdateResponseNamedHandler]
+type scriptUpdateResponseNamedHandlerJSON struct {
+	Handlers    apijson.Field
+	Name        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponseNamedHandler) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseNamedHandlerJSON) RawJSON() string {
+	return r.raw
+}
+
+// Observability settings for the Worker.
+type ScriptUpdateResponseObservability struct {
+	// Whether observability is enabled for the Worker.
+	Enabled bool `json:"enabled" api:"required"`
+	// The sampling rate for incoming requests. From 0 to 1 (1 = 100%, 0.1 = 10%).
+	// Default is 1.
+	HeadSamplingRate float64 `json:"head_sampling_rate" api:"nullable"`
+	// Real-time Issues settings for the Worker.
+	Issues ScriptUpdateResponseObservabilityIssues `json:"issues" api:"nullable"`
+	// Log settings for the Worker.
+	Logs ScriptUpdateResponseObservabilityLogs `json:"logs" api:"nullable"`
+	// Whether query strings are removed from request URLs in logs and traces.
+	RedactQueryString bool `json:"redact_query_string"`
+	// Trace settings for the Worker.
+	Traces ScriptUpdateResponseObservabilityTraces `json:"traces" api:"nullable"`
+	JSON   scriptUpdateResponseObservabilityJSON   `json:"-"`
+}
+
+// scriptUpdateResponseObservabilityJSON contains the JSON metadata for the struct
+// [ScriptUpdateResponseObservability]
+type scriptUpdateResponseObservabilityJSON struct {
+	Enabled           apijson.Field
+	HeadSamplingRate  apijson.Field
+	Issues            apijson.Field
+	Logs              apijson.Field
+	RedactQueryString apijson.Field
+	Traces            apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponseObservability) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseObservabilityJSON) RawJSON() string {
+	return r.raw
+}
+
+// Real-time Issues settings for the Worker.
+type ScriptUpdateResponseObservabilityIssues struct {
+	// Whether real-time Issues are enabled for the Worker.
+	Enabled bool                                        `json:"enabled"`
+	JSON    scriptUpdateResponseObservabilityIssuesJSON `json:"-"`
+}
+
+// scriptUpdateResponseObservabilityIssuesJSON contains the JSON metadata for the
+// struct [ScriptUpdateResponseObservabilityIssues]
+type scriptUpdateResponseObservabilityIssuesJSON struct {
+	Enabled     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponseObservabilityIssues) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseObservabilityIssuesJSON) RawJSON() string {
+	return r.raw
+}
+
+// Log settings for the Worker.
+type ScriptUpdateResponseObservabilityLogs struct {
+	// Whether logs are enabled for the Worker.
+	Enabled bool `json:"enabled" api:"required"`
+	// Whether
+	// [invocation logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#invocation-logs)
+	// are enabled for the Worker.
+	InvocationLogs bool `json:"invocation_logs" api:"required"`
+	// A list of destinations where logs will be exported to.
+	Destinations []string `json:"destinations"`
+	// The sampling rate for logs. From 0 to 1 (1 = 100%, 0.1 = 10%). Default is 1.
+	HeadSamplingRate float64 `json:"head_sampling_rate" api:"nullable"`
+	// Whether log persistence is enabled for the Worker.
+	Persist bool                                      `json:"persist"`
+	JSON    scriptUpdateResponseObservabilityLogsJSON `json:"-"`
+}
+
+// scriptUpdateResponseObservabilityLogsJSON contains the JSON metadata for the
+// struct [ScriptUpdateResponseObservabilityLogs]
+type scriptUpdateResponseObservabilityLogsJSON struct {
+	Enabled          apijson.Field
+	InvocationLogs   apijson.Field
+	Destinations     apijson.Field
+	HeadSamplingRate apijson.Field
+	Persist          apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponseObservabilityLogs) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseObservabilityLogsJSON) RawJSON() string {
+	return r.raw
+}
+
+// Trace settings for the Worker.
+type ScriptUpdateResponseObservabilityTraces struct {
+	// A list of destinations where traces will be exported to.
+	Destinations []string `json:"destinations"`
+	// Whether traces are enabled for the Worker.
+	Enabled bool `json:"enabled"`
+	// The sampling rate for traces. From 0 to 1 (1 = 100%, 0.1 = 10%). Default is 1.
+	HeadSamplingRate float64 `json:"head_sampling_rate" api:"nullable"`
+	// Whether trace persistence is enabled for the Worker.
+	Persist bool `json:"persist"`
+	// Controls how inbound trace context (traceparent/tracestate) headers on incoming
+	// requests are handled. "authenticated" honors inbound trace context only when
+	// accompanied by a valid trace auth token. "accept" unconditionally accepts
+	// inbound trace context. Requires the trace propagation feature to be enabled.
+	// Returns null when the trace propagation feature is not enabled for the account.
+	PropagationPolicy ScriptUpdateResponseObservabilityTracesPropagationPolicy `json:"propagation_policy" api:"nullable"`
+	JSON              scriptUpdateResponseObservabilityTracesJSON              `json:"-"`
+}
+
+// scriptUpdateResponseObservabilityTracesJSON contains the JSON metadata for the
+// struct [ScriptUpdateResponseObservabilityTraces]
+type scriptUpdateResponseObservabilityTracesJSON struct {
+	Destinations      apijson.Field
+	Enabled           apijson.Field
+	HeadSamplingRate  apijson.Field
+	Persist           apijson.Field
+	PropagationPolicy apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponseObservabilityTraces) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseObservabilityTracesJSON) RawJSON() string {
+	return r.raw
+}
+
+// Controls how inbound trace context (traceparent/tracestate) headers on incoming
+// requests are handled. "authenticated" honors inbound trace context only when
+// accompanied by a valid trace auth token. "accept" unconditionally accepts
+// inbound trace context. Requires the trace propagation feature to be enabled.
+// Returns null when the trace propagation feature is not enabled for the account.
+type ScriptUpdateResponseObservabilityTracesPropagationPolicy string
+
+const (
+	ScriptUpdateResponseObservabilityTracesPropagationPolicyAuthenticated ScriptUpdateResponseObservabilityTracesPropagationPolicy = "authenticated"
+	ScriptUpdateResponseObservabilityTracesPropagationPolicyAccept        ScriptUpdateResponseObservabilityTracesPropagationPolicy = "accept"
+)
+
+func (r ScriptUpdateResponseObservabilityTracesPropagationPolicy) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseObservabilityTracesPropagationPolicyAuthenticated, ScriptUpdateResponseObservabilityTracesPropagationPolicyAccept:
+		return true
+	}
+	return false
+}
+
+// Configuration for
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+// Specify mode='smart' for Smart Placement, or one of region/hostname/host.
+type ScriptUpdateResponsePlacement struct {
+	// TCP host and port for targeted placement.
+	Host string `json:"host"`
+	// HTTP hostname for targeted placement.
+	Hostname string `json:"hostname"`
+	// The last time the script was analyzed for
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	LastAnalyzedAt time.Time `json:"last_analyzed_at" format:"date-time"`
+	// Enables
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	Mode ScriptUpdateResponsePlacementMode `json:"mode"`
+	// Cloud region for targeted placement in format 'provider:region'.
+	Region string `json:"region"`
+	// Status of
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	Status ScriptUpdateResponsePlacementStatus `json:"status"`
+	// This field can have the runtime type of
+	// [[]ScriptUpdateResponsePlacementObjectTarget].
+	Target interface{}                       `json:"target"`
+	JSON   scriptUpdateResponsePlacementJSON `json:"-"`
+	union  ScriptUpdateResponsePlacementUnion
+}
+
+// scriptUpdateResponsePlacementJSON contains the JSON metadata for the struct
+// [ScriptUpdateResponsePlacement]
+type scriptUpdateResponsePlacementJSON struct {
+	Host           apijson.Field
+	Hostname       apijson.Field
+	LastAnalyzedAt apijson.Field
+	Mode           apijson.Field
+	Region         apijson.Field
+	Status         apijson.Field
+	Target         apijson.Field
+	raw            string
+	ExtraFields    map[string]apijson.Field
+}
+
+func (r scriptUpdateResponsePlacementJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r *ScriptUpdateResponsePlacement) UnmarshalJSON(data []byte) (err error) {
+	*r = ScriptUpdateResponsePlacement{}
+	err = apijson.UnmarshalRoot(data, &r.union)
+	if err != nil {
+		return err
+	}
+	return apijson.Port(r.union, &r)
+}
+
+// AsUnion returns a [ScriptUpdateResponsePlacementUnion] interface which you can
+// cast to the specific types for more type safety.
+//
+// Possible runtime types of the union are [ScriptUpdateResponsePlacementObject],
+// [ScriptUpdateResponsePlacementObject], [ScriptUpdateResponsePlacementObject],
+// [ScriptUpdateResponsePlacementObject], [ScriptUpdateResponsePlacementObject],
+// [ScriptUpdateResponsePlacementObject], [ScriptUpdateResponsePlacementObject],
+// [ScriptUpdateResponsePlacementObject].
+func (r ScriptUpdateResponsePlacement) AsUnion() ScriptUpdateResponsePlacementUnion {
+	return r.union
+}
+
+// Configuration for
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+// Specify mode='smart' for Smart Placement, or one of region/hostname/host.
+//
+// Union satisfied by [ScriptUpdateResponsePlacementObject],
+// [ScriptUpdateResponsePlacementObject], [ScriptUpdateResponsePlacementObject],
+// [ScriptUpdateResponsePlacementObject], [ScriptUpdateResponsePlacementObject],
+// [ScriptUpdateResponsePlacementObject], [ScriptUpdateResponsePlacementObject] or
+// [ScriptUpdateResponsePlacementObject].
+type ScriptUpdateResponsePlacementUnion interface {
+	implementsScriptUpdateResponsePlacement()
+}
+
+func init() {
+	apijson.RegisterUnion(
+		reflect.TypeOf((*ScriptUpdateResponsePlacementUnion)(nil)).Elem(),
+		"",
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptUpdateResponsePlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptUpdateResponsePlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptUpdateResponsePlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptUpdateResponsePlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptUpdateResponsePlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptUpdateResponsePlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptUpdateResponsePlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptUpdateResponsePlacementObject{}),
+		},
+	)
+}
+
+type ScriptUpdateResponsePlacementObject struct {
+	// Enables
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	Mode ScriptUpdateResponsePlacementObjectMode `json:"mode" api:"required"`
+	// The last time the script was analyzed for
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	LastAnalyzedAt time.Time `json:"last_analyzed_at" format:"date-time"`
+	// Status of
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	Status ScriptUpdateResponsePlacementObjectStatus `json:"status"`
+	JSON   scriptUpdateResponsePlacementObjectJSON   `json:"-"`
+}
+
+// scriptUpdateResponsePlacementObjectJSON contains the JSON metadata for the
+// struct [ScriptUpdateResponsePlacementObject]
+type scriptUpdateResponsePlacementObjectJSON struct {
+	Mode           apijson.Field
+	LastAnalyzedAt apijson.Field
+	Status         apijson.Field
+	raw            string
+	ExtraFields    map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponsePlacementObject) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponsePlacementObjectJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptUpdateResponsePlacementObject) implementsScriptUpdateResponsePlacement() {}
+
+// Enables
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+type ScriptUpdateResponsePlacementObjectMode string
+
+const (
+	ScriptUpdateResponsePlacementObjectModeSmart ScriptUpdateResponsePlacementObjectMode = "smart"
+)
+
+func (r ScriptUpdateResponsePlacementObjectMode) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponsePlacementObjectModeSmart:
+		return true
+	}
+	return false
+}
+
+// Status of
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+type ScriptUpdateResponsePlacementObjectStatus string
+
+const (
+	ScriptUpdateResponsePlacementObjectStatusSuccess                 ScriptUpdateResponsePlacementObjectStatus = "SUCCESS"
+	ScriptUpdateResponsePlacementObjectStatusUnsupportedApplication  ScriptUpdateResponsePlacementObjectStatus = "UNSUPPORTED_APPLICATION"
+	ScriptUpdateResponsePlacementObjectStatusInsufficientInvocations ScriptUpdateResponsePlacementObjectStatus = "INSUFFICIENT_INVOCATIONS"
+)
+
+func (r ScriptUpdateResponsePlacementObjectStatus) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponsePlacementObjectStatusSuccess, ScriptUpdateResponsePlacementObjectStatusUnsupportedApplication, ScriptUpdateResponsePlacementObjectStatusInsufficientInvocations:
+		return true
+	}
+	return false
+}
+
+// Enables
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+type ScriptUpdateResponsePlacementMode string
+
+const (
+	ScriptUpdateResponsePlacementModeSmart    ScriptUpdateResponsePlacementMode = "smart"
+	ScriptUpdateResponsePlacementModeTargeted ScriptUpdateResponsePlacementMode = "targeted"
+)
+
+func (r ScriptUpdateResponsePlacementMode) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponsePlacementModeSmart, ScriptUpdateResponsePlacementModeTargeted:
+		return true
+	}
+	return false
+}
+
+// Status of
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+type ScriptUpdateResponsePlacementStatus string
+
+const (
+	ScriptUpdateResponsePlacementStatusSuccess                 ScriptUpdateResponsePlacementStatus = "SUCCESS"
+	ScriptUpdateResponsePlacementStatusUnsupportedApplication  ScriptUpdateResponsePlacementStatus = "UNSUPPORTED_APPLICATION"
+	ScriptUpdateResponsePlacementStatusInsufficientInvocations ScriptUpdateResponsePlacementStatus = "INSUFFICIENT_INVOCATIONS"
+)
+
+func (r ScriptUpdateResponsePlacementStatus) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponsePlacementStatusSuccess, ScriptUpdateResponsePlacementStatusUnsupportedApplication, ScriptUpdateResponsePlacementStatusInsufficientInvocations:
+		return true
+	}
+	return false
+}
+
+// Usage model for the Worker invocations.
+type ScriptUpdateResponseUsageModel string
+
+const (
+	ScriptUpdateResponseUsageModelStandard ScriptUpdateResponseUsageModel = "standard"
+	ScriptUpdateResponseUsageModelBundled  ScriptUpdateResponseUsageModel = "bundled"
+	ScriptUpdateResponseUsageModelUnbound  ScriptUpdateResponseUsageModel = "unbound"
+)
+
+func (r ScriptUpdateResponseUsageModel) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseUsageModelStandard, ScriptUpdateResponseUsageModelBundled, ScriptUpdateResponseUsageModelUnbound:
+		return true
+	}
+	return false
+}
+
+type ScriptListResponse struct {
+	// The name used to identify the script.
+	ID string `json:"id"`
+	// Global CacheW configuration for the Worker. When caching is on, the platform
+	// provisions a `cloudflare.app` zone for the Worker. A `type: worker` entry in the
+	// `exports` map can override this value for a single entrypoint.
+	CacheOptions ScriptListResponseCacheOptions `json:"cache_options"`
+	// Date indicating targeted support in the Workers runtime. Backwards incompatible
+	// fixes to the runtime following this date will not affect this Worker.
+	CompatibilityDate string `json:"compatibility_date"`
+	// Flags that enable or disable certain features in the Workers runtime. Used to
+	// enable upcoming features or opt in or out of specific changes not included in a
+	// `compatibility_date`.
+	CompatibilityFlags []string `json:"compatibility_flags"`
+	// When the script was created.
+	CreatedOn time.Time `json:"created_on" format:"date-time"`
+	// Hashed script content, can be used in a If-None-Match header when updating.
+	Etag string `json:"etag"`
+	// Declarative exports for the Worker's most recent version, including Durable
+	// Object classes (with their `storage` backend) and named Worker entrypoints.
+	// Tombstoned lifecycle entries are omitted, so only live exports (`created` and
+	// `expecting-transfer`) are returned.
+	Exports map[string]ScriptListResponseExport `json:"exports"`
+	// The names of handlers exported as part of the default export.
+	Handlers []string `json:"handlers"`
+	// Whether a Worker contains assets.
+	HasAssets bool `json:"has_assets"`
+	// Whether a Worker contains modules.
+	HasModules bool `json:"has_modules"`
+	// The client most recently used to deploy this Worker.
+	LastDeployedFrom string `json:"last_deployed_from"`
+	// Whether Logpush is turned on for the Worker.
+	Logpush bool `json:"logpush"`
+	// The tag of the Durable Object migration that was most recently applied for this
+	// Worker.
+	MigrationTag string `json:"migration_tag"`
+	// When the script was last modified.
+	ModifiedOn time.Time `json:"modified_on" format:"date-time"`
+	// Named exports, such as Durable Object class implementations and named
+	// entrypoints.
+	NamedHandlers []ScriptListResponseNamedHandler `json:"named_handlers"`
+	// Observability settings for the Worker.
+	Observability ScriptListResponseObservability `json:"observability"`
+	// Configuration for
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	// Specify mode='smart' for Smart Placement, or one of region/hostname/host.
+	Placement ScriptListResponsePlacement `json:"placement"`
+	// Deprecated: deprecated
+	PlacementMode ScriptListResponsePlacementMode `json:"placement_mode"`
+	// Deprecated: deprecated
+	PlacementStatus ScriptListResponsePlacementStatus `json:"placement_status"`
+	// Routes associated with the Worker.
+	Routes []ScriptListResponseRoute `json:"routes" api:"nullable"`
+	// The immutable ID of the script.
+	Tag string `json:"tag"`
+	// Tags associated with the Worker.
+	Tags []string `json:"tags" api:"nullable"`
+	// List of Workers that will consume logs from the attached Worker.
+	TailConsumers []ConsumerScript `json:"tail_consumers" api:"nullable"`
+	// Usage model for the Worker invocations.
+	UsageModel ScriptListResponseUsageModel `json:"usage_model"`
+	JSON       scriptListResponseJSON       `json:"-"`
+}
+
+// scriptListResponseJSON contains the JSON metadata for the struct
+// [ScriptListResponse]
+type scriptListResponseJSON struct {
+	ID                 apijson.Field
+	CacheOptions       apijson.Field
+	CompatibilityDate  apijson.Field
+	CompatibilityFlags apijson.Field
+	CreatedOn          apijson.Field
+	Etag               apijson.Field
+	Exports            apijson.Field
+	Handlers           apijson.Field
+	HasAssets          apijson.Field
+	HasModules         apijson.Field
+	LastDeployedFrom   apijson.Field
+	Logpush            apijson.Field
+	MigrationTag       apijson.Field
+	ModifiedOn         apijson.Field
+	NamedHandlers      apijson.Field
+	Observability      apijson.Field
+	Placement          apijson.Field
+	PlacementMode      apijson.Field
+	PlacementStatus    apijson.Field
+	Routes             apijson.Field
+	Tag                apijson.Field
+	Tags               apijson.Field
+	TailConsumers      apijson.Field
+	UsageModel         apijson.Field
+	raw                string
+	ExtraFields        map[string]apijson.Field
+}
+
+func (r *ScriptListResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptListResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+// Global CacheW configuration for the Worker. When caching is on, the platform
+// provisions a `cloudflare.app` zone for the Worker. A `type: worker` entry in the
+// `exports` map can override this value for a single entrypoint.
+type ScriptListResponseCacheOptions struct {
+	// Whether caching is enabled for this Worker.
+	Enabled bool `json:"enabled" api:"required"`
+	// Whether cached responses are shared across Worker version uploads. This is
+	// independent of `enabled`. It can stay true while caching is off, so the
+	// preference survives turning caching off and back on.
+	CrossVersionCache bool                               `json:"cross_version_cache"`
+	JSON              scriptListResponseCacheOptionsJSON `json:"-"`
+}
+
+// scriptListResponseCacheOptionsJSON contains the JSON metadata for the struct
+// [ScriptListResponseCacheOptions]
+type scriptListResponseCacheOptionsJSON struct {
+	Enabled           apijson.Field
+	CrossVersionCache apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
+}
+
+func (r *ScriptListResponseCacheOptions) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptListResponseCacheOptionsJSON) RawJSON() string {
+	return r.raw
+}
+
+// A single entry in the `exports` map, keyed by export name (a `WorkerEntrypoint`
+// class name, a Durable Object class name, or `default` for the Worker's default
+// export). The `type` discriminator selects the top-level shape: `worker`
+// entrypoint entries may carry `cache` configuration, while `durable-object`
+// entries are further refined by the optional `state` field (default `created`).
+// Tombstone states (`deleted`, `renamed`, `transferred`) express destructive
+// lifecycle operations declaratively; `expecting-transfer` is the live target side
+// of a transfer. The server validates the exact per-(type, state) field
+// combinations; fields not listed for a variant are rejected.
+type ScriptListResponseExport struct {
+	// Marks this entry as a Worker entrypoint export.
+	Type ScriptListResponseExportsType `json:"type" api:"required"`
+	// This field can have the runtime type of
+	// [ScriptListResponseExportsWorkersWorkerExportCache].
+	Cache interface{} `json:"cache"`
+	// Name of the container (declared in the upload's `metadata.containers`) that
+	// backs this Durable Object. When set, the namespace is container-enabled. Valid
+	// only on live entries.
+	Container string `json:"container"`
+	// Live export. May be omitted; defaults to `created`.
+	State ScriptListResponseExportsState `json:"state"`
+	// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+	// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+	// already exists as KV-backed; the `exports` flow never provisions a new
+	// `legacy-kv` namespace.
+	Storage ScriptListResponseExportsStorage `json:"storage"`
+	// The source script name to receive the namespace from. Must be in the same
+	// account and dispatch-namespace context. Present on reads for
+	// `expecting-transfer` entries.
+	TransferFrom string                       `json:"transfer_from"`
+	JSON         scriptListResponseExportJSON `json:"-"`
+	union        ScriptListResponseExportsUnion
+}
+
+// scriptListResponseExportJSON contains the JSON metadata for the struct
+// [ScriptListResponseExport]
+type scriptListResponseExportJSON struct {
+	Type         apijson.Field
+	Cache        apijson.Field
+	Container    apijson.Field
+	State        apijson.Field
+	Storage      apijson.Field
+	TransferFrom apijson.Field
+	raw          string
+	ExtraFields  map[string]apijson.Field
+}
+
+func (r scriptListResponseExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r *ScriptListResponseExport) UnmarshalJSON(data []byte) (err error) {
+	*r = ScriptListResponseExport{}
+	err = apijson.UnmarshalRoot(data, &r.union)
+	if err != nil {
+		return err
+	}
+	return apijson.Port(r.union, &r)
+}
+
+// AsUnion returns a [ScriptListResponseExportsUnion] interface which you can cast
+// to the specific types for more type safety.
+//
+// Possible runtime types of the union are
+// [ScriptListResponseExportsWorkersWorkerExport],
+// [ScriptListResponseExportsWorkersDurableObjectExport],
+// [ScriptListResponseExportsWorkersDurableObjectDeletedExport],
+// [ScriptListResponseExportsWorkersDurableObjectRenamedExport],
+// [ScriptListResponseExportsWorkersDurableObjectTransferredExport],
+// [ScriptListResponseExportsWorkersDurableObjectExpectingTransferExport].
+func (r ScriptListResponseExport) AsUnion() ScriptListResponseExportsUnion {
+	return r.union
+}
+
+// A single entry in the `exports` map, keyed by export name (a `WorkerEntrypoint`
+// class name, a Durable Object class name, or `default` for the Worker's default
+// export). The `type` discriminator selects the top-level shape: `worker`
+// entrypoint entries may carry `cache` configuration, while `durable-object`
+// entries are further refined by the optional `state` field (default `created`).
+// Tombstone states (`deleted`, `renamed`, `transferred`) express destructive
+// lifecycle operations declaratively; `expecting-transfer` is the live target side
+// of a transfer. The server validates the exact per-(type, state) field
+// combinations; fields not listed for a variant are rejected.
+//
+// Union satisfied by [ScriptListResponseExportsWorkersWorkerExport],
+// [ScriptListResponseExportsWorkersDurableObjectExport],
+// [ScriptListResponseExportsWorkersDurableObjectDeletedExport],
+// [ScriptListResponseExportsWorkersDurableObjectRenamedExport],
+// [ScriptListResponseExportsWorkersDurableObjectTransferredExport] or
+// [ScriptListResponseExportsWorkersDurableObjectExpectingTransferExport].
+type ScriptListResponseExportsUnion interface {
+	implementsScriptListResponseExport()
+}
+
+func init() {
+	apijson.RegisterUnion(
+		reflect.TypeOf((*ScriptListResponseExportsUnion)(nil)).Elem(),
+		"type",
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ScriptListResponseExportsWorkersWorkerExport{}),
+			DiscriminatorValue: "worker",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ScriptListResponseExportsWorkersDurableObjectExport{}),
+			DiscriminatorValue: "durable-object",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ScriptListResponseExportsWorkersDurableObjectDeletedExport{}),
+			DiscriminatorValue: "durable-object",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ScriptListResponseExportsWorkersDurableObjectRenamedExport{}),
+			DiscriminatorValue: "durable-object",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ScriptListResponseExportsWorkersDurableObjectTransferredExport{}),
+			DiscriminatorValue: "durable-object",
+		},
+		apijson.UnionVariant{
+			TypeFilter:         gjson.JSON,
+			Type:               reflect.TypeOf(ScriptListResponseExportsWorkersDurableObjectExpectingTransferExport{}),
+			DiscriminatorValue: "durable-object",
+		},
+	)
+}
+
+// A named Worker entrypoint export (`type: worker`). Worker entrypoints are always
+// live (`state: created`) and carry no storage or lifecycle fields. The optional
+// `cache` block overrides the Worker's global `cache_options.enabled` for this
+// entrypoint.
+type ScriptListResponseExportsWorkersWorkerExport struct {
+	// Marks this entry as a Worker entrypoint export.
+	Type ScriptListResponseExportsWorkersWorkerExportType `json:"type" api:"required"`
+	// Cache override for this entrypoint. Overrides the Worker's global
+	// `cache_options.enabled` for this entrypoint only.
+	Cache ScriptListResponseExportsWorkersWorkerExportCache `json:"cache"`
+	// Live export. May be omitted; defaults to `created`.
+	State ScriptListResponseExportsWorkersWorkerExportState `json:"state"`
+	JSON  scriptListResponseExportsWorkersWorkerExportJSON  `json:"-"`
+}
+
+// scriptListResponseExportsWorkersWorkerExportJSON contains the JSON metadata for
+// the struct [ScriptListResponseExportsWorkersWorkerExport]
+type scriptListResponseExportsWorkersWorkerExportJSON struct {
+	Type        apijson.Field
+	Cache       apijson.Field
+	State       apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptListResponseExportsWorkersWorkerExport) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptListResponseExportsWorkersWorkerExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptListResponseExportsWorkersWorkerExport) implementsScriptListResponseExport() {}
+
+// Marks this entry as a Worker entrypoint export.
+type ScriptListResponseExportsWorkersWorkerExportType string
+
+const (
+	ScriptListResponseExportsWorkersWorkerExportTypeWorker ScriptListResponseExportsWorkersWorkerExportType = "worker"
+)
+
+func (r ScriptListResponseExportsWorkersWorkerExportType) IsKnown() bool {
+	switch r {
+	case ScriptListResponseExportsWorkersWorkerExportTypeWorker:
+		return true
+	}
+	return false
+}
+
+// Cache override for this entrypoint. Overrides the Worker's global
+// `cache_options.enabled` for this entrypoint only.
+type ScriptListResponseExportsWorkersWorkerExportCache struct {
+	// Whether caching is enabled for this entrypoint.
+	Enabled bool                                                  `json:"enabled" api:"required"`
+	JSON    scriptListResponseExportsWorkersWorkerExportCacheJSON `json:"-"`
+}
+
+// scriptListResponseExportsWorkersWorkerExportCacheJSON contains the JSON metadata
+// for the struct [ScriptListResponseExportsWorkersWorkerExportCache]
+type scriptListResponseExportsWorkersWorkerExportCacheJSON struct {
+	Enabled     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptListResponseExportsWorkersWorkerExportCache) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptListResponseExportsWorkersWorkerExportCacheJSON) RawJSON() string {
+	return r.raw
+}
+
+// Live export. May be omitted; defaults to `created`.
+type ScriptListResponseExportsWorkersWorkerExportState string
+
+const (
+	ScriptListResponseExportsWorkersWorkerExportStateCreated ScriptListResponseExportsWorkersWorkerExportState = "created"
+)
+
+func (r ScriptListResponseExportsWorkersWorkerExportState) IsKnown() bool {
+	switch r {
+	case ScriptListResponseExportsWorkersWorkerExportStateCreated:
+		return true
+	}
+	return false
+}
+
+// A live Durable Object export (`state: created`, the default). The platform
+// auto-provisions the namespace on first deploy, matches it on subsequent deploys,
+// and never mutates or deletes it as a side effect of a code-only change.
+// `storage` is required; `renamed_to`, `transferred_to` and `transfer_from` are
+// not allowed on a live entry.
+type ScriptListResponseExportsWorkersDurableObjectExport struct {
+	// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+	// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+	// already exists as KV-backed; the `exports` flow never provisions a new
+	// `legacy-kv` namespace.
+	Storage ScriptListResponseExportsWorkersDurableObjectExportStorage `json:"storage" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type ScriptListResponseExportsWorkersDurableObjectExportType `json:"type" api:"required"`
+	// Name of the container (declared in the upload's `metadata.containers`) that
+	// backs this Durable Object. When set, the namespace is container-enabled. Valid
+	// only on live entries.
+	Container string `json:"container"`
+	// Live export. May be omitted; defaults to `created`.
+	State ScriptListResponseExportsWorkersDurableObjectExportState `json:"state"`
+	JSON  scriptListResponseExportsWorkersDurableObjectExportJSON  `json:"-"`
+}
+
+// scriptListResponseExportsWorkersDurableObjectExportJSON contains the JSON
+// metadata for the struct [ScriptListResponseExportsWorkersDurableObjectExport]
+type scriptListResponseExportsWorkersDurableObjectExportJSON struct {
+	Storage     apijson.Field
+	Type        apijson.Field
+	Container   apijson.Field
+	State       apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptListResponseExportsWorkersDurableObjectExport) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptListResponseExportsWorkersDurableObjectExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptListResponseExportsWorkersDurableObjectExport) implementsScriptListResponseExport() {}
+
+// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+// already exists as KV-backed; the `exports` flow never provisions a new
+// `legacy-kv` namespace.
+type ScriptListResponseExportsWorkersDurableObjectExportStorage string
+
+const (
+	ScriptListResponseExportsWorkersDurableObjectExportStorageSqlite   ScriptListResponseExportsWorkersDurableObjectExportStorage = "sqlite"
+	ScriptListResponseExportsWorkersDurableObjectExportStorageLegacyKV ScriptListResponseExportsWorkersDurableObjectExportStorage = "legacy-kv"
+)
+
+func (r ScriptListResponseExportsWorkersDurableObjectExportStorage) IsKnown() bool {
+	switch r {
+	case ScriptListResponseExportsWorkersDurableObjectExportStorageSqlite, ScriptListResponseExportsWorkersDurableObjectExportStorageLegacyKV:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptListResponseExportsWorkersDurableObjectExportType string
+
+const (
+	ScriptListResponseExportsWorkersDurableObjectExportTypeDurableObject ScriptListResponseExportsWorkersDurableObjectExportType = "durable-object"
+)
+
+func (r ScriptListResponseExportsWorkersDurableObjectExportType) IsKnown() bool {
+	switch r {
+	case ScriptListResponseExportsWorkersDurableObjectExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// Live export. May be omitted; defaults to `created`.
+type ScriptListResponseExportsWorkersDurableObjectExportState string
+
+const (
+	ScriptListResponseExportsWorkersDurableObjectExportStateCreated ScriptListResponseExportsWorkersDurableObjectExportState = "created"
+)
+
+func (r ScriptListResponseExportsWorkersDurableObjectExportState) IsKnown() bool {
+	switch r {
+	case ScriptListResponseExportsWorkersDurableObjectExportStateCreated:
+		return true
+	}
+	return false
+}
+
+// A `deleted` tombstone: retires the provisioned namespace for this class and all
+// of its data. The class must be absent from the uploaded code and no other Worker
+// in the account may bind to the namespace, otherwise the deploy is rejected. No
+// other fields are allowed. Deletion is irreversible.
+type ScriptListResponseExportsWorkersDurableObjectDeletedExport struct {
+	// Tombstone that deletes the namespace.
+	State ScriptListResponseExportsWorkersDurableObjectDeletedExportState `json:"state" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type ScriptListResponseExportsWorkersDurableObjectDeletedExportType `json:"type" api:"required"`
+	JSON scriptListResponseExportsWorkersDurableObjectDeletedExportJSON `json:"-"`
+}
+
+// scriptListResponseExportsWorkersDurableObjectDeletedExportJSON contains the JSON
+// metadata for the struct
+// [ScriptListResponseExportsWorkersDurableObjectDeletedExport]
+type scriptListResponseExportsWorkersDurableObjectDeletedExportJSON struct {
+	State       apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptListResponseExportsWorkersDurableObjectDeletedExport) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptListResponseExportsWorkersDurableObjectDeletedExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptListResponseExportsWorkersDurableObjectDeletedExport) implementsScriptListResponseExport() {
+}
+
+// Tombstone that deletes the namespace.
+type ScriptListResponseExportsWorkersDurableObjectDeletedExportState string
+
+const (
+	ScriptListResponseExportsWorkersDurableObjectDeletedExportStateDeleted ScriptListResponseExportsWorkersDurableObjectDeletedExportState = "deleted"
+)
+
+func (r ScriptListResponseExportsWorkersDurableObjectDeletedExportState) IsKnown() bool {
+	switch r {
+	case ScriptListResponseExportsWorkersDurableObjectDeletedExportStateDeleted:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptListResponseExportsWorkersDurableObjectDeletedExportType string
+
+const (
+	ScriptListResponseExportsWorkersDurableObjectDeletedExportTypeDurableObject ScriptListResponseExportsWorkersDurableObjectDeletedExportType = "durable-object"
+)
+
+func (r ScriptListResponseExportsWorkersDurableObjectDeletedExportType) IsKnown() bool {
+	switch r {
+	case ScriptListResponseExportsWorkersDurableObjectDeletedExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// A `renamed` tombstone: rewrites the provisioned namespace's class name from this
+// map key to `renamed_to`. The source class may stay in code during the rollout
+// window (an info notice is emitted). `storage`, `transferred_to` and
+// `transfer_from` are not allowed.
+type ScriptListResponseExportsWorkersDurableObjectRenamedExport struct {
+	// Tombstone that renames the namespace's class.
+	State ScriptListResponseExportsWorkersDurableObjectRenamedExportState `json:"state" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type ScriptListResponseExportsWorkersDurableObjectRenamedExportType `json:"type" api:"required"`
+	JSON scriptListResponseExportsWorkersDurableObjectRenamedExportJSON `json:"-"`
+}
+
+// scriptListResponseExportsWorkersDurableObjectRenamedExportJSON contains the JSON
+// metadata for the struct
+// [ScriptListResponseExportsWorkersDurableObjectRenamedExport]
+type scriptListResponseExportsWorkersDurableObjectRenamedExportJSON struct {
+	State       apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptListResponseExportsWorkersDurableObjectRenamedExport) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptListResponseExportsWorkersDurableObjectRenamedExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptListResponseExportsWorkersDurableObjectRenamedExport) implementsScriptListResponseExport() {
+}
+
+// Tombstone that renames the namespace's class.
+type ScriptListResponseExportsWorkersDurableObjectRenamedExportState string
+
+const (
+	ScriptListResponseExportsWorkersDurableObjectRenamedExportStateRenamed ScriptListResponseExportsWorkersDurableObjectRenamedExportState = "renamed"
+)
+
+func (r ScriptListResponseExportsWorkersDurableObjectRenamedExportState) IsKnown() bool {
+	switch r {
+	case ScriptListResponseExportsWorkersDurableObjectRenamedExportStateRenamed:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptListResponseExportsWorkersDurableObjectRenamedExportType string
+
+const (
+	ScriptListResponseExportsWorkersDurableObjectRenamedExportTypeDurableObject ScriptListResponseExportsWorkersDurableObjectRenamedExportType = "durable-object"
+)
+
+func (r ScriptListResponseExportsWorkersDurableObjectRenamedExportType) IsKnown() bool {
+	switch r {
+	case ScriptListResponseExportsWorkersDurableObjectRenamedExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// A `transferred` tombstone (source side of a two-phase transfer): hands ownership
+// of the provisioned namespace to another script in the same account, named by
+// `transferred_to`. The target must have already deployed a matching
+// `expecting-transfer` entry. The source class may stay in code during the rollout
+// window (an info notice is emitted). `storage`, `renamed_to` and `transfer_from`
+// are not allowed.
+type ScriptListResponseExportsWorkersDurableObjectTransferredExport struct {
+	// Tombstone that transfers the namespace to another script.
+	State ScriptListResponseExportsWorkersDurableObjectTransferredExportState `json:"state" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type ScriptListResponseExportsWorkersDurableObjectTransferredExportType `json:"type" api:"required"`
+	JSON scriptListResponseExportsWorkersDurableObjectTransferredExportJSON `json:"-"`
+}
+
+// scriptListResponseExportsWorkersDurableObjectTransferredExportJSON contains the
+// JSON metadata for the struct
+// [ScriptListResponseExportsWorkersDurableObjectTransferredExport]
+type scriptListResponseExportsWorkersDurableObjectTransferredExportJSON struct {
+	State       apijson.Field
+	Type        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptListResponseExportsWorkersDurableObjectTransferredExport) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptListResponseExportsWorkersDurableObjectTransferredExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptListResponseExportsWorkersDurableObjectTransferredExport) implementsScriptListResponseExport() {
+}
+
+// Tombstone that transfers the namespace to another script.
+type ScriptListResponseExportsWorkersDurableObjectTransferredExportState string
+
+const (
+	ScriptListResponseExportsWorkersDurableObjectTransferredExportStateTransferred ScriptListResponseExportsWorkersDurableObjectTransferredExportState = "transferred"
+)
+
+func (r ScriptListResponseExportsWorkersDurableObjectTransferredExportState) IsKnown() bool {
+	switch r {
+	case ScriptListResponseExportsWorkersDurableObjectTransferredExportStateTransferred:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptListResponseExportsWorkersDurableObjectTransferredExportType string
+
+const (
+	ScriptListResponseExportsWorkersDurableObjectTransferredExportTypeDurableObject ScriptListResponseExportsWorkersDurableObjectTransferredExportType = "durable-object"
+)
+
+func (r ScriptListResponseExportsWorkersDurableObjectTransferredExportType) IsKnown() bool {
+	switch r {
+	case ScriptListResponseExportsWorkersDurableObjectTransferredExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// The target side of a two-phase transfer (`state: expecting-transfer`). Declares
+// that this script expects to receive a namespace for this class from the
+// `transfer_from` script. This is a live entry, not a tombstone: bindings resolve
+// through the source's namespace until the source commits with a `transferred`
+// tombstone. `storage` and `transfer_from` are required; `renamed_to` and
+// `transferred_to` are not allowed.
+type ScriptListResponseExportsWorkersDurableObjectExpectingTransferExport struct {
+	// Target side of a two-phase transfer.
+	State ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportState `json:"state" api:"required"`
+	// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+	// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+	// already exists as KV-backed; the `exports` flow never provisions a new
+	// `legacy-kv` namespace.
+	Storage ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportStorage `json:"storage" api:"required"`
+	// The source script name to receive the namespace from. Must be in the same
+	// account and dispatch-namespace context. Present on reads for
+	// `expecting-transfer` entries.
+	TransferFrom string `json:"transfer_from" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportType `json:"type" api:"required"`
+	// Name of the container (declared in the upload's `metadata.containers`) that
+	// backs this Durable Object once the transfer settles. Valid only on live entries.
+	Container string                                                                   `json:"container"`
+	JSON      scriptListResponseExportsWorkersDurableObjectExpectingTransferExportJSON `json:"-"`
+}
+
+// scriptListResponseExportsWorkersDurableObjectExpectingTransferExportJSON
+// contains the JSON metadata for the struct
+// [ScriptListResponseExportsWorkersDurableObjectExpectingTransferExport]
+type scriptListResponseExportsWorkersDurableObjectExpectingTransferExportJSON struct {
+	State        apijson.Field
+	Storage      apijson.Field
+	TransferFrom apijson.Field
+	Type         apijson.Field
+	Container    apijson.Field
+	raw          string
+	ExtraFields  map[string]apijson.Field
+}
+
+func (r *ScriptListResponseExportsWorkersDurableObjectExpectingTransferExport) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptListResponseExportsWorkersDurableObjectExpectingTransferExportJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptListResponseExportsWorkersDurableObjectExpectingTransferExport) implementsScriptListResponseExport() {
+}
+
+// Target side of a two-phase transfer.
+type ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportState string
+
+const (
+	ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportStateExpectingTransfer ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportState = "expecting-transfer"
+)
+
+func (r ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportState) IsKnown() bool {
+	switch r {
+	case ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportStateExpectingTransfer:
+		return true
+	}
+	return false
+}
+
+// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+// already exists as KV-backed; the `exports` flow never provisions a new
+// `legacy-kv` namespace.
+type ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportStorage string
+
+const (
+	ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportStorageSqlite   ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportStorage = "sqlite"
+	ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportStorageLegacyKV ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportStorage = "legacy-kv"
+)
+
+func (r ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportStorage) IsKnown() bool {
+	switch r {
+	case ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportStorageSqlite, ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportStorageLegacyKV:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportType string
+
+const (
+	ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportTypeDurableObject ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportType = "durable-object"
+)
+
+func (r ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportType) IsKnown() bool {
+	switch r {
+	case ScriptListResponseExportsWorkersDurableObjectExpectingTransferExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Worker entrypoint export.
+type ScriptListResponseExportsType string
+
+const (
+	ScriptListResponseExportsTypeWorker        ScriptListResponseExportsType = "worker"
+	ScriptListResponseExportsTypeDurableObject ScriptListResponseExportsType = "durable-object"
+)
+
+func (r ScriptListResponseExportsType) IsKnown() bool {
+	switch r {
+	case ScriptListResponseExportsTypeWorker, ScriptListResponseExportsTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// Live export. May be omitted; defaults to `created`.
+type ScriptListResponseExportsState string
+
+const (
+	ScriptListResponseExportsStateCreated           ScriptListResponseExportsState = "created"
+	ScriptListResponseExportsStateDeleted           ScriptListResponseExportsState = "deleted"
+	ScriptListResponseExportsStateRenamed           ScriptListResponseExportsState = "renamed"
+	ScriptListResponseExportsStateTransferred       ScriptListResponseExportsState = "transferred"
+	ScriptListResponseExportsStateExpectingTransfer ScriptListResponseExportsState = "expecting-transfer"
+)
+
+func (r ScriptListResponseExportsState) IsKnown() bool {
+	switch r {
+	case ScriptListResponseExportsStateCreated, ScriptListResponseExportsStateDeleted, ScriptListResponseExportsStateRenamed, ScriptListResponseExportsStateTransferred, ScriptListResponseExportsStateExpectingTransfer:
+		return true
+	}
+	return false
+}
+
+// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+// already exists as KV-backed; the `exports` flow never provisions a new
+// `legacy-kv` namespace.
+type ScriptListResponseExportsStorage string
+
+const (
+	ScriptListResponseExportsStorageSqlite   ScriptListResponseExportsStorage = "sqlite"
+	ScriptListResponseExportsStorageLegacyKV ScriptListResponseExportsStorage = "legacy-kv"
+)
+
+func (r ScriptListResponseExportsStorage) IsKnown() bool {
+	switch r {
+	case ScriptListResponseExportsStorageSqlite, ScriptListResponseExportsStorageLegacyKV:
+		return true
+	}
+	return false
+}
+
+type ScriptListResponseNamedHandler struct {
+	// The names of handlers exported as part of the named export.
+	Handlers []string `json:"handlers"`
+	// The name of the export.
+	Name string                             `json:"name"`
+	JSON scriptListResponseNamedHandlerJSON `json:"-"`
+}
+
+// scriptListResponseNamedHandlerJSON contains the JSON metadata for the struct
+// [ScriptListResponseNamedHandler]
+type scriptListResponseNamedHandlerJSON struct {
+	Handlers    apijson.Field
+	Name        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptListResponseNamedHandler) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptListResponseNamedHandlerJSON) RawJSON() string {
+	return r.raw
+}
+
+// Observability settings for the Worker.
+type ScriptListResponseObservability struct {
+	// Whether observability is enabled for the Worker.
+	Enabled bool `json:"enabled" api:"required"`
+	// The sampling rate for incoming requests. From 0 to 1 (1 = 100%, 0.1 = 10%).
+	// Default is 1.
+	HeadSamplingRate float64 `json:"head_sampling_rate" api:"nullable"`
+	// Real-time Issues settings for the Worker.
+	Issues ScriptListResponseObservabilityIssues `json:"issues" api:"nullable"`
+	// Log settings for the Worker.
+	Logs ScriptListResponseObservabilityLogs `json:"logs" api:"nullable"`
+	// Whether query strings are removed from request URLs in logs and traces.
+	RedactQueryString bool `json:"redact_query_string"`
+	// Trace settings for the Worker.
+	Traces ScriptListResponseObservabilityTraces `json:"traces" api:"nullable"`
+	JSON   scriptListResponseObservabilityJSON   `json:"-"`
+}
+
+// scriptListResponseObservabilityJSON contains the JSON metadata for the struct
+// [ScriptListResponseObservability]
+type scriptListResponseObservabilityJSON struct {
+	Enabled           apijson.Field
+	HeadSamplingRate  apijson.Field
+	Issues            apijson.Field
+	Logs              apijson.Field
+	RedactQueryString apijson.Field
+	Traces            apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
+}
+
+func (r *ScriptListResponseObservability) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptListResponseObservabilityJSON) RawJSON() string {
+	return r.raw
+}
+
+// Real-time Issues settings for the Worker.
+type ScriptListResponseObservabilityIssues struct {
+	// Whether real-time Issues are enabled for the Worker.
+	Enabled bool                                      `json:"enabled"`
+	JSON    scriptListResponseObservabilityIssuesJSON `json:"-"`
+}
+
+// scriptListResponseObservabilityIssuesJSON contains the JSON metadata for the
+// struct [ScriptListResponseObservabilityIssues]
+type scriptListResponseObservabilityIssuesJSON struct {
+	Enabled     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptListResponseObservabilityIssues) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptListResponseObservabilityIssuesJSON) RawJSON() string {
+	return r.raw
+}
+
+// Log settings for the Worker.
+type ScriptListResponseObservabilityLogs struct {
+	// Whether logs are enabled for the Worker.
+	Enabled bool `json:"enabled" api:"required"`
+	// Whether
+	// [invocation logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#invocation-logs)
+	// are enabled for the Worker.
+	InvocationLogs bool `json:"invocation_logs" api:"required"`
+	// A list of destinations where logs will be exported to.
+	Destinations []string `json:"destinations"`
+	// The sampling rate for logs. From 0 to 1 (1 = 100%, 0.1 = 10%). Default is 1.
+	HeadSamplingRate float64 `json:"head_sampling_rate" api:"nullable"`
+	// Whether log persistence is enabled for the Worker.
+	Persist bool                                    `json:"persist"`
+	JSON    scriptListResponseObservabilityLogsJSON `json:"-"`
+}
+
+// scriptListResponseObservabilityLogsJSON contains the JSON metadata for the
+// struct [ScriptListResponseObservabilityLogs]
+type scriptListResponseObservabilityLogsJSON struct {
+	Enabled          apijson.Field
+	InvocationLogs   apijson.Field
+	Destinations     apijson.Field
+	HeadSamplingRate apijson.Field
+	Persist          apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *ScriptListResponseObservabilityLogs) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptListResponseObservabilityLogsJSON) RawJSON() string {
+	return r.raw
+}
+
+// Trace settings for the Worker.
+type ScriptListResponseObservabilityTraces struct {
+	// A list of destinations where traces will be exported to.
+	Destinations []string `json:"destinations"`
+	// Whether traces are enabled for the Worker.
+	Enabled bool `json:"enabled"`
+	// The sampling rate for traces. From 0 to 1 (1 = 100%, 0.1 = 10%). Default is 1.
+	HeadSamplingRate float64 `json:"head_sampling_rate" api:"nullable"`
+	// Whether trace persistence is enabled for the Worker.
+	Persist bool `json:"persist"`
+	// Controls how inbound trace context (traceparent/tracestate) headers on incoming
+	// requests are handled. "authenticated" honors inbound trace context only when
+	// accompanied by a valid trace auth token. "accept" unconditionally accepts
+	// inbound trace context. Requires the trace propagation feature to be enabled.
+	// Returns null when the trace propagation feature is not enabled for the account.
+	PropagationPolicy ScriptListResponseObservabilityTracesPropagationPolicy `json:"propagation_policy" api:"nullable"`
+	JSON              scriptListResponseObservabilityTracesJSON              `json:"-"`
+}
+
+// scriptListResponseObservabilityTracesJSON contains the JSON metadata for the
+// struct [ScriptListResponseObservabilityTraces]
+type scriptListResponseObservabilityTracesJSON struct {
+	Destinations      apijson.Field
+	Enabled           apijson.Field
+	HeadSamplingRate  apijson.Field
+	Persist           apijson.Field
+	PropagationPolicy apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
+}
+
+func (r *ScriptListResponseObservabilityTraces) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptListResponseObservabilityTracesJSON) RawJSON() string {
+	return r.raw
+}
+
+// Controls how inbound trace context (traceparent/tracestate) headers on incoming
+// requests are handled. "authenticated" honors inbound trace context only when
+// accompanied by a valid trace auth token. "accept" unconditionally accepts
+// inbound trace context. Requires the trace propagation feature to be enabled.
+// Returns null when the trace propagation feature is not enabled for the account.
+type ScriptListResponseObservabilityTracesPropagationPolicy string
+
+const (
+	ScriptListResponseObservabilityTracesPropagationPolicyAuthenticated ScriptListResponseObservabilityTracesPropagationPolicy = "authenticated"
+	ScriptListResponseObservabilityTracesPropagationPolicyAccept        ScriptListResponseObservabilityTracesPropagationPolicy = "accept"
+)
+
+func (r ScriptListResponseObservabilityTracesPropagationPolicy) IsKnown() bool {
+	switch r {
+	case ScriptListResponseObservabilityTracesPropagationPolicyAuthenticated, ScriptListResponseObservabilityTracesPropagationPolicyAccept:
+		return true
+	}
+	return false
+}
+
+// Configuration for
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+// Specify mode='smart' for Smart Placement, or one of region/hostname/host.
+type ScriptListResponsePlacement struct {
+	// TCP host and port for targeted placement.
+	Host string `json:"host"`
+	// HTTP hostname for targeted placement.
+	Hostname string `json:"hostname"`
+	// The last time the script was analyzed for
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	LastAnalyzedAt time.Time `json:"last_analyzed_at" format:"date-time"`
+	// Enables
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	Mode ScriptListResponsePlacementMode `json:"mode"`
+	// Cloud region for targeted placement in format 'provider:region'.
+	Region string `json:"region"`
+	// Status of
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	Status ScriptListResponsePlacementStatus `json:"status"`
+	// This field can have the runtime type of
+	// [[]ScriptListResponsePlacementObjectTarget].
+	Target interface{}                     `json:"target"`
+	JSON   scriptListResponsePlacementJSON `json:"-"`
+	union  ScriptListResponsePlacementUnion
+}
+
+// scriptListResponsePlacementJSON contains the JSON metadata for the struct
+// [ScriptListResponsePlacement]
+type scriptListResponsePlacementJSON struct {
+	Host           apijson.Field
+	Hostname       apijson.Field
+	LastAnalyzedAt apijson.Field
+	Mode           apijson.Field
+	Region         apijson.Field
+	Status         apijson.Field
+	Target         apijson.Field
+	raw            string
+	ExtraFields    map[string]apijson.Field
+}
+
+func (r scriptListResponsePlacementJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r *ScriptListResponsePlacement) UnmarshalJSON(data []byte) (err error) {
+	*r = ScriptListResponsePlacement{}
+	err = apijson.UnmarshalRoot(data, &r.union)
+	if err != nil {
+		return err
+	}
+	return apijson.Port(r.union, &r)
+}
+
+// AsUnion returns a [ScriptListResponsePlacementUnion] interface which you can
+// cast to the specific types for more type safety.
+//
+// Possible runtime types of the union are [ScriptListResponsePlacementObject],
+// [ScriptListResponsePlacementObject], [ScriptListResponsePlacementObject],
+// [ScriptListResponsePlacementObject], [ScriptListResponsePlacementObject],
+// [ScriptListResponsePlacementObject], [ScriptListResponsePlacementObject],
+// [ScriptListResponsePlacementObject].
+func (r ScriptListResponsePlacement) AsUnion() ScriptListResponsePlacementUnion {
+	return r.union
+}
+
+// Configuration for
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+// Specify mode='smart' for Smart Placement, or one of region/hostname/host.
+//
+// Union satisfied by [ScriptListResponsePlacementObject],
+// [ScriptListResponsePlacementObject], [ScriptListResponsePlacementObject],
+// [ScriptListResponsePlacementObject], [ScriptListResponsePlacementObject],
+// [ScriptListResponsePlacementObject], [ScriptListResponsePlacementObject] or
+// [ScriptListResponsePlacementObject].
+type ScriptListResponsePlacementUnion interface {
+	implementsScriptListResponsePlacement()
+}
+
+func init() {
+	apijson.RegisterUnion(
+		reflect.TypeOf((*ScriptListResponsePlacementUnion)(nil)).Elem(),
+		"",
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptListResponsePlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptListResponsePlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptListResponsePlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptListResponsePlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptListResponsePlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptListResponsePlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptListResponsePlacementObject{}),
+		},
+		apijson.UnionVariant{
+			TypeFilter: gjson.JSON,
+			Type:       reflect.TypeOf(ScriptListResponsePlacementObject{}),
+		},
+	)
+}
+
+type ScriptListResponsePlacementObject struct {
+	// Enables
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	Mode ScriptListResponsePlacementObjectMode `json:"mode" api:"required"`
+	// The last time the script was analyzed for
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	LastAnalyzedAt time.Time `json:"last_analyzed_at" format:"date-time"`
+	// Status of
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	Status ScriptListResponsePlacementObjectStatus `json:"status"`
+	JSON   scriptListResponsePlacementObjectJSON   `json:"-"`
+}
+
+// scriptListResponsePlacementObjectJSON contains the JSON metadata for the struct
+// [ScriptListResponsePlacementObject]
+type scriptListResponsePlacementObjectJSON struct {
+	Mode           apijson.Field
+	LastAnalyzedAt apijson.Field
+	Status         apijson.Field
+	raw            string
+	ExtraFields    map[string]apijson.Field
+}
+
+func (r *ScriptListResponsePlacementObject) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptListResponsePlacementObjectJSON) RawJSON() string {
+	return r.raw
+}
+
+func (r ScriptListResponsePlacementObject) implementsScriptListResponsePlacement() {}
+
+// Enables
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+type ScriptListResponsePlacementObjectMode string
+
+const (
+	ScriptListResponsePlacementObjectModeSmart ScriptListResponsePlacementObjectMode = "smart"
+)
+
+func (r ScriptListResponsePlacementObjectMode) IsKnown() bool {
+	switch r {
+	case ScriptListResponsePlacementObjectModeSmart:
+		return true
+	}
+	return false
+}
+
+// Status of
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+type ScriptListResponsePlacementObjectStatus string
+
+const (
+	ScriptListResponsePlacementObjectStatusSuccess                 ScriptListResponsePlacementObjectStatus = "SUCCESS"
+	ScriptListResponsePlacementObjectStatusUnsupportedApplication  ScriptListResponsePlacementObjectStatus = "UNSUPPORTED_APPLICATION"
+	ScriptListResponsePlacementObjectStatusInsufficientInvocations ScriptListResponsePlacementObjectStatus = "INSUFFICIENT_INVOCATIONS"
+)
+
+func (r ScriptListResponsePlacementObjectStatus) IsKnown() bool {
+	switch r {
+	case ScriptListResponsePlacementObjectStatusSuccess, ScriptListResponsePlacementObjectStatusUnsupportedApplication, ScriptListResponsePlacementObjectStatusInsufficientInvocations:
+		return true
+	}
+	return false
+}
+
+// Enables
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+type ScriptListResponsePlacementMode string
+
+const (
+	ScriptListResponsePlacementModeSmart    ScriptListResponsePlacementMode = "smart"
+	ScriptListResponsePlacementModeTargeted ScriptListResponsePlacementMode = "targeted"
+)
+
+func (r ScriptListResponsePlacementMode) IsKnown() bool {
+	switch r {
+	case ScriptListResponsePlacementModeSmart, ScriptListResponsePlacementModeTargeted:
+		return true
+	}
+	return false
+}
+
+// Status of
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+type ScriptListResponsePlacementStatus string
+
+const (
+	ScriptListResponsePlacementStatusSuccess                 ScriptListResponsePlacementStatus = "SUCCESS"
+	ScriptListResponsePlacementStatusUnsupportedApplication  ScriptListResponsePlacementStatus = "UNSUPPORTED_APPLICATION"
+	ScriptListResponsePlacementStatusInsufficientInvocations ScriptListResponsePlacementStatus = "INSUFFICIENT_INVOCATIONS"
+)
+
+func (r ScriptListResponsePlacementStatus) IsKnown() bool {
+	switch r {
+	case ScriptListResponsePlacementStatusSuccess, ScriptListResponsePlacementStatusUnsupportedApplication, ScriptListResponsePlacementStatusInsufficientInvocations:
+		return true
+	}
+	return false
+}
+
+type ScriptListResponseRoute struct {
+	// Identifier.
+	ID string `json:"id" api:"required"`
+	// Pattern to match incoming requests against.
+	// [Learn more](https://developers.cloudflare.com/workers/configuration/routing/routes/#matching-behavior).
+	Pattern string `json:"pattern" api:"required"`
+	// Name of the script to run if the route matches.
+	Script string                      `json:"script"`
+	JSON   scriptListResponseRouteJSON `json:"-"`
+}
+
+// scriptListResponseRouteJSON contains the JSON metadata for the struct
+// [ScriptListResponseRoute]
+type scriptListResponseRouteJSON struct {
+	ID          apijson.Field
+	Pattern     apijson.Field
+	Script      apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptListResponseRoute) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptListResponseRouteJSON) RawJSON() string {
+	return r.raw
+}
+
+// Usage model for the Worker invocations.
+type ScriptListResponseUsageModel string
+
+const (
+	ScriptListResponseUsageModelStandard ScriptListResponseUsageModel = "standard"
+	ScriptListResponseUsageModelBundled  ScriptListResponseUsageModel = "bundled"
+	ScriptListResponseUsageModelUnbound  ScriptListResponseUsageModel = "unbound"
+)
+
+func (r ScriptListResponseUsageModel) IsKnown() bool {
+	switch r {
+	case ScriptListResponseUsageModelStandard, ScriptListResponseUsageModelBundled, ScriptListResponseUsageModelUnbound:
+		return true
+	}
+	return false
+}
+
+type ScriptDeleteResponse = interface{}
+
+type ScriptSearchResponse struct {
+	// Identifier.
+	ID string `json:"id" api:"required"`
+	// When the script was created.
+	CreatedOn time.Time `json:"created_on" api:"required" format:"date-time"`
+	// When the script was last modified.
+	ModifiedOn time.Time `json:"modified_on" api:"required" format:"date-time"`
+	// Name of the script.
+	ScriptName string `json:"script_name" api:"required"`
+	// Whether the environment is the default environment.
+	EnvironmentIsDefault bool `json:"environment_is_default"`
+	// Name of the environment.
+	EnvironmentName string `json:"environment_name"`
+	// Name of the service.
+	ServiceName string                   `json:"service_name"`
+	JSON        scriptSearchResponseJSON `json:"-"`
+}
+
+// scriptSearchResponseJSON contains the JSON metadata for the struct
+// [ScriptSearchResponse]
+type scriptSearchResponseJSON struct {
+	ID                   apijson.Field
+	CreatedOn            apijson.Field
+	ModifiedOn           apijson.Field
+	ScriptName           apijson.Field
+	EnvironmentIsDefault apijson.Field
+	EnvironmentName      apijson.Field
+	ServiceName          apijson.Field
+	raw                  string
+	ExtraFields          map[string]apijson.Field
+}
+
+func (r *ScriptSearchResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptSearchResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+type ScriptUpdateParams struct {
+	// Identifier.
+	AccountID param.Field[string] `path:"account_id" api:"required"`
+	// JSON-encoded metadata about the uploaded parts and Worker configuration.
+	Metadata param.Field[ScriptUpdateParamsMetadata] `json:"metadata" api:"required"`
+	// When set to "strict", the upload will fail with error 10057 if any `inherit`
+	// type bindings cannot be resolved against the latest uploaded version of the
+	// Worker, which may not be the deployed version. Without this, unresolvable
+	// inherit bindings are silently dropped.
+	BindingsInherit param.Field[ScriptUpdateParamsBindingsInherit] `query:"bindings_inherit"`
+	// An array of modules (often JavaScript files) comprising a Worker script. At
+	// least one module must be present and referenced in the metadata as `main_module`
+	// or `body_part` by filename.<br/>Possible Content-Type(s) are:
+	// `application/javascript+module`, `text/javascript+module`,
+	// `application/javascript`, `text/javascript`, `text/x-python`,
+	// `text/x-python-requirement`, `application/wasm`, `text/plain`,
+	// `application/octet-stream`, `application/source-map`.
+	Files param.Field[[]io.Reader] `json:"files" format:"binary"`
+}
+
+func (r ScriptUpdateParams) MarshalMultipart() (data []byte, contentType string, err error) {
+	buf := bytes.NewBuffer(nil)
+	writer := multipart.NewWriter(buf)
+	err = apiform.MarshalRoot(r, writer)
+	if err != nil {
+		writer.Close()
+		return nil, "", err
+	}
+	err = writer.Close()
+	if err != nil {
+		return nil, "", err
+	}
+	return buf.Bytes(), writer.FormDataContentType(), nil
+}
+
+// URLQuery serializes [ScriptUpdateParams]'s query parameters as `url.Values`.
+func (r ScriptUpdateParams) URLQuery() (v url.Values) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
+		NestedFormat: apiquery.NestedQueryFormatDots,
+	})
+}
+
+// JSON-encoded metadata about the uploaded parts and Worker configuration.
+type ScriptUpdateParamsMetadata struct {
+	// Annotations for the version created by this upload.
+	Annotations param.Field[ScriptUpdateParamsMetadataAnnotations] `json:"annotations"`
+	// Configuration for assets within a Worker.
+	Assets param.Field[ScriptUpdateParamsMetadataAssets] `json:"assets"`
+	// List of bindings attached to a Worker. You can find more about bindings on our
+	// docs:
+	// https://developers.cloudflare.com/workers/configuration/multipart-upload-metadata/#bindings.
+	Bindings param.Field[[]ScriptUpdateParamsMetadataBindingUnion] `json:"bindings"`
+	// Name of the uploaded file that contains the script (e.g. the file adding a
+	// listener to the `fetch` event). Indicates a `service worker syntax` Worker.
+	BodyPart param.Field[string] `json:"body_part"`
+	// Global CacheW configuration for the Worker. When caching is on, the platform
+	// provisions a `cloudflare.app` zone for the Worker. A `type: worker` entry in the
+	// `exports` map can override this value for a single entrypoint.
+	CacheOptions param.Field[ScriptUpdateParamsMetadataCacheOptions] `json:"cache_options"`
+	// Choose whether to apply Durable Object code updates immediately or defer them.
+	// When omitted, the default strategy applies.
+	CodeUpdateStrategy param.Field[ScriptUpdateParamsMetadataCodeUpdateStrategyUnion] `json:"code_update_strategy"`
+	// Date indicating targeted support in the Workers runtime. Backwards incompatible
+	// fixes to the runtime following this date will not affect this Worker.
+	CompatibilityDate param.Field[string] `json:"compatibility_date"`
+	// Flags that enable or disable certain features in the Workers runtime. Used to
+	// enable upcoming features or opt in or out of specific changes not included in a
+	// `compatibility_date`.
+	CompatibilityFlags param.Field[[]string] `json:"compatibility_flags"`
+	// Declarative exports for the Worker. Worker entrypoint entries (`type: worker`)
+	// carry cache configuration for that entrypoint.
+	Exports param.Field[map[string]ScriptUpdateParamsMetadataExportsUnion] `json:"exports"`
+	// Retain assets which exist for a previously uploaded Worker version; used in lieu
+	// of providing a completion token. An explicit `assets` upload takes precedence
+	// over `keep_assets`.
+	KeepAssets param.Field[bool] `json:"keep_assets"`
+	// List of binding types to keep from previous_upload.
+	KeepBindings param.Field[[]string] `json:"keep_bindings"`
+	// Limits to apply for this Worker.
+	Limits param.Field[ScriptUpdateParamsMetadataLimits] `json:"limits"`
+	// Whether Logpush is turned on for the Worker.
+	Logpush param.Field[bool] `json:"logpush"`
+	// Name of the uploaded file that contains the main module (e.g. the file exporting
+	// a `fetch` handler). Indicates a `module syntax` Worker.
+	MainModule param.Field[string] `json:"main_module"`
+	// Migrations to apply for Durable Objects associated with this Worker.
+	Migrations param.Field[ScriptUpdateParamsMetadataMigrationsUnion] `json:"migrations"`
+	// Observability settings for the Worker.
+	Observability param.Field[ScriptUpdateParamsMetadataObservability] `json:"observability"`
+	// The list of npm packages that were installed and used when this Worker version
+	// was built.
+	PackageDependencies param.Field[[]ScriptUpdateParamsMetadataPackageDependency] `json:"package_dependencies"`
+	// Configuration for
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	// Specify mode='smart' for Smart Placement, or one of region/hostname/host.
+	Placement param.Field[ScriptUpdateParamsMetadataPlacementUnion] `json:"placement"`
+	// List of strings to use as tags for this Worker.
+	Tags param.Field[[]string] `json:"tags"`
+	// List of Workers that will consume logs from the attached Worker.
+	TailConsumers param.Field[[]ConsumerScriptParam] `json:"tail_consumers"`
+	// Usage model for the Worker invocations.
+	UsageModel param.Field[ScriptUpdateParamsMetadataUsageModel] `json:"usage_model"`
+}
+
+func (r ScriptUpdateParamsMetadata) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Annotations for the version created by this upload.
+type ScriptUpdateParamsMetadataAnnotations struct {
+	// Human-readable message about the version. Truncated to 1000 bytes if longer.
+	WorkersMessage param.Field[string] `json:"workers/message"`
+	// User-provided identifier for the version. Maximum 100 bytes.
+	WorkersTag param.Field[string] `json:"workers/tag"`
+}
+
+func (r ScriptUpdateParamsMetadataAnnotations) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Configuration for assets within a Worker.
+type ScriptUpdateParamsMetadataAssets struct {
+	// Configuration for assets within a Worker.
+	Config param.Field[ScriptUpdateParamsMetadataAssetsConfig] `json:"config"`
+	// Token provided upon successful upload of all files from a registered manifest.
+	JWT param.Field[string] `json:"jwt"`
+}
+
+func (r ScriptUpdateParamsMetadataAssets) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Configuration for assets within a Worker.
+type ScriptUpdateParamsMetadataAssetsConfig struct {
+	// The contents of a \_headers file (used to attach custom headers on asset
+	// responses).
+	Headers param.Field[string] `json:"_headers"`
+	// The contents of a \_redirects file (used to apply redirects or proxy paths ahead
+	// of asset serving).
+	Redirects param.Field[string] `json:"_redirects"`
+	// The public URL path prefix under which assets are served. A null request value
+	// resets it to `/`; responses represent the root as `/`. All versions in a gradual
+	// deployment must use the same canonical value. To change it, first deploy the
+	// version containing the change at 100%.
+	BasePath param.Field[string] `json:"base_path"`
+	// Determines the redirects and rewrites of requests for HTML content.
+	HTMLHandling param.Field[ScriptUpdateParamsMetadataAssetsConfigHTMLHandling] `json:"html_handling"`
+	// Determines the response when a request does not match a static asset, and there
+	// is no Worker script.
+	NotFoundHandling param.Field[ScriptUpdateParamsMetadataAssetsConfigNotFoundHandling] `json:"not_found_handling"`
+	// Contains a list path rules to control routing to either the Worker or assets.
+	// Glob (\*) and negative (!) rules are supported. Rules must start with either '/'
+	// or '!/'. At least one non-negative rule must be provided, and negative rules
+	// have higher precedence than non-negative rules.
+	RunWorkerFirst param.Field[ScriptUpdateParamsMetadataAssetsConfigRunWorkerFirstUnion] `json:"run_worker_first"`
+	// When true and the incoming request matches an asset, that will be served instead
+	// of invoking the Worker script. When false, requests will always invoke the
+	// Worker script.
+	//
+	// Deprecated: deprecated
+	ServeDirectly param.Field[bool] `json:"serve_directly"`
+}
+
+func (r ScriptUpdateParamsMetadataAssetsConfig) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Determines the redirects and rewrites of requests for HTML content.
+type ScriptUpdateParamsMetadataAssetsConfigHTMLHandling string
+
+const (
+	ScriptUpdateParamsMetadataAssetsConfigHTMLHandlingAutoTrailingSlash  ScriptUpdateParamsMetadataAssetsConfigHTMLHandling = "auto-trailing-slash"
+	ScriptUpdateParamsMetadataAssetsConfigHTMLHandlingForceTrailingSlash ScriptUpdateParamsMetadataAssetsConfigHTMLHandling = "force-trailing-slash"
+	ScriptUpdateParamsMetadataAssetsConfigHTMLHandlingDropTrailingSlash  ScriptUpdateParamsMetadataAssetsConfigHTMLHandling = "drop-trailing-slash"
+	ScriptUpdateParamsMetadataAssetsConfigHTMLHandlingNone               ScriptUpdateParamsMetadataAssetsConfigHTMLHandling = "none"
+)
+
+func (r ScriptUpdateParamsMetadataAssetsConfigHTMLHandling) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataAssetsConfigHTMLHandlingAutoTrailingSlash, ScriptUpdateParamsMetadataAssetsConfigHTMLHandlingForceTrailingSlash, ScriptUpdateParamsMetadataAssetsConfigHTMLHandlingDropTrailingSlash, ScriptUpdateParamsMetadataAssetsConfigHTMLHandlingNone:
+		return true
+	}
+	return false
+}
+
+// Determines the response when a request does not match a static asset, and there
+// is no Worker script.
+type ScriptUpdateParamsMetadataAssetsConfigNotFoundHandling string
+
+const (
+	ScriptUpdateParamsMetadataAssetsConfigNotFoundHandlingNone                  ScriptUpdateParamsMetadataAssetsConfigNotFoundHandling = "none"
+	ScriptUpdateParamsMetadataAssetsConfigNotFoundHandling404Page               ScriptUpdateParamsMetadataAssetsConfigNotFoundHandling = "404-page"
+	ScriptUpdateParamsMetadataAssetsConfigNotFoundHandlingSinglePageApplication ScriptUpdateParamsMetadataAssetsConfigNotFoundHandling = "single-page-application"
+)
+
+func (r ScriptUpdateParamsMetadataAssetsConfigNotFoundHandling) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataAssetsConfigNotFoundHandlingNone, ScriptUpdateParamsMetadataAssetsConfigNotFoundHandling404Page, ScriptUpdateParamsMetadataAssetsConfigNotFoundHandlingSinglePageApplication:
+		return true
+	}
+	return false
+}
+
+// Contains a list path rules to control routing to either the Worker or assets.
+// Glob (\*) and negative (!) rules are supported. Rules must start with either '/'
+// or '!/'. At least one non-negative rule must be provided, and negative rules
+// have higher precedence than non-negative rules.
+//
+// Satisfied by
+// [workers.ScriptUpdateParamsMetadataAssetsConfigRunWorkerFirstArray],
+// [shared.UnionBool].
+type ScriptUpdateParamsMetadataAssetsConfigRunWorkerFirstUnion interface {
+	ImplementsScriptUpdateParamsMetadataAssetsConfigRunWorkerFirstUnion()
+}
+
+type ScriptUpdateParamsMetadataAssetsConfigRunWorkerFirstArray []string
+
+func (r ScriptUpdateParamsMetadataAssetsConfigRunWorkerFirstArray) ImplementsScriptUpdateParamsMetadataAssetsConfigRunWorkerFirstUnion() {
+}
+
+// A binding to allow the Worker to communicate with resources.
+type ScriptUpdateParamsMetadataBinding struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsType] `json:"type" api:"required"`
+	// Identifier of the D1 database to bind to.
+	//
+	// Deprecated: This property has been renamed to `database_id`.
+	ID                          param.Field[string]      `json:"id"`
+	Algorithm                   param.Field[interface{}] `json:"algorithm"`
+	AllowedDestinationAddresses param.Field[interface{}] `json:"allowed_destination_addresses"`
+	AllowedSenderAddresses      param.Field[interface{}] `json:"allowed_sender_addresses"`
+	// ID of the Flagship app to bind to for feature flag evaluation.
+	AppID param.Field[string] `json:"app_id"`
+	// R2 bucket to bind to.
+	BucketName param.Field[string] `json:"bucket_name"`
+	// Identifier of the certificate to bind to.
+	CertificateID param.Field[string] `json:"certificate_id"`
+	// The exported class name of the Durable Object.
+	ClassName param.Field[string] `json:"class_name"`
+	// Identifier of the D1 database to bind to.
+	DatabaseID param.Field[string] `json:"database_id"`
+	// The name of the dataset to bind to.
+	Dataset param.Field[string] `json:"dataset"`
+	// Destination address for the email.
+	DestinationAddress param.Field[string] `json:"destination_address" format:"email"`
+	// The dispatch namespace the Durable Object script belongs to.
+	DispatchNamespace param.Field[string] `json:"dispatch_namespace"`
+	// Entrypoint to invoke on the target Worker.
+	Entrypoint param.Field[string] `json:"entrypoint"`
+	// The environment of the script_name to bind to.
+	Environment param.Field[string] `json:"environment"`
+	// Data format of the key.
+	// [Learn more](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#format).
+	Format param.Field[ScriptUpdateParamsMetadataBindingsFormat] `json:"format"`
+	// Enables Gateway identity for the binding. Requires network_id to be
+	// "cf1:network" and cannot be combined with tunnel_id or an explicit
+	// "cf1:vnet:<UUID>" network_id.
+	Identity param.Field[ScriptUpdateParamsMetadataBindingsIdentity] `json:"identity"`
+	// Name of the Vectorize index to bind to.
+	IndexName param.Field[string] `json:"index_name"`
+	// The user-chosen instance name. Must exist at deploy time. The worker can search,
+	// chat, update, and manage items/jobs on this instance.
+	InstanceName param.Field[string]      `json:"instance_name"`
+	Json         param.Field[interface{}] `json:"json"`
+	// The
+	// [jurisdiction](https://developers.cloudflare.com/r2/reference/data-location/#jurisdictional-restrictions)
+	// of the R2 bucket.
+	Jurisdiction param.Field[ScriptUpdateParamsMetadataBindingsJurisdiction] `json:"jurisdiction"`
+	// Base64-encoded key data. Required if `format` is "raw", "pkcs8", or "spki".
+	KeyBase64 param.Field[string]      `json:"key_base64"`
+	KeyJwk    param.Field[interface{}] `json:"key_jwk"`
+	// The namespace the instance belongs to. Defaults to "default" if omitted.
+	// Customers who don't use namespaces can simply omit this field.
+	Namespace param.Field[string] `json:"namespace"`
+	// Namespace identifier tag.
+	NamespaceID param.Field[string] `json:"namespace_id"`
+	// Identifier of the network to bind to. Use "cf1:network" to select the account's
+	// default virtual network at runtime, or "cf1:vnet:<UUID>" to select an explicit
+	// virtual network in the Worker's account. Mutually exclusive with tunnel_id.
+	NetworkID param.Field[string] `json:"network_id"`
+	// The old name of the inherited binding. If set, the binding will be renamed from
+	// `old_name` to `name` in the new version. If not set, the binding will keep the
+	// same name between versions.
+	OldName  param.Field[string]      `json:"old_name"`
+	Outbound param.Field[interface{}] `json:"outbound"`
+	// The name of the file containing the data content. Only accepted for
+	// `service worker syntax` Workers.
+	Part param.Field[string] `json:"part"`
+	// Name of the Pipeline to bind to.
+	Pipeline param.Field[string] `json:"pipeline"`
+	// Name of the Queue to bind to.
+	QueueName param.Field[string] `json:"queue_name"`
+	// The script where the Durable Object is defined, if it is external to this
+	// Worker.
+	ScriptName param.Field[string] `json:"script_name"`
+	// Name of the secret in the store.
+	SecretName param.Field[string] `json:"secret_name"`
+	// Name of Worker to bind to.
+	Service param.Field[string] `json:"service"`
+	// Identifier of the VPC service to bind to.
+	ServiceID param.Field[string]      `json:"service_id"`
+	Simple    param.Field[interface{}] `json:"simple"`
+	// ID of the store containing the secret.
+	StoreID param.Field[string] `json:"store_id"`
+	// ID of a K2 stream owned by the account deploying the Worker.
+	Stream param.Field[string] `json:"stream"`
+	// The text value to use.
+	Text param.Field[string] `json:"text"`
+	// UUID of the Cloudflare Tunnel to bind to. Mutually exclusive with network_id.
+	TunnelID param.Field[string]      `json:"tunnel_id"`
+	Usages   param.Field[interface{}] `json:"usages"`
+	// Identifier for the version to inherit the binding from. This can be a version
+	// ID, or the literal "latest" to inherit from the most recently uploaded version,
+	// which may not be the deployed version. Defaults to "latest". Only the Workers
+	// API version endpoints under
+	// `/accounts/{account_id}/workers/workers/{worker_id}/versions` accept a version
+	// ID. Other endpoints, including script upload and script version upload, accept
+	// only "latest" and reject a version ID with error 10057.
+	VersionID param.Field[string] `json:"version_id"`
+	// Name of the Workflow to bind to.
+	WorkflowName param.Field[string] `json:"workflow_name"`
+}
+
+func (r ScriptUpdateParamsMetadataBinding) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBinding) implementsScriptUpdateParamsMetadataBindingUnion() {}
+
+// A binding to allow the Worker to communicate with resources.
+//
+// Satisfied by [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindAI],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearch],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearchNamespace],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindMessaging],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindAnalyticsEngine],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindArtifacts],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindAssets],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindBrowser],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindD1],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindDataBlob],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespace],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindDurableObjectNamespace],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindHyperdrive],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindInherit],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindImages],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindJson],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindKVNamespace],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindMedia],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindMTLSCertificate],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindPlainText],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindPipelines],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindK2],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindQueue],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindRatelimit],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2Bucket],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretText],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindSendEmail],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindService],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindTextBlob],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindVectorize],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindVersionMetadata],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretsStoreSecret],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindFlagship],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKey],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkflow],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindWasmModule],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCService],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCNetwork],
+// [workers.ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkerLoader],
+// [ScriptUpdateParamsMetadataBinding].
+type ScriptUpdateParamsMetadataBindingUnion interface {
+	implementsScriptUpdateParamsMetadataBindingUnion()
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindAI struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindAIType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindAI) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindAI) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindAIType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindAITypeAI ScriptUpdateParamsMetadataBindingsWorkersBindingKindAIType = "ai"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindAIType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindAITypeAI:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearch struct {
+	// The user-chosen instance name. Must exist at deploy time. The worker can search,
+	// chat, update, and manage items/jobs on this instance.
+	InstanceName param.Field[string] `json:"instance_name" api:"required"`
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearchType] `json:"type" api:"required"`
+	// The namespace the instance belongs to. Defaults to "default" if omitted.
+	// Customers who don't use namespaces can simply omit this field.
+	Namespace param.Field[string] `json:"namespace"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearch) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearch) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearchType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearchTypeAISearch ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearchType = "ai_search"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearchType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearchTypeAISearch:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearchNamespace struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The user-chosen namespace name. Must exist before deploy -- Wrangler handles
+	// auto-creation on deploy failure (R2 bucket pattern). The "default" namespace is
+	// auto-created by config-api for new accounts. Grants full access (CRUD + search +
+	// chat) to all instances within the namespace.
+	Namespace param.Field[string] `json:"namespace" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearchNamespaceType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearchNamespace) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearchNamespace) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearchNamespaceType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearchNamespaceTypeAISearchNamespace ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearchNamespaceType = "ai_search_namespace"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearchNamespaceType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindAISearchNamespaceTypeAISearchNamespace:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindMessaging struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The Messaging namespace to bind to.
+	Namespace param.Field[string] `json:"namespace" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindMessagingType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindMessaging) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindMessaging) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindMessagingType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindMessagingTypeMessaging ScriptUpdateParamsMetadataBindingsWorkersBindingKindMessagingType = "messaging"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindMessagingType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindMessagingTypeMessaging:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindAnalyticsEngine struct {
+	// The name of the dataset to bind to.
+	Dataset param.Field[string] `json:"dataset" api:"required"`
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindAnalyticsEngineType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindAnalyticsEngine) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindAnalyticsEngine) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindAnalyticsEngineType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindAnalyticsEngineTypeAnalyticsEngine ScriptUpdateParamsMetadataBindingsWorkersBindingKindAnalyticsEngineType = "analytics_engine"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindAnalyticsEngineType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindAnalyticsEngineTypeAnalyticsEngine:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindArtifacts struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The Artifacts namespace exposed to the Worker in the Worker's account. Must be
+	// 2-63 characters, start with an ASCII alphanumeric character, contain only ASCII
+	// alphanumeric characters, dots, underscores, and hyphens, and must not end with a
+	// hyphen. The namespace does not need to be created before binding it.
+	Namespace param.Field[string] `json:"namespace" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindArtifactsType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindArtifacts) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindArtifacts) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindArtifactsType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindArtifactsTypeArtifacts ScriptUpdateParamsMetadataBindingsWorkersBindingKindArtifactsType = "artifacts"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindArtifactsType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindArtifactsTypeArtifacts:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindAssets struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindAssetsType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindAssets) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindAssets) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindAssetsType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindAssetsTypeAssets ScriptUpdateParamsMetadataBindingsWorkersBindingKindAssetsType = "assets"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindAssetsType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindAssetsTypeAssets:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindBrowser struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindBrowserType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindBrowser) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindBrowser) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindBrowserType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindBrowserTypeBrowser ScriptUpdateParamsMetadataBindingsWorkersBindingKindBrowserType = "browser"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindBrowserType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindBrowserTypeBrowser:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindD1 struct {
+	// Identifier of the D1 database to bind to.
+	DatabaseID param.Field[string] `json:"database_id" api:"required"`
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindD1Type] `json:"type" api:"required"`
+	// Identifier of the D1 database to bind to.
+	//
+	// Deprecated: This property has been renamed to `database_id`.
+	ID param.Field[string] `json:"id"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindD1) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindD1) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindD1Type string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindD1TypeD1 ScriptUpdateParamsMetadataBindingsWorkersBindingKindD1Type = "d1"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindD1Type) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindD1TypeD1:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindDataBlob struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The name of the file containing the data content. Only accepted for
+	// `service worker syntax` Workers.
+	Part param.Field[string] `json:"part" api:"required"`
+	// The kind of resource that the binding provides.
+	//
+	// Deprecated: deprecated
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindDataBlobType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindDataBlob) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindDataBlob) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindDataBlobType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindDataBlobTypeDataBlob ScriptUpdateParamsMetadataBindingsWorkersBindingKindDataBlobType = "data_blob"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindDataBlobType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindDataBlobTypeDataBlob:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespace struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The name of the dispatch namespace.
+	Namespace param.Field[string] `json:"namespace" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespaceType] `json:"type" api:"required"`
+	// Outbound worker.
+	Outbound param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespaceOutbound] `json:"outbound"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespace) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespace) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespaceType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespaceTypeDispatchNamespace ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespaceType = "dispatch_namespace"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespaceType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespaceTypeDispatchNamespace:
+		return true
+	}
+	return false
+}
+
+// Outbound worker.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespaceOutbound struct {
+	// Pass information from the Dispatch Worker to the Outbound Worker through the
+	// parameters.
+	Params param.Field[[]ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespaceOutboundParam] `json:"params"`
+	// Outbound worker.
+	Worker param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespaceOutboundWorker] `json:"worker"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespaceOutbound) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespaceOutboundParam struct {
+	// Name of the parameter.
+	Name param.Field[string] `json:"name" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespaceOutboundParam) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Outbound worker.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespaceOutboundWorker struct {
+	// Entrypoint to invoke on the outbound worker.
+	Entrypoint param.Field[string] `json:"entrypoint"`
+	// Environment of the outbound worker.
+	Environment param.Field[string] `json:"environment"`
+	// Name of the outbound worker.
+	Service param.Field[string] `json:"service"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindDispatchNamespaceOutboundWorker) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindDurableObjectNamespace struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindDurableObjectNamespaceType] `json:"type" api:"required"`
+	// The exported class name of the Durable Object.
+	ClassName param.Field[string] `json:"class_name"`
+	// The dispatch namespace the Durable Object script belongs to.
+	DispatchNamespace param.Field[string] `json:"dispatch_namespace"`
+	// The environment of the script_name to bind to.
+	Environment param.Field[string] `json:"environment"`
+	// Namespace identifier tag.
+	NamespaceID param.Field[string] `json:"namespace_id"`
+	// The script where the Durable Object is defined, if it is external to this
+	// Worker.
+	ScriptName param.Field[string] `json:"script_name"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindDurableObjectNamespace) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindDurableObjectNamespace) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindDurableObjectNamespaceType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindDurableObjectNamespaceTypeDurableObjectNamespace ScriptUpdateParamsMetadataBindingsWorkersBindingKindDurableObjectNamespaceType = "durable_object_namespace"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindDurableObjectNamespaceType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindDurableObjectNamespaceTypeDurableObjectNamespace:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindHyperdrive struct {
+	// Identifier of the Hyperdrive connection to bind to.
+	ID param.Field[string] `json:"id" api:"required"`
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindHyperdriveType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindHyperdrive) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindHyperdrive) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindHyperdriveType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindHyperdriveTypeHyperdrive ScriptUpdateParamsMetadataBindingsWorkersBindingKindHyperdriveType = "hyperdrive"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindHyperdriveType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindHyperdriveTypeHyperdrive:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindInherit struct {
+	// The name of the inherited binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindInheritType] `json:"type" api:"required"`
+	// The old name of the inherited binding. If set, the binding will be renamed from
+	// `old_name` to `name` in the new version. If not set, the binding will keep the
+	// same name between versions.
+	OldName param.Field[string] `json:"old_name"`
+	// Identifier for the version to inherit the binding from. This can be a version
+	// ID, or the literal "latest" to inherit from the most recently uploaded version,
+	// which may not be the deployed version. Defaults to "latest". Only the Workers
+	// API version endpoints under
+	// `/accounts/{account_id}/workers/workers/{worker_id}/versions` accept a version
+	// ID. Other endpoints, including script upload and script version upload, accept
+	// only "latest" and reject a version ID with error 10057.
+	VersionID param.Field[string] `json:"version_id"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindInherit) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindInherit) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindInheritType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindInheritTypeInherit ScriptUpdateParamsMetadataBindingsWorkersBindingKindInheritType = "inherit"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindInheritType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindInheritTypeInherit:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindImages struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindImagesType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindImages) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindImages) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindImagesType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindImagesTypeImages ScriptUpdateParamsMetadataBindingsWorkersBindingKindImagesType = "images"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindImagesType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindImagesTypeImages:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindJson struct {
+	// JSON data to use.
+	Json param.Field[interface{}] `json:"json" api:"required"`
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindJsonType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindJson) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindJson) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindJsonType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindJsonTypeJson ScriptUpdateParamsMetadataBindingsWorkersBindingKindJsonType = "json"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindJsonType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindJsonTypeJson:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindKVNamespace struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// Namespace identifier tag.
+	NamespaceID param.Field[string] `json:"namespace_id" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindKVNamespaceType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindKVNamespace) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindKVNamespace) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindKVNamespaceType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindKVNamespaceTypeKVNamespace ScriptUpdateParamsMetadataBindingsWorkersBindingKindKVNamespaceType = "kv_namespace"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindKVNamespaceType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindKVNamespaceTypeKVNamespace:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindMedia struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindMediaType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindMedia) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindMedia) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindMediaType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindMediaTypeMedia ScriptUpdateParamsMetadataBindingsWorkersBindingKindMediaType = "media"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindMediaType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindMediaTypeMedia:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindMTLSCertificate struct {
+	// Identifier of the certificate to bind to.
+	CertificateID param.Field[string] `json:"certificate_id" api:"required"`
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindMTLSCertificateType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindMTLSCertificate) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindMTLSCertificate) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindMTLSCertificateType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindMTLSCertificateTypeMTLSCertificate ScriptUpdateParamsMetadataBindingsWorkersBindingKindMTLSCertificateType = "mtls_certificate"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindMTLSCertificateType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindMTLSCertificateTypeMTLSCertificate:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindPlainText struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The text value to use.
+	Text param.Field[string] `json:"text" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindPlainTextType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindPlainText) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindPlainText) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindPlainTextType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindPlainTextTypePlainText ScriptUpdateParamsMetadataBindingsWorkersBindingKindPlainTextType = "plain_text"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindPlainTextType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindPlainTextTypePlainText:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindPipelines struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// Name of the Pipeline to bind to.
+	Pipeline param.Field[string] `json:"pipeline" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindPipelinesType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindPipelines) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindPipelines) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindPipelinesType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindPipelinesTypePipelines ScriptUpdateParamsMetadataBindingsWorkersBindingKindPipelinesType = "pipelines"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindPipelinesType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindPipelinesTypePipelines:
+		return true
+	}
+	return false
+}
+
+// A K2 stream binding. Available only to accounts enabled for K2.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindK2 struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// ID of a K2 stream owned by the account deploying the Worker.
+	Stream param.Field[string] `json:"stream" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindK2Type] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindK2) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindK2) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindK2Type string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindK2TypeK2 ScriptUpdateParamsMetadataBindingsWorkersBindingKindK2Type = "k2"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindK2Type) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindK2TypeK2:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindQueue struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// Name of the Queue to bind to.
+	QueueName param.Field[string] `json:"queue_name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindQueueType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindQueue) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindQueue) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindQueueType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindQueueTypeQueue ScriptUpdateParamsMetadataBindingsWorkersBindingKindQueueType = "queue"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindQueueType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindQueueTypeQueue:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindRatelimit struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// Identifier of the rate limit namespace to bind to.
+	NamespaceID param.Field[string] `json:"namespace_id" api:"required"`
+	// The rate limit configuration.
+	Simple param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindRatelimitSimple] `json:"simple" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindRatelimitType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindRatelimit) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindRatelimit) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The rate limit configuration.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindRatelimitSimple struct {
+	// The limit (requests per period).
+	Limit param.Field[float64] `json:"limit" api:"required"`
+	// The period in seconds.
+	Period param.Field[int64] `json:"period" api:"required"`
+	// Duration in seconds to apply the mitigation action after the rate limit is
+	// exceeded. Valid values are 0 (disabled), 10, or multiples of 60 up to 86400.
+	// Must be greater than or equal to the period when non-zero.
+	MitigationTimeout param.Field[int64] `json:"mitigation_timeout"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindRatelimitSimple) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindRatelimitType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindRatelimitTypeRatelimit ScriptUpdateParamsMetadataBindingsWorkersBindingKindRatelimitType = "ratelimit"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindRatelimitType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindRatelimitTypeRatelimit:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2Bucket struct {
+	// R2 bucket to bind to.
+	BucketName param.Field[string] `json:"bucket_name" api:"required"`
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketType] `json:"type" api:"required"`
+	// The
+	// [jurisdiction](https://developers.cloudflare.com/r2/reference/data-location/#jurisdictional-restrictions)
+	// of the R2 bucket.
+	Jurisdiction param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketJurisdiction] `json:"jurisdiction"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2Bucket) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2Bucket) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketTypeR2Bucket ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketType = "r2_bucket"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketTypeR2Bucket:
+		return true
+	}
+	return false
+}
+
+// The
+// [jurisdiction](https://developers.cloudflare.com/r2/reference/data-location/#jurisdictional-restrictions)
+// of the R2 bucket.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketJurisdiction string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketJurisdictionEu          ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketJurisdiction = "eu"
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketJurisdictionFedramp     ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketJurisdiction = "fedramp"
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketJurisdictionFedrampHigh ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketJurisdiction = "fedramp-high"
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketJurisdictionUs          ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketJurisdiction = "us"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketJurisdiction) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketJurisdictionEu, ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketJurisdictionFedramp, ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketJurisdictionFedrampHigh, ScriptUpdateParamsMetadataBindingsWorkersBindingKindR2BucketJurisdictionUs:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretText struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The secret value to use.
+	Text param.Field[string] `json:"text" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretTextType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretText) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretText) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretTextType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretTextTypeSecretText ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretTextType = "secret_text"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretTextType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretTextTypeSecretText:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindSendEmail struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindSendEmailType] `json:"type" api:"required"`
+	// List of allowed destination addresses.
+	AllowedDestinationAddresses param.Field[[]string] `json:"allowed_destination_addresses" format:"email"`
+	// List of allowed sender addresses.
+	AllowedSenderAddresses param.Field[[]string] `json:"allowed_sender_addresses" format:"email"`
+	// Destination address for the email.
+	DestinationAddress param.Field[string] `json:"destination_address" format:"email"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindSendEmail) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindSendEmail) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindSendEmailType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindSendEmailTypeSendEmail ScriptUpdateParamsMetadataBindingsWorkersBindingKindSendEmailType = "send_email"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindSendEmailType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindSendEmailTypeSendEmail:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindService struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// Name of Worker to bind to.
+	Service param.Field[string] `json:"service" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindServiceType] `json:"type" api:"required"`
+	// Entrypoint to invoke on the target Worker.
+	Entrypoint param.Field[string] `json:"entrypoint"`
+	// Optional environment if the Worker utilizes one.
+	Environment param.Field[string] `json:"environment"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindService) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindService) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindServiceType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindServiceTypeService ScriptUpdateParamsMetadataBindingsWorkersBindingKindServiceType = "service"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindServiceType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindServiceTypeService:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindTextBlob struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The name of the file containing the text content. Only accepted for
+	// `service worker syntax` Workers.
+	Part param.Field[string] `json:"part" api:"required"`
+	// The kind of resource that the binding provides.
+	//
+	// Deprecated: deprecated
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindTextBlobType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindTextBlob) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindTextBlob) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindTextBlobType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindTextBlobTypeTextBlob ScriptUpdateParamsMetadataBindingsWorkersBindingKindTextBlobType = "text_blob"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindTextBlobType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindTextBlobTypeTextBlob:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindVectorize struct {
+	// Name of the Vectorize index to bind to.
+	IndexName param.Field[string] `json:"index_name" api:"required"`
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindVectorizeType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindVectorize) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindVectorize) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindVectorizeType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindVectorizeTypeVectorize ScriptUpdateParamsMetadataBindingsWorkersBindingKindVectorizeType = "vectorize"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindVectorizeType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindVectorizeTypeVectorize:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindVersionMetadata struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindVersionMetadataType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindVersionMetadata) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindVersionMetadata) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindVersionMetadataType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindVersionMetadataTypeVersionMetadata ScriptUpdateParamsMetadataBindingsWorkersBindingKindVersionMetadataType = "version_metadata"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindVersionMetadataType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindVersionMetadataTypeVersionMetadata:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretsStoreSecret struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// Name of the secret in the store.
+	SecretName param.Field[string] `json:"secret_name" api:"required"`
+	// ID of the store containing the secret.
+	StoreID param.Field[string] `json:"store_id" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretsStoreSecretType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretsStoreSecret) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretsStoreSecret) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretsStoreSecretType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretsStoreSecretTypeSecretsStoreSecret ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretsStoreSecretType = "secrets_store_secret"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretsStoreSecretType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretsStoreSecretTypeSecretsStoreSecret:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindFlagship struct {
+	// ID of the Flagship app to bind to for feature flag evaluation.
+	AppID param.Field[string] `json:"app_id" api:"required"`
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindFlagshipType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindFlagship) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindFlagship) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindFlagshipType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindFlagshipTypeFlagship ScriptUpdateParamsMetadataBindingsWorkersBindingKindFlagshipType = "flagship"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindFlagshipType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindFlagshipTypeFlagship:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKey struct {
+	// Algorithm-specific key parameters.
+	// [Learn more](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#algorithm).
+	Algorithm param.Field[interface{}] `json:"algorithm" api:"required"`
+	// Data format of the key.
+	// [Learn more](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#format).
+	Format param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyFormat] `json:"format" api:"required"`
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyType] `json:"type" api:"required"`
+	// Allowed operations with the key.
+	// [Learn more](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#keyUsages).
+	Usages param.Field[[]ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsage] `json:"usages" api:"required"`
+	// Base64-encoded key data. Required if `format` is "raw", "pkcs8", or "spki".
+	KeyBase64 param.Field[string] `json:"key_base64"`
+	// Key data in
+	// [JSON Web Key](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#json_web_key)
+	// format. Required if `format` is "jwk".
+	KeyJwk param.Field[interface{}] `json:"key_jwk"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKey) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKey) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// Data format of the key.
+// [Learn more](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#format).
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyFormat string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyFormatRaw   ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyFormat = "raw"
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyFormatPkcs8 ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyFormat = "pkcs8"
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyFormatSpki  ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyFormat = "spki"
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyFormatJwk   ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyFormat = "jwk"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyFormat) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyFormatRaw, ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyFormatPkcs8, ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyFormatSpki, ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyFormatJwk:
+		return true
+	}
+	return false
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyTypeSecretKey ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyType = "secret_key"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyTypeSecretKey:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsage string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsageEncrypt    ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsage = "encrypt"
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsageDecrypt    ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsage = "decrypt"
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsageSign       ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsage = "sign"
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsageVerify     ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsage = "verify"
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsageDeriveKey  ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsage = "deriveKey"
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsageDeriveBits ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsage = "deriveBits"
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsageWrapKey    ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsage = "wrapKey"
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsageUnwrapKey  ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsage = "unwrapKey"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsage) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsageEncrypt, ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsageDecrypt, ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsageSign, ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsageVerify, ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsageDeriveKey, ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsageDeriveBits, ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsageWrapKey, ScriptUpdateParamsMetadataBindingsWorkersBindingKindSecretKeyUsageUnwrapKey:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkflow struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkflowType] `json:"type" api:"required"`
+	// Name of the Workflow to bind to.
+	WorkflowName param.Field[string] `json:"workflow_name" api:"required"`
+	// Class name of the Workflow. Should only be provided if the Workflow belongs to
+	// this script.
+	ClassName param.Field[string] `json:"class_name"`
+	// Script name that contains the Workflow. If not provided, defaults to this script
+	// name.
+	ScriptName param.Field[string] `json:"script_name"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkflow) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkflow) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkflowType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkflowTypeWorkflow ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkflowType = "workflow"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkflowType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkflowTypeWorkflow:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindWasmModule struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The name of the file containing the WebAssembly module content. Only accepted
+	// for `service worker syntax` Workers.
+	Part param.Field[string] `json:"part" api:"required"`
+	// The kind of resource that the binding provides.
+	//
+	// Deprecated: deprecated
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindWasmModuleType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindWasmModule) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindWasmModule) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindWasmModuleType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindWasmModuleTypeWasmModule ScriptUpdateParamsMetadataBindingsWorkersBindingKindWasmModuleType = "wasm_module"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindWasmModuleType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindWasmModuleTypeWasmModule:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCService struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// Identifier of the VPC service to bind to.
+	ServiceID param.Field[string] `json:"service_id" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCServiceType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCService) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCService) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCServiceType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCServiceTypeVPCService ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCServiceType = "vpc_service"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCServiceType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCServiceTypeVPCService:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCNetwork struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCNetworkType] `json:"type" api:"required"`
+	// Enables Gateway identity for the binding. Requires network_id to be
+	// "cf1:network" and cannot be combined with tunnel_id or an explicit
+	// "cf1:vnet:<UUID>" network_id.
+	Identity param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCNetworkIdentity] `json:"identity"`
+	// Identifier of the network to bind to. Use "cf1:network" to select the account's
+	// default virtual network at runtime, or "cf1:vnet:<UUID>" to select an explicit
+	// virtual network in the Worker's account. Mutually exclusive with tunnel_id.
+	NetworkID param.Field[string] `json:"network_id"`
+	// UUID of the Cloudflare Tunnel to bind to. Mutually exclusive with network_id.
+	TunnelID param.Field[string] `json:"tunnel_id"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCNetwork) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCNetwork) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCNetworkType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCNetworkTypeVPCNetwork ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCNetworkType = "vpc_network"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCNetworkType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCNetworkTypeVPCNetwork:
+		return true
+	}
+	return false
+}
+
+// Enables Gateway identity for the binding. Requires network_id to be
+// "cf1:network" and cannot be combined with tunnel_id or an explicit
+// "cf1:vnet:<UUID>" network_id.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCNetworkIdentity string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCNetworkIdentityRuntimeEmailAlpha ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCNetworkIdentity = "runtime-email-alpha"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCNetworkIdentity) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindVPCNetworkIdentityRuntimeEmailAlpha:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkerLoader struct {
+	// A JavaScript variable name for the binding.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The kind of resource that the binding provides.
+	Type param.Field[ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkerLoaderType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkerLoader) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkerLoader) implementsScriptUpdateParamsMetadataBindingUnion() {
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkerLoaderType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkerLoaderTypeWorkerLoader ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkerLoaderType = "worker_loader"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkerLoaderType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsWorkersBindingKindWorkerLoaderTypeWorkerLoader:
+		return true
+	}
+	return false
+}
+
+// The kind of resource that the binding provides.
+type ScriptUpdateParamsMetadataBindingsType string
+
+const (
+	ScriptUpdateParamsMetadataBindingsTypeAI                     ScriptUpdateParamsMetadataBindingsType = "ai"
+	ScriptUpdateParamsMetadataBindingsTypeAISearch               ScriptUpdateParamsMetadataBindingsType = "ai_search"
+	ScriptUpdateParamsMetadataBindingsTypeAISearchNamespace      ScriptUpdateParamsMetadataBindingsType = "ai_search_namespace"
+	ScriptUpdateParamsMetadataBindingsTypeMessaging              ScriptUpdateParamsMetadataBindingsType = "messaging"
+	ScriptUpdateParamsMetadataBindingsTypeAnalyticsEngine        ScriptUpdateParamsMetadataBindingsType = "analytics_engine"
+	ScriptUpdateParamsMetadataBindingsTypeArtifacts              ScriptUpdateParamsMetadataBindingsType = "artifacts"
+	ScriptUpdateParamsMetadataBindingsTypeAssets                 ScriptUpdateParamsMetadataBindingsType = "assets"
+	ScriptUpdateParamsMetadataBindingsTypeBrowser                ScriptUpdateParamsMetadataBindingsType = "browser"
+	ScriptUpdateParamsMetadataBindingsTypeD1                     ScriptUpdateParamsMetadataBindingsType = "d1"
+	ScriptUpdateParamsMetadataBindingsTypeDataBlob               ScriptUpdateParamsMetadataBindingsType = "data_blob"
+	ScriptUpdateParamsMetadataBindingsTypeDispatchNamespace      ScriptUpdateParamsMetadataBindingsType = "dispatch_namespace"
+	ScriptUpdateParamsMetadataBindingsTypeDurableObjectNamespace ScriptUpdateParamsMetadataBindingsType = "durable_object_namespace"
+	ScriptUpdateParamsMetadataBindingsTypeHyperdrive             ScriptUpdateParamsMetadataBindingsType = "hyperdrive"
+	ScriptUpdateParamsMetadataBindingsTypeInherit                ScriptUpdateParamsMetadataBindingsType = "inherit"
+	ScriptUpdateParamsMetadataBindingsTypeImages                 ScriptUpdateParamsMetadataBindingsType = "images"
+	ScriptUpdateParamsMetadataBindingsTypeJson                   ScriptUpdateParamsMetadataBindingsType = "json"
+	ScriptUpdateParamsMetadataBindingsTypeKVNamespace            ScriptUpdateParamsMetadataBindingsType = "kv_namespace"
+	ScriptUpdateParamsMetadataBindingsTypeMedia                  ScriptUpdateParamsMetadataBindingsType = "media"
+	ScriptUpdateParamsMetadataBindingsTypeMTLSCertificate        ScriptUpdateParamsMetadataBindingsType = "mtls_certificate"
+	ScriptUpdateParamsMetadataBindingsTypePlainText              ScriptUpdateParamsMetadataBindingsType = "plain_text"
+	ScriptUpdateParamsMetadataBindingsTypePipelines              ScriptUpdateParamsMetadataBindingsType = "pipelines"
+	ScriptUpdateParamsMetadataBindingsTypeK2                     ScriptUpdateParamsMetadataBindingsType = "k2"
+	ScriptUpdateParamsMetadataBindingsTypeQueue                  ScriptUpdateParamsMetadataBindingsType = "queue"
+	ScriptUpdateParamsMetadataBindingsTypeRatelimit              ScriptUpdateParamsMetadataBindingsType = "ratelimit"
+	ScriptUpdateParamsMetadataBindingsTypeR2Bucket               ScriptUpdateParamsMetadataBindingsType = "r2_bucket"
+	ScriptUpdateParamsMetadataBindingsTypeSecretText             ScriptUpdateParamsMetadataBindingsType = "secret_text"
+	ScriptUpdateParamsMetadataBindingsTypeSendEmail              ScriptUpdateParamsMetadataBindingsType = "send_email"
+	ScriptUpdateParamsMetadataBindingsTypeService                ScriptUpdateParamsMetadataBindingsType = "service"
+	ScriptUpdateParamsMetadataBindingsTypeTextBlob               ScriptUpdateParamsMetadataBindingsType = "text_blob"
+	ScriptUpdateParamsMetadataBindingsTypeVectorize              ScriptUpdateParamsMetadataBindingsType = "vectorize"
+	ScriptUpdateParamsMetadataBindingsTypeVersionMetadata        ScriptUpdateParamsMetadataBindingsType = "version_metadata"
+	ScriptUpdateParamsMetadataBindingsTypeSecretsStoreSecret     ScriptUpdateParamsMetadataBindingsType = "secrets_store_secret"
+	ScriptUpdateParamsMetadataBindingsTypeFlagship               ScriptUpdateParamsMetadataBindingsType = "flagship"
+	ScriptUpdateParamsMetadataBindingsTypeSecretKey              ScriptUpdateParamsMetadataBindingsType = "secret_key"
+	ScriptUpdateParamsMetadataBindingsTypeWorkflow               ScriptUpdateParamsMetadataBindingsType = "workflow"
+	ScriptUpdateParamsMetadataBindingsTypeWasmModule             ScriptUpdateParamsMetadataBindingsType = "wasm_module"
+	ScriptUpdateParamsMetadataBindingsTypeVPCService             ScriptUpdateParamsMetadataBindingsType = "vpc_service"
+	ScriptUpdateParamsMetadataBindingsTypeVPCNetwork             ScriptUpdateParamsMetadataBindingsType = "vpc_network"
+	ScriptUpdateParamsMetadataBindingsTypeWorkerLoader           ScriptUpdateParamsMetadataBindingsType = "worker_loader"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsTypeAI, ScriptUpdateParamsMetadataBindingsTypeAISearch, ScriptUpdateParamsMetadataBindingsTypeAISearchNamespace, ScriptUpdateParamsMetadataBindingsTypeMessaging, ScriptUpdateParamsMetadataBindingsTypeAnalyticsEngine, ScriptUpdateParamsMetadataBindingsTypeArtifacts, ScriptUpdateParamsMetadataBindingsTypeAssets, ScriptUpdateParamsMetadataBindingsTypeBrowser, ScriptUpdateParamsMetadataBindingsTypeD1, ScriptUpdateParamsMetadataBindingsTypeDataBlob, ScriptUpdateParamsMetadataBindingsTypeDispatchNamespace, ScriptUpdateParamsMetadataBindingsTypeDurableObjectNamespace, ScriptUpdateParamsMetadataBindingsTypeHyperdrive, ScriptUpdateParamsMetadataBindingsTypeInherit, ScriptUpdateParamsMetadataBindingsTypeImages, ScriptUpdateParamsMetadataBindingsTypeJson, ScriptUpdateParamsMetadataBindingsTypeKVNamespace, ScriptUpdateParamsMetadataBindingsTypeMedia, ScriptUpdateParamsMetadataBindingsTypeMTLSCertificate, ScriptUpdateParamsMetadataBindingsTypePlainText, ScriptUpdateParamsMetadataBindingsTypePipelines, ScriptUpdateParamsMetadataBindingsTypeK2, ScriptUpdateParamsMetadataBindingsTypeQueue, ScriptUpdateParamsMetadataBindingsTypeRatelimit, ScriptUpdateParamsMetadataBindingsTypeR2Bucket, ScriptUpdateParamsMetadataBindingsTypeSecretText, ScriptUpdateParamsMetadataBindingsTypeSendEmail, ScriptUpdateParamsMetadataBindingsTypeService, ScriptUpdateParamsMetadataBindingsTypeTextBlob, ScriptUpdateParamsMetadataBindingsTypeVectorize, ScriptUpdateParamsMetadataBindingsTypeVersionMetadata, ScriptUpdateParamsMetadataBindingsTypeSecretsStoreSecret, ScriptUpdateParamsMetadataBindingsTypeFlagship, ScriptUpdateParamsMetadataBindingsTypeSecretKey, ScriptUpdateParamsMetadataBindingsTypeWorkflow, ScriptUpdateParamsMetadataBindingsTypeWasmModule, ScriptUpdateParamsMetadataBindingsTypeVPCService, ScriptUpdateParamsMetadataBindingsTypeVPCNetwork, ScriptUpdateParamsMetadataBindingsTypeWorkerLoader:
+		return true
+	}
+	return false
+}
+
+// Data format of the key.
+// [Learn more](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#format).
+type ScriptUpdateParamsMetadataBindingsFormat string
+
+const (
+	ScriptUpdateParamsMetadataBindingsFormatRaw   ScriptUpdateParamsMetadataBindingsFormat = "raw"
+	ScriptUpdateParamsMetadataBindingsFormatPkcs8 ScriptUpdateParamsMetadataBindingsFormat = "pkcs8"
+	ScriptUpdateParamsMetadataBindingsFormatSpki  ScriptUpdateParamsMetadataBindingsFormat = "spki"
+	ScriptUpdateParamsMetadataBindingsFormatJwk   ScriptUpdateParamsMetadataBindingsFormat = "jwk"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsFormat) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsFormatRaw, ScriptUpdateParamsMetadataBindingsFormatPkcs8, ScriptUpdateParamsMetadataBindingsFormatSpki, ScriptUpdateParamsMetadataBindingsFormatJwk:
+		return true
+	}
+	return false
+}
+
+// Enables Gateway identity for the binding. Requires network_id to be
+// "cf1:network" and cannot be combined with tunnel_id or an explicit
+// "cf1:vnet:<UUID>" network_id.
+type ScriptUpdateParamsMetadataBindingsIdentity string
+
+const (
+	ScriptUpdateParamsMetadataBindingsIdentityRuntimeEmailAlpha ScriptUpdateParamsMetadataBindingsIdentity = "runtime-email-alpha"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsIdentity) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsIdentityRuntimeEmailAlpha:
+		return true
+	}
+	return false
+}
+
+// The
+// [jurisdiction](https://developers.cloudflare.com/r2/reference/data-location/#jurisdictional-restrictions)
+// of the R2 bucket.
+type ScriptUpdateParamsMetadataBindingsJurisdiction string
+
+const (
+	ScriptUpdateParamsMetadataBindingsJurisdictionEu          ScriptUpdateParamsMetadataBindingsJurisdiction = "eu"
+	ScriptUpdateParamsMetadataBindingsJurisdictionFedramp     ScriptUpdateParamsMetadataBindingsJurisdiction = "fedramp"
+	ScriptUpdateParamsMetadataBindingsJurisdictionFedrampHigh ScriptUpdateParamsMetadataBindingsJurisdiction = "fedramp-high"
+	ScriptUpdateParamsMetadataBindingsJurisdictionUs          ScriptUpdateParamsMetadataBindingsJurisdiction = "us"
+)
+
+func (r ScriptUpdateParamsMetadataBindingsJurisdiction) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataBindingsJurisdictionEu, ScriptUpdateParamsMetadataBindingsJurisdictionFedramp, ScriptUpdateParamsMetadataBindingsJurisdictionFedrampHigh, ScriptUpdateParamsMetadataBindingsJurisdictionUs:
+		return true
+	}
+	return false
+}
+
+// Global CacheW configuration for the Worker. When caching is on, the platform
+// provisions a `cloudflare.app` zone for the Worker. A `type: worker` entry in the
+// `exports` map can override this value for a single entrypoint.
+type ScriptUpdateParamsMetadataCacheOptions struct {
+	// Whether caching is enabled for this Worker.
+	Enabled param.Field[bool] `json:"enabled" api:"required"`
+	// Whether cached responses are shared across Worker version uploads. This is
+	// independent of `enabled`. It can stay true while caching is off, so the
+	// preference survives turning caching off and back on.
+	CrossVersionCache param.Field[bool] `json:"cross_version_cache"`
+}
+
+func (r ScriptUpdateParamsMetadataCacheOptions) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Choose whether to apply Durable Object code updates immediately or defer them.
+// When omitted, the default strategy applies.
+type ScriptUpdateParamsMetadataCodeUpdateStrategy struct {
+	// Apply Durable Object code updates immediately.
+	Mode param.Field[ScriptUpdateParamsMetadataCodeUpdateStrategyMode] `json:"mode" api:"required"`
+	// Set the maximum number of seconds to wait before forcing the update. When
+	// omitted, the default maximum delay applies.
+	MaxDelay param.Field[float64] `json:"max_delay"`
+}
+
+func (r ScriptUpdateParamsMetadataCodeUpdateStrategy) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataCodeUpdateStrategy) implementsScriptUpdateParamsMetadataCodeUpdateStrategyUnion() {
+}
+
+// Choose whether to apply Durable Object code updates immediately or defer them.
+// When omitted, the default strategy applies.
+//
+// Satisfied by [workers.ScriptUpdateParamsMetadataCodeUpdateStrategyMode],
+// [workers.ScriptUpdateParamsMetadataCodeUpdateStrategyObject],
+// [ScriptUpdateParamsMetadataCodeUpdateStrategy].
+//
+// Use [Raw()] to specify an arbitrary value for this param
+type ScriptUpdateParamsMetadataCodeUpdateStrategyUnion interface {
+	implementsScriptUpdateParamsMetadataCodeUpdateStrategyUnion()
+}
+
+type ScriptUpdateParamsMetadataCodeUpdateStrategyMode struct {
+	// Apply Durable Object code updates immediately.
+	Mode param.Field[ScriptUpdateParamsMetadataCodeUpdateStrategyModeMode] `json:"mode" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataCodeUpdateStrategyMode) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataCodeUpdateStrategyMode) implementsScriptUpdateParamsMetadataCodeUpdateStrategyUnion() {
+}
+
+// Apply Durable Object code updates immediately.
+type ScriptUpdateParamsMetadataCodeUpdateStrategyModeMode string
+
+const (
+	ScriptUpdateParamsMetadataCodeUpdateStrategyModeModeImmediate ScriptUpdateParamsMetadataCodeUpdateStrategyModeMode = "immediate"
+)
+
+func (r ScriptUpdateParamsMetadataCodeUpdateStrategyModeMode) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataCodeUpdateStrategyModeModeImmediate:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataCodeUpdateStrategyObject struct {
+	// Allow active Durable Objects to hibernate before updating their code.
+	Mode param.Field[ScriptUpdateParamsMetadataCodeUpdateStrategyObjectMode] `json:"mode" api:"required"`
+	// Set the maximum number of seconds to wait before forcing the update. When
+	// omitted, the default maximum delay applies.
+	MaxDelay param.Field[float64] `json:"max_delay"`
+}
+
+func (r ScriptUpdateParamsMetadataCodeUpdateStrategyObject) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataCodeUpdateStrategyObject) implementsScriptUpdateParamsMetadataCodeUpdateStrategyUnion() {
+}
+
+// Allow active Durable Objects to hibernate before updating their code.
+type ScriptUpdateParamsMetadataCodeUpdateStrategyObjectMode string
+
+const (
+	ScriptUpdateParamsMetadataCodeUpdateStrategyObjectModeDeferred ScriptUpdateParamsMetadataCodeUpdateStrategyObjectMode = "deferred"
+)
+
+func (r ScriptUpdateParamsMetadataCodeUpdateStrategyObjectMode) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataCodeUpdateStrategyObjectModeDeferred:
+		return true
+	}
+	return false
+}
+
+// A single entry in the `exports` map, keyed by export name (a `WorkerEntrypoint`
+// class name, a Durable Object class name, or `default` for the Worker's default
+// export). The `type` discriminator selects the top-level shape: `worker`
+// entrypoint entries may carry `cache` configuration, while `durable-object`
+// entries are further refined by the optional `state` field (default `created`).
+// Tombstone states (`deleted`, `renamed`, `transferred`) express destructive
+// lifecycle operations declaratively; `expecting-transfer` is the live target side
+// of a transfer. The server validates the exact per-(type, state) field
+// combinations; fields not listed for a variant are rejected.
+type ScriptUpdateParamsMetadataExports struct {
+	// Marks this entry as a Worker entrypoint export.
+	Type  param.Field[ScriptUpdateParamsMetadataExportsType] `json:"type" api:"required"`
+	Cache param.Field[interface{}]                           `json:"cache"`
+	// Name of the container (declared in the upload's `metadata.containers`) that
+	// backs this Durable Object. When set, the namespace is container-enabled. Valid
+	// only on live entries.
+	Container param.Field[string] `json:"container"`
+	// The destination class name. Must differ from the source class (the map key) and
+	// must be declared as a live (`created`) entry in the same `exports` map.
+	// Write-only: never present in GET responses.
+	RenamedTo param.Field[string] `json:"renamed_to"`
+	// Live export. May be omitted; defaults to `created`.
+	State param.Field[ScriptUpdateParamsMetadataExportsState] `json:"state"`
+	// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+	// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+	// already exists as KV-backed; the `exports` flow never provisions a new
+	// `legacy-kv` namespace.
+	Storage param.Field[ScriptUpdateParamsMetadataExportsStorage] `json:"storage"`
+	// The source script name to receive the namespace from. Must be in the same
+	// account and dispatch-namespace context. Present on reads for
+	// `expecting-transfer` entries.
+	TransferFrom param.Field[string] `json:"transfer_from"`
+	// The destination script name. Must be in the same account and the same
+	// dispatch-namespace context (or both non-dispatch). Cross-dispatch-namespace
+	// transfers are rejected. Write-only: never present in GET responses.
+	TransferredTo param.Field[string] `json:"transferred_to"`
+}
+
+func (r ScriptUpdateParamsMetadataExports) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataExports) implementsScriptUpdateParamsMetadataExportsUnion() {}
+
+// A single entry in the `exports` map, keyed by export name (a `WorkerEntrypoint`
+// class name, a Durable Object class name, or `default` for the Worker's default
+// export). The `type` discriminator selects the top-level shape: `worker`
+// entrypoint entries may carry `cache` configuration, while `durable-object`
+// entries are further refined by the optional `state` field (default `created`).
+// Tombstone states (`deleted`, `renamed`, `transferred`) express destructive
+// lifecycle operations declaratively; `expecting-transfer` is the live target side
+// of a transfer. The server validates the exact per-(type, state) field
+// combinations; fields not listed for a variant are rejected.
+//
+// Satisfied by [workers.ScriptUpdateParamsMetadataExportsWorkersWorkerExport],
+// [workers.ScriptUpdateParamsMetadataExportsWorkersDurableObjectExport],
+// [workers.ScriptUpdateParamsMetadataExportsWorkersDurableObjectDeletedExport],
+// [workers.ScriptUpdateParamsMetadataExportsWorkersDurableObjectRenamedExport],
+// [workers.ScriptUpdateParamsMetadataExportsWorkersDurableObjectTransferredExport],
+// [workers.ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExport],
+// [ScriptUpdateParamsMetadataExports].
+type ScriptUpdateParamsMetadataExportsUnion interface {
+	implementsScriptUpdateParamsMetadataExportsUnion()
+}
+
+// A named Worker entrypoint export (`type: worker`). Worker entrypoints are always
+// live (`state: created`) and carry no storage or lifecycle fields. The optional
+// `cache` block overrides the Worker's global `cache_options.enabled` for this
+// entrypoint.
+type ScriptUpdateParamsMetadataExportsWorkersWorkerExport struct {
+	// Marks this entry as a Worker entrypoint export.
+	Type param.Field[ScriptUpdateParamsMetadataExportsWorkersWorkerExportType] `json:"type" api:"required"`
+	// Cache override for this entrypoint. Overrides the Worker's global
+	// `cache_options.enabled` for this entrypoint only.
+	Cache param.Field[ScriptUpdateParamsMetadataExportsWorkersWorkerExportCache] `json:"cache"`
+	// Live export. May be omitted; defaults to `created`.
+	State param.Field[ScriptUpdateParamsMetadataExportsWorkersWorkerExportState] `json:"state"`
+}
+
+func (r ScriptUpdateParamsMetadataExportsWorkersWorkerExport) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataExportsWorkersWorkerExport) implementsScriptUpdateParamsMetadataExportsUnion() {
+}
+
+// Marks this entry as a Worker entrypoint export.
+type ScriptUpdateParamsMetadataExportsWorkersWorkerExportType string
+
+const (
+	ScriptUpdateParamsMetadataExportsWorkersWorkerExportTypeWorker ScriptUpdateParamsMetadataExportsWorkersWorkerExportType = "worker"
+)
+
+func (r ScriptUpdateParamsMetadataExportsWorkersWorkerExportType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsWorkersWorkerExportTypeWorker:
+		return true
+	}
+	return false
+}
+
+// Cache override for this entrypoint. Overrides the Worker's global
+// `cache_options.enabled` for this entrypoint only.
+type ScriptUpdateParamsMetadataExportsWorkersWorkerExportCache struct {
+	// Whether caching is enabled for this entrypoint.
+	Enabled param.Field[bool] `json:"enabled" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataExportsWorkersWorkerExportCache) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Live export. May be omitted; defaults to `created`.
+type ScriptUpdateParamsMetadataExportsWorkersWorkerExportState string
+
+const (
+	ScriptUpdateParamsMetadataExportsWorkersWorkerExportStateCreated ScriptUpdateParamsMetadataExportsWorkersWorkerExportState = "created"
+)
+
+func (r ScriptUpdateParamsMetadataExportsWorkersWorkerExportState) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsWorkersWorkerExportStateCreated:
+		return true
+	}
+	return false
+}
+
+// A live Durable Object export (`state: created`, the default). The platform
+// auto-provisions the namespace on first deploy, matches it on subsequent deploys,
+// and never mutates or deletes it as a side effect of a code-only change.
+// `storage` is required; `renamed_to`, `transferred_to` and `transfer_from` are
+// not allowed on a live entry.
+type ScriptUpdateParamsMetadataExportsWorkersDurableObjectExport struct {
+	// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+	// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+	// already exists as KV-backed; the `exports` flow never provisions a new
+	// `legacy-kv` namespace.
+	Storage param.Field[ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportStorage] `json:"storage" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type param.Field[ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportType] `json:"type" api:"required"`
+	// Name of the container (declared in the upload's `metadata.containers`) that
+	// backs this Durable Object. When set, the namespace is container-enabled. Valid
+	// only on live entries.
+	Container param.Field[string] `json:"container"`
+	// Live export. May be omitted; defaults to `created`.
+	State param.Field[ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportState] `json:"state"`
+}
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectExport) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectExport) implementsScriptUpdateParamsMetadataExportsUnion() {
+}
+
+// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+// already exists as KV-backed; the `exports` flow never provisions a new
+// `legacy-kv` namespace.
+type ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportStorage string
+
+const (
+	ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportStorageSqlite   ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportStorage = "sqlite"
+	ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportStorageLegacyKV ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportStorage = "legacy-kv"
+)
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportStorage) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportStorageSqlite, ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportStorageLegacyKV:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportType string
+
+const (
+	ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportTypeDurableObject ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportType = "durable-object"
+)
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// Live export. May be omitted; defaults to `created`.
+type ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportState string
+
+const (
+	ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportStateCreated ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportState = "created"
+)
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportState) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsWorkersDurableObjectExportStateCreated:
+		return true
+	}
+	return false
+}
+
+// A `deleted` tombstone: retires the provisioned namespace for this class and all
+// of its data. The class must be absent from the uploaded code and no other Worker
+// in the account may bind to the namespace, otherwise the deploy is rejected. No
+// other fields are allowed. Deletion is irreversible.
+type ScriptUpdateParamsMetadataExportsWorkersDurableObjectDeletedExport struct {
+	// Tombstone that deletes the namespace.
+	State param.Field[ScriptUpdateParamsMetadataExportsWorkersDurableObjectDeletedExportState] `json:"state" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type param.Field[ScriptUpdateParamsMetadataExportsWorkersDurableObjectDeletedExportType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectDeletedExport) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectDeletedExport) implementsScriptUpdateParamsMetadataExportsUnion() {
+}
+
+// Tombstone that deletes the namespace.
+type ScriptUpdateParamsMetadataExportsWorkersDurableObjectDeletedExportState string
+
+const (
+	ScriptUpdateParamsMetadataExportsWorkersDurableObjectDeletedExportStateDeleted ScriptUpdateParamsMetadataExportsWorkersDurableObjectDeletedExportState = "deleted"
+)
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectDeletedExportState) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsWorkersDurableObjectDeletedExportStateDeleted:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptUpdateParamsMetadataExportsWorkersDurableObjectDeletedExportType string
+
+const (
+	ScriptUpdateParamsMetadataExportsWorkersDurableObjectDeletedExportTypeDurableObject ScriptUpdateParamsMetadataExportsWorkersDurableObjectDeletedExportType = "durable-object"
+)
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectDeletedExportType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsWorkersDurableObjectDeletedExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// A `renamed` tombstone: rewrites the provisioned namespace's class name from this
+// map key to `renamed_to`. The source class may stay in code during the rollout
+// window (an info notice is emitted). `storage`, `transferred_to` and
+// `transfer_from` are not allowed.
+type ScriptUpdateParamsMetadataExportsWorkersDurableObjectRenamedExport struct {
+	// The destination class name. Must differ from the source class (the map key) and
+	// must be declared as a live (`created`) entry in the same `exports` map.
+	// Write-only: never present in GET responses.
+	RenamedTo param.Field[string] `json:"renamed_to" api:"required"`
+	// Tombstone that renames the namespace's class.
+	State param.Field[ScriptUpdateParamsMetadataExportsWorkersDurableObjectRenamedExportState] `json:"state" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type param.Field[ScriptUpdateParamsMetadataExportsWorkersDurableObjectRenamedExportType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectRenamedExport) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectRenamedExport) implementsScriptUpdateParamsMetadataExportsUnion() {
+}
+
+// Tombstone that renames the namespace's class.
+type ScriptUpdateParamsMetadataExportsWorkersDurableObjectRenamedExportState string
+
+const (
+	ScriptUpdateParamsMetadataExportsWorkersDurableObjectRenamedExportStateRenamed ScriptUpdateParamsMetadataExportsWorkersDurableObjectRenamedExportState = "renamed"
+)
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectRenamedExportState) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsWorkersDurableObjectRenamedExportStateRenamed:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptUpdateParamsMetadataExportsWorkersDurableObjectRenamedExportType string
+
+const (
+	ScriptUpdateParamsMetadataExportsWorkersDurableObjectRenamedExportTypeDurableObject ScriptUpdateParamsMetadataExportsWorkersDurableObjectRenamedExportType = "durable-object"
+)
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectRenamedExportType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsWorkersDurableObjectRenamedExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// A `transferred` tombstone (source side of a two-phase transfer): hands ownership
+// of the provisioned namespace to another script in the same account, named by
+// `transferred_to`. The target must have already deployed a matching
+// `expecting-transfer` entry. The source class may stay in code during the rollout
+// window (an info notice is emitted). `storage`, `renamed_to` and `transfer_from`
+// are not allowed.
+type ScriptUpdateParamsMetadataExportsWorkersDurableObjectTransferredExport struct {
+	// Tombstone that transfers the namespace to another script.
+	State param.Field[ScriptUpdateParamsMetadataExportsWorkersDurableObjectTransferredExportState] `json:"state" api:"required"`
+	// The destination script name. Must be in the same account and the same
+	// dispatch-namespace context (or both non-dispatch). Cross-dispatch-namespace
+	// transfers are rejected. Write-only: never present in GET responses.
+	TransferredTo param.Field[string] `json:"transferred_to" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type param.Field[ScriptUpdateParamsMetadataExportsWorkersDurableObjectTransferredExportType] `json:"type" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectTransferredExport) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectTransferredExport) implementsScriptUpdateParamsMetadataExportsUnion() {
+}
+
+// Tombstone that transfers the namespace to another script.
+type ScriptUpdateParamsMetadataExportsWorkersDurableObjectTransferredExportState string
+
+const (
+	ScriptUpdateParamsMetadataExportsWorkersDurableObjectTransferredExportStateTransferred ScriptUpdateParamsMetadataExportsWorkersDurableObjectTransferredExportState = "transferred"
+)
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectTransferredExportState) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsWorkersDurableObjectTransferredExportStateTransferred:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptUpdateParamsMetadataExportsWorkersDurableObjectTransferredExportType string
+
+const (
+	ScriptUpdateParamsMetadataExportsWorkersDurableObjectTransferredExportTypeDurableObject ScriptUpdateParamsMetadataExportsWorkersDurableObjectTransferredExportType = "durable-object"
+)
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectTransferredExportType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsWorkersDurableObjectTransferredExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// The target side of a two-phase transfer (`state: expecting-transfer`). Declares
+// that this script expects to receive a namespace for this class from the
+// `transfer_from` script. This is a live entry, not a tombstone: bindings resolve
+// through the source's namespace until the source commits with a `transferred`
+// tombstone. `storage` and `transfer_from` are required; `renamed_to` and
+// `transferred_to` are not allowed.
+type ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExport struct {
+	// Target side of a two-phase transfer.
+	State param.Field[ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportState] `json:"state" api:"required"`
+	// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+	// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+	// already exists as KV-backed; the `exports` flow never provisions a new
+	// `legacy-kv` namespace.
+	Storage param.Field[ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportStorage] `json:"storage" api:"required"`
+	// The source script name to receive the namespace from. Must be in the same
+	// account and dispatch-namespace context. Present on reads for
+	// `expecting-transfer` entries.
+	TransferFrom param.Field[string] `json:"transfer_from" api:"required"`
+	// Marks this entry as a Durable Object export.
+	Type param.Field[ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportType] `json:"type" api:"required"`
+	// Name of the container (declared in the upload's `metadata.containers`) that
+	// backs this Durable Object once the transfer settles. Valid only on live entries.
+	Container param.Field[string] `json:"container"`
+}
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExport) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExport) implementsScriptUpdateParamsMetadataExportsUnion() {
+}
+
+// Target side of a two-phase transfer.
+type ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportState string
+
+const (
+	ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportStateExpectingTransfer ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportState = "expecting-transfer"
+)
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportState) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportStateExpectingTransfer:
+		return true
+	}
+	return false
+}
+
+// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+// already exists as KV-backed; the `exports` flow never provisions a new
+// `legacy-kv` namespace.
+type ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportStorage string
+
+const (
+	ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportStorageSqlite   ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportStorage = "sqlite"
+	ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportStorageLegacyKV ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportStorage = "legacy-kv"
+)
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportStorage) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportStorageSqlite, ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportStorageLegacyKV:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Durable Object export.
+type ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportType string
+
+const (
+	ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportTypeDurableObject ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportType = "durable-object"
+)
+
+func (r ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsWorkersDurableObjectExpectingTransferExportTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// Marks this entry as a Worker entrypoint export.
+type ScriptUpdateParamsMetadataExportsType string
+
+const (
+	ScriptUpdateParamsMetadataExportsTypeWorker        ScriptUpdateParamsMetadataExportsType = "worker"
+	ScriptUpdateParamsMetadataExportsTypeDurableObject ScriptUpdateParamsMetadataExportsType = "durable-object"
+)
+
+func (r ScriptUpdateParamsMetadataExportsType) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsTypeWorker, ScriptUpdateParamsMetadataExportsTypeDurableObject:
+		return true
+	}
+	return false
+}
+
+// Live export. May be omitted; defaults to `created`.
+type ScriptUpdateParamsMetadataExportsState string
+
+const (
+	ScriptUpdateParamsMetadataExportsStateCreated           ScriptUpdateParamsMetadataExportsState = "created"
+	ScriptUpdateParamsMetadataExportsStateDeleted           ScriptUpdateParamsMetadataExportsState = "deleted"
+	ScriptUpdateParamsMetadataExportsStateRenamed           ScriptUpdateParamsMetadataExportsState = "renamed"
+	ScriptUpdateParamsMetadataExportsStateTransferred       ScriptUpdateParamsMetadataExportsState = "transferred"
+	ScriptUpdateParamsMetadataExportsStateExpectingTransfer ScriptUpdateParamsMetadataExportsState = "expecting-transfer"
+)
+
+func (r ScriptUpdateParamsMetadataExportsState) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsStateCreated, ScriptUpdateParamsMetadataExportsStateDeleted, ScriptUpdateParamsMetadataExportsStateRenamed, ScriptUpdateParamsMetadataExportsStateTransferred, ScriptUpdateParamsMetadataExportsStateExpectingTransfer:
+		return true
+	}
+	return false
+}
+
+// Durable Object storage backend. `sqlite` is the recommended (and only) backend
+// for new namespaces. `legacy-kv` is accepted only for a class whose namespace
+// already exists as KV-backed; the `exports` flow never provisions a new
+// `legacy-kv` namespace.
+type ScriptUpdateParamsMetadataExportsStorage string
+
+const (
+	ScriptUpdateParamsMetadataExportsStorageSqlite   ScriptUpdateParamsMetadataExportsStorage = "sqlite"
+	ScriptUpdateParamsMetadataExportsStorageLegacyKV ScriptUpdateParamsMetadataExportsStorage = "legacy-kv"
+)
+
+func (r ScriptUpdateParamsMetadataExportsStorage) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsStorageSqlite, ScriptUpdateParamsMetadataExportsStorageLegacyKV:
+		return true
+	}
+	return false
+}
+
+// Summary of the declarative exports reconciliation that ran on this upload.
+// Populated only when the uploaded metadata included an `exports` block. Durable
+// Object entries drive reconciliation; `type: worker` entries do not contribute to
+// this summary.
+type ScriptUpdateParamsMetadataExportsReconciliation struct {
+	// Class names for which a new namespace was provisioned.
+	Created param.Field[[]string] `json:"created" api:"required"`
+	// Class names whose namespace was deleted by a `deleted` tombstone.
+	Deleted param.Field[[]string] `json:"deleted" api:"required"`
+	// Non-blocking info entries (stale tombstones, tombstone applied with class still
+	// in code). See `exports_reconciliation_info`.
+	Info param.Field[[]ScriptUpdateParamsMetadataExportsReconciliationInfo] `json:"info" api:"required"`
+	// Source class names whose tombstone entry is now stale and safe to delete from
+	// `exports` (no remaining referencing scripts).
+	RemovableEntries param.Field[[]string] `json:"removable_entries" api:"required"`
+	// Applied `renamed` tombstones.
+	Renamed param.Field[[]ScriptUpdateParamsMetadataExportsReconciliationRenamed] `json:"renamed" api:"required"`
+	// Phase-1 transfer hints recorded on the target side.
+	TransferPending param.Field[[]ScriptUpdateParamsMetadataExportsReconciliationTransferPending] `json:"transfer_pending" api:"required"`
+	// Committed `transferred` tombstones (phase-2).
+	Transferred param.Field[[]ScriptUpdateParamsMetadataExportsReconciliationTransferred] `json:"transferred" api:"required"`
+	// Class names whose provisioned namespace was mutated in place.
+	Updated param.Field[[]string] `json:"updated" api:"required"`
+	// Non-blocking warnings. See `exports_reconciliation_warning`.
+	Warnings param.Field[[]ScriptUpdateParamsMetadataExportsReconciliationWarning] `json:"warnings" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataExportsReconciliation) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// A non-blocking reconciliation info entry. Emitted for stale tombstones (a no-op
+// on this deploy) and for tombstones applied with the source class still in code
+// (the supported zero-downtime rollout pattern).
+type ScriptUpdateParamsMetadataExportsReconciliationInfo struct {
+	// The class name the info entry is about.
+	Class param.Field[string] `json:"class" api:"required"`
+	// Human-readable explanation.
+	Message param.Field[string] `json:"message" api:"required"`
+	// Stable, machine-readable tag identifying which reconciliation scenario produced
+	// an error, warning, or info entry. Clients may branch on this value instead of
+	// parsing `message`.
+	Scenario param.Field[ScriptUpdateParamsMetadataExportsReconciliationInfoScenario] `json:"scenario" api:"required"`
+	// The provisioned namespace the entry relates to, when applicable.
+	NamespaceID param.Field[string] `json:"namespace_id" format:"uuid"`
+	// Other Workers in the account that still bind to the affected class. Advisory:
+	// while non-empty the tombstone is not yet safe to remove — redeploy these Workers
+	// with bindings re-pointed first.
+	ReferencingScripts param.Field[[]string] `json:"referencing_scripts"`
+}
+
+func (r ScriptUpdateParamsMetadataExportsReconciliationInfo) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Stable, machine-readable tag identifying which reconciliation scenario produced
+// an error, warning, or info entry. Clients may branch on this value instead of
+// parsing `message`.
+type ScriptUpdateParamsMetadataExportsReconciliationInfoScenario string
+
+const (
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioCodeClassNotInExports                     ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "code_class_not_in_exports"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioProvisionedClassMissingFromConfig         ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "provisioned_class_missing_from_config"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioConfigExportNotInCode                     ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "config_export_not_in_code"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioConfigReferencesNonexistentClass          ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "config_references_nonexistent_class"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioOrphanedProvisionedNamespace              ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "orphaned_provisioned_namespace"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioStorageTypeMismatch                       ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "storage_type_mismatch"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioFreeTierRequiresSqlite                    ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "free_tier_requires_sqlite"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioInvalidExport                             ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "invalid_export"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTombstoneDeleteClassStillInCode           ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "tombstone_delete_class_still_in_code"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTombstoneDeleteBlockedByExternalBindings  ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "tombstone_delete_blocked_by_external_bindings"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTombstoneRenamedToOccupied                ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "tombstone_renamed_to_occupied"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTransferredPendingNotFound                ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "transferred_pending_not_found"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTransferredTargetMissing                  ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "transferred_target_missing"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTransferredTargetMismatch                 ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "transferred_target_mismatch"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioPhaseOneTransferSourceMissing             ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "phase_one_transfer_source_missing"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioPhaseOneTransferSourceNamespaceMissing    ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "phase_one_transfer_source_namespace_missing"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioPhaseOneTransferTargetClassProvisioned    ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "phase_one_transfer_target_class_provisioned"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioPhaseOneTransferAfterCommitMismatch       ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "phase_one_transfer_after_commit_mismatch"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioPhaseOneTransferDuplicate                 ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "phase_one_transfer_duplicate"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioPhaseOneTransferTargetInDispatchNamespace ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "phase_one_transfer_target_in_dispatch_namespace"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioPhaseOneTransferSourceInDispatchNamespace ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "phase_one_transfer_source_in_dispatch_namespace"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTransferredSourceInDispatchNamespace      ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "transferred_source_in_dispatch_namespace"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTransferredTargetInDispatchNamespace      ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "transferred_target_in_dispatch_namespace"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioContainerUndeclaredReference              ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "container_undeclared_reference"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioContainerClassNotDurableObject            ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "container_class_not_durable_object"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioContainerWiringInconsistent               ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "container_wiring_inconsistent"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioContainerMultipleDurableObjects           ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "container_multiple_durable_objects"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTransferContainerParityMismatch           ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "transfer_container_parity_mismatch"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTransferContainerParityMismatchOnCommit   ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "transfer_container_parity_mismatch_on_commit"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTombstoneClassStillInCode                 ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "tombstone_class_still_in_code"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioStaleTombstone                            ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "stale_tombstone"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTransferReceiveAlreadyApplied             ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "transfer_receive_already_applied"
+	ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTransferReceiveCleanupComplete            ScriptUpdateParamsMetadataExportsReconciliationInfoScenario = "transfer_receive_cleanup_complete"
+)
+
+func (r ScriptUpdateParamsMetadataExportsReconciliationInfoScenario) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioCodeClassNotInExports, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioProvisionedClassMissingFromConfig, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioConfigExportNotInCode, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioConfigReferencesNonexistentClass, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioOrphanedProvisionedNamespace, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioStorageTypeMismatch, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioFreeTierRequiresSqlite, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioInvalidExport, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTombstoneDeleteClassStillInCode, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTombstoneDeleteBlockedByExternalBindings, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTombstoneRenamedToOccupied, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTransferredPendingNotFound, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTransferredTargetMissing, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTransferredTargetMismatch, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioPhaseOneTransferSourceMissing, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioPhaseOneTransferSourceNamespaceMissing, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioPhaseOneTransferTargetClassProvisioned, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioPhaseOneTransferAfterCommitMismatch, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioPhaseOneTransferDuplicate, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioPhaseOneTransferTargetInDispatchNamespace, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioPhaseOneTransferSourceInDispatchNamespace, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTransferredSourceInDispatchNamespace, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTransferredTargetInDispatchNamespace, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioContainerUndeclaredReference, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioContainerClassNotDurableObject, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioContainerWiringInconsistent, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioContainerMultipleDurableObjects, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTransferContainerParityMismatch, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTransferContainerParityMismatchOnCommit, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTombstoneClassStillInCode, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioStaleTombstone, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTransferReceiveAlreadyApplied, ScriptUpdateParamsMetadataExportsReconciliationInfoScenarioTransferReceiveCleanupComplete:
+		return true
+	}
+	return false
+}
+
+// A single applied `renamed` tombstone.
+type ScriptUpdateParamsMetadataExportsReconciliationRenamed struct {
+	// The original (source) class name.
+	From param.Field[string] `json:"from" api:"required"`
+	// The new class name (`renamed_to`).
+	To param.Field[string] `json:"to" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataExportsReconciliationRenamed) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// A single phase-1 transfer hint recorded on the target side (a live
+// `expecting-transfer` entry).
+type ScriptUpdateParamsMetadataExportsReconciliationTransferPending struct {
+	// The target-side class name awaiting transfer.
+	Class param.Field[string] `json:"class" api:"required"`
+	// The source script the namespace will be transferred from.
+	From param.Field[string] `json:"from" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataExportsReconciliationTransferPending) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// A single committed `transferred` tombstone (phase-2 commit).
+type ScriptUpdateParamsMetadataExportsReconciliationTransferred struct {
+	// The source class name that was transferred.
+	Class param.Field[string] `json:"class" api:"required"`
+	// The transfer phase. Currently always `committed`.
+	Phase param.Field[ScriptUpdateParamsMetadataExportsReconciliationTransferredPhase] `json:"phase" api:"required"`
+	// The destination script that now owns the namespace.
+	To param.Field[string] `json:"to" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataExportsReconciliationTransferred) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// The transfer phase. Currently always `committed`.
+type ScriptUpdateParamsMetadataExportsReconciliationTransferredPhase string
+
+const (
+	ScriptUpdateParamsMetadataExportsReconciliationTransferredPhaseCommitted ScriptUpdateParamsMetadataExportsReconciliationTransferredPhase = "committed"
+)
+
+func (r ScriptUpdateParamsMetadataExportsReconciliationTransferredPhase) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsReconciliationTransferredPhaseCommitted:
+		return true
+	}
+	return false
+}
+
+// A non-blocking reconciliation warning. Reserved: no scenario populates this
+// array today (`code_class_not_in_exports` is surfaced as info and
+// `provisioned_class_missing_from_config` is a hard error). Clients should still
+// surface any entries that appear.
+type ScriptUpdateParamsMetadataExportsReconciliationWarning struct {
+	// The class name the warning is about.
+	Class param.Field[string] `json:"class" api:"required"`
+	// Human-readable explanation of the warning.
+	Message param.Field[string] `json:"message" api:"required"`
+	// Stable, machine-readable tag identifying which reconciliation scenario produced
+	// an error, warning, or info entry. Clients may branch on this value instead of
+	// parsing `message`.
+	Scenario param.Field[ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario] `json:"scenario" api:"required"`
+	// The provisioned namespace the warning relates to, when applicable.
+	NamespaceID param.Field[string] `json:"namespace_id" format:"uuid"`
+}
+
+func (r ScriptUpdateParamsMetadataExportsReconciliationWarning) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Stable, machine-readable tag identifying which reconciliation scenario produced
+// an error, warning, or info entry. Clients may branch on this value instead of
+// parsing `message`.
+type ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario string
+
+const (
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioCodeClassNotInExports                     ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "code_class_not_in_exports"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioProvisionedClassMissingFromConfig         ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "provisioned_class_missing_from_config"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioConfigExportNotInCode                     ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "config_export_not_in_code"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioConfigReferencesNonexistentClass          ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "config_references_nonexistent_class"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioOrphanedProvisionedNamespace              ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "orphaned_provisioned_namespace"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioStorageTypeMismatch                       ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "storage_type_mismatch"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioFreeTierRequiresSqlite                    ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "free_tier_requires_sqlite"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioInvalidExport                             ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "invalid_export"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTombstoneDeleteClassStillInCode           ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "tombstone_delete_class_still_in_code"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTombstoneDeleteBlockedByExternalBindings  ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "tombstone_delete_blocked_by_external_bindings"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTombstoneRenamedToOccupied                ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "tombstone_renamed_to_occupied"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTransferredPendingNotFound                ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "transferred_pending_not_found"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTransferredTargetMissing                  ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "transferred_target_missing"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTransferredTargetMismatch                 ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "transferred_target_mismatch"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioPhaseOneTransferSourceMissing             ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "phase_one_transfer_source_missing"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioPhaseOneTransferSourceNamespaceMissing    ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "phase_one_transfer_source_namespace_missing"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioPhaseOneTransferTargetClassProvisioned    ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "phase_one_transfer_target_class_provisioned"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioPhaseOneTransferAfterCommitMismatch       ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "phase_one_transfer_after_commit_mismatch"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioPhaseOneTransferDuplicate                 ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "phase_one_transfer_duplicate"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioPhaseOneTransferTargetInDispatchNamespace ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "phase_one_transfer_target_in_dispatch_namespace"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioPhaseOneTransferSourceInDispatchNamespace ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "phase_one_transfer_source_in_dispatch_namespace"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTransferredSourceInDispatchNamespace      ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "transferred_source_in_dispatch_namespace"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTransferredTargetInDispatchNamespace      ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "transferred_target_in_dispatch_namespace"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioContainerUndeclaredReference              ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "container_undeclared_reference"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioContainerClassNotDurableObject            ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "container_class_not_durable_object"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioContainerWiringInconsistent               ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "container_wiring_inconsistent"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioContainerMultipleDurableObjects           ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "container_multiple_durable_objects"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTransferContainerParityMismatch           ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "transfer_container_parity_mismatch"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTransferContainerParityMismatchOnCommit   ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "transfer_container_parity_mismatch_on_commit"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTombstoneClassStillInCode                 ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "tombstone_class_still_in_code"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioStaleTombstone                            ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "stale_tombstone"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTransferReceiveAlreadyApplied             ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "transfer_receive_already_applied"
+	ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTransferReceiveCleanupComplete            ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario = "transfer_receive_cleanup_complete"
+)
+
+func (r ScriptUpdateParamsMetadataExportsReconciliationWarningsScenario) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioCodeClassNotInExports, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioProvisionedClassMissingFromConfig, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioConfigExportNotInCode, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioConfigReferencesNonexistentClass, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioOrphanedProvisionedNamespace, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioStorageTypeMismatch, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioFreeTierRequiresSqlite, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioInvalidExport, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTombstoneDeleteClassStillInCode, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTombstoneDeleteBlockedByExternalBindings, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTombstoneRenamedToOccupied, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTransferredPendingNotFound, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTransferredTargetMissing, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTransferredTargetMismatch, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioPhaseOneTransferSourceMissing, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioPhaseOneTransferSourceNamespaceMissing, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioPhaseOneTransferTargetClassProvisioned, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioPhaseOneTransferAfterCommitMismatch, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioPhaseOneTransferDuplicate, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioPhaseOneTransferTargetInDispatchNamespace, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioPhaseOneTransferSourceInDispatchNamespace, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTransferredSourceInDispatchNamespace, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTransferredTargetInDispatchNamespace, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioContainerUndeclaredReference, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioContainerClassNotDurableObject, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioContainerWiringInconsistent, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioContainerMultipleDurableObjects, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTransferContainerParityMismatch, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTransferContainerParityMismatchOnCommit, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTombstoneClassStillInCode, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioStaleTombstone, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTransferReceiveAlreadyApplied, ScriptUpdateParamsMetadataExportsReconciliationWarningsScenarioTransferReceiveCleanupComplete:
+		return true
+	}
+	return false
+}
+
+// Limits to apply for this Worker.
+type ScriptUpdateParamsMetadataLimits struct {
+	// The amount of CPU time this Worker can use in milliseconds.
+	CPUMs param.Field[int64] `json:"cpu_ms"`
+	// The number of subrequests this Worker can make per request.
+	Subrequests param.Field[int64] `json:"subrequests"`
+}
+
+func (r ScriptUpdateParamsMetadataLimits) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Migrations to apply for Durable Objects associated with this Worker.
+type ScriptUpdateParamsMetadataMigrations struct {
+	DeletedClasses   param.Field[interface{}] `json:"deleted_classes"`
+	NewClasses       param.Field[interface{}] `json:"new_classes"`
+	NewSqliteClasses param.Field[interface{}] `json:"new_sqlite_classes"`
+	// Tag to set as the latest migration tag.
+	NewTag param.Field[string] `json:"new_tag"`
+	// Tag used to verify against the latest migration tag for this Worker. If they
+	// don't match, the upload is rejected.
+	OldTag             param.Field[string]      `json:"old_tag"`
+	RenamedClasses     param.Field[interface{}] `json:"renamed_classes"`
+	Steps              param.Field[interface{}] `json:"steps"`
+	TransferredClasses param.Field[interface{}] `json:"transferred_classes"`
+}
+
+func (r ScriptUpdateParamsMetadataMigrations) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataMigrations) implementsScriptUpdateParamsMetadataMigrationsUnion() {}
+
+// Migrations to apply for Durable Objects associated with this Worker.
+//
+// Satisfied by [workers.SingleStepMigrationParam],
+// [workers.ScriptUpdateParamsMetadataMigrationsWorkersMultipleStepMigrations],
+// [ScriptUpdateParamsMetadataMigrations].
+type ScriptUpdateParamsMetadataMigrationsUnion interface {
+	implementsScriptUpdateParamsMetadataMigrationsUnion()
+}
+
+type ScriptUpdateParamsMetadataMigrationsWorkersMultipleStepMigrations struct {
+	// Tag to set as the latest migration tag.
+	NewTag param.Field[string] `json:"new_tag"`
+	// Tag used to verify against the latest migration tag for this Worker. If they
+	// don't match, the upload is rejected.
+	OldTag param.Field[string] `json:"old_tag"`
+	// Migrations to apply in order.
+	Steps param.Field[[]MigrationStepParam] `json:"steps"`
+}
+
+func (r ScriptUpdateParamsMetadataMigrationsWorkersMultipleStepMigrations) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataMigrationsWorkersMultipleStepMigrations) implementsScriptUpdateParamsMetadataMigrationsUnion() {
+}
+
+// Observability settings for the Worker.
+type ScriptUpdateParamsMetadataObservability struct {
+	// Whether observability is enabled for the Worker.
+	Enabled param.Field[bool] `json:"enabled" api:"required"`
+	// The sampling rate for incoming requests. From 0 to 1 (1 = 100%, 0.1 = 10%).
+	// Default is 1.
+	HeadSamplingRate param.Field[float64] `json:"head_sampling_rate"`
+	// Real-time Issues settings for the Worker.
+	Issues param.Field[ScriptUpdateParamsMetadataObservabilityIssues] `json:"issues"`
+	// Log settings for the Worker.
+	Logs param.Field[ScriptUpdateParamsMetadataObservabilityLogs] `json:"logs"`
+	// Whether query strings are removed from request URLs in logs and traces.
+	RedactQueryString param.Field[bool] `json:"redact_query_string"`
+	// Trace settings for the Worker.
+	Traces param.Field[ScriptUpdateParamsMetadataObservabilityTraces] `json:"traces"`
+}
+
+func (r ScriptUpdateParamsMetadataObservability) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Real-time Issues settings for the Worker.
+type ScriptUpdateParamsMetadataObservabilityIssues struct {
+	// Whether real-time Issues are enabled for the Worker.
+	Enabled param.Field[bool] `json:"enabled"`
+}
+
+func (r ScriptUpdateParamsMetadataObservabilityIssues) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Log settings for the Worker.
+type ScriptUpdateParamsMetadataObservabilityLogs struct {
+	// Whether logs are enabled for the Worker.
+	Enabled param.Field[bool] `json:"enabled" api:"required"`
+	// Whether
+	// [invocation logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#invocation-logs)
+	// are enabled for the Worker.
+	InvocationLogs param.Field[bool] `json:"invocation_logs" api:"required"`
+	// A list of destinations where logs will be exported to.
+	Destinations param.Field[[]string] `json:"destinations"`
+	// The sampling rate for logs. From 0 to 1 (1 = 100%, 0.1 = 10%). Default is 1.
+	HeadSamplingRate param.Field[float64] `json:"head_sampling_rate"`
+	// Whether log persistence is enabled for the Worker.
+	Persist param.Field[bool] `json:"persist"`
+}
+
+func (r ScriptUpdateParamsMetadataObservabilityLogs) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Trace settings for the Worker.
+type ScriptUpdateParamsMetadataObservabilityTraces struct {
+	// A list of destinations where traces will be exported to.
+	Destinations param.Field[[]string] `json:"destinations"`
+	// Whether traces are enabled for the Worker.
+	Enabled param.Field[bool] `json:"enabled"`
+	// The sampling rate for traces. From 0 to 1 (1 = 100%, 0.1 = 10%). Default is 1.
+	HeadSamplingRate param.Field[float64] `json:"head_sampling_rate"`
+	// Whether trace persistence is enabled for the Worker.
+	Persist param.Field[bool] `json:"persist"`
+	// Controls how inbound trace context (traceparent/tracestate) headers on incoming
+	// requests are handled. "authenticated" honors inbound trace context only when
+	// accompanied by a valid trace auth token. "accept" unconditionally accepts
+	// inbound trace context. Requires the trace propagation feature to be enabled.
+	// Returns null when the trace propagation feature is not enabled for the account.
+	PropagationPolicy param.Field[ScriptUpdateParamsMetadataObservabilityTracesPropagationPolicy] `json:"propagation_policy"`
+}
+
+func (r ScriptUpdateParamsMetadataObservabilityTraces) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Controls how inbound trace context (traceparent/tracestate) headers on incoming
+// requests are handled. "authenticated" honors inbound trace context only when
+// accompanied by a valid trace auth token. "accept" unconditionally accepts
+// inbound trace context. Requires the trace propagation feature to be enabled.
+// Returns null when the trace propagation feature is not enabled for the account.
+type ScriptUpdateParamsMetadataObservabilityTracesPropagationPolicy string
+
+const (
+	ScriptUpdateParamsMetadataObservabilityTracesPropagationPolicyAuthenticated ScriptUpdateParamsMetadataObservabilityTracesPropagationPolicy = "authenticated"
+	ScriptUpdateParamsMetadataObservabilityTracesPropagationPolicyAccept        ScriptUpdateParamsMetadataObservabilityTracesPropagationPolicy = "accept"
+)
+
+func (r ScriptUpdateParamsMetadataObservabilityTracesPropagationPolicy) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataObservabilityTracesPropagationPolicyAuthenticated, ScriptUpdateParamsMetadataObservabilityTracesPropagationPolicyAccept:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateParamsMetadataPackageDependency struct {
+	// The exact version that was resolved and installed by the package manager.
+	InstalledVersion param.Field[string] `json:"installedVersion" api:"required"`
+	// The npm package name.
+	Name param.Field[string] `json:"name" api:"required"`
+	// The version constraint as written in package.json.
+	PackageJsonVersion param.Field[string] `json:"packageJsonVersion" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataPackageDependency) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+// Configuration for
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+// Specify mode='smart' for Smart Placement, or one of region/hostname/host.
+type ScriptUpdateParamsMetadataPlacement struct {
+	// TCP host and port for targeted placement.
+	Host param.Field[string] `json:"host"`
+	// HTTP hostname for targeted placement.
+	Hostname param.Field[string] `json:"hostname"`
+	// Enables
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	Mode param.Field[ScriptUpdateParamsMetadataPlacementMode] `json:"mode"`
+	// Cloud region for targeted placement in format 'provider:region'.
+	Region param.Field[string]      `json:"region"`
+	Target param.Field[interface{}] `json:"target"`
+}
+
+func (r ScriptUpdateParamsMetadataPlacement) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataPlacement) implementsScriptUpdateParamsMetadataPlacementUnion() {}
+
+// Configuration for
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+// Specify mode='smart' for Smart Placement, or one of region/hostname/host.
+//
+// Satisfied by [workers.ScriptUpdateParamsMetadataPlacementObject],
+// [workers.ScriptUpdateParamsMetadataPlacementObject],
+// [workers.ScriptUpdateParamsMetadataPlacementObject],
+// [workers.ScriptUpdateParamsMetadataPlacementObject],
+// [workers.ScriptUpdateParamsMetadataPlacementObject],
+// [workers.ScriptUpdateParamsMetadataPlacementObject],
+// [workers.ScriptUpdateParamsMetadataPlacementObject],
+// [workers.ScriptUpdateParamsMetadataPlacementObject],
+// [ScriptUpdateParamsMetadataPlacement].
+type ScriptUpdateParamsMetadataPlacementUnion interface {
+	implementsScriptUpdateParamsMetadataPlacementUnion()
+}
+
+type ScriptUpdateParamsMetadataPlacementObject struct {
+	// Enables
+	// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+	Mode param.Field[ScriptUpdateParamsMetadataPlacementObjectMode] `json:"mode" api:"required"`
+}
+
+func (r ScriptUpdateParamsMetadataPlacementObject) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+func (r ScriptUpdateParamsMetadataPlacementObject) implementsScriptUpdateParamsMetadataPlacementUnion() {
+}
+
+// Enables
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+type ScriptUpdateParamsMetadataPlacementObjectMode string
+
+const (
+	ScriptUpdateParamsMetadataPlacementObjectModeSmart ScriptUpdateParamsMetadataPlacementObjectMode = "smart"
+)
+
+func (r ScriptUpdateParamsMetadataPlacementObjectMode) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataPlacementObjectModeSmart:
+		return true
+	}
+	return false
+}
+
+// Status of
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+type ScriptUpdateParamsMetadataPlacementObjectStatus string
+
+const (
+	ScriptUpdateParamsMetadataPlacementObjectStatusSuccess                 ScriptUpdateParamsMetadataPlacementObjectStatus = "SUCCESS"
+	ScriptUpdateParamsMetadataPlacementObjectStatusUnsupportedApplication  ScriptUpdateParamsMetadataPlacementObjectStatus = "UNSUPPORTED_APPLICATION"
+	ScriptUpdateParamsMetadataPlacementObjectStatusInsufficientInvocations ScriptUpdateParamsMetadataPlacementObjectStatus = "INSUFFICIENT_INVOCATIONS"
+)
+
+func (r ScriptUpdateParamsMetadataPlacementObjectStatus) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataPlacementObjectStatusSuccess, ScriptUpdateParamsMetadataPlacementObjectStatusUnsupportedApplication, ScriptUpdateParamsMetadataPlacementObjectStatusInsufficientInvocations:
+		return true
+	}
+	return false
+}
+
+// Enables
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+type ScriptUpdateParamsMetadataPlacementMode string
+
+const (
+	ScriptUpdateParamsMetadataPlacementModeSmart    ScriptUpdateParamsMetadataPlacementMode = "smart"
+	ScriptUpdateParamsMetadataPlacementModeTargeted ScriptUpdateParamsMetadataPlacementMode = "targeted"
+)
+
+func (r ScriptUpdateParamsMetadataPlacementMode) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataPlacementModeSmart, ScriptUpdateParamsMetadataPlacementModeTargeted:
+		return true
+	}
+	return false
+}
+
+// Status of
+// [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+type ScriptUpdateParamsMetadataPlacementStatus string
+
+const (
+	ScriptUpdateParamsMetadataPlacementStatusSuccess                 ScriptUpdateParamsMetadataPlacementStatus = "SUCCESS"
+	ScriptUpdateParamsMetadataPlacementStatusUnsupportedApplication  ScriptUpdateParamsMetadataPlacementStatus = "UNSUPPORTED_APPLICATION"
+	ScriptUpdateParamsMetadataPlacementStatusInsufficientInvocations ScriptUpdateParamsMetadataPlacementStatus = "INSUFFICIENT_INVOCATIONS"
+)
+
+func (r ScriptUpdateParamsMetadataPlacementStatus) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataPlacementStatusSuccess, ScriptUpdateParamsMetadataPlacementStatusUnsupportedApplication, ScriptUpdateParamsMetadataPlacementStatusInsufficientInvocations:
+		return true
+	}
+	return false
+}
+
+// Usage model for the Worker invocations.
+type ScriptUpdateParamsMetadataUsageModel string
+
+const (
+	ScriptUpdateParamsMetadataUsageModelStandard ScriptUpdateParamsMetadataUsageModel = "standard"
+	ScriptUpdateParamsMetadataUsageModelBundled  ScriptUpdateParamsMetadataUsageModel = "bundled"
+	ScriptUpdateParamsMetadataUsageModelUnbound  ScriptUpdateParamsMetadataUsageModel = "unbound"
+)
+
+func (r ScriptUpdateParamsMetadataUsageModel) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsMetadataUsageModelStandard, ScriptUpdateParamsMetadataUsageModelBundled, ScriptUpdateParamsMetadataUsageModelUnbound:
+		return true
+	}
+	return false
+}
+
+// When set to "strict", the upload will fail with error 10057 if any `inherit`
+// type bindings cannot be resolved against the latest uploaded version of the
+// Worker, which may not be the deployed version. Without this, unresolvable
+// inherit bindings are silently dropped.
+type ScriptUpdateParamsBindingsInherit string
+
+const (
+	ScriptUpdateParamsBindingsInheritStrict ScriptUpdateParamsBindingsInherit = "strict"
+)
+
+func (r ScriptUpdateParamsBindingsInherit) IsKnown() bool {
+	switch r {
+	case ScriptUpdateParamsBindingsInheritStrict:
+		return true
+	}
+	return false
+}
+
+type ScriptUpdateResponseEnvelope struct {
+	Errors   []ScriptUpdateResponseEnvelopeErrors   `json:"errors" api:"required"`
+	Messages []ScriptUpdateResponseEnvelopeMessages `json:"messages" api:"required"`
+	Result   ScriptUpdateResponse                   `json:"result" api:"required"`
+	// Whether the API call was successful.
+	Success ScriptUpdateResponseEnvelopeSuccess `json:"success" api:"required"`
+	JSON    scriptUpdateResponseEnvelopeJSON    `json:"-"`
+}
+
+// scriptUpdateResponseEnvelopeJSON contains the JSON metadata for the struct
+// [ScriptUpdateResponseEnvelope]
+type scriptUpdateResponseEnvelopeJSON struct {
+	Errors      apijson.Field
+	Messages    apijson.Field
+	Result      apijson.Field
+	Success     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponseEnvelope) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseEnvelopeJSON) RawJSON() string {
+	return r.raw
+}
+
+type ScriptUpdateResponseEnvelopeErrors struct {
+	Code             int64                                    `json:"code" api:"required"`
+	Message          string                                   `json:"message" api:"required"`
+	DocumentationURL string                                   `json:"documentation_url"`
+	Source           ScriptUpdateResponseEnvelopeErrorsSource `json:"source"`
+	JSON             scriptUpdateResponseEnvelopeErrorsJSON   `json:"-"`
+}
+
+// scriptUpdateResponseEnvelopeErrorsJSON contains the JSON metadata for the struct
+// [ScriptUpdateResponseEnvelopeErrors]
+type scriptUpdateResponseEnvelopeErrorsJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponseEnvelopeErrors) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseEnvelopeErrorsJSON) RawJSON() string {
+	return r.raw
+}
+
+type ScriptUpdateResponseEnvelopeErrorsSource struct {
+	Pointer string                                       `json:"pointer"`
+	JSON    scriptUpdateResponseEnvelopeErrorsSourceJSON `json:"-"`
+}
+
+// scriptUpdateResponseEnvelopeErrorsSourceJSON contains the JSON metadata for the
+// struct [ScriptUpdateResponseEnvelopeErrorsSource]
+type scriptUpdateResponseEnvelopeErrorsSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponseEnvelopeErrorsSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseEnvelopeErrorsSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+type ScriptUpdateResponseEnvelopeMessages struct {
+	Code             int64                                      `json:"code" api:"required"`
+	Message          string                                     `json:"message" api:"required"`
+	DocumentationURL string                                     `json:"documentation_url"`
+	Source           ScriptUpdateResponseEnvelopeMessagesSource `json:"source"`
+	JSON             scriptUpdateResponseEnvelopeMessagesJSON   `json:"-"`
+}
+
+// scriptUpdateResponseEnvelopeMessagesJSON contains the JSON metadata for the
+// struct [ScriptUpdateResponseEnvelopeMessages]
+type scriptUpdateResponseEnvelopeMessagesJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponseEnvelopeMessages) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseEnvelopeMessagesJSON) RawJSON() string {
+	return r.raw
+}
+
+type ScriptUpdateResponseEnvelopeMessagesSource struct {
+	Pointer string                                         `json:"pointer"`
+	JSON    scriptUpdateResponseEnvelopeMessagesSourceJSON `json:"-"`
+}
+
+// scriptUpdateResponseEnvelopeMessagesSourceJSON contains the JSON metadata for
+// the struct [ScriptUpdateResponseEnvelopeMessagesSource]
+type scriptUpdateResponseEnvelopeMessagesSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptUpdateResponseEnvelopeMessagesSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptUpdateResponseEnvelopeMessagesSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+// Whether the API call was successful.
+type ScriptUpdateResponseEnvelopeSuccess bool
+
+const (
+	ScriptUpdateResponseEnvelopeSuccessTrue ScriptUpdateResponseEnvelopeSuccess = true
+)
+
+func (r ScriptUpdateResponseEnvelopeSuccess) IsKnown() bool {
+	switch r {
+	case ScriptUpdateResponseEnvelopeSuccessTrue:
+		return true
+	}
+	return false
+}
+
+type ScriptListParams struct {
+	// Identifier.
+	AccountID param.Field[string] `path:"account_id" api:"required"`
+	// Filter scripts by tags. Format: comma-separated list of tag:allowed pairs where
+	// allowed is 'yes' or 'no'.
+	Tags param.Field[string] `query:"tags"`
+}
+
+// URLQuery serializes [ScriptListParams]'s query parameters as `url.Values`.
+func (r ScriptListParams) URLQuery() (v url.Values) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
+		NestedFormat: apiquery.NestedQueryFormatDots,
+	})
+}
+
+type ScriptDeleteParams struct {
+	// Identifier.
+	AccountID param.Field[string] `path:"account_id" api:"required"`
+	// If true, delete the Worker even when other Workers still reference it. Service
+	// bindings in those Workers may be left broken. Durable Object namespaces
+	// implemented by the deleted Worker are deleted even if other Workers reference
+	// them.
+	Force param.Field[bool] `query:"force"`
+}
+
+// URLQuery serializes [ScriptDeleteParams]'s query parameters as `url.Values`.
+func (r ScriptDeleteParams) URLQuery() (v url.Values) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
+		NestedFormat: apiquery.NestedQueryFormatDots,
+	})
+}
+
+type ScriptDeleteResponseEnvelope struct {
+	Errors   []ScriptDeleteResponseEnvelopeErrors   `json:"errors" api:"required"`
+	Messages []ScriptDeleteResponseEnvelopeMessages `json:"messages" api:"required"`
+	// Whether the API call was successful.
+	Success ScriptDeleteResponseEnvelopeSuccess `json:"success" api:"required"`
+	Result  ScriptDeleteResponse                `json:"result" api:"nullable"`
+	JSON    scriptDeleteResponseEnvelopeJSON    `json:"-"`
+}
+
+// scriptDeleteResponseEnvelopeJSON contains the JSON metadata for the struct
+// [ScriptDeleteResponseEnvelope]
+type scriptDeleteResponseEnvelopeJSON struct {
+	Errors      apijson.Field
+	Messages    apijson.Field
+	Success     apijson.Field
+	Result      apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptDeleteResponseEnvelope) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptDeleteResponseEnvelopeJSON) RawJSON() string {
+	return r.raw
+}
+
+type ScriptDeleteResponseEnvelopeErrors struct {
+	Code             int64                                    `json:"code" api:"required"`
+	Message          string                                   `json:"message" api:"required"`
+	DocumentationURL string                                   `json:"documentation_url"`
+	Source           ScriptDeleteResponseEnvelopeErrorsSource `json:"source"`
+	JSON             scriptDeleteResponseEnvelopeErrorsJSON   `json:"-"`
+}
+
+// scriptDeleteResponseEnvelopeErrorsJSON contains the JSON metadata for the struct
+// [ScriptDeleteResponseEnvelopeErrors]
+type scriptDeleteResponseEnvelopeErrorsJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *ScriptDeleteResponseEnvelopeErrors) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptDeleteResponseEnvelopeErrorsJSON) RawJSON() string {
+	return r.raw
+}
+
+type ScriptDeleteResponseEnvelopeErrorsSource struct {
+	Pointer string                                       `json:"pointer"`
+	JSON    scriptDeleteResponseEnvelopeErrorsSourceJSON `json:"-"`
+}
+
+// scriptDeleteResponseEnvelopeErrorsSourceJSON contains the JSON metadata for the
+// struct [ScriptDeleteResponseEnvelopeErrorsSource]
+type scriptDeleteResponseEnvelopeErrorsSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptDeleteResponseEnvelopeErrorsSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptDeleteResponseEnvelopeErrorsSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+type ScriptDeleteResponseEnvelopeMessages struct {
+	Code             int64                                      `json:"code" api:"required"`
+	Message          string                                     `json:"message" api:"required"`
+	DocumentationURL string                                     `json:"documentation_url"`
+	Source           ScriptDeleteResponseEnvelopeMessagesSource `json:"source"`
+	JSON             scriptDeleteResponseEnvelopeMessagesJSON   `json:"-"`
+}
+
+// scriptDeleteResponseEnvelopeMessagesJSON contains the JSON metadata for the
+// struct [ScriptDeleteResponseEnvelopeMessages]
+type scriptDeleteResponseEnvelopeMessagesJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *ScriptDeleteResponseEnvelopeMessages) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptDeleteResponseEnvelopeMessagesJSON) RawJSON() string {
+	return r.raw
+}
+
+type ScriptDeleteResponseEnvelopeMessagesSource struct {
+	Pointer string                                         `json:"pointer"`
+	JSON    scriptDeleteResponseEnvelopeMessagesSourceJSON `json:"-"`
+}
+
+// scriptDeleteResponseEnvelopeMessagesSourceJSON contains the JSON metadata for
+// the struct [ScriptDeleteResponseEnvelopeMessagesSource]
+type scriptDeleteResponseEnvelopeMessagesSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptDeleteResponseEnvelopeMessagesSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptDeleteResponseEnvelopeMessagesSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+// Whether the API call was successful.
+type ScriptDeleteResponseEnvelopeSuccess bool
+
+const (
+	ScriptDeleteResponseEnvelopeSuccessTrue ScriptDeleteResponseEnvelopeSuccess = true
+)
+
+func (r ScriptDeleteResponseEnvelopeSuccess) IsKnown() bool {
+	switch r {
+	case ScriptDeleteResponseEnvelopeSuccessTrue:
+		return true
+	}
+	return false
+}
+
+type ScriptGetParams struct {
+	// Identifier.
+	AccountID param.Field[string] `path:"account_id" api:"required"`
+}
+
+type ScriptSearchParams struct {
+	// Identifier.
+	AccountID param.Field[string] `path:"account_id" api:"required"`
+	// Worker ID (also called tag) to search for. Only exact matches are returned.
+	ID param.Field[string] `query:"id"`
+	// Worker name to search for. Both exact and partial matches are returned.
+	Name param.Field[string] `query:"name"`
+	// Property to sort results by. Results are sorted in ascending order.
+	OrderBy param.Field[ScriptSearchParamsOrderBy] `query:"order_by"`
+	// Current page.
+	Page param.Field[int64] `query:"page"`
+	// Items per page.
+	PerPage param.Field[int64] `query:"per_page"`
+}
+
+// URLQuery serializes [ScriptSearchParams]'s query parameters as `url.Values`.
+func (r ScriptSearchParams) URLQuery() (v url.Values) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
+		NestedFormat: apiquery.NestedQueryFormatDots,
+	})
+}
+
+// Property to sort results by. Results are sorted in ascending order.
+type ScriptSearchParamsOrderBy string
+
+const (
+	ScriptSearchParamsOrderByCreatedOn  ScriptSearchParamsOrderBy = "created_on"
+	ScriptSearchParamsOrderByModifiedOn ScriptSearchParamsOrderBy = "modified_on"
+	ScriptSearchParamsOrderByName       ScriptSearchParamsOrderBy = "name"
+)
+
+func (r ScriptSearchParamsOrderBy) IsKnown() bool {
+	switch r {
+	case ScriptSearchParamsOrderByCreatedOn, ScriptSearchParamsOrderByModifiedOn, ScriptSearchParamsOrderByName:
+		return true
+	}
+	return false
+}
+
+type ScriptSearchResponseEnvelope struct {
+	Errors   []ScriptSearchResponseEnvelopeErrors   `json:"errors" api:"required"`
+	Messages []ScriptSearchResponseEnvelopeMessages `json:"messages" api:"required"`
+	Result   []ScriptSearchResponse                 `json:"result" api:"required"`
+	// Whether the API call was successful.
+	Success    ScriptSearchResponseEnvelopeSuccess    `json:"success" api:"required"`
+	ResultInfo ScriptSearchResponseEnvelopeResultInfo `json:"result_info"`
+	JSON       scriptSearchResponseEnvelopeJSON       `json:"-"`
+}
+
+// scriptSearchResponseEnvelopeJSON contains the JSON metadata for the struct
+// [ScriptSearchResponseEnvelope]
+type scriptSearchResponseEnvelopeJSON struct {
+	Errors      apijson.Field
+	Messages    apijson.Field
+	Result      apijson.Field
+	Success     apijson.Field
+	ResultInfo  apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptSearchResponseEnvelope) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptSearchResponseEnvelopeJSON) RawJSON() string {
+	return r.raw
+}
+
+type ScriptSearchResponseEnvelopeErrors struct {
+	Code             int64                                    `json:"code" api:"required"`
+	Message          string                                   `json:"message" api:"required"`
+	DocumentationURL string                                   `json:"documentation_url"`
+	Source           ScriptSearchResponseEnvelopeErrorsSource `json:"source"`
+	JSON             scriptSearchResponseEnvelopeErrorsJSON   `json:"-"`
+}
+
+// scriptSearchResponseEnvelopeErrorsJSON contains the JSON metadata for the struct
+// [ScriptSearchResponseEnvelopeErrors]
+type scriptSearchResponseEnvelopeErrorsJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *ScriptSearchResponseEnvelopeErrors) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptSearchResponseEnvelopeErrorsJSON) RawJSON() string {
+	return r.raw
+}
+
+type ScriptSearchResponseEnvelopeErrorsSource struct {
+	Pointer string                                       `json:"pointer"`
+	JSON    scriptSearchResponseEnvelopeErrorsSourceJSON `json:"-"`
+}
+
+// scriptSearchResponseEnvelopeErrorsSourceJSON contains the JSON metadata for the
+// struct [ScriptSearchResponseEnvelopeErrorsSource]
+type scriptSearchResponseEnvelopeErrorsSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptSearchResponseEnvelopeErrorsSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptSearchResponseEnvelopeErrorsSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+type ScriptSearchResponseEnvelopeMessages struct {
+	Code             int64                                      `json:"code" api:"required"`
+	Message          string                                     `json:"message" api:"required"`
+	DocumentationURL string                                     `json:"documentation_url"`
+	Source           ScriptSearchResponseEnvelopeMessagesSource `json:"source"`
+	JSON             scriptSearchResponseEnvelopeMessagesJSON   `json:"-"`
+}
+
+// scriptSearchResponseEnvelopeMessagesJSON contains the JSON metadata for the
+// struct [ScriptSearchResponseEnvelopeMessages]
+type scriptSearchResponseEnvelopeMessagesJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *ScriptSearchResponseEnvelopeMessages) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptSearchResponseEnvelopeMessagesJSON) RawJSON() string {
+	return r.raw
+}
+
+type ScriptSearchResponseEnvelopeMessagesSource struct {
+	Pointer string                                         `json:"pointer"`
+	JSON    scriptSearchResponseEnvelopeMessagesSourceJSON `json:"-"`
+}
+
+// scriptSearchResponseEnvelopeMessagesSourceJSON contains the JSON metadata for
+// the struct [ScriptSearchResponseEnvelopeMessagesSource]
+type scriptSearchResponseEnvelopeMessagesSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptSearchResponseEnvelopeMessagesSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptSearchResponseEnvelopeMessagesSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+// Whether the API call was successful.
+type ScriptSearchResponseEnvelopeSuccess bool
+
+const (
+	ScriptSearchResponseEnvelopeSuccessTrue ScriptSearchResponseEnvelopeSuccess = true
+)
+
+func (r ScriptSearchResponseEnvelopeSuccess) IsKnown() bool {
+	switch r {
+	case ScriptSearchResponseEnvelopeSuccessTrue:
+		return true
+	}
+	return false
+}
+
+type ScriptSearchResponseEnvelopeResultInfo struct {
+	// Total number of results for the requested service.
+	Count float64 `json:"count"`
+	// Current page within paginated list of results.
+	Page float64 `json:"page"`
+	// Number of results per page of results.
+	PerPage float64 `json:"per_page"`
+	// Total results available without any search parameters.
+	TotalCount float64 `json:"total_count"`
+	// The number of total pages in the entire result set.
+	TotalPages float64                                    `json:"total_pages"`
+	JSON       scriptSearchResponseEnvelopeResultInfoJSON `json:"-"`
+}
+
+// scriptSearchResponseEnvelopeResultInfoJSON contains the JSON metadata for the
+// struct [ScriptSearchResponseEnvelopeResultInfo]
+type scriptSearchResponseEnvelopeResultInfoJSON struct {
+	Count       apijson.Field
+	Page        apijson.Field
+	PerPage     apijson.Field
+	TotalCount  apijson.Field
+	TotalPages  apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ScriptSearchResponseEnvelopeResultInfo) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r scriptSearchResponseEnvelopeResultInfoJSON) RawJSON() string {
+	return r.raw
+}

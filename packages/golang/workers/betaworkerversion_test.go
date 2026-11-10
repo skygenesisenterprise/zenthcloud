@@ -1,0 +1,284 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package workers_test
+
+import (
+	"bytes"
+	"context"
+	"errors"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/internal/testutil"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+	"github.com/cloudflare/cloudflare-go/v7/shared"
+	"github.com/cloudflare/cloudflare-go/v7/workers"
+)
+
+func TestBetaWorkerVersionNewWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.Workers.Beta.Workers.Versions.New(
+		context.TODO(),
+		"worker_id",
+		workers.BetaWorkerVersionNewParams{
+			AccountID: cloudflare.F("023e105f4ecef8ad9ca31a8372d0c353"),
+			Version: workers.VersionParam{
+				Annotations: cloudflare.F(workers.VersionAnnotationsParam{
+					WorkersMessage: cloudflare.F("Fixed bug."),
+					WorkersTag:     cloudflare.F("v1.0.1"),
+				}),
+				Assets: cloudflare.F(workers.VersionAssetsParam{
+					Config: cloudflare.F(workers.VersionAssetsConfigParam{
+						BasePath:         cloudflare.F("/docs/"),
+						HTMLHandling:     cloudflare.F(workers.VersionAssetsConfigHTMLHandlingAutoTrailingSlash),
+						NotFoundHandling: cloudflare.F(workers.VersionAssetsConfigNotFoundHandling404Page),
+						RunWorkerFirst:   cloudflare.F[workers.VersionAssetsConfigRunWorkerFirstUnionParam](shared.UnionBool(true)),
+					}),
+					JWT: cloudflare.F("jwt"),
+				}),
+				Bindings: cloudflare.F([]workers.VersionBindingsUnionParam{workers.VersionBindingsWorkersBindingKindPlainTextParam{
+					Name: cloudflare.F("MY_ENV_VAR"),
+					Text: cloudflare.F("my_data"),
+					Type: cloudflare.F(workers.VersionBindingsWorkersBindingKindPlainTextTypePlainText),
+				}}),
+				CacheOptions: cloudflare.F(workers.VersionCacheOptionsParam{
+					Enabled:           cloudflare.F(true),
+					CrossVersionCache: cloudflare.F(true),
+				}),
+				CompatibilityDate:  cloudflare.F("2021-01-01T00:00:00Z"),
+				CompatibilityFlags: cloudflare.F([]string{"nodejs_compat"}),
+				Containers: cloudflare.F([]workers.VersionContainerParam{{
+					ClassName: cloudflare.F("MyDurableObject"),
+				}}),
+				Exports: cloudflare.F(map[string]workers.VersionExportsUnionParam{
+					"Admin": workers.VersionExportsWorkersWorkerExportParam{
+						Type: cloudflare.F(workers.VersionExportsWorkersWorkerExportTypeWorker),
+						Cache: cloudflare.F(workers.VersionExportsWorkersWorkerExportCacheParam{
+							Enabled: cloudflare.F(true),
+						}),
+						State: cloudflare.F(workers.VersionExportsWorkersWorkerExportStateCreated),
+					},
+					"Counter": workers.VersionExportsWorkersDurableObjectExportParam{
+						Storage:   cloudflare.F(workers.VersionExportsWorkersDurableObjectExportStorageSqlite),
+						Type:      cloudflare.F(workers.VersionExportsWorkersDurableObjectExportTypeDurableObject),
+						Container: cloudflare.F("my-container"),
+						State:     cloudflare.F(workers.VersionExportsWorkersDurableObjectExportStateCreated),
+					},
+					"OldCounter": workers.VersionExportsWorkersDurableObjectRenamedExportParam{
+						RenamedTo: cloudflare.F("Counter"),
+						State:     cloudflare.F(workers.VersionExportsWorkersDurableObjectRenamedExportStateRenamed),
+						Type:      cloudflare.F(workers.VersionExportsWorkersDurableObjectRenamedExportTypeDurableObject),
+					},
+					"default": workers.VersionExportsWorkersWorkerExportParam{
+						Type: cloudflare.F(workers.VersionExportsWorkersWorkerExportTypeWorker),
+						Cache: cloudflare.F(workers.VersionExportsWorkersWorkerExportCacheParam{
+							Enabled: cloudflare.F(false),
+						}),
+						State: cloudflare.F(workers.VersionExportsWorkersWorkerExportStateCreated),
+					},
+				}),
+				Limits: cloudflare.F(workers.VersionLimitsParam{
+					CPUMs:       cloudflare.F(int64(50)),
+					Subrequests: cloudflare.F(int64(1000)),
+				}),
+				MainModule: cloudflare.F("index.js"),
+				Migrations: cloudflare.F[workers.VersionMigrationsUnionParam](workers.SingleStepMigrationParam{
+					DeletedClasses:   cloudflare.F([]string{"string"}),
+					NewClasses:       cloudflare.F([]string{"string"}),
+					NewSqliteClasses: cloudflare.F([]string{"string"}),
+					NewTag:           cloudflare.F("v2"),
+					OldTag:           cloudflare.F("v1"),
+					RenamedClasses: cloudflare.F([]workers.SingleStepMigrationRenamedClassParam{{
+						From: cloudflare.F("from"),
+						To:   cloudflare.F("to"),
+					}}),
+					TransferredClasses: cloudflare.F([]workers.SingleStepMigrationTransferredClassParam{{
+						From:       cloudflare.F("from"),
+						FromScript: cloudflare.F("from_script"),
+						To:         cloudflare.F("to"),
+					}}),
+				}),
+				Modules: cloudflare.F([]workers.VersionModuleParam{{
+					ContentBase64: cloudflare.F("ZXhwb3J0IGRlZmF1bHQgewogIGFzeW5jIGZldGNoKHJlcXVlc3QsIGVudiwgY3R4KSB7CiAgICByZXR1cm4gbmV3IFJlc3BvbnNlKCdIZWxsbyBXb3JsZCEnKQogIH0KfQ=="),
+					ContentType:   cloudflare.F("application/javascript+module"),
+					Name:          cloudflare.F("index.js"),
+				}}),
+				PackageDependencies: cloudflare.F([]workers.VersionPackageDependencyParam{{
+					InstalledVersion:   cloudflare.F("4.17.22"),
+					Name:               cloudflare.F("lodash"),
+					PackageJsonVersion: cloudflare.F("^4.17.21"),
+				}}),
+				Placement: cloudflare.F[workers.VersionPlacementUnionParam](workers.VersionPlacementModeParam{
+					Mode: cloudflare.F(workers.VersionPlacementModeModeSmart),
+				}),
+				UsageModel: cloudflare.F(workers.VersionUsageModelStandard),
+			},
+			Deploy: cloudflare.F(true),
+		},
+	)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestBetaWorkerVersionListWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.Workers.Beta.Workers.Versions.List(
+		context.TODO(),
+		"worker_id",
+		workers.BetaWorkerVersionListParams{
+			AccountID: cloudflare.F("023e105f4ecef8ad9ca31a8372d0c353"),
+			Page:      cloudflare.F(int64(1)),
+			PerPage:   cloudflare.F(int64(1)),
+		},
+	)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestBetaWorkerVersionDelete(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.Workers.Beta.Workers.Versions.Delete(
+		context.TODO(),
+		"worker_id",
+		"version_id",
+		workers.BetaWorkerVersionDeleteParams{
+			AccountID: cloudflare.F("023e105f4ecef8ad9ca31a8372d0c353"),
+		},
+	)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestBetaWorkerVersionGetWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.Workers.Beta.Workers.Versions.Get(
+		context.TODO(),
+		"worker_id",
+		"version_id",
+		workers.BetaWorkerVersionGetParams{
+			AccountID: cloudflare.F("023e105f4ecef8ad9ca31a8372d0c353"),
+			Include:   cloudflare.F(workers.BetaWorkerVersionGetParamsIncludeModules),
+		},
+	)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestBetaWorkerVersionProfileWithOptionalParams(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Write([]byte("abc"))
+	}))
+	defer server.Close()
+	baseURL := server.URL
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	resp, err := client.Workers.Beta.Workers.Versions.Profile(
+		context.TODO(),
+		"worker_id",
+		"version_id",
+		workers.BetaWorkerVersionProfileParams{
+			AccountID:   cloudflare.F("023e105f4ecef8ad9ca31a8372d0c353"),
+			DurationMs:  cloudflare.F(int64(1000)),
+			ActorID:     cloudflare.F("actor_id"),
+			NamespaceID: cloudflare.F("namespace_id"),
+			ProfileType: cloudflare.F(workers.BetaWorkerVersionProfileParamsProfileTypeCPU),
+		},
+	)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+	defer resp.Body.Close()
+
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+	if !bytes.Equal(b, []byte("abc")) {
+		t.Fatalf("return value not %s: %s", "abc", b)
+	}
+}

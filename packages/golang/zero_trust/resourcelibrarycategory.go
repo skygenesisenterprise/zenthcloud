@@ -1,0 +1,315 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zero_trust
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"net/url"
+	"slices"
+
+	"github.com/cloudflare/cloudflare-go/v7/internal/apijson"
+	"github.com/cloudflare/cloudflare-go/v7/internal/apiquery"
+	"github.com/cloudflare/cloudflare-go/v7/internal/param"
+	"github.com/cloudflare/cloudflare-go/v7/internal/requestconfig"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+	"github.com/cloudflare/cloudflare-go/v7/packages/pagination"
+)
+
+// ResourceLibraryCategoryService contains methods and other services that help
+// with interacting with the cloudflare API.
+//
+// Note, unlike clients, this service does not read variables from the environment
+// automatically. You should not instantiate this service directly, and instead use
+// the [NewResourceLibraryCategoryService] method instead.
+type ResourceLibraryCategoryService struct {
+	Options []option.RequestOption
+}
+
+// NewResourceLibraryCategoryService generates a new service that applies the given
+// options to each request. These options are applied after the parent client's
+// options (if there is one), and before any request-specific options.
+func NewResourceLibraryCategoryService(opts ...option.RequestOption) (r *ResourceLibraryCategoryService) {
+	r = &ResourceLibraryCategoryService{}
+	r.Options = opts
+	return
+}
+
+// List the categories available for classifying applications, ordered by name,
+// ignoring the case of the letters A to Z. Results are paginated by `offset` or
+// `cursor`.
+func (r *ResourceLibraryCategoryService) List(ctx context.Context, params ResourceLibraryCategoryListParams, opts ...option.RequestOption) (res *pagination.CursorPaginationAfter[ResourceLibraryCategoryListResponse], err error) {
+	var raw *http.Response
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if params.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/resource-library/categories", params.AccountID)
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
+	if err != nil {
+		return nil, err
+	}
+	err = cfg.Execute()
+	if err != nil {
+		return nil, err
+	}
+	res.SetPageConfig(cfg, raw)
+	return res, nil
+}
+
+// List the categories available for classifying applications, ordered by name,
+// ignoring the case of the letters A to Z. Results are paginated by `offset` or
+// `cursor`.
+func (r *ResourceLibraryCategoryService) ListAutoPaging(ctx context.Context, params ResourceLibraryCategoryListParams, opts ...option.RequestOption) *pagination.CursorPaginationAfterAutoPager[ResourceLibraryCategoryListResponse] {
+	return pagination.NewCursorPaginationAfterAutoPager(r.List(ctx, params, opts...))
+}
+
+// Retrieve an application category by its numeric ID.
+func (r *ResourceLibraryCategoryService) Get(ctx context.Context, id int64, query ResourceLibraryCategoryGetParams, opts ...option.RequestOption) (res *ResourceLibraryCategoryGetResponse, err error) {
+	var env ResourceLibraryCategoryGetResponseEnvelope
+	opts = slices.Concat(r.Options, opts)
+	if query.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/resource-library/categories/%v", query.AccountID, id)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &env, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = &env.Result
+	return res, nil
+}
+
+type ResourceLibraryCategoryListResponse struct {
+	// Numeric identifier for an application category.
+	ID int64 `json:"id" api:"required"`
+	// Returns the category creation time.
+	CreatedAt string `json:"created_at" api:"required"`
+	// Returns the category description.
+	Description string `json:"description" api:"required"`
+	// Returns the category name.
+	Name string                                  `json:"name" api:"required"`
+	JSON resourceLibraryCategoryListResponseJSON `json:"-"`
+}
+
+// resourceLibraryCategoryListResponseJSON contains the JSON metadata for the
+// struct [ResourceLibraryCategoryListResponse]
+type resourceLibraryCategoryListResponseJSON struct {
+	ID          apijson.Field
+	CreatedAt   apijson.Field
+	Description apijson.Field
+	Name        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ResourceLibraryCategoryListResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r resourceLibraryCategoryListResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+type ResourceLibraryCategoryGetResponse struct {
+	// Numeric identifier for an application category.
+	ID int64 `json:"id" api:"required"`
+	// Returns the category creation time.
+	CreatedAt string `json:"created_at" api:"required"`
+	// Returns the category description.
+	Description string `json:"description" api:"required"`
+	// Returns the category name.
+	Name string                                 `json:"name" api:"required"`
+	JSON resourceLibraryCategoryGetResponseJSON `json:"-"`
+}
+
+// resourceLibraryCategoryGetResponseJSON contains the JSON metadata for the struct
+// [ResourceLibraryCategoryGetResponse]
+type resourceLibraryCategoryGetResponseJSON struct {
+	ID          apijson.Field
+	CreatedAt   apijson.Field
+	Description apijson.Field
+	Name        apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ResourceLibraryCategoryGetResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r resourceLibraryCategoryGetResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+type ResourceLibraryCategoryListParams struct {
+	AccountID param.Field[string] `path:"account_id" api:"required"`
+	// Opaque value from `result_info.cursor` of the previous response. Returns the
+	// categories that follow it. `limit` may change between requests. An empty value
+	// is the same as no cursor. A modified cursor, or one returned by a different
+	// list, returns `400`.
+	Cursor param.Field[string] `query:"cursor"`
+	// Number of results to return. Defaults to 25; values are clamped to 1–250.
+	Limit param.Field[int64] `query:"limit"`
+	// Number of results to skip. Defaults to 0; negative values are clamped to 0.
+	// Ignored when `cursor` is provided.
+	Offset param.Field[int64] `query:"offset"`
+}
+
+// URLQuery serializes [ResourceLibraryCategoryListParams]'s query parameters as
+// `url.Values`.
+func (r ResourceLibraryCategoryListParams) URLQuery() (v url.Values) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
+		NestedFormat: apiquery.NestedQueryFormatDots,
+	})
+}
+
+type ResourceLibraryCategoryGetParams struct {
+	AccountID param.Field[string] `path:"account_id" api:"required"`
+}
+
+type ResourceLibraryCategoryGetResponseEnvelope struct {
+	Errors   []ResourceLibraryCategoryGetResponseEnvelopeErrors   `json:"errors" api:"required"`
+	Messages []ResourceLibraryCategoryGetResponseEnvelopeMessages `json:"messages" api:"required"`
+	// Indicates whether the API call was successful.
+	Success ResourceLibraryCategoryGetResponseEnvelopeSuccess `json:"success" api:"required"`
+	Result  ResourceLibraryCategoryGetResponse                `json:"result"`
+	JSON    resourceLibraryCategoryGetResponseEnvelopeJSON    `json:"-"`
+}
+
+// resourceLibraryCategoryGetResponseEnvelopeJSON contains the JSON metadata for
+// the struct [ResourceLibraryCategoryGetResponseEnvelope]
+type resourceLibraryCategoryGetResponseEnvelopeJSON struct {
+	Errors      apijson.Field
+	Messages    apijson.Field
+	Success     apijson.Field
+	Result      apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ResourceLibraryCategoryGetResponseEnvelope) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r resourceLibraryCategoryGetResponseEnvelopeJSON) RawJSON() string {
+	return r.raw
+}
+
+type ResourceLibraryCategoryGetResponseEnvelopeErrors struct {
+	Code             int64                                                  `json:"code" api:"required"`
+	Message          string                                                 `json:"message" api:"required"`
+	DocumentationURL string                                                 `json:"documentation_url"`
+	Source           ResourceLibraryCategoryGetResponseEnvelopeErrorsSource `json:"source"`
+	JSON             resourceLibraryCategoryGetResponseEnvelopeErrorsJSON   `json:"-"`
+}
+
+// resourceLibraryCategoryGetResponseEnvelopeErrorsJSON contains the JSON metadata
+// for the struct [ResourceLibraryCategoryGetResponseEnvelopeErrors]
+type resourceLibraryCategoryGetResponseEnvelopeErrorsJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *ResourceLibraryCategoryGetResponseEnvelopeErrors) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r resourceLibraryCategoryGetResponseEnvelopeErrorsJSON) RawJSON() string {
+	return r.raw
+}
+
+type ResourceLibraryCategoryGetResponseEnvelopeErrorsSource struct {
+	Pointer string                                                     `json:"pointer"`
+	JSON    resourceLibraryCategoryGetResponseEnvelopeErrorsSourceJSON `json:"-"`
+}
+
+// resourceLibraryCategoryGetResponseEnvelopeErrorsSourceJSON contains the JSON
+// metadata for the struct [ResourceLibraryCategoryGetResponseEnvelopeErrorsSource]
+type resourceLibraryCategoryGetResponseEnvelopeErrorsSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ResourceLibraryCategoryGetResponseEnvelopeErrorsSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r resourceLibraryCategoryGetResponseEnvelopeErrorsSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+type ResourceLibraryCategoryGetResponseEnvelopeMessages struct {
+	Code             int64                                                    `json:"code" api:"required"`
+	Message          string                                                   `json:"message" api:"required"`
+	DocumentationURL string                                                   `json:"documentation_url"`
+	Source           ResourceLibraryCategoryGetResponseEnvelopeMessagesSource `json:"source"`
+	JSON             resourceLibraryCategoryGetResponseEnvelopeMessagesJSON   `json:"-"`
+}
+
+// resourceLibraryCategoryGetResponseEnvelopeMessagesJSON contains the JSON
+// metadata for the struct [ResourceLibraryCategoryGetResponseEnvelopeMessages]
+type resourceLibraryCategoryGetResponseEnvelopeMessagesJSON struct {
+	Code             apijson.Field
+	Message          apijson.Field
+	DocumentationURL apijson.Field
+	Source           apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *ResourceLibraryCategoryGetResponseEnvelopeMessages) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r resourceLibraryCategoryGetResponseEnvelopeMessagesJSON) RawJSON() string {
+	return r.raw
+}
+
+type ResourceLibraryCategoryGetResponseEnvelopeMessagesSource struct {
+	Pointer string                                                       `json:"pointer"`
+	JSON    resourceLibraryCategoryGetResponseEnvelopeMessagesSourceJSON `json:"-"`
+}
+
+// resourceLibraryCategoryGetResponseEnvelopeMessagesSourceJSON contains the JSON
+// metadata for the struct
+// [ResourceLibraryCategoryGetResponseEnvelopeMessagesSource]
+type resourceLibraryCategoryGetResponseEnvelopeMessagesSourceJSON struct {
+	Pointer     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *ResourceLibraryCategoryGetResponseEnvelopeMessagesSource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r resourceLibraryCategoryGetResponseEnvelopeMessagesSourceJSON) RawJSON() string {
+	return r.raw
+}
+
+// Indicates whether the API call was successful.
+type ResourceLibraryCategoryGetResponseEnvelopeSuccess bool
+
+const (
+	ResourceLibraryCategoryGetResponseEnvelopeSuccessTrue ResourceLibraryCategoryGetResponseEnvelopeSuccess = true
+)
+
+func (r ResourceLibraryCategoryGetResponseEnvelopeSuccess) IsKnown() bool {
+	switch r {
+	case ResourceLibraryCategoryGetResponseEnvelopeSuccessTrue:
+		return true
+	}
+	return false
+}

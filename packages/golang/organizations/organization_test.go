@@ -1,0 +1,173 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package organizations_test
+
+import (
+	"context"
+	"errors"
+	"os"
+	"testing"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/internal/testutil"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+	"github.com/cloudflare/cloudflare-go/v7/organizations"
+)
+
+func TestOrganizationNewWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.Organizations.New(context.TODO(), organizations.OrganizationNewParams{
+		Name: cloudflare.F("x"),
+		Parent: cloudflare.F(organizations.OrganizationNewParamsParent{
+			ID: cloudflare.F("a7b9c3d2e8f4a1b5c6d0e9f2a3b7c4d8"),
+		}),
+		Profile: cloudflare.F(organizations.OrganizationNewParamsProfile{
+			BusinessAddress:  cloudflare.F("business_address"),
+			BusinessEmail:    cloudflare.F("business_email"),
+			BusinessName:     cloudflare.F("business_name"),
+			BusinessPhone:    cloudflare.F("business_phone"),
+			ExternalMetadata: cloudflare.F("external_metadata"),
+		}),
+	})
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestOrganizationUpdateWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.Organizations.Update(
+		context.TODO(),
+		"a7b9c3d2e8f4a1b5c6d0e9f2a3b7c4d8",
+		organizations.OrganizationUpdateParams{
+			Name:     cloudflare.F("name"),
+			ParentID: cloudflare.F("a7b9c3d2e8f4a1b5c6d0e9f2a3b7c4d8"),
+		},
+	)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestOrganizationListWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.Organizations.List(context.TODO(), organizations.OrganizationListParams{
+		ID: cloudflare.F([]string{"a7b9c3d2e8f4a1b5c6d0e9f2a3b7c4d8"}),
+		Containing: cloudflare.F(organizations.OrganizationListParamsContaining{
+			Account:      cloudflare.F("account"),
+			Organization: cloudflare.F("organization"),
+			User:         cloudflare.F("user"),
+		}),
+		Direction: cloudflare.F(organizations.OrganizationListParamsDirectionAsc),
+		Member: cloudflare.F(organizations.OrganizationListParamsMember{
+			Email: cloudflare.F("email"),
+		}),
+		Name: cloudflare.F(organizations.OrganizationListParamsName{
+			Contains:   cloudflare.F("contains"),
+			EndsWith:   cloudflare.F("endsWith"),
+			StartsWith: cloudflare.F("startsWith"),
+		}),
+		OrderBy:   cloudflare.F(organizations.OrganizationListParamsOrderByName),
+		PageSize:  cloudflare.F(int64(0)),
+		PageToken: cloudflare.F("page_token"),
+		Parent: cloudflare.F(organizations.OrganizationListParamsParent{
+			ID: cloudflare.F(organizations.OrganizationListParamsParentIDNull),
+		}),
+	})
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestOrganizationDelete(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.Organizations.Delete(context.TODO(), "a7b9c3d2e8f4a1b5c6d0e9f2a3b7c4d8")
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestOrganizationGet(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.Organizations.Get(context.TODO(), "a7b9c3d2e8f4a1b5c6d0e9f2a3b7c4d8")
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}

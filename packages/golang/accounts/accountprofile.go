@@ -1,0 +1,160 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package accounts
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"slices"
+
+	"github.com/cloudflare/cloudflare-go/v7/internal/apijson"
+	"github.com/cloudflare/cloudflare-go/v7/internal/param"
+	"github.com/cloudflare/cloudflare-go/v7/internal/requestconfig"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+	"github.com/cloudflare/cloudflare-go/v7/shared"
+)
+
+// AccountProfileService contains methods and other services that help with
+// interacting with the cloudflare API.
+//
+// Note, unlike clients, this service does not read variables from the environment
+// automatically. You should not instantiate this service directly, and instead use
+// the [NewAccountProfileService] method instead.
+type AccountProfileService struct {
+	Options []option.RequestOption
+}
+
+// NewAccountProfileService generates a new service that applies the given options
+// to each request. These options are applied after the parent client's options (if
+// there is one), and before any request-specific options.
+func NewAccountProfileService(opts ...option.RequestOption) (r *AccountProfileService) {
+	r = &AccountProfileService{}
+	r.Options = opts
+	return
+}
+
+// Partially updates the business profile (name, email, phone, address, and
+// external metadata) associated with this account's parent organization customer
+// record, creating the profile if it does not exist. Changes apply to every
+// account and organization sharing that profile. Omitted, empty, or null fields
+// are left unchanged. Each profile field is limited to 1,000 UTF-8 bytes. Only
+// available to members of an organization that contains the account.
+func (r *AccountProfileService) Update(ctx context.Context, params AccountProfileUpdateParams, opts ...option.RequestOption) (err error) {
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
+	if params.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return err
+	}
+	path := fmt.Sprintf("accounts/%s/profile", params.AccountID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, params, nil, opts...)
+	return err
+}
+
+// Retrieves the business profile (name, email, phone, address, and external
+// metadata) associated with this account's customer record. Profiles can be shared
+// across accounts and organizations. Only available to members of an organization
+// that contains the account.
+func (r *AccountProfileService) Get(ctx context.Context, query AccountProfileGetParams, opts ...option.RequestOption) (res *AccountProfile, err error) {
+	var env AccountProfileGetResponseEnvelope
+	opts = slices.Concat(r.Options, opts)
+	if query.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/profile", query.AccountID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &env, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = &env.Result
+	return res, nil
+}
+
+type AccountProfile struct {
+	BusinessAddress  string             `json:"business_address" api:"required"`
+	BusinessEmail    string             `json:"business_email" api:"required"`
+	BusinessName     string             `json:"business_name" api:"required"`
+	BusinessPhone    string             `json:"business_phone" api:"required"`
+	ExternalMetadata string             `json:"external_metadata" api:"required"`
+	JSON             accountProfileJSON `json:"-"`
+}
+
+// accountProfileJSON contains the JSON metadata for the struct [AccountProfile]
+type accountProfileJSON struct {
+	BusinessAddress  apijson.Field
+	BusinessEmail    apijson.Field
+	BusinessName     apijson.Field
+	BusinessPhone    apijson.Field
+	ExternalMetadata apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *AccountProfile) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r accountProfileJSON) RawJSON() string {
+	return r.raw
+}
+
+type AccountProfileUpdateParams struct {
+	AccountID        param.Field[string] `path:"account_id" api:"required"`
+	BusinessAddress  param.Field[string] `json:"business_address"`
+	BusinessEmail    param.Field[string] `json:"business_email"`
+	BusinessName     param.Field[string] `json:"business_name"`
+	BusinessPhone    param.Field[string] `json:"business_phone"`
+	ExternalMetadata param.Field[string] `json:"external_metadata"`
+}
+
+func (r AccountProfileUpdateParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type AccountProfileGetParams struct {
+	AccountID param.Field[string] `path:"account_id" api:"required"`
+}
+
+type AccountProfileGetResponseEnvelope struct {
+	Errors   []interface{}                            `json:"errors" api:"required"`
+	Messages []shared.ResponseInfo                    `json:"messages" api:"required"`
+	Result   AccountProfile                           `json:"result" api:"required"`
+	Success  AccountProfileGetResponseEnvelopeSuccess `json:"success" api:"required"`
+	JSON     accountProfileGetResponseEnvelopeJSON    `json:"-"`
+}
+
+// accountProfileGetResponseEnvelopeJSON contains the JSON metadata for the struct
+// [AccountProfileGetResponseEnvelope]
+type accountProfileGetResponseEnvelopeJSON struct {
+	Errors      apijson.Field
+	Messages    apijson.Field
+	Result      apijson.Field
+	Success     apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *AccountProfileGetResponseEnvelope) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r accountProfileGetResponseEnvelopeJSON) RawJSON() string {
+	return r.raw
+}
+
+type AccountProfileGetResponseEnvelopeSuccess bool
+
+const (
+	AccountProfileGetResponseEnvelopeSuccessTrue AccountProfileGetResponseEnvelopeSuccess = true
+)
+
+func (r AccountProfileGetResponseEnvelopeSuccess) IsKnown() bool {
+	switch r {
+	case AccountProfileGetResponseEnvelopeSuccessTrue:
+		return true
+	}
+	return false
+}

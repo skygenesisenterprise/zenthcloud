@@ -1,0 +1,266 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package email_security_test
+
+import (
+	"context"
+	"errors"
+	"os"
+	"testing"
+	"time"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/email_security"
+	"github.com/cloudflare/cloudflare-go/v7/internal/testutil"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+)
+
+func TestSettingAllowPolicyNewWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.EmailSecurity.Settings.AllowPolicies.New(context.TODO(), email_security.SettingAllowPolicyNewParams{
+		AccountID:          cloudflare.F("023e105f4ecef8ad9ca31a8372d0c353"),
+		IsAcceptableSender: cloudflare.F(false),
+		IsExemptRecipient:  cloudflare.F(false),
+		IsRegex:            cloudflare.F(false),
+		IsTrustedSender:    cloudflare.F(true),
+		Pattern:            cloudflare.F("test@example.com"),
+		PatternType:        cloudflare.F(email_security.SettingAllowPolicyNewParamsPatternTypeEmail),
+		VerifySender:       cloudflare.F(true),
+		Comments:           cloudflare.F("Trust all messages send from test@example.com"),
+		ExpiresAt:          cloudflare.F(time.Now()),
+		IsRecipient:        cloudflare.F(false),
+		IsSender:           cloudflare.F(true),
+		IsSpoof:            cloudflare.F(false),
+	})
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestSettingAllowPolicyListWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.EmailSecurity.Settings.AllowPolicies.List(context.TODO(), email_security.SettingAllowPolicyListParams{
+		AccountID:          cloudflare.F("023e105f4ecef8ad9ca31a8372d0c353"),
+		Direction:          cloudflare.F(email_security.SettingAllowPolicyListParamsDirectionAsc),
+		Expired:            cloudflare.F(true),
+		IsAcceptableSender: cloudflare.F(true),
+		IsExemptRecipient:  cloudflare.F(true),
+		IsTrustedSender:    cloudflare.F(true),
+		Order:              cloudflare.F(email_security.SettingAllowPolicyListParamsOrderPattern),
+		Page:               cloudflare.F(int64(1)),
+		Pattern:            cloudflare.F("pattern"),
+		PatternType:        cloudflare.F(email_security.SettingAllowPolicyListParamsPatternTypeEmail),
+		PerPage:            cloudflare.F(int64(20)),
+		Search:             cloudflare.F("search"),
+		VerifySender:       cloudflare.F(true),
+	})
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestSettingAllowPolicyDelete(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.EmailSecurity.Settings.AllowPolicies.Delete(
+		context.TODO(),
+		"f174e90a-fafe-4643-bbbc-4a0ed4fc8415",
+		email_security.SettingAllowPolicyDeleteParams{
+			AccountID: cloudflare.F("023e105f4ecef8ad9ca31a8372d0c353"),
+		},
+	)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestSettingAllowPolicyBatch(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.EmailSecurity.Settings.AllowPolicies.Batch(context.TODO(), email_security.SettingAllowPolicyBatchParams{
+		AccountID: cloudflare.F("023e105f4ecef8ad9ca31a8372d0c353"),
+		Deletes: cloudflare.F([]email_security.SettingAllowPolicyBatchParamsDelete{{
+			ID: cloudflare.F("f174e90a-fafe-4643-bbbc-4a0ed4fc8415"),
+		}}),
+		Patches: cloudflare.F([]email_security.SettingAllowPolicyBatchParamsPatch{{
+			Comments:           cloudflare.F("Trust all messages send from test@example.com"),
+			ExpiresAt:          cloudflare.F(time.Now()),
+			IsAcceptableSender: cloudflare.F(false),
+			IsExemptRecipient:  cloudflare.F(false),
+			IsRecipient:        cloudflare.F(false),
+			IsRegex:            cloudflare.F(false),
+			IsSender:           cloudflare.F(true),
+			IsSpoof:            cloudflare.F(false),
+			IsTrustedSender:    cloudflare.F(true),
+			Pattern:            cloudflare.F("test@example.com"),
+			PatternType:        cloudflare.F(email_security.SettingAllowPolicyBatchParamsPatchesPatternTypeEmail),
+			VerifySender:       cloudflare.F(true),
+		}}),
+		Posts: cloudflare.F([]email_security.SettingAllowPolicyBatchParamsPost{{
+			IsAcceptableSender: cloudflare.F(false),
+			IsExemptRecipient:  cloudflare.F(false),
+			IsRegex:            cloudflare.F(false),
+			IsTrustedSender:    cloudflare.F(true),
+			Pattern:            cloudflare.F("test@example.com"),
+			PatternType:        cloudflare.F(email_security.SettingAllowPolicyBatchParamsPostsPatternTypeEmail),
+			VerifySender:       cloudflare.F(true),
+			Comments:           cloudflare.F("Trust all messages send from test@example.com"),
+			ExpiresAt:          cloudflare.F(time.Now()),
+			IsRecipient:        cloudflare.F(false),
+			IsSender:           cloudflare.F(true),
+			IsSpoof:            cloudflare.F(false),
+		}}),
+		Puts: cloudflare.F([]email_security.SettingAllowPolicyBatchParamsPut{{
+			Comments:           cloudflare.F("Trust all messages send from test@example.com"),
+			ExpiresAt:          cloudflare.F(time.Now()),
+			IsAcceptableSender: cloudflare.F(false),
+			IsExemptRecipient:  cloudflare.F(false),
+			IsRecipient:        cloudflare.F(false),
+			IsRegex:            cloudflare.F(false),
+			IsSender:           cloudflare.F(true),
+			IsSpoof:            cloudflare.F(false),
+			IsTrustedSender:    cloudflare.F(true),
+			Pattern:            cloudflare.F("test@example.com"),
+			PatternType:        cloudflare.F(email_security.SettingAllowPolicyBatchParamsPutsPatternTypeEmail),
+			VerifySender:       cloudflare.F(true),
+		}}),
+	})
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestSettingAllowPolicyEditWithOptionalParams(t *testing.T) {
+	t.Skip("HTTP 422 error from prism")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.EmailSecurity.Settings.AllowPolicies.Edit(
+		context.TODO(),
+		"f174e90a-fafe-4643-bbbc-4a0ed4fc8415",
+		email_security.SettingAllowPolicyEditParams{
+			AccountID:          cloudflare.F("023e105f4ecef8ad9ca31a8372d0c353"),
+			Comments:           cloudflare.F("Trust all messages send from test@example.com"),
+			ExpiresAt:          cloudflare.F(time.Now()),
+			IsAcceptableSender: cloudflare.F(false),
+			IsExemptRecipient:  cloudflare.F(false),
+			IsRecipient:        cloudflare.F(false),
+			IsRegex:            cloudflare.F(false),
+			IsSender:           cloudflare.F(true),
+			IsSpoof:            cloudflare.F(false),
+			IsTrustedSender:    cloudflare.F(true),
+			Pattern:            cloudflare.F("test@example.com"),
+			PatternType:        cloudflare.F(email_security.SettingAllowPolicyEditParamsPatternTypeEmail),
+			VerifySender:       cloudflare.F(true),
+		},
+	)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestSettingAllowPolicyGet(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.EmailSecurity.Settings.AllowPolicies.Get(
+		context.TODO(),
+		"f174e90a-fafe-4643-bbbc-4a0ed4fc8415",
+		email_security.SettingAllowPolicyGetParams{
+			AccountID: cloudflare.F("023e105f4ecef8ad9ca31a8372d0c353"),
+		},
+	)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}

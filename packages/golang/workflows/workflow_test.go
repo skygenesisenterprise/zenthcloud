@@ -1,0 +1,151 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package workflows_test
+
+import (
+	"context"
+	"errors"
+	"os"
+	"testing"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/internal/testutil"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+	"github.com/cloudflare/cloudflare-go/v7/shared"
+	"github.com/cloudflare/cloudflare-go/v7/workflows"
+)
+
+func TestWorkflowUpdateWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.Workflows.Update(
+		context.TODO(),
+		"x",
+		workflows.WorkflowUpdateParams{
+			AccountID:  cloudflare.F("account_id"),
+			ClassName:  cloudflare.F("x"),
+			ScriptName: cloudflare.F("x"),
+			Concurrency: cloudflare.F(workflows.WorkflowUpdateParamsConcurrency{
+				Limit: cloudflare.F(int64(1)),
+			}),
+			DefaultRetention: cloudflare.F(workflows.WorkflowUpdateParamsDefaultRetention{
+				ErrorRetention:   cloudflare.F[workflows.WorkflowUpdateParamsDefaultRetentionErrorRetentionUnion](shared.UnionString("5 minutes")),
+				SuccessRetention: cloudflare.F[workflows.WorkflowUpdateParamsDefaultRetentionSuccessRetentionUnion](shared.UnionString("5 minutes")),
+			}),
+			Jurisdiction: cloudflare.F(workflows.WorkflowUpdateParamsJurisdictionEu),
+			Limits: cloudflare.F(workflows.WorkflowUpdateParamsLimits{
+				Steps: cloudflare.F(int64(1)),
+			}),
+			Schedules: cloudflare.F([]workflows.WorkflowUpdateParamsSchedule{{
+				Cron: cloudflare.F("x"),
+			}}),
+		},
+	)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestWorkflowListWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.Workflows.List(context.TODO(), workflows.WorkflowListParams{
+		AccountID: cloudflare.F("account_id"),
+		Page:      cloudflare.F(1.000000),
+		PerPage:   cloudflare.F(1.000000),
+		Search:    cloudflare.F("x"),
+	})
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestWorkflowDelete(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.Workflows.Delete(
+		context.TODO(),
+		"x",
+		workflows.WorkflowDeleteParams{
+			AccountID: cloudflare.F("account_id"),
+		},
+	)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestWorkflowGet(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.Workflows.Get(
+		context.TODO(),
+		"x",
+		workflows.WorkflowGetParams{
+			AccountID: cloudflare.F("account_id"),
+		},
+	)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}

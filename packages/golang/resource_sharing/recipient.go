@@ -1,0 +1,764 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package resource_sharing
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"net/url"
+	"slices"
+	"time"
+
+	"github.com/cloudflare/cloudflare-go/v7/internal/apijson"
+	"github.com/cloudflare/cloudflare-go/v7/internal/apiquery"
+	"github.com/cloudflare/cloudflare-go/v7/internal/param"
+	"github.com/cloudflare/cloudflare-go/v7/internal/requestconfig"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+	"github.com/cloudflare/cloudflare-go/v7/packages/pagination"
+	"github.com/cloudflare/cloudflare-go/v7/shared"
+)
+
+// RecipientService contains methods and other services that help with interacting
+// with the cloudflare API.
+//
+// Note, unlike clients, this service does not read variables from the environment
+// automatically. You should not instantiate this service directly, and instead use
+// the [NewRecipientService] method instead.
+type RecipientService struct {
+	Options []option.RequestOption
+}
+
+// NewRecipientService generates a new service that applies the given options to
+// each request. These options are applied after the parent client's options (if
+// there is one), and before any request-specific options.
+func NewRecipientService(opts ...option.RequestOption) (r *RecipientService) {
+	r = &RecipientService{}
+	r.Options = opts
+	return
+}
+
+// Adds a single recipient to an account-targeted resource share, granting them
+// access to the shared resources. The recipient account must belong to the same
+// organization as the share owner.
+//
+// To replace the entire recipient list in one call, use
+// `PUT /accounts/{account_id}/shares/{share_id}/recipients` instead.
+func (r *RecipientService) New(ctx context.Context, shareID string, params RecipientNewParams, opts ...option.RequestOption) (res *RecipientNewResponse, err error) {
+	var env RecipientNewResponseEnvelope
+	opts = slices.Concat(r.Options, opts)
+	if params.PathAccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	if shareID == "" {
+		err = errors.New("missing required share_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/shares/%s/recipients", params.PathAccountID, shareID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &env, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = &env.Result
+	return res, nil
+}
+
+// List share recipients by share ID. Returns **all** recipients regardless of
+// their `association_status` (associating, associated, disassociating,
+// disassociated). Callers that want only "active" recipients must filter
+// client-side on the `association_status` field.
+func (r *RecipientService) List(ctx context.Context, shareID string, params RecipientListParams, opts ...option.RequestOption) (res *pagination.V4PagePaginationArray[RecipientListResponse], err error) {
+	var raw *http.Response
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
+	if params.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	if shareID == "" {
+		err = errors.New("missing required share_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/shares/%s/recipients", params.AccountID, shareID)
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
+	if err != nil {
+		return nil, err
+	}
+	err = cfg.Execute()
+	if err != nil {
+		return nil, err
+	}
+	res.SetPageConfig(cfg, raw)
+	return res, nil
+}
+
+// List share recipients by share ID. Returns **all** recipients regardless of
+// their `association_status` (associating, associated, disassociating,
+// disassociated). Callers that want only "active" recipients must filter
+// client-side on the `association_status` field.
+func (r *RecipientService) ListAutoPaging(ctx context.Context, shareID string, params RecipientListParams, opts ...option.RequestOption) *pagination.V4PagePaginationArrayAutoPager[RecipientListResponse] {
+	return pagination.NewV4PagePaginationArrayAutoPager(r.List(ctx, shareID, params, opts...))
+}
+
+// Performs a **soft delete**: sets the recipient's `desired_association_status` to
+// `disassociated`, which signals the background reconciliation workflow (Temporal)
+// to remove the shared resources from the recipient account. The recipient record
+// remains in the database for audit purposes and is still returned by
+// `GET /accounts/{account_id}/shares/{share_id}/recipients` with its updated
+// status.
+//
+// Resource access is not fully removed until the workflow completes and
+// `current_association_status` transitions to `disassociated`. The recipient
+// record itself is never physically deleted.
+func (r *RecipientService) Delete(ctx context.Context, shareID string, recipientID string, body RecipientDeleteParams, opts ...option.RequestOption) (res *RecipientDeleteResponse, err error) {
+	var env RecipientDeleteResponseEnvelope
+	opts = slices.Concat(r.Options, opts)
+	if body.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	if shareID == "" {
+		err = errors.New("missing required share_id parameter")
+		return nil, err
+	}
+	if recipientID == "" {
+		err = errors.New("missing required recipient_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/shares/%s/recipients/%s", body.AccountID, shareID, recipientID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &env, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = &env.Result
+	return res, nil
+}
+
+// Get share recipient by ID.
+func (r *RecipientService) Get(ctx context.Context, shareID string, recipientID string, params RecipientGetParams, opts ...option.RequestOption) (res *RecipientGetResponse, err error) {
+	var env RecipientGetResponseEnvelope
+	opts = slices.Concat(r.Options, opts)
+	if params.AccountID.Value == "" {
+		err = errors.New("missing required account_id parameter")
+		return nil, err
+	}
+	if shareID == "" {
+		err = errors.New("missing required share_id parameter")
+		return nil, err
+	}
+	if recipientID == "" {
+		err = errors.New("missing required recipient_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("accounts/%s/shares/%s/recipients/%s", params.AccountID, shareID, recipientID)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, params, &env, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = &env.Result
+	return res, nil
+}
+
+// A recipient of a share. The `association_status` field tracks the lifecycle of
+// the shared resources in the recipient account. All recipients are returned by
+// the list endpoint regardless of status; filter client-side if only active
+// recipients are needed.
+type RecipientNewResponse struct {
+	// Share Recipient identifier tag.
+	ID string `json:"id" api:"required"`
+	// Account identifier.
+	AccountID string `json:"account_id" api:"required"`
+	// The current state of the recipient relative to the share. The
+	// `desired_association_status` (not exposed in the response) tracks the target
+	// state set by the API; the background reconciliation workflow drives
+	// `current_association_status` toward it.
+	//
+	// - `associating` — The recipient was recently added; the workflow is pushing
+	//   shared resources into the recipient account.
+	// - `associated` — Shared resources have been successfully applied to the
+	//   recipient account.
+	// - `disassociating` — The recipient was removed (via DELETE or PUT replacement);
+	//   the workflow is removing shared resources from the recipient account.
+	// - `disassociated` — Shared resources have been removed from the recipient
+	//   account. The recipient record remains in the database.
+	AssociationStatus RecipientNewResponseAssociationStatus `json:"association_status" api:"required"`
+	// When the object was created.
+	Created time.Time `json:"created" api:"required" format:"date-time"`
+	// When the object was last modified.
+	Modified  time.Time                      `json:"modified" api:"required" format:"date-time"`
+	Resources []RecipientNewResponseResource `json:"resources"`
+	JSON      recipientNewResponseJSON       `json:"-"`
+}
+
+// recipientNewResponseJSON contains the JSON metadata for the struct
+// [RecipientNewResponse]
+type recipientNewResponseJSON struct {
+	ID                apijson.Field
+	AccountID         apijson.Field
+	AssociationStatus apijson.Field
+	Created           apijson.Field
+	Modified          apijson.Field
+	Resources         apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
+}
+
+func (r *RecipientNewResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r recipientNewResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+// The current state of the recipient relative to the share. The
+// `desired_association_status` (not exposed in the response) tracks the target
+// state set by the API; the background reconciliation workflow drives
+// `current_association_status` toward it.
+//
+//   - `associating` — The recipient was recently added; the workflow is pushing
+//     shared resources into the recipient account.
+//   - `associated` — Shared resources have been successfully applied to the
+//     recipient account.
+//   - `disassociating` — The recipient was removed (via DELETE or PUT replacement);
+//     the workflow is removing shared resources from the recipient account.
+//   - `disassociated` — Shared resources have been removed from the recipient
+//     account. The recipient record remains in the database.
+type RecipientNewResponseAssociationStatus string
+
+const (
+	RecipientNewResponseAssociationStatusAssociating    RecipientNewResponseAssociationStatus = "associating"
+	RecipientNewResponseAssociationStatusAssociated     RecipientNewResponseAssociationStatus = "associated"
+	RecipientNewResponseAssociationStatusDisassociating RecipientNewResponseAssociationStatus = "disassociating"
+	RecipientNewResponseAssociationStatusDisassociated  RecipientNewResponseAssociationStatus = "disassociated"
+)
+
+func (r RecipientNewResponseAssociationStatus) IsKnown() bool {
+	switch r {
+	case RecipientNewResponseAssociationStatusAssociating, RecipientNewResponseAssociationStatusAssociated, RecipientNewResponseAssociationStatusDisassociating, RecipientNewResponseAssociationStatusDisassociated:
+		return true
+	}
+	return false
+}
+
+type RecipientNewResponseResource struct {
+	// Error from the most recent attempt to apply the resource to the recipient. Empty
+	// string when no error has been recorded.
+	Error string `json:"error" api:"required"`
+	// Identifier assigned by the service that owns the shared resource.
+	ResourceID string `json:"resource_id" api:"required"`
+	// Resource version applied to the recipient, if reconciliation has occurred.
+	ResourceVersion int64 `json:"resource_version" api:"required,nullable"`
+	// Whether the error is terminal or will be continually retried.
+	Terminal bool                             `json:"terminal" api:"required,nullable"`
+	JSON     recipientNewResponseResourceJSON `json:"-"`
+}
+
+// recipientNewResponseResourceJSON contains the JSON metadata for the struct
+// [RecipientNewResponseResource]
+type recipientNewResponseResourceJSON struct {
+	Error           apijson.Field
+	ResourceID      apijson.Field
+	ResourceVersion apijson.Field
+	Terminal        apijson.Field
+	raw             string
+	ExtraFields     map[string]apijson.Field
+}
+
+func (r *RecipientNewResponseResource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r recipientNewResponseResourceJSON) RawJSON() string {
+	return r.raw
+}
+
+// A recipient of a share. The `association_status` field tracks the lifecycle of
+// the shared resources in the recipient account. All recipients are returned by
+// the list endpoint regardless of status; filter client-side if only active
+// recipients are needed.
+type RecipientListResponse struct {
+	// Share Recipient identifier tag.
+	ID string `json:"id" api:"required"`
+	// Account identifier.
+	AccountID string `json:"account_id" api:"required"`
+	// The current state of the recipient relative to the share. The
+	// `desired_association_status` (not exposed in the response) tracks the target
+	// state set by the API; the background reconciliation workflow drives
+	// `current_association_status` toward it.
+	//
+	// - `associating` — The recipient was recently added; the workflow is pushing
+	//   shared resources into the recipient account.
+	// - `associated` — Shared resources have been successfully applied to the
+	//   recipient account.
+	// - `disassociating` — The recipient was removed (via DELETE or PUT replacement);
+	//   the workflow is removing shared resources from the recipient account.
+	// - `disassociated` — Shared resources have been removed from the recipient
+	//   account. The recipient record remains in the database.
+	AssociationStatus RecipientListResponseAssociationStatus `json:"association_status" api:"required"`
+	// When the object was created.
+	Created time.Time `json:"created" api:"required" format:"date-time"`
+	// When the object was last modified.
+	Modified  time.Time                       `json:"modified" api:"required" format:"date-time"`
+	Resources []RecipientListResponseResource `json:"resources"`
+	JSON      recipientListResponseJSON       `json:"-"`
+}
+
+// recipientListResponseJSON contains the JSON metadata for the struct
+// [RecipientListResponse]
+type recipientListResponseJSON struct {
+	ID                apijson.Field
+	AccountID         apijson.Field
+	AssociationStatus apijson.Field
+	Created           apijson.Field
+	Modified          apijson.Field
+	Resources         apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
+}
+
+func (r *RecipientListResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r recipientListResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+// The current state of the recipient relative to the share. The
+// `desired_association_status` (not exposed in the response) tracks the target
+// state set by the API; the background reconciliation workflow drives
+// `current_association_status` toward it.
+//
+//   - `associating` — The recipient was recently added; the workflow is pushing
+//     shared resources into the recipient account.
+//   - `associated` — Shared resources have been successfully applied to the
+//     recipient account.
+//   - `disassociating` — The recipient was removed (via DELETE or PUT replacement);
+//     the workflow is removing shared resources from the recipient account.
+//   - `disassociated` — Shared resources have been removed from the recipient
+//     account. The recipient record remains in the database.
+type RecipientListResponseAssociationStatus string
+
+const (
+	RecipientListResponseAssociationStatusAssociating    RecipientListResponseAssociationStatus = "associating"
+	RecipientListResponseAssociationStatusAssociated     RecipientListResponseAssociationStatus = "associated"
+	RecipientListResponseAssociationStatusDisassociating RecipientListResponseAssociationStatus = "disassociating"
+	RecipientListResponseAssociationStatusDisassociated  RecipientListResponseAssociationStatus = "disassociated"
+)
+
+func (r RecipientListResponseAssociationStatus) IsKnown() bool {
+	switch r {
+	case RecipientListResponseAssociationStatusAssociating, RecipientListResponseAssociationStatusAssociated, RecipientListResponseAssociationStatusDisassociating, RecipientListResponseAssociationStatusDisassociated:
+		return true
+	}
+	return false
+}
+
+type RecipientListResponseResource struct {
+	// Error from the most recent attempt to apply the resource to the recipient. Empty
+	// string when no error has been recorded.
+	Error string `json:"error" api:"required"`
+	// Identifier assigned by the service that owns the shared resource.
+	ResourceID string `json:"resource_id" api:"required"`
+	// Resource version applied to the recipient, if reconciliation has occurred.
+	ResourceVersion int64 `json:"resource_version" api:"required,nullable"`
+	// Whether the error is terminal or will be continually retried.
+	Terminal bool                              `json:"terminal" api:"required,nullable"`
+	JSON     recipientListResponseResourceJSON `json:"-"`
+}
+
+// recipientListResponseResourceJSON contains the JSON metadata for the struct
+// [RecipientListResponseResource]
+type recipientListResponseResourceJSON struct {
+	Error           apijson.Field
+	ResourceID      apijson.Field
+	ResourceVersion apijson.Field
+	Terminal        apijson.Field
+	raw             string
+	ExtraFields     map[string]apijson.Field
+}
+
+func (r *RecipientListResponseResource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r recipientListResponseResourceJSON) RawJSON() string {
+	return r.raw
+}
+
+// A recipient of a share. The `association_status` field tracks the lifecycle of
+// the shared resources in the recipient account. All recipients are returned by
+// the list endpoint regardless of status; filter client-side if only active
+// recipients are needed.
+type RecipientDeleteResponse struct {
+	// Share Recipient identifier tag.
+	ID string `json:"id" api:"required"`
+	// Account identifier.
+	AccountID string `json:"account_id" api:"required"`
+	// The current state of the recipient relative to the share. The
+	// `desired_association_status` (not exposed in the response) tracks the target
+	// state set by the API; the background reconciliation workflow drives
+	// `current_association_status` toward it.
+	//
+	// - `associating` — The recipient was recently added; the workflow is pushing
+	//   shared resources into the recipient account.
+	// - `associated` — Shared resources have been successfully applied to the
+	//   recipient account.
+	// - `disassociating` — The recipient was removed (via DELETE or PUT replacement);
+	//   the workflow is removing shared resources from the recipient account.
+	// - `disassociated` — Shared resources have been removed from the recipient
+	//   account. The recipient record remains in the database.
+	AssociationStatus RecipientDeleteResponseAssociationStatus `json:"association_status" api:"required"`
+	// When the object was created.
+	Created time.Time `json:"created" api:"required" format:"date-time"`
+	// When the object was last modified.
+	Modified  time.Time                         `json:"modified" api:"required" format:"date-time"`
+	Resources []RecipientDeleteResponseResource `json:"resources"`
+	JSON      recipientDeleteResponseJSON       `json:"-"`
+}
+
+// recipientDeleteResponseJSON contains the JSON metadata for the struct
+// [RecipientDeleteResponse]
+type recipientDeleteResponseJSON struct {
+	ID                apijson.Field
+	AccountID         apijson.Field
+	AssociationStatus apijson.Field
+	Created           apijson.Field
+	Modified          apijson.Field
+	Resources         apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
+}
+
+func (r *RecipientDeleteResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r recipientDeleteResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+// The current state of the recipient relative to the share. The
+// `desired_association_status` (not exposed in the response) tracks the target
+// state set by the API; the background reconciliation workflow drives
+// `current_association_status` toward it.
+//
+//   - `associating` — The recipient was recently added; the workflow is pushing
+//     shared resources into the recipient account.
+//   - `associated` — Shared resources have been successfully applied to the
+//     recipient account.
+//   - `disassociating` — The recipient was removed (via DELETE or PUT replacement);
+//     the workflow is removing shared resources from the recipient account.
+//   - `disassociated` — Shared resources have been removed from the recipient
+//     account. The recipient record remains in the database.
+type RecipientDeleteResponseAssociationStatus string
+
+const (
+	RecipientDeleteResponseAssociationStatusAssociating    RecipientDeleteResponseAssociationStatus = "associating"
+	RecipientDeleteResponseAssociationStatusAssociated     RecipientDeleteResponseAssociationStatus = "associated"
+	RecipientDeleteResponseAssociationStatusDisassociating RecipientDeleteResponseAssociationStatus = "disassociating"
+	RecipientDeleteResponseAssociationStatusDisassociated  RecipientDeleteResponseAssociationStatus = "disassociated"
+)
+
+func (r RecipientDeleteResponseAssociationStatus) IsKnown() bool {
+	switch r {
+	case RecipientDeleteResponseAssociationStatusAssociating, RecipientDeleteResponseAssociationStatusAssociated, RecipientDeleteResponseAssociationStatusDisassociating, RecipientDeleteResponseAssociationStatusDisassociated:
+		return true
+	}
+	return false
+}
+
+type RecipientDeleteResponseResource struct {
+	// Error from the most recent attempt to apply the resource to the recipient. Empty
+	// string when no error has been recorded.
+	Error string `json:"error" api:"required"`
+	// Identifier assigned by the service that owns the shared resource.
+	ResourceID string `json:"resource_id" api:"required"`
+	// Resource version applied to the recipient, if reconciliation has occurred.
+	ResourceVersion int64 `json:"resource_version" api:"required,nullable"`
+	// Whether the error is terminal or will be continually retried.
+	Terminal bool                                `json:"terminal" api:"required,nullable"`
+	JSON     recipientDeleteResponseResourceJSON `json:"-"`
+}
+
+// recipientDeleteResponseResourceJSON contains the JSON metadata for the struct
+// [RecipientDeleteResponseResource]
+type recipientDeleteResponseResourceJSON struct {
+	Error           apijson.Field
+	ResourceID      apijson.Field
+	ResourceVersion apijson.Field
+	Terminal        apijson.Field
+	raw             string
+	ExtraFields     map[string]apijson.Field
+}
+
+func (r *RecipientDeleteResponseResource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r recipientDeleteResponseResourceJSON) RawJSON() string {
+	return r.raw
+}
+
+// A recipient of a share. The `association_status` field tracks the lifecycle of
+// the shared resources in the recipient account. All recipients are returned by
+// the list endpoint regardless of status; filter client-side if only active
+// recipients are needed.
+type RecipientGetResponse struct {
+	// Share Recipient identifier tag.
+	ID string `json:"id" api:"required"`
+	// Account identifier.
+	AccountID string `json:"account_id" api:"required"`
+	// The current state of the recipient relative to the share. The
+	// `desired_association_status` (not exposed in the response) tracks the target
+	// state set by the API; the background reconciliation workflow drives
+	// `current_association_status` toward it.
+	//
+	// - `associating` — The recipient was recently added; the workflow is pushing
+	//   shared resources into the recipient account.
+	// - `associated` — Shared resources have been successfully applied to the
+	//   recipient account.
+	// - `disassociating` — The recipient was removed (via DELETE or PUT replacement);
+	//   the workflow is removing shared resources from the recipient account.
+	// - `disassociated` — Shared resources have been removed from the recipient
+	//   account. The recipient record remains in the database.
+	AssociationStatus RecipientGetResponseAssociationStatus `json:"association_status" api:"required"`
+	// When the object was created.
+	Created time.Time `json:"created" api:"required" format:"date-time"`
+	// When the object was last modified.
+	Modified  time.Time                      `json:"modified" api:"required" format:"date-time"`
+	Resources []RecipientGetResponseResource `json:"resources"`
+	JSON      recipientGetResponseJSON       `json:"-"`
+}
+
+// recipientGetResponseJSON contains the JSON metadata for the struct
+// [RecipientGetResponse]
+type recipientGetResponseJSON struct {
+	ID                apijson.Field
+	AccountID         apijson.Field
+	AssociationStatus apijson.Field
+	Created           apijson.Field
+	Modified          apijson.Field
+	Resources         apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
+}
+
+func (r *RecipientGetResponse) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r recipientGetResponseJSON) RawJSON() string {
+	return r.raw
+}
+
+// The current state of the recipient relative to the share. The
+// `desired_association_status` (not exposed in the response) tracks the target
+// state set by the API; the background reconciliation workflow drives
+// `current_association_status` toward it.
+//
+//   - `associating` — The recipient was recently added; the workflow is pushing
+//     shared resources into the recipient account.
+//   - `associated` — Shared resources have been successfully applied to the
+//     recipient account.
+//   - `disassociating` — The recipient was removed (via DELETE or PUT replacement);
+//     the workflow is removing shared resources from the recipient account.
+//   - `disassociated` — Shared resources have been removed from the recipient
+//     account. The recipient record remains in the database.
+type RecipientGetResponseAssociationStatus string
+
+const (
+	RecipientGetResponseAssociationStatusAssociating    RecipientGetResponseAssociationStatus = "associating"
+	RecipientGetResponseAssociationStatusAssociated     RecipientGetResponseAssociationStatus = "associated"
+	RecipientGetResponseAssociationStatusDisassociating RecipientGetResponseAssociationStatus = "disassociating"
+	RecipientGetResponseAssociationStatusDisassociated  RecipientGetResponseAssociationStatus = "disassociated"
+)
+
+func (r RecipientGetResponseAssociationStatus) IsKnown() bool {
+	switch r {
+	case RecipientGetResponseAssociationStatusAssociating, RecipientGetResponseAssociationStatusAssociated, RecipientGetResponseAssociationStatusDisassociating, RecipientGetResponseAssociationStatusDisassociated:
+		return true
+	}
+	return false
+}
+
+type RecipientGetResponseResource struct {
+	// Error from the most recent attempt to apply the resource to the recipient. Empty
+	// string when no error has been recorded.
+	Error string `json:"error" api:"required"`
+	// Identifier assigned by the service that owns the shared resource.
+	ResourceID string `json:"resource_id" api:"required"`
+	// Resource version applied to the recipient, if reconciliation has occurred.
+	ResourceVersion int64 `json:"resource_version" api:"required,nullable"`
+	// Whether the error is terminal or will be continually retried.
+	Terminal bool                             `json:"terminal" api:"required,nullable"`
+	JSON     recipientGetResponseResourceJSON `json:"-"`
+}
+
+// recipientGetResponseResourceJSON contains the JSON metadata for the struct
+// [RecipientGetResponseResource]
+type recipientGetResponseResourceJSON struct {
+	Error           apijson.Field
+	ResourceID      apijson.Field
+	ResourceVersion apijson.Field
+	Terminal        apijson.Field
+	raw             string
+	ExtraFields     map[string]apijson.Field
+}
+
+func (r *RecipientGetResponseResource) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r recipientGetResponseResourceJSON) RawJSON() string {
+	return r.raw
+}
+
+type RecipientNewParams struct {
+	// Account identifier.
+	PathAccountID param.Field[string] `path:"account_id" api:"required"`
+	// Deprecated alias for `recipient_account_id`. Use `recipient_account_id` instead.
+	// The body field collided with the URL path parameter of the same name, which
+	// prevented SDK generators from distinguishing the source account (in the URL)
+	// from the recipient account (in the body). Both names will continue to be
+	// accepted until 2027-05-26 (see `x-sunset`).
+	BodyAccountID param.Field[string] `json:"account_id"`
+	// The account that will receive the share.
+	RecipientAccountID param.Field[string] `json:"recipient_account_id"`
+}
+
+func (r RecipientNewParams) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(r)
+}
+
+type RecipientNewResponseEnvelope struct {
+	Errors []shared.ResponseInfo `json:"errors" api:"required"`
+	// Whether the API call was successful.
+	Success bool `json:"success" api:"required"`
+	// A recipient of a share. The `association_status` field tracks the lifecycle of
+	// the shared resources in the recipient account. All recipients are returned by
+	// the list endpoint regardless of status; filter client-side if only active
+	// recipients are needed.
+	Result RecipientNewResponse             `json:"result"`
+	JSON   recipientNewResponseEnvelopeJSON `json:"-"`
+}
+
+// recipientNewResponseEnvelopeJSON contains the JSON metadata for the struct
+// [RecipientNewResponseEnvelope]
+type recipientNewResponseEnvelopeJSON struct {
+	Errors      apijson.Field
+	Success     apijson.Field
+	Result      apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *RecipientNewResponseEnvelope) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r recipientNewResponseEnvelopeJSON) RawJSON() string {
+	return r.raw
+}
+
+type RecipientListParams struct {
+	// Account identifier.
+	AccountID param.Field[string] `path:"account_id" api:"required"`
+	// Include resources in the response.
+	IncludeResources param.Field[bool] `query:"include_resources"`
+	// Page number. Defaults to `1` when omitted.
+	Page param.Field[int64] `query:"page"`
+	// Number of objects to return per page. Defaults to `20` when omitted.
+	PerPage param.Field[int64] `query:"per_page"`
+}
+
+// URLQuery serializes [RecipientListParams]'s query parameters as `url.Values`.
+func (r RecipientListParams) URLQuery() (v url.Values) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
+		NestedFormat: apiquery.NestedQueryFormatDots,
+	})
+}
+
+type RecipientDeleteParams struct {
+	// Account identifier.
+	AccountID param.Field[string] `path:"account_id" api:"required"`
+}
+
+type RecipientDeleteResponseEnvelope struct {
+	Errors []shared.ResponseInfo `json:"errors" api:"required"`
+	// Whether the API call was successful.
+	Success bool `json:"success" api:"required"`
+	// A recipient of a share. The `association_status` field tracks the lifecycle of
+	// the shared resources in the recipient account. All recipients are returned by
+	// the list endpoint regardless of status; filter client-side if only active
+	// recipients are needed.
+	Result RecipientDeleteResponse             `json:"result"`
+	JSON   recipientDeleteResponseEnvelopeJSON `json:"-"`
+}
+
+// recipientDeleteResponseEnvelopeJSON contains the JSON metadata for the struct
+// [RecipientDeleteResponseEnvelope]
+type recipientDeleteResponseEnvelopeJSON struct {
+	Errors      apijson.Field
+	Success     apijson.Field
+	Result      apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *RecipientDeleteResponseEnvelope) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r recipientDeleteResponseEnvelopeJSON) RawJSON() string {
+	return r.raw
+}
+
+type RecipientGetParams struct {
+	// Account identifier.
+	AccountID param.Field[string] `path:"account_id" api:"required"`
+	// Include resources in the response.
+	IncludeResources param.Field[bool] `query:"include_resources"`
+}
+
+// URLQuery serializes [RecipientGetParams]'s query parameters as `url.Values`.
+func (r RecipientGetParams) URLQuery() (v url.Values) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
+		NestedFormat: apiquery.NestedQueryFormatDots,
+	})
+}
+
+type RecipientGetResponseEnvelope struct {
+	Errors []shared.ResponseInfo `json:"errors" api:"required"`
+	// Whether the API call was successful.
+	Success bool `json:"success" api:"required"`
+	// A recipient of a share. The `association_status` field tracks the lifecycle of
+	// the shared resources in the recipient account. All recipients are returned by
+	// the list endpoint regardless of status; filter client-side if only active
+	// recipients are needed.
+	Result RecipientGetResponse             `json:"result"`
+	JSON   recipientGetResponseEnvelopeJSON `json:"-"`
+}
+
+// recipientGetResponseEnvelopeJSON contains the JSON metadata for the struct
+// [RecipientGetResponseEnvelope]
+type recipientGetResponseEnvelopeJSON struct {
+	Errors      apijson.Field
+	Success     apijson.Field
+	Result      apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *RecipientGetResponseEnvelope) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r recipientGetResponseEnvelopeJSON) RawJSON() string {
+	return r.raw
+}

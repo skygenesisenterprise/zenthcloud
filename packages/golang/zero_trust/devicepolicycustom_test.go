@@ -1,0 +1,270 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zero_trust_test
+
+import (
+	"context"
+	"errors"
+	"os"
+	"testing"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/internal/testutil"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
+)
+
+func TestDevicePolicyCustomNewWithOptionalParams(t *testing.T) {
+	t.Skip("TODO: investigate broken test")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.ZeroTrust.Devices.Policies.Custom.New(context.TODO(), zero_trust.DevicePolicyCustomNewParams{
+		AccountID:       cloudflare.F("699d98642c564d2e855e9661899b7252"),
+		Name:            cloudflare.F("Allow Developers"),
+		AllowModeSwitch: cloudflare.F(true),
+		AllowUpdates:    cloudflare.F(true),
+		AllowedToLeave:  cloudflare.F(true),
+		AutoConnect:     cloudflare.F(0.000000),
+		BrowserExtensionConfig: cloudflare.F(zero_trust.DevicePolicyCustomNewParamsBrowserExtensionConfig{
+			ProxyControl: cloudflare.F(zero_trust.DevicePolicyCustomNewParamsBrowserExtensionConfigProxyControlUnlocked),
+			ProxyEnabled: cloudflare.F(true),
+		}),
+		CaptivePortal:       cloudflare.F(180.000000),
+		Default:             cloudflare.F(false),
+		Description:         cloudflare.F("Policy for test teams."),
+		DisableAutoFallback: cloudflare.F(true),
+		DNSSearchSuffixes: cloudflare.F([]zero_trust.DevicePolicyCustomNewParamsDNSSearchSuffix{{
+			Suffix:      cloudflare.F("internal.corp"),
+			Description: cloudflare.F("Example internal domains"),
+		}}),
+		EnableDeviceCredentialAuthentication: cloudflare.F(false),
+		Enabled:                              cloudflare.F(true),
+		Exclude: cloudflare.F([]zero_trust.SplitTunnelExcludeUnionParam{zero_trust.SplitTunnelExcludeTeamsDevicesExcludeSplitTunnelWithAddressParam{
+			Address:     cloudflare.F("192.0.2.0/24"),
+			Description: cloudflare.F("Exclude testing domains from the tunnel"),
+		}}),
+		ExcludeOfficeIPs: cloudflare.F(true),
+		GlobalAcceleration: cloudflare.F(zero_trust.DevicePolicyCustomNewParamsGlobalAcceleration{
+			APIEndpoints:        cloudflare.F([]string{"198.51.100.1:443"}),
+			Enabled:             cloudflare.F(true),
+			MasqueEndpoints:     cloudflare.F([]string{"198.51.100.1:443"}),
+			WireguardEndpoints:  cloudflare.F([]string{"198.51.100.1:2408"}),
+			AllowManualOverride: cloudflare.F(true),
+			Autoswitch:          cloudflare.F(true),
+		}),
+		Include: cloudflare.F([]zero_trust.SplitTunnelIncludeUnionParam{zero_trust.SplitTunnelIncludeTeamsDevicesIncludeSplitTunnelWithAddressParam{
+			Address:     cloudflare.F("192.0.2.0/24"),
+			Description: cloudflare.F("Include testing domains in the tunnel"),
+		}}),
+		LANAllowMinutes:            cloudflare.F(30.000000),
+		LANAllowSubnetSize:         cloudflare.F(24.000000),
+		Match:                      cloudflare.F(`identity.email == "test@cloudflare.com"`),
+		Precedence:                 cloudflare.F(100.000000),
+		ProfileType:                cloudflare.F(zero_trust.DevicePolicyCustomNewParamsProfileTypeWARP),
+		RegisterInterfaceIPWithDNS: cloudflare.F(true),
+		SccmVpnBoundarySupport:     cloudflare.F(false),
+		ServiceModeV2: cloudflare.F(zero_trust.DevicePolicyCustomNewParamsServiceModeV2{
+			Mode: cloudflare.F("proxy"),
+			Port: cloudflare.F(3000.000000),
+		}),
+		SupportURL:          cloudflare.F("https://1.1.1.1/help"),
+		SwitchLocked:        cloudflare.F(true),
+		TunnelProtocol:      cloudflare.F("wireguard"),
+		UninstallProtection: cloudflare.F(false),
+		VirtualNetworks: cloudflare.F(zero_trust.DevicePolicyCustomNewParamsVirtualNetworks{
+			Allowed: cloudflare.F([]string{"f174e90a-fafe-4643-bbbc-4a0ed4fc8415"}),
+			Default: cloudflare.F("f174e90a-fafe-4643-bbbc-4a0ed4fc8415"),
+		}),
+	})
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestDevicePolicyCustomListWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.ZeroTrust.Devices.Policies.Custom.List(context.TODO(), zero_trust.DevicePolicyCustomListParams{
+		AccountID:   cloudflare.F("699d98642c564d2e855e9661899b7252"),
+		ProfileType: cloudflare.F(zero_trust.DevicePolicyCustomListParamsProfileTypeWARP),
+	})
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestDevicePolicyCustomDelete(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.ZeroTrust.Devices.Policies.Custom.Delete(
+		context.TODO(),
+		"f174e90a-fafe-4643-bbbc-4a0ed4fc8415",
+		zero_trust.DevicePolicyCustomDeleteParams{
+			AccountID: cloudflare.F("699d98642c564d2e855e9661899b7252"),
+		},
+	)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestDevicePolicyCustomEditWithOptionalParams(t *testing.T) {
+	t.Skip("TODO: investigate broken test")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.ZeroTrust.Devices.Policies.Custom.Edit(
+		context.TODO(),
+		"f174e90a-fafe-4643-bbbc-4a0ed4fc8415",
+		zero_trust.DevicePolicyCustomEditParams{
+			AccountID:       cloudflare.F("699d98642c564d2e855e9661899b7252"),
+			AllowModeSwitch: cloudflare.F(true),
+			AllowUpdates:    cloudflare.F(true),
+			AllowedToLeave:  cloudflare.F(true),
+			AutoConnect:     cloudflare.F(0.000000),
+			BrowserExtensionConfig: cloudflare.F(zero_trust.DevicePolicyCustomEditParamsBrowserExtensionConfig{
+				ProxyControl: cloudflare.F(zero_trust.DevicePolicyCustomEditParamsBrowserExtensionConfigProxyControlUnlocked),
+				ProxyEnabled: cloudflare.F(true),
+			}),
+			CaptivePortal:       cloudflare.F(180.000000),
+			Default:             cloudflare.F(false),
+			Description:         cloudflare.F("Policy for test teams."),
+			DisableAutoFallback: cloudflare.F(true),
+			DNSSearchSuffixes: cloudflare.F([]zero_trust.DevicePolicyCustomEditParamsDNSSearchSuffix{{
+				Suffix:      cloudflare.F("internal.corp"),
+				Description: cloudflare.F("Example internal domains"),
+			}}),
+			EnableDeviceCredentialAuthentication: cloudflare.F(false),
+			Enabled:                              cloudflare.F(true),
+			Exclude: cloudflare.F([]zero_trust.SplitTunnelExcludeUnionParam{zero_trust.SplitTunnelExcludeTeamsDevicesExcludeSplitTunnelWithAddressParam{
+				Address:     cloudflare.F("192.0.2.0/24"),
+				Description: cloudflare.F("Exclude testing domains from the tunnel"),
+			}}),
+			ExcludeOfficeIPs: cloudflare.F(true),
+			GlobalAcceleration: cloudflare.F(zero_trust.DevicePolicyCustomEditParamsGlobalAcceleration{
+				APIEndpoints:        cloudflare.F([]string{"198.51.100.1:443"}),
+				Enabled:             cloudflare.F(true),
+				MasqueEndpoints:     cloudflare.F([]string{"198.51.100.1:443"}),
+				WireguardEndpoints:  cloudflare.F([]string{"198.51.100.1:2408"}),
+				AllowManualOverride: cloudflare.F(true),
+				Autoswitch:          cloudflare.F(true),
+			}),
+			Include: cloudflare.F([]zero_trust.SplitTunnelIncludeUnionParam{zero_trust.SplitTunnelIncludeTeamsDevicesIncludeSplitTunnelWithAddressParam{
+				Address:     cloudflare.F("192.0.2.0/24"),
+				Description: cloudflare.F("Include testing domains in the tunnel"),
+			}}),
+			LANAllowMinutes:            cloudflare.F(30.000000),
+			LANAllowSubnetSize:         cloudflare.F(24.000000),
+			Match:                      cloudflare.F(`identity.email == "test@cloudflare.com"`),
+			Name:                       cloudflare.F("Allow Developers"),
+			Precedence:                 cloudflare.F(100.000000),
+			RegisterInterfaceIPWithDNS: cloudflare.F(true),
+			SccmVpnBoundarySupport:     cloudflare.F(false),
+			ServiceModeV2: cloudflare.F(zero_trust.DevicePolicyCustomEditParamsServiceModeV2{
+				Mode: cloudflare.F("proxy"),
+				Port: cloudflare.F(3000.000000),
+			}),
+			SupportURL:          cloudflare.F("https://1.1.1.1/help"),
+			SwitchLocked:        cloudflare.F(true),
+			TunnelProtocol:      cloudflare.F("wireguard"),
+			UninstallProtection: cloudflare.F(false),
+			VirtualNetworks: cloudflare.F(zero_trust.DevicePolicyCustomEditParamsVirtualNetworks{
+				Allowed: cloudflare.F([]string{"f174e90a-fafe-4643-bbbc-4a0ed4fc8415"}),
+				Default: cloudflare.F("f174e90a-fafe-4643-bbbc-4a0ed4fc8415"),
+			}),
+		},
+	)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestDevicePolicyCustomGet(t *testing.T) {
+	t.Skip("TODO: investigate broken test")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := cloudflare.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIToken("Sn3lZJTBX6kkg7OdcBUAxOO963GEIyGQqnFTOFYY"),
+		option.WithAPIKey("144c9defac04969c7bfad8efaa8ea194"),
+		option.WithAPIEmail("user@example.com"),
+	)
+	_, err := client.ZeroTrust.Devices.Policies.Custom.Get(
+		context.TODO(),
+		"f174e90a-fafe-4643-bbbc-4a0ed4fc8415",
+		zero_trust.DevicePolicyCustomGetParams{
+			AccountID: cloudflare.F("699d98642c564d2e855e9661899b7252"),
+		},
+	)
+	if err != nil {
+		var apierr *cloudflare.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
