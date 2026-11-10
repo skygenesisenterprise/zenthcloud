@@ -1,0 +1,268 @@
+import path from "pathslash";
+import { decodeRouteSegment, sortRoutes } from "./utils.js";
+import {
+  createValidFileMatcher,
+  scanWithExtensions,
+  type ValidFileMatcher,
+} from "./file-matcher.js";
+import { validateRoutePatterns } from "./route-validation.js";
+import { createRouteTrieCache, matchRouteWithTrieRawPathname } from "./route-matching.js";
+
+export type Route = {
+  /** URL pattern, e.g. "/" or "/about" or "/posts/:id" */
+  pattern: string;
+  /** Pre-split pattern segments (computed once at scan time, reused per request) */
+  patternParts: string[];
+  /** Absolute file path to the page component */
+  filePath: string;
+  /** Whether this is a dynamic route */
+  isDynamic: boolean;
+  /** Parameter names for dynamic segments */
+  params: string[];
+};
+
+/** Next.js special pages that should not produce routes. */
+const RESERVED_PAGE_NAMES = new Set(["_app", "_document", "_error"]);
+
+// Route cache — invalidated when pages directory changes
+const routeCache = new Map<string, Promise<Route[]>>();
+let routeCacheGeneration = 0;
+
+/**
+ * Invalidate cached routes for a given pages directory.
+ * Called by the file watcher when pages are added/removed.
+ */
+export function invalidateRouteCache(pagesDir: string): void {
+  routeCacheGeneration++;
+  for (const key of routeCache.keys()) {
+    if (key.startsWith(`pages:${pagesDir}:`) || key.startsWith(`api:${pagesDir}:`)) {
+      routeCache.delete(key);
+    }
+  }
+}
+
+/**
+ * Scan the pages/ directory and return a list of routes.
+ * Results are cached — call invalidateRouteCache() when files change.
+ *
+ * Follows Next.js Pages Router conventions:
+ * - pages/index.tsx -> /
+ * - pages/about.tsx -> /about
+ * - pages/posts/[id].tsx -> /posts/:id
+ * - pages/[...slug].tsx -> /:slug+
+ * - Ignores _app.tsx, _document.tsx, _error.tsx (Next.js special files)
+ * - Ignores pages/api/ (handled separately later)
+ */
+export async function pagesRouter(
+  pagesDir: string,
+  pageExtensions?: readonly string[],
+  matcher?: ValidFileMatcher,
+): Promise<Route[]> {
+  matcher ??= createValidFileMatcher(pageExtensions);
+  const cacheKey = `pages:${pagesDir}:${JSON.stringify(matcher.extensions)}`;
+  return getCachedRoutes(cacheKey, () => scanPageRoutes(pagesDir, matcher));
+}
+
+async function scanPageRoutes(pagesDir: string, matcher: ValidFileMatcher): Promise<Route[]> {
+  const routes: Route[] = [];
+
+  // Use function form of exclude for Node < 22.14 compatibility (string arrays require >= 22.14).
+  // The `RESERVED_PAGE_NAMES` check here is a directory-traversal optimization only — glob's
+  // exclude callback fires on directory names, not file names, so root-level files like
+  // `_app.tsx` still get yielded and are filtered by the guard in `fileToRoute()` below.
+  for await (const file of scanWithExtensions(
+    "**/*",
+    pagesDir,
+    matcher.extensions,
+    (name: string) => name === "api" || RESERVED_PAGE_NAMES.has(name),
+  )) {
+    const route = fileToRoute(file, pagesDir, matcher);
+    if (route) routes.push(route);
+  }
+
+  validateRoutePatterns(routes.map((route) => route.pattern));
+
+  // Sort: static routes first, then dynamic, then catch-all
+  sortRoutes(routes);
+
+  return routes;
+}
+
+/**
+ * Convert a file path relative to pages/ into a Route.
+ */
+function fileToRoute(file: string, pagesDir: string, matcher: ValidFileMatcher): Route | null {
+  // Remove extension
+  const withoutExt = matcher.stripExtension(file);
+  if (withoutExt === file) return null;
+
+  // Convert to URL segments. `file` comes from `scanWithExtensions`, which
+  // yields forward-slash paths on every platform, so split on "/".
+  const segments = withoutExt.split("/");
+
+  // Handle index files: pages/index.tsx -> /
+  const lastSegment = segments[segments.length - 1];
+  if (lastSegment === "index") {
+    segments.pop();
+  }
+
+  const params: string[] = [];
+  let isDynamic = false;
+
+  // Convert Next.js dynamic segments to URL patterns.
+  // Catch-all segments are only valid in terminal position.
+  const urlSegments: string[] = [];
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i];
+
+    // Catch-all: [...slug] -> :slug+ (param names may contain any non-] chars)
+    // Matches Next.js PARAMETER_PATTERN.
+    const catchAllMatch = segment.match(/^\[\.\.\.([^\]]+)\]$/);
+    if (catchAllMatch) {
+      if (i !== segments.length - 1) return null;
+      // Guard: names ending in + or * would collide with internal pattern modifiers.
+      if (catchAllMatch[1].endsWith("+") || catchAllMatch[1].endsWith("*")) return null;
+      isDynamic = true;
+      params.push(catchAllMatch[1]);
+      urlSegments.push(`:${catchAllMatch[1]}+`);
+      continue;
+    }
+
+    // Optional catch-all: [[...slug]] -> :slug* (param names may contain any non-] chars)
+    const optionalCatchAllMatch = segment.match(/^\[\[\.\.\.([^\]]+)\]\]$/);
+    if (optionalCatchAllMatch) {
+      if (i !== segments.length - 1) return null;
+      if (optionalCatchAllMatch[1].endsWith("+") || optionalCatchAllMatch[1].endsWith("*"))
+        return null;
+      isDynamic = true;
+      params.push(optionalCatchAllMatch[1]);
+      urlSegments.push(`:${optionalCatchAllMatch[1]}*`);
+      continue;
+    }
+
+    // Dynamic segment: [id] -> :id (param names may contain any non-] chars)
+    const dynamicMatch = segment.match(/^\[([^\]]+)\]$/);
+    if (dynamicMatch) {
+      if (dynamicMatch[1].endsWith("+") || dynamicMatch[1].endsWith("*")) return null;
+      isDynamic = true;
+      params.push(dynamicMatch[1]);
+      urlSegments.push(`:${dynamicMatch[1]}`);
+      continue;
+    }
+
+    urlSegments.push(decodeRouteSegment(segment));
+  }
+
+  const pattern = "/" + urlSegments.join("/");
+
+  // Skip Next.js special pages (_app, _document, _error) at the root level only.
+  // Subdirectory files like admin/_app.tsx are not reserved and should be served.
+  // Read segments[0] after the index pop so this is correct for both `_app.tsx`
+  // and `_app/index.tsx` shapes, independent of the glob-level exclude.
+  if (segments.length === 1 && RESERVED_PAGE_NAMES.has(segments[0])) {
+    return null;
+  }
+
+  return {
+    pattern: pattern === "/" ? "/" : pattern,
+    patternParts: urlSegments.filter(Boolean),
+    filePath: path.join(pagesDir, file),
+    isDynamic,
+    params,
+  };
+}
+
+// Trie cache — keyed by route array identity (same array = same trie)
+const trieCache = createRouteTrieCache<Route>();
+
+/**
+ * Match a URL path against a route pattern.
+ * Returns the matched params or null if no match.
+ */
+export function matchRoute(
+  url: string,
+  routes: Route[],
+): { route: Route; params: Record<string, string | string[]> } | null {
+  return matchRouteWithTrieRawPathname(url, routes, trieCache);
+}
+
+/**
+ * Scan the pages/api/ directory and return API routes.
+ * Results are cached — call invalidateRouteCache() when files change.
+ *
+ * Follows Next.js conventions:
+ * - pages/api/hello.ts -> /api/hello
+ * - pages/api/users/[id].ts -> /api/users/:id
+ */
+export async function apiRouter(
+  pagesDir: string,
+  pageExtensions?: readonly string[],
+  matcher?: ValidFileMatcher,
+): Promise<Route[]> {
+  matcher ??= createValidFileMatcher(pageExtensions);
+  const cacheKey = `api:${pagesDir}:${JSON.stringify(matcher.extensions)}`;
+  return getCachedRoutes(cacheKey, () => scanApiRoutes(pagesDir, matcher));
+}
+
+async function getCachedRoutes(cacheKey: string, scan: () => Promise<Route[]>): Promise<Route[]> {
+  const cached = routeCache.get(cacheKey);
+  if (cached) return cached;
+
+  const promise = (async () => {
+    while (true) {
+      const scanGeneration = routeCacheGeneration;
+      const routes = await scan();
+      // A watcher may invalidate while the async filesystem scan is still in
+      // flight. Every caller shares this guarded promise, so retry instead of
+      // returning or resurrecting an obsolete result for concurrent callers.
+      // Watcher invalidations arrive in finite bursts, so intentionally wait for
+      // a quiescent scan rather than bounding retries and publishing stale routes.
+      if (scanGeneration === routeCacheGeneration) return routes;
+    }
+  })();
+  routeCache.set(cacheKey, promise);
+
+  try {
+    return await promise;
+  } catch (error) {
+    if (routeCache.get(cacheKey) === promise) routeCache.delete(cacheKey);
+    throw error;
+  }
+}
+
+async function scanApiRoutes(pagesDir: string, matcher: ValidFileMatcher): Promise<Route[]> {
+  const apiDir = path.join(pagesDir, "api");
+  let files: string[];
+  try {
+    files = [];
+    for await (const file of scanWithExtensions("**/*", apiDir, matcher.extensions)) {
+      files.push(file);
+    }
+  } catch {
+    files = [];
+  }
+
+  const routes: Route[] = [];
+
+  for (const file of files) {
+    // Reuse fileToRoute but pretend the file is under a virtual "api/" prefix.
+    const route = fileToRoute(path.join("api", file), pagesDir, matcher);
+    if (route) {
+      routes.push(route);
+    }
+  }
+
+  validateRoutePatterns(routes.map((route) => route.pattern));
+
+  // Sort same as page routes
+  sortRoutes(routes);
+
+  return routes;
+}
+
+/**
+ * Convert internal route pattern (e.g., "/posts/:id", "/docs/:slug+")
+ * to Next.js bracket format (e.g., "/posts/[id]", "/docs/[...slug]").
+ * Used for __NEXT_DATA__.page which apps expect in Next.js format.
+ */
+export { patternToNextFormat } from "./route-validation.js";

@@ -1,0 +1,121 @@
+import { test, expect } from "@playwright/test";
+
+const BASE = "http://localhost:4179";
+
+test.describe("Pages Router on Cloudflare Workers (vite dev)", () => {
+  test.describe("cold client optimizer", () => {
+    test.describe.configure({ retries: 0 });
+
+    test("client bootstrap hydrates the server-rendered page", async ({ page }) => {
+      const documentRequests: string[] = [];
+      page.on("request", (request) => {
+        if (request.resourceType() === "document") documentRequests.push(request.url());
+      });
+
+      await page.goto(`${BASE}/`);
+
+      await expect(page.locator("#count")).toHaveText("0");
+      await page.waitForFunction(() => window.__VINEXT_HYDRATED_AT !== undefined);
+      await page.locator("#increment").click();
+      await expect(page.locator("#count")).toHaveText("1");
+
+      // A client dependency discovered after the initial crawl makes Vite issue
+      // a full reload. Give that optimizer update time to arrive, then verify the
+      // initial document and the hydrated counter state both survived.
+      await page.evaluate(() => {
+        (window as typeof window & { __vinextColdStartCanary?: boolean }).__vinextColdStartCanary =
+          true;
+      });
+      await page.waitForTimeout(1_000);
+
+      expect(documentRequests).toHaveLength(1);
+      expect(
+        await page.evaluate(
+          () =>
+            (window as typeof window & { __vinextColdStartCanary?: boolean })
+              .__vinextColdStartCanary,
+        ),
+      ).toBe(true);
+      await expect(page.locator("#count")).toHaveText("1");
+    });
+  });
+
+  test("client bootstrap does not load server runtime modules", async ({ page }) => {
+    const loadedServerModules: string[] = [];
+    page.on("request", (request) => {
+      const url = request.url();
+      if (url.includes("/packages/vinext/dist/server/")) {
+        loadedServerModules.push(url);
+      }
+    });
+
+    await page.goto(`${BASE}/`);
+    await page.waitForFunction(() => window.__VINEXT_HYDRATED_AT !== undefined);
+
+    expect(loadedServerModules).toEqual([]);
+  });
+
+  test("home page is server-rendered inside the Cloudflare Worker", async ({ request }) => {
+    const res = await request.get(`${BASE}/`);
+    expect(res.status()).toBe(200);
+
+    const html = await res.text();
+    expect(html).toContain("Hello from Pages Router on Workers!");
+    expect(html).toContain("__NEXT_DATA__");
+  });
+
+  test("public-file mutations are handled inside the Cloudflare Worker", async ({ request }) => {
+    const res = await request.post(`${BASE}/static.txt`);
+
+    expect(res.status()).toBe(405);
+    expect(res.headers()["allow"]).toBe("GET, HEAD");
+    expect(await res.text()).toBe("Method Not Allowed");
+  });
+
+  test("encoded public-file mutations are handled inside the Cloudflare Worker", async ({
+    request,
+  }) => {
+    const res = await request.post(`${BASE}/hello%20copy.txt`);
+
+    expect(res.status()).toBe(405);
+    expect(res.headers()["allow"]).toBe("GET, HEAD");
+  });
+
+  test("GSSP runs inside the Cloudflare Worker", async ({ request }) => {
+    // getServerSideProps on /ssr reads navigator.userAgent and embeds it in
+    // the rendered HTML. "Cloudflare-Workers" can only appear if GSSP executed
+    // inside miniflare — it is absent from the Node.js host environment.
+    const res = await request.get(`${BASE}/ssr`);
+    expect(res.status()).toBe(200);
+
+    const html = await res.text();
+    expect(html).toContain("Cloudflare-Workers");
+  });
+
+  test("config headers still match the pre-middleware pathname after a rewrite", async ({
+    request,
+  }) => {
+    const res = await request.get(`${BASE}/headers-before-middleware-rewrite`);
+    expect(res.status()).toBe(200);
+    expect(res.headers()["x-rewrite-source-header"]).toBe("1");
+
+    const html = await res.text();
+    expect(html).toContain("Server-Side Rendered on Workers");
+  });
+
+  test("config redirects still win before middleware responses", async ({ request }) => {
+    const res = await request.get(`${BASE}/redirect-before-middleware-response`, {
+      maxRedirects: 0,
+    });
+    expect(res.status()).toBe(307);
+    expect(res.headers()["location"]).toContain("/about");
+  });
+
+  test("config redirects still win before middleware rewrites", async ({ request }) => {
+    const res = await request.get(`${BASE}/redirect-before-middleware-rewrite`, {
+      maxRedirects: 0,
+    });
+    expect(res.status()).toBe(307);
+    expect(res.headers()["location"]).toContain("/about");
+  });
+});

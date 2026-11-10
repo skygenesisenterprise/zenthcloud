@@ -1,0 +1,315 @@
+import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
+import { build } from "vite-plus";
+import type { ViteDevServer } from "vite-plus";
+import path from "node:path";
+import fsp from "node:fs/promises";
+import http from "node:http";
+import vinext from "../packages/vinext/src/index.js";
+import { createIsolatedFixture, startFixtureServer } from "./helpers.js";
+
+const FIXTURE_DIR = path.resolve(import.meta.dirname, "./fixtures/pages-i18n-public-rewrite");
+
+async function startProdFixture(): Promise<{
+  port: number;
+  server: http.Server;
+  tmpDir: string;
+  outDir: string;
+}> {
+  const tmpDir = await createIsolatedFixture(FIXTURE_DIR, "vinext-pages-i18n-public-rewrite-prod-");
+  const outDir = path.join(tmpDir, "dist");
+  await build({
+    root: tmpDir,
+    configFile: false,
+    plugins: [vinext()],
+    logLevel: "silent",
+    build: {
+      outDir: path.join(outDir, "server"),
+      ssr: "virtual:vinext-server-entry",
+      rolldownOptions: { output: { entryFileNames: "entry.js" } },
+    },
+  });
+  await build({
+    root: tmpDir,
+    configFile: false,
+    plugins: [vinext()],
+    logLevel: "silent",
+    build: {
+      outDir: path.join(outDir, "client"),
+      manifest: true,
+      ssrManifest: true,
+      rolldownOptions: { input: "virtual:vinext-client-entry" },
+    },
+  });
+
+  const { startProdServer } = await import("../packages/vinext/src/server/prod-server.js");
+  const { server } = await startProdServer({
+    port: 0,
+    host: "127.0.0.1",
+    outDir,
+  });
+  const address = server.address();
+  if (!address || typeof address === "string") {
+    throw new Error("Failed to start Pages i18n public rewrite production server");
+  }
+
+  return { port: address.port, server, tmpDir, outDir };
+}
+
+async function findBuiltStaticAsset(clientDir: string): Promise<string> {
+  const entries = await fsp.readdir(clientDir, { withFileTypes: true });
+  for (const entry of entries) {
+    const entryPath = path.join(clientDir, entry.name);
+    if (entry.isDirectory()) {
+      const nested = await findBuiltStaticAsset(entryPath);
+      if (nested) return nested;
+    } else if (entry.isFile() && entry.name.endsWith(".js")) {
+      return entryPath;
+    }
+  }
+  return "";
+}
+
+async function assertPublicRewrite(baseUrl: string, locale: "en" | "sv"): Promise<void> {
+  const response = await fetch(`${baseUrl}/${locale}/rewrite-files/file.txt`);
+  expect(response.status).toBe(200);
+  await expect(response.text()).resolves.toContain("hello from file.txt");
+}
+
+async function assertFilesystemRewrite(baseUrl: string, pathname: string): Promise<void> {
+  const response = await fetch(`${baseUrl}${pathname}`);
+  expect(response.status).toBe(200);
+  expect(response.headers.get("content-type")).toContain("text/plain");
+  await expect(response.text()).resolves.toContain("hello from file.txt");
+}
+
+// Expected values observed against real Next.js 16 with the fixture's config:
+// unprefixed rules are locale-aware and the locale is detected
+// case-insensitively, so /EN/ and /SV/ must hit the same rules as /en/ and /sv/.
+async function assertMixedCaseLocaleConfigRules(baseUrl: string): Promise<void> {
+  for (const [pathname, location] of [
+    ["/EN/locale-case-gated", "/about"],
+    ["/SV/locale-case-gated", "/SV/about"],
+  ]) {
+    const response = await fetch(`${baseUrl}${pathname}`, { redirect: "manual" });
+    expect(response.status, pathname).toBe(307);
+    expect(response.headers.get("location"), pathname).toBe(location);
+  }
+  for (const pathname of ["/EN/about", "/SV/about"]) {
+    const response = await fetch(`${baseUrl}${pathname}`, { redirect: "manual" });
+    expect(response.status, pathname).toBe(200);
+    expect(response.headers.get("x-locale-case-header"), pathname).toBe("about");
+  }
+  for (const pathname of ["/EN/locale-case-rewrite", "/SV/locale-case-rewrite"]) {
+    const response = await fetch(`${baseUrl}${pathname}`, { redirect: "manual" });
+    expect(response.status, pathname).toBe(200);
+    await expect(response.text(), pathname).resolves.toContain("about page");
+  }
+}
+
+// Ported from Next.js: test/e2e/i18n-ignore-rewrite-source-locale/rewrites.test.ts
+// https://github.com/vercel/next.js/blob/canary/test/e2e/i18n-ignore-rewrite-source-locale/rewrites.test.ts
+describe("Pages i18n locale:false public rewrites", () => {
+  describe("development", () => {
+    let server: ViteDevServer;
+    let baseUrl: string;
+
+    beforeAll(async () => {
+      ({ server, baseUrl } = await startFixtureServer(FIXTURE_DIR));
+    }, 30_000);
+
+    afterAll(async () => {
+      await server?.close();
+    });
+
+    it("serves the rewritten public file for the default locale", async () => {
+      await assertPublicRewrite(baseUrl, "en");
+    });
+
+    it("serves the rewritten public file for a non-default locale", async () => {
+      await assertPublicRewrite(baseUrl, "sv");
+    });
+
+    it("re-enters public files after afterFiles and fallback rewrites", async () => {
+      await assertFilesystemRewrite(baseUrl, "/sv/after-files/file.txt");
+      await assertFilesystemRewrite(baseUrl, "/sv/fallback-files/file.txt");
+    });
+
+    it("re-enters API routes after afterFiles and fallback rewrites", async () => {
+      const afterFiles = await fetch(`${baseUrl}/sv/after-files/api/hello`);
+      const fallback = await fetch(`${baseUrl}/sv/fallback-files/api/hello`);
+      await expect(afterFiles.text()).resolves.toContain("hello from api");
+      await expect(fallback.text()).resolves.toContain("hello from api");
+    });
+
+    it("serves rewritten public files with Vite HEAD, range, cache, and MIME semantics", async () => {
+      const pathname = "/sv/after-files/file.txt";
+      const initial = await fetch(`${baseUrl}${pathname}`);
+      const etag = initial.headers.get("etag");
+      expect(initial.headers.get("content-type")).toContain("text/plain");
+      expect(etag).toBeTruthy();
+
+      const head = await fetch(`${baseUrl}${pathname}`, { method: "HEAD" });
+      expect(head.status).toBe(200);
+      expect(await head.text()).toBe("");
+      expect(head.headers.get("content-length")).toBe(initial.headers.get("content-length"));
+
+      const range = await fetch(`${baseUrl}${pathname}`, {
+        headers: { Range: "bytes=0-4" },
+      });
+      expect(range.status).toBe(206);
+      await expect(range.text()).resolves.toBe("hello");
+
+      const notModified = await fetch(`${baseUrl}${pathname}`, {
+        headers: { "If-None-Match": etag! },
+      });
+      expect(notModified.status).toBe(304);
+    });
+
+    it("serves rewritten /_next/static through Vite in every rewrite phase", async () => {
+      for (const pathname of [
+        "/sv/rewrite-files/_next/static/dev-asset.js",
+        "/sv/after-files/_next/static/dev-asset.js",
+        "/sv/fallback-files/_next/static/dev-asset.js",
+      ]) {
+        const staticResponse = await fetch(`${baseUrl}${pathname}`);
+        expect(staticResponse.status, pathname).toBe(200);
+        expect(staticResponse.headers.get("content-type"), pathname).toContain("text/javascript");
+        await expect(staticResponse.text(), pathname).resolves.toContain(
+          "__vinextDevStaticRewrite",
+        );
+      }
+    });
+
+    it("preserves page precedence over afterFiles rewrites", async () => {
+      const pageResponse = await fetch(`${baseUrl}/after-control`);
+      await expect(pageResponse.text()).resolves.toContain("afterFiles page wins");
+    });
+  });
+
+  describe("production", () => {
+    let prodServer: http.Server;
+    let prodBaseUrl: string;
+    let tmpDir: string;
+    let outDir: string;
+
+    beforeAll(async () => {
+      const started = await startProdFixture();
+      prodServer = started.server;
+      prodBaseUrl = `http://127.0.0.1:${started.port}`;
+      tmpDir = started.tmpDir;
+      outDir = started.outDir;
+    }, 30_000);
+
+    afterAll(async () => {
+      if (prodServer) {
+        await new Promise<void>((resolve) => prodServer.close(() => resolve()));
+      }
+      if (tmpDir) {
+        await fsp.rm(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    it("serves the rewritten public file for the default locale", async () => {
+      await assertPublicRewrite(prodBaseUrl, "en");
+    });
+
+    it("serves the rewritten public file for a non-default locale", async () => {
+      await assertPublicRewrite(prodBaseUrl, "sv");
+    });
+
+    it("re-enters public files after afterFiles and fallback rewrites", async () => {
+      await assertFilesystemRewrite(prodBaseUrl, "/sv/after-files/file.txt");
+      await assertFilesystemRewrite(prodBaseUrl, "/sv/fallback-files/file.txt");
+    });
+
+    it("re-enters API routes after afterFiles and fallback rewrites", async () => {
+      const afterFiles = await fetch(`${prodBaseUrl}/sv/after-files/api/hello`);
+      const fallback = await fetch(`${prodBaseUrl}/sv/fallback-files/api/hello`);
+      await expect(afterFiles.text()).resolves.toContain("hello from api");
+      await expect(fallback.text()).resolves.toContain("hello from api");
+    });
+
+    it("applies unprefixed config rules to mixed-case locale prefixes", async () => {
+      await assertMixedCaseLocaleConfigRules(prodBaseUrl);
+    });
+
+    it("preserves page precedence over afterFiles rewrites", async () => {
+      const response = await fetch(`${prodBaseUrl}/after-control`);
+      expect(response.status).toBe(200);
+      await expect(response.text()).resolves.toContain("afterFiles page wins");
+    });
+
+    it("preserves API, page, and built static destinations", async () => {
+      const apiResponse = await fetch(`${prodBaseUrl}/en/rewrite-api/hello`);
+      const pageResponse = await fetch(`${prodBaseUrl}/en/rewrite-page`);
+      const staticFile = await findBuiltStaticAsset(path.join(outDir, "client", "_next", "static"));
+      if (!staticFile) throw new Error("Expected a built static JavaScript asset");
+      const staticPath = path
+        .relative(path.join(outDir, "client"), staticFile)
+        .split(path.sep)
+        .join("/");
+      const staticResponse = await fetch(`${prodBaseUrl}/en/rewrite-files/${staticPath}`);
+      const afterFilesStaticResponse = await fetch(`${prodBaseUrl}/en/after-files/${staticPath}`);
+      const fallbackStaticResponse = await fetch(`${prodBaseUrl}/en/fallback-files/${staticPath}`);
+
+      await expect(apiResponse.text()).resolves.toContain("hello from api");
+      await expect(pageResponse.text()).resolves.toContain("about page");
+      expect(staticResponse.status).toBe(200);
+      expect(afterFilesStaticResponse.status).toBe(200);
+      expect(fallbackStaticResponse.status).toBe(200);
+    });
+
+    // A locale-prefixed render must not populate the default locale's ISR
+    // entry: Next.js keys Pages ISR by the locale-prefixed pathname.
+    // https://github.com/vercel/next.js/blob/canary/packages/next/src/server/route-modules/pages/pages-handler.ts
+    it("keys Pages ISR entries by locale without i18n domains", async () => {
+      const nextData = (body: string) =>
+        JSON.parse(body.match(/<script id="__NEXT_DATA__"[^>]*>(.*?)<\/script>/)![1]);
+      const get = async (pathname: string) => {
+        const response = await fetch(`${prodBaseUrl}${pathname}`);
+        return { cache: response.headers.get("x-vinext-cache"), body: await response.text() };
+      };
+
+      const sv = await get("/sv/isr-locale");
+      expect(sv.cache).toBe("MISS");
+      expect(sv.body).toContain('<p id="locale">sv</p>');
+      expect(nextData(sv.body)).toMatchObject({
+        locale: "sv",
+        props: { pageProps: { locale: "sv" } },
+      });
+
+      const en = await get("/isr-locale");
+      expect(en.cache).toBe("MISS");
+      expect(en.body).toContain('<p id="locale">en</p>');
+      expect(en.body).not.toContain('<p id="locale">sv</p>');
+      expect(nextData(en.body)).toMatchObject({
+        locale: "en",
+        props: { pageProps: { locale: "en" } },
+      });
+
+      const enHit = await get("/isr-locale");
+      expect(enHit.cache).toBe("HIT");
+      expect(nextData(enHit.body).props.pageProps).toEqual(nextData(en.body).props.pageProps);
+
+      const svHit = await get("/sv/isr-locale");
+      expect(svHit.cache).toBe("HIT");
+      expect(nextData(svHit.body).props.pageProps).toEqual(nextData(sv.body).props.pageProps);
+
+      // A locale-prefixed data request must not overwrite either locale's entry.
+      const { buildId } = nextData(en.body);
+      const nlData = await fetch(`${prodBaseUrl}/_next/data/${buildId}/nl/isr-locale.json`);
+      expect(nlData.status).toBe(200);
+      expect((await nlData.json()).pageProps.locale).toBe("nl");
+      const nlHtml = await get("/nl/isr-locale");
+      expect(nlHtml.body).toContain('<p id="locale">nl</p>');
+      for (const [pathname, cached] of [
+        ["/isr-locale", en],
+        ["/sv/isr-locale", sv],
+      ] as const) {
+        const hit = await get(pathname);
+        expect(hit.cache).toBe("HIT");
+        expect(nextData(hit.body).props.pageProps).toEqual(nextData(cached.body).props.pageProps);
+      }
+    });
+  });
+});

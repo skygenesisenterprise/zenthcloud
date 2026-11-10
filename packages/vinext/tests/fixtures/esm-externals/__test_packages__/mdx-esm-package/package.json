@@ -1,0 +1,11 @@
+{
+  "name": "mdx-esm-package",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./entry": {
+      "browser": "./browser.mjs",
+      "import": "./entry.mjs"
+    }
+  }
+}

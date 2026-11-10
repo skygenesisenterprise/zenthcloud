@@ -1,0 +1,358 @@
+import {
+  createPprFallbackShellSuspensePromiseForState,
+  getPprFallbackShellState,
+  type PprFallbackShellState,
+} from "./ppr-fallback-shell.js";
+import {
+  isOwnPropertyCheck,
+  isWellKnownProperty,
+  type WellKnownProperty,
+} from "./internal/thenable-well-known-properties.js";
+
+function hasParamProperty<T extends Record<string, unknown>>(obj: T, prop: PropertyKey): boolean {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+export type ThenableParams<T extends Record<string, unknown>> = Promise<T> &
+  Omit<T, WellKnownProperty>;
+
+export type ThenableParamsObserver = Readonly<{
+  observeParamAccess: (keys: readonly string[]) => void;
+  /**
+   * Runs when `then` is read, and when `catch` or `finally` is called (they
+   * read `then` on a native promise). Throwing here fails the read itself
+   * before React counts any pending work, as Next.js does.
+   */
+  observeThenRead?: () => void;
+}>;
+
+const paramsState = new WeakMap<
+  object,
+  {
+    plain: Record<string, unknown>;
+    observer: ThenableParamsObserver | undefined;
+    fallbackShellState: PprFallbackShellState | null;
+  }
+>();
+
+function getParamsState(value: unknown) {
+  return value !== null && typeof value === "object" ? paramsState.get(value) : undefined;
+}
+
+/** Serialize backing values without reading a framework fallback-key proxy. */
+export function getFallbackParamsSnapshot(
+  value: unknown,
+): Promise<Record<string, unknown>> | undefined {
+  const state = getParamsState(value);
+  return state?.fallbackShellState ? Promise.resolve(state.plain) : undefined;
+}
+
+/** Reattach only framework metadata; argument values always come from the decoder. */
+export function restoreThenableParams<T extends Record<string, unknown>>(
+  decoded: T,
+  original: unknown,
+): ThenableParams<T> {
+  const state = getParamsState(original);
+  return createThenableParams(decoded, state?.observer, state?.fallbackShellState ?? null);
+}
+
+function observeParamKeys(
+  observer: ThenableParamsObserver | undefined,
+  keys: readonly string[],
+): void {
+  if (observer) {
+    observer.observeParamAccess(keys);
+  }
+}
+
+function observeAllParamKeys<T extends Record<string, unknown>>(
+  observer: ThenableParamsObserver | undefined,
+  plain: T,
+): void {
+  observeParamKeys(observer, Object.keys(plain));
+}
+
+function observeReadableParamKeys<T extends Record<string, unknown>>(
+  observer: ThenableParamsObserver | undefined,
+  plain: T,
+): void {
+  const keys = Object.keys(plain).filter((key) => !isWellKnownProperty(key));
+  observeParamKeys(observer, keys);
+}
+
+function isPromiseContinuation(prop: PropertyKey): boolean {
+  return prop === "then" || prop === "catch" || prop === "finally";
+}
+
+/**
+ * Build a proxy around `plain` that preserves fallback-key suspension.
+ * This is the value `await params` resolves to during fallback-shell
+ * prerendering. Known params are readable synchronously; fallback params
+ * suspend (throw a hanging promise) only when actually accessed.
+ *
+ * The handler is typed as `ProxyHandler<T>` and no cast is needed because
+ * the target is already `plain: T`.
+ */
+function createResolvedParamsProxy<T extends Record<string, unknown>>(
+  plain: T,
+  fallbackParamNames: ReadonlySet<string> | null,
+  observer: ThenableParamsObserver | undefined,
+  getFallbackShellPromise: () => Promise<T> | null,
+): T {
+  if (!fallbackParamNames || fallbackParamNames.size === 0) {
+    return plain;
+  }
+
+  function isFallbackParam(prop: PropertyKey): boolean {
+    return typeof prop === "string" && fallbackParamNames !== null && fallbackParamNames.has(prop);
+  }
+
+  const handler: ProxyHandler<T> = {
+    get(_target, prop, _receiver) {
+      if (typeof prop === "string" && !isWellKnownProperty(prop)) {
+        observeParamKeys(observer, [prop]);
+      }
+
+      if (!isWellKnownProperty(prop) && hasParamProperty(plain, prop)) {
+        if (isFallbackParam(prop)) {
+          const p = getFallbackShellPromise();
+          if (p) throw p;
+        }
+        return Reflect.get(plain, prop);
+      }
+
+      return Reflect.get(plain, prop);
+    },
+    getOwnPropertyDescriptor(_target, prop) {
+      if (typeof prop === "string" && !isWellKnownProperty(prop)) {
+        observeParamKeys(observer, [prop]);
+      }
+
+      if (!isWellKnownProperty(prop) && hasParamProperty(plain, prop)) {
+        if (isFallbackParam(prop)) {
+          return {
+            configurable: true,
+            enumerable: true,
+            get() {
+              const p = getFallbackShellPromise();
+              if (p) throw p;
+            },
+          };
+        }
+
+        return {
+          configurable: true,
+          enumerable: true,
+          value: Reflect.get(plain, prop),
+          writable: true,
+        };
+      }
+
+      return Reflect.getOwnPropertyDescriptor(plain, prop);
+    },
+    has(_target, prop) {
+      if (typeof prop === "string" && !isWellKnownProperty(prop)) {
+        observeParamKeys(observer, [prop]);
+      }
+
+      return (
+        Reflect.has(plain, prop) || (!isWellKnownProperty(prop) && hasParamProperty(plain, prop))
+      );
+    },
+    ownKeys() {
+      observeReadableParamKeys(observer, plain);
+      return Reflect.ownKeys(plain).filter((prop) => !isWellKnownProperty(prop));
+    },
+  };
+
+  return new Proxy(plain, handler);
+}
+
+/**
+ * Wrap a `Promise<T>` with a proxy that also exposes param properties for
+ * synchronous access. TypeScript cannot prove this hybrid shape statically,
+ * so the single `as ThenableParams<T>` cast is isolated here.
+ */
+function createThenableParamsProxy<T extends Record<string, unknown>>(
+  promise: Promise<T>,
+  handler: ProxyHandler<Promise<T>>,
+): ThenableParams<T> {
+  return new Proxy(promise, handler) as ThenableParams<T>;
+}
+
+export function makeThenableParams<T extends Record<string, unknown>>(
+  obj: T,
+  observer?: ThenableParamsObserver,
+): ThenableParams<T> {
+  return createThenableParams(obj, observer, getPprFallbackShellState());
+}
+
+function createThenableParams<T extends Record<string, unknown>>(
+  obj: T,
+  observer: ThenableParamsObserver | undefined,
+  fallbackShellState: PprFallbackShellState | null,
+): ThenableParams<T> {
+  const plain = { ...obj };
+  const fallbackParamNames =
+    fallbackShellState &&
+    Object.keys(plain).some((key) => fallbackShellState.fallbackParamNames.has(key))
+      ? fallbackShellState.fallbackParamNames
+      : null;
+  let fallbackShellPromise: Promise<T> | null = null;
+  let fallbackShellPromiseController: AbortController | null = null;
+
+  function getFallbackShellPromise(): Promise<T> | null {
+    // `fallbackParamNames` is non-null only when this params object was built
+    // inside a fallback-shell scope that owns one of these keys, so the
+    // originating `fallbackShellState` is captured here rather than re-read
+    // lazily from the ALS store. Capturing keeps fallback-key access suspending
+    // against the shell that produced this object even if the object escapes
+    // the ALS scope before the key is read — without it, an out-of-scope read
+    // would return `null` and silently leak the raw `[slug]` placeholder (and
+    // diverge between the `get` and `getOwnPropertyDescriptor` traps).
+    // Promise creation stays lazy so the dynamic-boundary side effects only
+    // fire on first actual fallback-key access.
+    if (!fallbackParamNames || !fallbackShellState) return null;
+    // `preparePprFallbackShellFinalRender` swaps in a fresh `AbortController`
+    // on the warmup->final transition. Re-derive the hanging promise whenever
+    // the live controller has changed so suspension always tracks the
+    // controller the lifecycle will actually abort, instead of a stale signal
+    // from a prior phase. This also re-applies the dynamic-boundary side
+    // effects against the current phase.
+    if (
+      fallbackShellPromise &&
+      fallbackShellPromiseController === fallbackShellState.abortController
+    ) {
+      return fallbackShellPromise;
+    }
+    fallbackShellPromiseController = fallbackShellState.abortController;
+    fallbackShellPromise = createPprFallbackShellSuspensePromiseForState<T>(
+      fallbackShellState,
+      "`params`",
+    );
+    return fallbackShellPromise;
+  }
+
+  const resolvedParams = createResolvedParamsProxy(
+    plain,
+    fallbackParamNames,
+    observer,
+    getFallbackShellPromise,
+  );
+
+  const promise = Promise.resolve(resolvedParams);
+
+  function isFallbackParam(prop: PropertyKey): boolean {
+    return typeof prop === "string" && (fallbackParamNames?.has(prop) ?? false);
+  }
+
+  const handler: ProxyHandler<Promise<T>> = {
+    get(target, prop, receiver) {
+      if (isPromiseContinuation(prop)) {
+        if (prop === "then") observer?.observeThenRead?.();
+        const value = Reflect.get(target, prop, receiver);
+        if (typeof value !== "function") return value;
+        return (...args: unknown[]) => {
+          if (prop !== "then") observer?.observeThenRead?.();
+          // Only observe all keys when NOT in fallback-shell mode.
+          // In fallback-shell mode, let the resolved params proxy report
+          // actual property access lazily.
+          if (!fallbackParamNames) {
+            try {
+              observeAllParamKeys(observer, plain);
+            } catch (error) {
+              // Reject like a native promise instead of throwing. React counts
+              // a pending chunk before it calls `then` (when it serializes a
+              // promise prop, and when its dev build serializes component
+              // props), so a synchronous throw leaves that chunk open and the
+              // stream never closes.
+              return Reflect.apply(value, Promise.reject(error), args);
+            }
+          }
+          return Reflect.apply(value, target, args);
+        };
+      }
+
+      if (prop === "reason" && Object.hasOwn(target, prop)) {
+        // React writes a rejected thenable's `reason` onto it and reads it back
+        // after counting a pending chunk. Like Next.js, return what React
+        // wrote without counting a param access.
+        return Reflect.get(target, prop);
+      }
+
+      if (typeof prop === "string" && !isWellKnownProperty(prop)) {
+        observeParamKeys(observer, [prop]);
+      }
+
+      if (!isWellKnownProperty(prop) && hasParamProperty(plain, prop)) {
+        if (isFallbackParam(prop)) {
+          const p = getFallbackShellPromise();
+          if (p) throw p;
+        }
+        return Reflect.get(plain, prop);
+      }
+
+      const value = Reflect.get(target, prop, receiver);
+      if (typeof value !== "function") return value;
+      // Own-property checks answer through the traps below, so they see (and
+      // observe) the param keys, as `Object.prototype.hasOwnProperty.call`
+      // does.
+      return value.bind(isOwnPropertyCheck(prop) ? receiver : target);
+    },
+    getOwnPropertyDescriptor(target, prop) {
+      if (typeof prop === "string" && !isWellKnownProperty(prop)) {
+        observeParamKeys(observer, [prop]);
+      }
+
+      if (!isWellKnownProperty(prop) && hasParamProperty(plain, prop)) {
+        if (isFallbackParam(prop)) {
+          return {
+            configurable: true,
+            enumerable: true,
+            get() {
+              const p = getFallbackShellPromise();
+              if (p) throw p;
+            },
+          };
+        }
+
+        return {
+          configurable: true,
+          enumerable: true,
+          value: Reflect.get(plain, prop),
+          writable: true,
+        };
+      }
+
+      return Reflect.getOwnPropertyDescriptor(target, prop);
+    },
+    has(target, prop) {
+      if (typeof prop === "string" && !isWellKnownProperty(prop)) {
+        observeParamKeys(observer, [prop]);
+      }
+
+      return (
+        Reflect.has(target, prop) || (!isWellKnownProperty(prop) && hasParamProperty(plain, prop))
+      );
+    },
+    ownKeys() {
+      observeReadableParamKeys(observer, plain);
+      return Reflect.ownKeys(plain).filter((prop) => !isWellKnownProperty(prop));
+    },
+    set(target, prop, value) {
+      // Write straight to the promise. Without this trap, a write such as
+      // React's `thenable.reason = error` reads the descriptor through the
+      // getOwnPropertyDescriptor trap and counts as a param access, which can
+      // throw inside React's settle callback.
+      return Reflect.set(target, prop, value);
+    },
+  };
+
+  const params = createThenableParamsProxy(promise, handler);
+  paramsState.set(params, {
+    plain,
+    observer,
+    fallbackShellState: fallbackParamNames ? fallbackShellState : null,
+  });
+  return params;
+}

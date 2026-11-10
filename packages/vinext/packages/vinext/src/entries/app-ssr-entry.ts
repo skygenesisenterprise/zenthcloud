@@ -1,0 +1,49 @@
+import { resolveRuntimeEntryModule } from "./runtime-entry-module.js";
+
+/**
+ * Generate the virtual SSR entry module.
+ *
+ * This runs in the `ssr` Vite environment. It receives an RSC stream,
+ * deserializes it to a React tree, and renders to HTML.
+ *
+ * When `hasPagesDir` is true (hybrid App + Pages Router project), the SSR
+ * entry also re-exports selected Pages server entry hooks from
+ * `virtual:vinext-server-entry` so the RSC bundle can access Pages Router
+ * route metadata and fallback dispatchers via `import("./ssr/index.js")`.
+ *
+ * `nitroPublicFilesEntry` wraps the default export for Nitro, so a public file
+ * the router resolves is served by Nitro's static handler.
+ */
+export function generateSsrEntry(
+  hasPagesDir = false,
+  nitroPublicFilesEntry: string | null = null,
+): string {
+  const entryPath = resolveRuntimeEntryModule("app-ssr-entry");
+
+  return `
+export * from ${JSON.stringify(entryPath)};
+${
+  nitroPublicFilesEntry
+    ? `
+import ssrEntry from ${JSON.stringify(entryPath)};
+import { withNitroPublicFiles } from ${JSON.stringify(nitroPublicFilesEntry)};
+export default withNitroPublicFiles(ssrEntry);
+`
+    : `export { default } from ${JSON.stringify(entryPath)};`
+}
+${
+  hasPagesDir
+    ? `
+export {
+  __ensureInstrumentation,
+  getRuntimePageDataKind,
+  handleApiRoute,
+  matchApiRoute,
+  matchPageRoute,
+  pageRoutes,
+  renderPage,
+} from "virtual:vinext-server-entry";
+`
+    : ""
+}`;
+}

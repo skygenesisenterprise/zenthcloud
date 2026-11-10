@@ -1,0 +1,2101 @@
+import { CACHEABILITY_REQUEST_STATE } from "../packages/vinext/src/shims/cacheability-classification.js";
+import { withResponseStageCacheability } from "../packages/vinext/src/server/response-stage-cacheability.js";
+import { CloudflareCdnCacheAdapter } from "../packages/cloudflare/src/cache/cdn-adapter.runtime.js";
+import {
+  setCdnCacheAdapter,
+  DefaultCdnCacheAdapter,
+} from "../packages/vinext/src/shims/cdn-cache.js";
+import { runWithExecutionContext } from "../packages/vinext/src/shims/request-context.js";
+import React from "react";
+import { describe, expect, it, vi } from "vite-plus/test";
+import {
+  renderPagesPageResponse,
+  isPagesStreamingBot,
+  generatePagesETag,
+} from "../packages/vinext/src/server/pages-page-response.js";
+import { resolvePagesPageData } from "../packages/vinext/src/server/pages-page-data.js";
+import { renderTracedPagesPageResponse } from "../packages/vinext/src/server/pages-page-handler.js";
+
+function getStartTags(html: string, tagName: string): string[] {
+  const tags: string[] = [];
+  const normalizedHtml = html.toLowerCase();
+  const marker = `<${tagName.toLowerCase()}`;
+  let offset = 0;
+
+  while (offset < html.length) {
+    const start = normalizedHtml.indexOf(marker, offset);
+    if (start === -1) break;
+    const boundary = normalizedHtml[start + marker.length];
+    if (boundary !== ">" && !/\s/.test(boundary ?? "")) {
+      offset = start + marker.length;
+      continue;
+    }
+    const end = normalizedHtml.indexOf(">", start + marker.length);
+    if (end === -1) break;
+    tags.push(html.slice(start, end + 1));
+    offset = end + 1;
+  }
+
+  return tags;
+}
+
+function expectFragmentsInOrder(html: string, fragments: string[]): void {
+  let previousIndex = -1;
+  for (const fragment of fragments) {
+    const index = html.indexOf(fragment);
+    expect(index, `missing or out-of-order fragment: ${fragment}`).toBeGreaterThan(previousIndex);
+    previousIndex = index;
+  }
+}
+
+function createStream(chunks: string[]): ReadableStream<Uint8Array> {
+  return new ReadableStream({
+    start(controller) {
+      const encoder = new TextEncoder();
+      for (const chunk of chunks) {
+        controller.enqueue(encoder.encode(chunk));
+      }
+      controller.close();
+    },
+  });
+}
+
+function createByteStream(chunks: Uint8Array[]): ReadableStream<Uint8Array> {
+  return new ReadableStream({
+    start(controller) {
+      for (const chunk of chunks) {
+        controller.enqueue(chunk);
+      }
+      controller.close();
+    },
+  });
+}
+
+function createFailingStream(error: Error): ReadableStream<Uint8Array> {
+  return new ReadableStream({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode("<div>partial"));
+      controller.error(error);
+    },
+  });
+}
+
+async function settleMicrotasks(): Promise<void> {
+  await Promise.resolve();
+  await Promise.resolve();
+}
+
+/**
+ * Stand in for a rendered Document: mark `html`'s Head, Main and NextScript
+ * placeholders with the token the renderer provides on `element`.
+ */
+function renderMockDocument(element: React.ReactNode, html: string): string {
+  const token = (element as React.ReactElement<{ value: string }>).props.value;
+  return html
+    .replace(
+      /<head([^>]*)>/,
+      (_, attributes) => `<head${attributes} data-vinext-head-open="${token}">`,
+    )
+    .replace("</head>", () => `<template data-vinext-head-close="${token}"></template></head>`)
+    .replace("<!-- __NEXT_MAIN__ -->", () => `<!--__NEXT_MAIN__:${token}-->`)
+    .replace("<!-- __NEXT_SCRIPTS__ -->", () => `<!--__NEXT_SCRIPTS__:${token}-->`);
+}
+
+function createCommonOptions() {
+  const clearSsrContext = vi.fn();
+  const createPageElement = vi.fn((pageProps: Record<string, unknown>) =>
+    React.createElement("div", {
+      "data-page": typeof pageProps.title === "string" ? pageProps.title : "",
+    }),
+  );
+  const isrSet = vi.fn(async () => {});
+  const renderDocumentToString = vi.fn(async (element: React.ReactNode) =>
+    renderMockDocument(
+      element,
+      '<!DOCTYPE html><html><head></head><body><div id="__next"><!-- __NEXT_MAIN__ --></div><!-- __NEXT_SCRIPTS__ --></body></html>',
+    ),
+  );
+  const renderToReadableStream = vi.fn(async () => createStream(["<div>live-body</div>"]));
+
+  return {
+    clearSsrContext,
+    createPageElement,
+    isrSet,
+    renderDocumentToString,
+    renderToReadableStream,
+    options: {
+      assetTags: '<script type="module" src="/entry.js" crossorigin></script>',
+      buildId: "build-123",
+      clearSsrContext,
+      createPageElement,
+      disableOptimizedLoading: false,
+      DocumentComponent: function TestDocument() {
+        return null;
+      },
+      flushPreloads: vi.fn(async () => {}),
+      fontLinkHeader: "</font.woff2>; rel=preload; as=font; type=font/woff2; crossorigin",
+      fontPreloads: [{ href: "/font.woff2", type: "font/woff2" }],
+      getFontLinks: vi.fn(() => ["/font.css"]),
+      getFontStyles: vi.fn(() => [".font { font-family: Test; }"]),
+      getSSRHeadHTML: vi.fn(() => '<meta name="test-head" content="1" />'),
+      gsspRes: null,
+      isrCacheKey(_router: string, pathname: string) {
+        return `pages:${pathname}`;
+      },
+      isrRevalidateSeconds: null,
+      isrSet,
+      i18n: {
+        locale: "en",
+        locales: ["en", "fr"],
+        defaultLocale: "en",
+        domainLocales: [{ domain: "example.com", defaultLocale: "en", locales: ["en"] }],
+      },
+      pageProps: { title: "hello" },
+      params: { slug: "post" },
+      renderDocumentToString,
+      renderToReadableStream,
+      resetSSRHead: vi.fn(),
+      routePattern: "/posts/[slug]",
+      routeUrl: "/posts/post",
+      safeJsonStringify(value: unknown) {
+        return JSON.stringify(value);
+      },
+    },
+  };
+}
+
+describe("isPagesStreamingBot", () => {
+  it("detects Googlebot as a streaming bot", () => {
+    expect(isPagesStreamingBot("Googlebot")).toBe(true);
+    expect(isPagesStreamingBot("Googlebot/2.1")).toBe(true);
+  });
+
+  it("does not match Googlebot suffixed variants (Googlebot-Image etc.)", () => {
+    // Googlebot-Image executes no JS so streaming is safe; the regex only
+    // blocks the main Googlebot (and the Google-* prefix bots below).
+    expect(isPagesStreamingBot("Googlebot-Image/1.0")).toBe(false);
+    expect(isPagesStreamingBot("Googlebot-News")).toBe(false);
+  });
+
+  it("detects Google-PageRenderer via the HTML_LIMITED_BOT_UA_RE", () => {
+    expect(
+      isPagesStreamingBot(
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36 Google-PageRenderer Google (+https://developers.google.com/+/web/snippet/)",
+      ),
+    ).toBe(true);
+  });
+
+  it("detects Google crawlers with the -Google suffix", () => {
+    expect(isPagesStreamingBot("Mediapartners-Google/2.1")).toBe(true);
+    expect(isPagesStreamingBot("AdsBot-Google (+http://www.google.com/adsbot.html)")).toBe(true);
+    expect(isPagesStreamingBot("Mozilla/5.0 Storebot-Google/1.0")).toBe(true);
+  });
+
+  it(
+    "handles long non-matching User-Agents without quadratic backtracking",
+    { timeout: 500 },
+    () => {
+      expect(isPagesStreamingBot("a".repeat(64_000))).toBe(false);
+    },
+  );
+
+  it("detects other known HTML-limited bots", () => {
+    expect(isPagesStreamingBot("Bingbot/2.0")).toBe(true);
+    expect(isPagesStreamingBot("facebookexternalhit/1.1")).toBe(true);
+    expect(isPagesStreamingBot("meta-externalagent/1.1")).toBe(true);
+    expect(isPagesStreamingBot("meta-externalfetcher/1.1")).toBe(true);
+    expect(isPagesStreamingBot("Twitterbot/1.0")).toBe(true);
+    expect(isPagesStreamingBot("Slackbot-LinkExpanding 1.0")).toBe(true);
+  });
+
+  it("returns false for normal browser User-Agents", () => {
+    expect(
+      isPagesStreamingBot(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36",
+      ),
+    ).toBe(false);
+    expect(isPagesStreamingBot("curl/7.88.1")).toBe(false);
+    expect(isPagesStreamingBot("")).toBe(false);
+  });
+});
+
+describe("pages page response", () => {
+  it("cancels a pending traced body when document shell construction fails", async () => {
+    const common = createCommonOptions();
+    let cancelled = false;
+    const bodyStream = new ReadableStream<Uint8Array>({
+      cancel() {
+        cancelled = true;
+      },
+    });
+
+    await expect(
+      renderTracedPagesPageResponse({
+        ...common.options,
+        renderDocumentToString: async () => {
+          throw new Error("document shell failed");
+        },
+        renderToReadableStream: async () => bodyStream,
+      }),
+    ).rejects.toThrow("document shell failed");
+    expect(cancelled).toBe(true);
+  });
+
+  it("renders the document shell, merges gSSP headers, and marks streamed HTML responses", async () => {
+    const common = createCommonOptions();
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      gsspRes: {
+        statusCode: 201,
+        getHeaders() {
+          return {
+            "content-type": "application/json",
+            "x-test": "1",
+          };
+        },
+      },
+    });
+
+    expect(response.status).toBe(201);
+    expect(response.headers.get("content-type")).toBe("application/json");
+    expect(response.headers.get("x-test")).toBe("1");
+    expect(response.headers.get("link")).toBe(
+      "</font.woff2>; rel=preload; as=font; type=font/woff2; crossorigin",
+    );
+    expect(
+      (response as Response & { __vinextStreamedHtmlResponse?: boolean })
+        .__vinextStreamedHtmlResponse,
+    ).toBe(true);
+
+    const html = await response.text();
+    expect(html).toContain("<div>live-body</div>");
+    expect(html).toContain('<meta name="test-head" content="1" />');
+    expect(html).toContain('<link rel="stylesheet" href="/font.css" />');
+    expect(html).toContain('<script id="__NEXT_DATA__" type="application/json">');
+    const nextDataMatch = html.match(
+      /<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/,
+    );
+    expect(nextDataMatch).not.toBeNull();
+    expect(JSON.parse(nextDataMatch![1]!)).toMatchObject({
+      locale: "en",
+      locales: ["en", "fr"],
+      defaultLocale: "en",
+    });
+
+    expect(common.clearSsrContext).toHaveBeenCalledTimes(1);
+    expect(common.renderDocumentToString).toHaveBeenCalledTimes(1);
+  });
+
+  it("preserves array-valued non-set-cookie headers from gSSP responses", async () => {
+    const common = createCommonOptions();
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      gsspRes: {
+        statusCode: 200,
+        getHeaders() {
+          return {
+            vary: ["Accept", "Accept-Encoding"],
+            "set-cookie": ["a=1; Path=/", "b=2; Path=/"],
+            "x-custom": 42,
+          };
+        },
+      },
+    });
+
+    expect(response.headers.get("vary")).toBe("Accept, Accept-Encoding");
+    expect(response.headers.get("x-custom")).toBe("42");
+    expect(response.headers.getSetCookie()).toEqual(["a=1; Path=/", "b=2; Path=/"]);
+  });
+
+  it("records the streamed body into the ISR HTML cache without a second page render", async () => {
+    const common = createCommonOptions();
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      DocumentComponent: null,
+      expireSeconds: 300,
+      getSSRHeadHTML: undefined,
+      isrRevalidateSeconds: 60,
+      routeUrl: "/posts/post?draft=0",
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("s-maxage=60, stale-while-revalidate=240");
+    expect(response.headers.get("x-vinext-cache")).toBe("MISS");
+    expect(response.headers.get("x-nextjs-cache")).toBe("MISS");
+    await expect(response.text()).resolves.toContain("<div>live-body</div>");
+    await settleMicrotasks();
+
+    expect(common.createPageElement).toHaveBeenCalledTimes(1);
+    expect(common.isrSet).toHaveBeenCalledTimes(1);
+    expect(common.isrSet).toHaveBeenCalledWith(
+      "pages:/posts/post",
+      expect.objectContaining({
+        kind: "PAGES",
+        html: expect.stringContaining("<div>live-body</div>"),
+        pageData: { pageProps: { title: "hello" } },
+      }),
+      { cacheControl: { revalidate: 60, expire: 300 } },
+    );
+  });
+
+  it("finishes the ISR write before returning for a stale regeneration", async () => {
+    // Stale regeneration has no response whose lifetime the write can extend.
+    const common = createCommonOptions();
+    let written = false;
+    common.isrSet.mockImplementation(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      written = true;
+    });
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      isStaleRegeneration: true,
+      DocumentComponent: null,
+      getSSRHeadHTML: undefined,
+      isrRevalidateSeconds: 60,
+    });
+
+    expect(written).toBe(true);
+    expect(common.isrSet).toHaveBeenCalledWith(
+      "pages:/posts/post",
+      expect.objectContaining({ html: expect.stringContaining("<div>live-body</div>") }),
+      { cacheControl: { revalidate: 60 } },
+    );
+    await response.body?.cancel();
+  });
+
+  it("reports the resolved Pages tag after an on-demand regeneration", async () => {
+    const common = createCommonOptions();
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      DocumentComponent: null,
+      getSSRHeadHTML: undefined,
+      isOnDemandRevalidate: true,
+      isrCachePathname: "/posts/resolved",
+      isrRevalidateSeconds: 60,
+      routeUrl: "/posts/alias",
+    });
+
+    expect(response.headers.get("x-nextjs-cache")).toBe("REVALIDATED");
+    expect(response.headers.get("x-vinext-revalidated-cache-tag")).toBe(
+      encodeURIComponent("_N_T_/posts/resolved"),
+    );
+  });
+
+  it("persists indefinite Pages results while formatting a static response policy", async () => {
+    const common = createCommonOptions();
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      DocumentComponent: null,
+      getSSRHeadHTML: undefined,
+      isrRevalidateSeconds: false,
+    });
+
+    expect(response.headers.get("cache-control")).toBe("s-maxage=31536000, stale-while-revalidate");
+    expect(response.headers.get("x-nextjs-cache")).toBe("MISS");
+    await response.text();
+    await settleMicrotasks();
+
+    expect(common.isrSet).toHaveBeenCalledWith(
+      "pages:/posts/post",
+      expect.objectContaining({ kind: "PAGES" }),
+      { cacheControl: { revalidate: false } },
+    );
+  });
+
+  it("records split UTF-8 chunks without corrupting cached ISR HTML", async () => {
+    const common = createCommonOptions();
+    common.renderToReadableStream.mockResolvedValue(
+      createByteStream([
+        new Uint8Array([0xe2]),
+        new Uint8Array([0x82, 0xac]),
+        new TextEncoder().encode("<div>live-body</div>"),
+      ]),
+    );
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      isrRevalidateSeconds: 60,
+    });
+
+    await expect(response.text()).resolves.toContain("\u20ac<div>live-body</div>");
+    await settleMicrotasks();
+
+    expect(common.isrSet).toHaveBeenCalledWith(
+      "pages:/posts/post",
+      expect.objectContaining({
+        html: expect.stringContaining("\u20ac<div>live-body</div>"),
+      }),
+      { cacheControl: { revalidate: 60 } },
+    );
+  });
+
+  it("does not write a Pages ISR cache entry when the streamed render fails", async () => {
+    const common = createCommonOptions();
+    common.renderToReadableStream.mockResolvedValue(
+      createFailingStream(new Error("stream failed")),
+    );
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    try {
+      const response = await renderPagesPageResponse({
+        ...common.options,
+        isrRevalidateSeconds: 60,
+      });
+
+      await expect(response.text()).rejects.toThrow("stream failed");
+      await settleMicrotasks();
+
+      expect(common.isrSet).not.toHaveBeenCalled();
+      expect(consoleError).toHaveBeenCalledWith(
+        "[vinext] Pages ISR cache write failed for pages:/posts/post:",
+        expect.any(Error),
+      );
+    } finally {
+      consoleError.mockRestore();
+    }
+  });
+
+  it("adds nonce attributes to inline scripts and font tags when provided", async () => {
+    const common = createCommonOptions();
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      assetTags:
+        '<link rel="modulepreload" nonce="pages-test-nonce" href="/entry.js" />\n' +
+        '<script type="module" nonce="pages-test-nonce" src="/entry.js" crossorigin></script>',
+      scriptNonce: "pages-test-nonce",
+    });
+
+    const html = await response.text();
+    expect(html).toContain(
+      '<script id="__NEXT_DATA__" type="application/json" nonce="pages-test-nonce">',
+    );
+    expect(html).toContain('<link rel="stylesheet" nonce="pages-test-nonce" href="/font.css" />');
+    expect(html).toContain(
+      '<link rel="preload" nonce="pages-test-nonce" href="/font.woff2" as="font" type="font/woff2" crossorigin="anonymous" />',
+    );
+    expect(html).toContain('<style data-vinext-fonts nonce="pages-test-nonce">');
+    expect(html).toContain(
+      '<script type="module" nonce="pages-test-nonce" src="/entry.js" crossorigin></script>',
+    );
+  });
+
+  // Ported from Next.js: test/e2e/app-document/rendering.test.ts
+  // https://github.com/vercel/next.js/blob/v16.2.6/test/e2e/app-document/rendering.test.ts
+  it.each([
+    {
+      label: "Head when optimized loading is enabled",
+      disableOptimizedLoading: false,
+      frameworkNonce: "head-nonce",
+      frameworkCrossOrigin: "use-credentials",
+    },
+    {
+      label: "NextScript when optimized loading is disabled",
+      disableOptimizedLoading: true,
+      frameworkNonce: "next-script-nonce",
+      frameworkCrossOrigin: "anonymous",
+    },
+  ])(
+    "keeps framework script ownership with $label",
+    async ({ disableOptimizedLoading, frameworkNonce, frameworkCrossOrigin }) => {
+      const common = createCommonOptions();
+      common.renderDocumentToString.mockImplementation(async (element) =>
+        renderMockDocument(
+          element,
+          '<!DOCTYPE html><html><head data-vinext-head-nonce="head-nonce" data-vinext-head-cross-origin="use-credentials"></head><body><div id="__next"><!-- __NEXT_MAIN__ --></div><span data-vinext-script-nonce="next-script-nonce" data-vinext-script-cross-origin="anonymous"><!-- __NEXT_SCRIPTS__ --></span></body></html>',
+        ),
+      );
+
+      const response = await renderPagesPageResponse({
+        ...common.options,
+        assetTags:
+          '<link rel="modulepreload" href="/entry.js" />\n' +
+          '<script type="module" src="/entry.js"></script>',
+        crossOrigin: "anonymous",
+        disableOptimizedLoading,
+      });
+
+      const html = await response.text();
+      expect(html).not.toContain("data-vinext-head-nonce");
+      expect(html).not.toContain("data-vinext-script-nonce");
+
+      const frameworkScript = getStartTags(html, "script").find((tag) =>
+        tag.includes('src="/entry.js"'),
+      );
+      expect(frameworkScript).toContain(`nonce="${frameworkNonce}"`);
+      expect(frameworkScript).toContain(`crossorigin="${frameworkCrossOrigin}"`);
+
+      const nextDataScript = getStartTags(html, "script").find((tag) =>
+        tag.includes('id="__NEXT_DATA__"'),
+      );
+      expect(nextDataScript).toContain('nonce="next-script-nonce"');
+      expect(nextDataScript).toContain('crossorigin="anonymous"');
+
+      const scriptPreloads = getStartTags(html, "link").filter(
+        (tag) => tag.includes('rel="modulepreload"') || tag.includes('as="script"'),
+      );
+      for (const tag of scriptPreloads) {
+        expect(tag).toContain('nonce="head-nonce"');
+        expect(tag).toContain('crossorigin="use-credentials"');
+      }
+      const fontPreload = getStartTags(html, "link").find((tag) => tag.includes('as="font"'));
+      expect(fontPreload).toContain('crossorigin="anonymous"');
+      expect(fontPreload).not.toContain("nonce=");
+    },
+  );
+
+  it("does not apply configured crossOrigin to user next/head assets", async () => {
+    const common = createCommonOptions();
+    common.options.getSSRHeadHTML = vi.fn(
+      () =>
+        '<script id="user-script" src="/user.js" data-next-head=""></script>' +
+        '<link id="user-preload" rel="preload" as="script" href="/user.js" data-next-head="" />',
+    );
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      DocumentComponent: null,
+      assetTags:
+        '<link rel="modulepreload" href="/entry.js" />\n' +
+        '<script type="module" src="/entry.js"></script>',
+      crossOrigin: "anonymous",
+    });
+
+    const html = await response.text();
+    const userScript = getStartTags(html, "script").find((tag) => tag.includes('id="user-script"'));
+    const userPreload = getStartTags(html, "link").find((tag) => tag.includes('id="user-preload"'));
+    expect(userScript).not.toContain("crossorigin");
+    expect(userPreload).not.toContain("crossorigin");
+
+    const generatedScript = getStartTags(html, "script").find((tag) =>
+      tag.includes('src="/entry.js"'),
+    );
+    const generatedPreload = getStartTags(html, "link").find((tag) =>
+      tag.includes('href="/entry.js"'),
+    );
+    expect(generatedScript).toContain('crossorigin="anonymous"');
+    expect(generatedPreload).toContain('crossorigin="anonymous"');
+  });
+
+  it("places collected head tags before custom Document children", async () => {
+    // Ported from Next.js: test/e2e/next-head/index.test.ts
+    // https://github.com/vercel/next.js/blob/canary/test/e2e/next-head/index.test.ts
+    const common = createCommonOptions();
+    common.renderDocumentToString.mockImplementation(async (element) =>
+      renderMockDocument(
+        element,
+        '<!DOCTYPE html><html><head data-theme="dark"><meta name="document-child" content="1" /></head>' +
+          '<body><div id="__next"><!-- __NEXT_MAIN__ --></div><!-- __NEXT_SCRIPTS__ --></body></html>',
+      ),
+    );
+    common.options.getSSRHeadHTML = vi.fn(
+      () =>
+        '<meta charset="utf-8" data-next-head="" />' +
+        '<meta name="viewport" content="width=device-width" data-next-head="" />' +
+        '<meta name="page-head" content="1" data-next-head="" />',
+    );
+
+    const response = await renderPagesPageResponse(common.options);
+    const html = await response.text();
+    const headContents = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i)?.[1] ?? "";
+
+    expect(headContents.trimStart()).toMatch(/^<meta charset="utf-8"/);
+    expectFragmentsInOrder(headContents, [
+      'charset="utf-8"',
+      'name="viewport"',
+      'name="page-head"',
+      'name="document-child"',
+    ]);
+  });
+
+  it("places collected head tags before generated font tags without a custom Document", async () => {
+    // Ported from Next.js: packages/next/src/pages/_document.tsx
+    // https://github.com/vercel/next.js/blob/canary/packages/next/src/pages/_document.tsx
+    const common = createCommonOptions();
+    common.options.getSSRHeadHTML = vi.fn(
+      () =>
+        '<meta charset="utf-8" data-next-head="" />' +
+        '<meta name="viewport" content="width=device-width" data-next-head="" />' +
+        '<meta name="page-head" content="1" data-next-head="" />',
+    );
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      DocumentComponent: null,
+    });
+    const html = await response.text();
+    const headContents = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i)?.[1] ?? "";
+
+    expect(headContents.trimStart()).toMatch(/^<meta charset="utf-8"/);
+    expectFragmentsInOrder(headContents, ['name="page-head"', 'rel="stylesheet"', 'as="font"']);
+  });
+
+  it("renders page before collecting SSR head HTML to prevent style race conditions", async () => {
+    // Ported from Next.js: vercel/next.js@9853944
+    // styled-jsx (and <Head>) styles must be collected AFTER rendering completes,
+    // not concurrently. Otherwise dynamic styles that are registered during
+    // rendering are silently dropped from the HTML output.
+    const common = createCommonOptions();
+    const callOrder: string[] = [];
+
+    common.renderToReadableStream.mockImplementation(async () => {
+      // Verify getSSRHeadHTML has NOT been called yet
+      expect(common.options.getSSRHeadHTML).not.toHaveBeenCalled();
+      callOrder.push("render");
+      // Return the original stream by calling the original factory
+      return createStream(["<div>live-body</div>"]);
+    });
+
+    (common.options.getSSRHeadHTML as ReturnType<typeof vi.fn>).mockImplementation(() => {
+      callOrder.push("head");
+      return '<meta name="test-head" content="1" />';
+    });
+
+    await renderPagesPageResponse(common.options);
+
+    expect(callOrder).toEqual(["render", "head"]);
+  });
+
+  it("clears SSR context only after rendering, not before", async () => {
+    const common = createCommonOptions();
+    const callOrder: string[] = [];
+
+    common.renderToReadableStream.mockImplementation(async () => {
+      // Verify clearSsrContext has NOT been called yet
+      expect(common.clearSsrContext).not.toHaveBeenCalled();
+      callOrder.push("render");
+      return createStream(["<div>live-body</div>"]);
+    });
+
+    common.clearSsrContext.mockImplementation(() => {
+      callOrder.push("clear");
+    });
+
+    await renderPagesPageResponse(common.options);
+
+    expect(callOrder).toEqual(["render", "clear"]);
+  });
+
+  // Matches Next.js's `pages-handler.ts` (revalidate: 0 →
+  // getCacheControlHeader). gSSP responses with no user-set Cache-Control
+  // must default to no-store so middlebox caches do not pin per-request
+  // server-rendered HTML. See packages/vinext/src/server/dev-server.ts for
+  // the dev-server twin. Fixes #1461.
+  it("applies default no-store Cache-Control for gSSP responses without one", async () => {
+    const common = createCommonOptions();
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      gsspRes: {
+        statusCode: 200,
+        getHeaders() {
+          return { "x-test": "1" };
+        },
+      },
+    });
+
+    expect(response.headers.get("cache-control")).toBe(
+      "private, no-cache, no-store, max-age=0, must-revalidate",
+    );
+  });
+
+  it("preserves user-set Cache-Control from gSSP res.setHeader", async () => {
+    const common = createCommonOptions();
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      gsspRes: {
+        statusCode: 200,
+        getHeaders() {
+          return { "Cache-Control": "public, max-age=60" };
+        },
+      },
+    });
+
+    expect(response.headers.get("cache-control")).toBe("public, max-age=60");
+  });
+
+  it("preserves an authored GSSP provider opt-in independently of its browser policy", async () => {
+    const common = createCommonOptions();
+    try {
+      const response = await withResponseStageCacheability(
+        {
+          buildId: "test",
+          cache: "shared",
+          context: { waitUntil() {} },
+          rawManifest: null,
+          request: new Request("https://example.com/page"),
+          resolvedRoutePathname: "/page",
+          registerCacheAdapters: () => setCdnCacheAdapter(new CloudflareCdnCacheAdapter()),
+        },
+        (context) => {
+          Object.assign(Reflect.get(context, CACHEABILITY_REQUEST_STATE), {
+            route: { kind: "pages-page", pattern: "/page" },
+            outcome: { cacheable: false },
+          });
+          return runWithExecutionContext(context, () =>
+            renderPagesPageResponse({
+              ...common.options,
+              gsspRes: {
+                statusCode: 200,
+                getHeaders: () => ({
+                  "Cache-Control": "private, max-age=300",
+                  "Cloudflare-CDN-Cache-Control": "max-age=60",
+                }),
+              },
+            }),
+          );
+        },
+      );
+      expect(response.headers.get("Cache-Control")).toBe("private, max-age=300");
+      expect(response.headers.get("Cloudflare-CDN-Cache-Control")).toBe("public, max-age=60");
+      expect(await response.text()).toContain("__NEXT_DATA__");
+    } finally {
+      setCdnCacheAdapter(new DefaultCdnCacheAdapter());
+    }
+  });
+
+  it("preserves user-set Cache-Control regardless of header name case", async () => {
+    const common = createCommonOptions();
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      gsspRes: {
+        statusCode: 200,
+        getHeaders() {
+          return { "cache-control": "s-maxage=120" };
+        },
+      },
+    });
+
+    expect(response.headers.get("cache-control")).toBe("s-maxage=120");
+  });
+
+  it("lets ISR Cache-Control win over the gSSP default when both apply", async () => {
+    const common = createCommonOptions();
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      gsspRes: {
+        statusCode: 200,
+        getHeaders() {
+          return { "x-test": "1" };
+        },
+      },
+      isrRevalidateSeconds: 60,
+    });
+
+    expect(response.headers.get("cache-control")).toBe("s-maxage=60, stale-while-revalidate");
+  });
+
+  it("does not set a gSSP default Cache-Control when there is no gSSP response", async () => {
+    const common = createCommonOptions();
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      gsspRes: null,
+    });
+
+    expect(response.headers.get("cache-control")).toBeNull();
+  });
+
+  it("sets browser revalidation Cache-Control for static Pages responses in Next deploy mode", async () => {
+    const oldValue = process.env.VINEXT_NEXT_DEPLOY_CACHE_CONTROL;
+    process.env.VINEXT_NEXT_DEPLOY_CACHE_CONTROL = "1";
+    try {
+      const common = createCommonOptions();
+
+      const response = await renderPagesPageResponse({
+        ...common.options,
+        gsspRes: null,
+        isStaticPropsRoute: true,
+        isrRevalidateSeconds: null,
+      });
+
+      expect(response.headers.get("cache-control")).toBe("public, max-age=0, must-revalidate");
+    } finally {
+      if (oldValue === undefined) {
+        delete process.env.VINEXT_NEXT_DEPLOY_CACHE_CONTROL;
+      } else {
+        process.env.VINEXT_NEXT_DEPLOY_CACHE_CONTROL = oldValue;
+      }
+    }
+  });
+
+  it("disables pages ISR caching when a script nonce is present", async () => {
+    const common = createCommonOptions();
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      isrRevalidateSeconds: 60,
+      scriptNonce: "pages-test-nonce",
+    });
+
+    expect(response.headers.get("cache-control")).toBe("no-store, must-revalidate");
+    expect(response.headers.get("x-vinext-cache")).toBeNull();
+    expect(common.isrSet).not.toHaveBeenCalled();
+  });
+
+  // Regression test for #1468: custom `_document.getInitialProps` that wraps
+  // `ctx.renderPage({ enhanceApp, enhanceComponent })` (e.g. for
+  // styled-components, emotion) must run the enhancers around the page tree.
+  //
+  // Mirrors the contract in Next.js render.tsx (search `renderPage`) and the
+  // styled-components integration test in
+  // .nextjs-ref/test/development/basic/styled-components/pages/_document.js
+  it("invokes _document.getInitialProps with a renderPage that runs enhanceApp/enhanceComponent", async () => {
+    const common = createCommonOptions();
+    const calls: string[] = [];
+
+    // Custom Document.getInitialProps that wraps renderPage with enhancers,
+    // styled-components style.
+    function MyDocument() {
+      return null;
+    }
+    (MyDocument as unknown as { getInitialProps: unknown }).getInitialProps = async (ctx: {
+      renderPage: (opts?: {
+        enhanceApp?: (App: React.ComponentType<{ children?: React.ReactNode }>) => unknown;
+        enhanceComponent?: (Comp: React.ComponentType<unknown>) => unknown;
+      }) => Promise<{ html: string; head?: React.ReactNode[] }> | { html: string };
+    }) => {
+      calls.push("getInitialProps");
+      const result = await ctx.renderPage({
+        enhanceApp: (App) => {
+          calls.push("enhanceApp");
+          return (props: { children?: React.ReactNode }) =>
+            React.createElement(
+              "div",
+              { "data-enhanced-app": "true" },
+              React.createElement(App, props),
+            );
+        },
+        enhanceComponent: (Comp) => {
+          calls.push("enhanceComponent");
+          return Comp;
+        },
+      });
+      return { html: result.html, head: [] };
+    };
+
+    // The enhancePageElement option exposes App/Component separation to the
+    // SSR pipeline so the renderPage closure can rewrap them.
+    function App({ children }: { children?: React.ReactNode }) {
+      return React.createElement("section", { "data-app": "true" }, children);
+    }
+    function Page() {
+      return React.createElement("p", null, "page");
+    }
+    const enhancePageElement = vi.fn(
+      (opts: {
+        enhanceApp?: (App: React.ComponentType<{ children?: React.ReactNode }>) => unknown;
+        enhanceComponent?: (Comp: React.ComponentType<unknown>) => unknown;
+      }) => {
+        const FinalApp = opts.enhanceApp
+          ? (opts.enhanceApp(App) as React.ComponentType<{ children?: React.ReactNode }>)
+          : App;
+        const FinalComp = opts.enhanceComponent
+          ? (opts.enhanceComponent(Page) as React.ComponentType<unknown>)
+          : Page;
+        return React.createElement(FinalApp, null, React.createElement(FinalComp, null));
+      },
+    );
+
+    // Use the real React renderer so the enhanced element actually
+    // renders into the body — the default mock returns a fixed string.
+    const reactDomServer = await import("react-dom/server.edge");
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      DocumentComponent: MyDocument as unknown as React.ComponentType,
+      enhancePageElement,
+      renderToReadableStream: async (element: React.ReactNode) =>
+        await reactDomServer.renderToReadableStream(element as React.ReactElement),
+    });
+
+    const html = await response.text();
+    // Both enhancers ran during renderPage.
+    expect(calls).toContain("getInitialProps");
+    expect(calls).toContain("enhanceApp");
+    expect(calls).toContain("enhanceComponent");
+    // The enhanced tree appears in the body (renderPage returned its html).
+    expect(html).toContain('data-enhanced-app="true"');
+    expect(html).toContain('data-app="true"');
+    expect(html).toContain("<p>page</p>");
+    expect(enhancePageElement).toHaveBeenCalledTimes(1);
+  });
+
+  it("passes req/res into _document.getInitialProps and applies res headers/status", async () => {
+    const common = createCommonOptions();
+    const documentHeaders: Record<string, string | number | boolean | string[]> = {};
+    const documentRes = {
+      headersSent: false,
+      statusCode: 200,
+      getHeaders: () => documentHeaders,
+      setHeader(name: string, value: string | number | boolean | string[]) {
+        documentHeaders[name] = value;
+      },
+    };
+
+    function MyDocument() {
+      return null;
+    }
+    (MyDocument as unknown as { getInitialProps: unknown }).getInitialProps = async (ctx: {
+      req?: { cookies?: Record<string, string> };
+      res?: typeof documentRes;
+      renderPage: () => Promise<{ html: string }>;
+    }) => {
+      ctx.res?.setHeader("x-document-cookie", ctx.req?.cookies?.theme ?? "missing");
+      if (ctx.res) ctx.res.statusCode = 202;
+      const result = await ctx.renderPage();
+      return { html: result.html };
+    };
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      DocumentComponent: MyDocument as unknown as React.ComponentType,
+      documentReqRes: {
+        req: { cookies: { theme: "dark" } },
+        res: documentRes,
+      },
+      enhancePageElement: () => React.createElement("p", null, "page"),
+    });
+
+    expect(response.status).toBe(202);
+    expect(response.headers.get("x-document-cookie")).toBe("dark");
+    expect(await response.text()).toContain("live-body");
+  });
+
+  // Edge case: `getInitialProps` returns `styles` (the styled-components /
+  // emotion pattern collects style tags and returns them). They must be
+  // rendered to a string and merged into the document head.
+  it("renders styles returned from _document.getInitialProps into the head", async () => {
+    const common = createCommonOptions();
+
+    function MyDocument() {
+      return null;
+    }
+    (MyDocument as unknown as { getInitialProps: unknown }).getInitialProps = async (ctx: {
+      // oxlint-disable-next-line @typescript-eslint/no-explicit-any
+      renderPage: (opts?: any) => Promise<{ html: string }>;
+    }) => {
+      const result = await ctx.renderPage();
+      return {
+        html: result.html,
+        styles: React.createElement("style", { "data-collected": "true" }, ".x{color:red}"),
+      };
+    };
+
+    function Page() {
+      return React.createElement("p", null, "page");
+    }
+    const enhancePageElement = vi.fn(() => React.createElement(Page, null));
+
+    const reactDomServer = await import("react-dom/server.edge");
+    // Spy on renderDocumentToString so we can confirm styles are rendered via
+    // the shared helper. Falls back to the real renderer for the styles tree.
+    const renderDocumentToString = vi.fn(async (element: React.ReactNode) => {
+      const stream = await reactDomServer.renderToReadableStream(element as React.ReactElement);
+      const text = await new Response(stream).text();
+      // The document shell render still needs the NEXT placeholders.
+      if (!text.includes("data-collected")) {
+        return renderMockDocument(
+          element,
+          '<!DOCTYPE html><html><head><meta name="document-child" content="1" /></head><body><div id="__next"><!-- __NEXT_MAIN__ --></div><!-- __NEXT_SCRIPTS__ --></body></html>',
+        );
+      }
+      return text;
+    });
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      DocumentComponent: MyDocument as unknown as React.ComponentType,
+      enhancePageElement,
+      renderDocumentToString,
+      renderToReadableStream: async (element: React.ReactNode) =>
+        await reactDomServer.renderToReadableStream(element as React.ReactElement),
+    });
+
+    const html = await response.text();
+    // The collected <style> tag landed in the head.
+    expect(html).toContain('data-collected="true"');
+    expect(html).toContain(".x{color:red}");
+    expect(html.indexOf('name="document-child"')).toBeLessThan(
+      html.indexOf('data-collected="true"'),
+    );
+    // The body still rendered.
+    expect(html).toContain("<p>page</p>");
+  });
+
+  it("splices the page at <Main /> when Document request data contains the marker", async () => {
+    const common = createCommonOptions();
+    const documentModule = await import("../packages/vinext/src/shims/document.js");
+    const { Head, Html, Main, NextScript } = documentModule;
+    const BaseDocument = documentModule.default;
+
+    class RouteDocument extends BaseDocument<{ route?: string }> {
+      static async getInitialProps(ctx: Parameters<typeof BaseDocument.getInitialProps>[0]) {
+        const initialProps = await BaseDocument.getInitialProps(ctx);
+        return { ...initialProps, route: ctx.asPath };
+      }
+
+      render() {
+        return React.createElement(
+          Html,
+          null,
+          React.createElement(Head),
+          React.createElement(
+            "body",
+            { "data-route": this.props.route },
+            React.createElement("script", {
+              dangerouslySetInnerHTML: { __html: "/*<!-- __NEXT_MAIN__ -->*/" },
+            }),
+            React.createElement(Main),
+            React.createElement(NextScript),
+          ),
+        );
+      }
+    }
+
+    const label = "x onload=window.__documentMarkerXss=1//";
+    const routeUrl = `/?probe=__NEXT_MAIN__&label=${label}`;
+    const reactDomServer = await import("react-dom/server.edge");
+    const renderToString = async (element: React.ReactNode) =>
+      new Response(
+        await reactDomServer.renderToReadableStream(element as React.ReactElement),
+      ).text();
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      DocumentComponent: RouteDocument as unknown as React.ComponentType,
+      enhancePageElement: () => React.createElement("div", { title: label }, "page"),
+      renderDocumentToString: renderToString,
+      renderToReadableStream: async (element: React.ReactNode) =>
+        await reactDomServer.renderToReadableStream(element as React.ReactElement),
+      routeUrl,
+    });
+
+    const html = await response.text();
+    expect(getStartTags(html, "body")).toEqual([
+      '<body data-route="/?probe=__NEXT_MAIN__&amp;label=x onload=window.__documentMarkerXss=1//">',
+    ]);
+    expect(html).toContain(
+      '<div id="__next"><div title="x onload=window.__documentMarkerXss=1//">page</div></div>',
+    );
+    expect(html).toContain("<script>/*<!-- __NEXT_MAIN__ -->*/</script>");
+    expect(html).not.toContain("__NEXT_MAIN__:");
+  });
+
+  it("inserts request data with $ replacement patterns verbatim", async () => {
+    const common = createCommonOptions();
+    const title = "$`$'$&";
+    common.options.getSSRHeadHTML = vi.fn(() => `<title>${title}</title>`);
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      pageProps: { title },
+    });
+
+    const html = await response.text();
+    expect(html).toContain(`<head><title>${title}</title>`);
+    expect(html).toContain(`"title":"${title}"`);
+  });
+
+  it("puts the body after a Document without Main and adds no scripts without NextScript, like Next.js", async () => {
+    const common = createCommonOptions();
+    common.renderDocumentToString.mockImplementation(async (element) =>
+      renderMockDocument(element, "<!DOCTYPE html><html><head></head><body></body></html>"),
+    );
+
+    const response = await renderPagesPageResponse(common.options);
+
+    const html = await response.text();
+    expect(html).toMatch(/<\/body><\/html><div>live-body<\/div>$/);
+    expect(html).not.toContain("__NEXT_DATA__");
+  });
+
+  it("uses custom document html and styles without calling renderPage", async () => {
+    const common = createCommonOptions();
+
+    function MyDocument() {
+      return null;
+    }
+    (MyDocument as unknown as { getInitialProps: unknown }).getInitialProps = async () => ({
+      html: '<article id="manual-document-html">MANUAL</article>',
+      styles: React.createElement(
+        "style",
+        { "data-manual-document-style": true },
+        ".manual{color:blue}",
+      ),
+    });
+
+    const enhancePageElement = vi.fn(() => React.createElement("p", null, "page"));
+    const reactDomServer = await import("react-dom/server.edge");
+    const renderToReadableStream = vi.fn(async (element: React.ReactNode) =>
+      reactDomServer.renderToReadableStream(element as React.ReactElement),
+    );
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      DocumentComponent: MyDocument as unknown as React.ComponentType,
+      enhancePageElement,
+      renderToReadableStream,
+    });
+    const html = await response.text();
+
+    expect(html).toContain('id="manual-document-html">MANUAL');
+    expect(html).toContain("data-manual-document-style");
+    expect(html).toContain(".manual{color:blue}");
+    expect(html).not.toContain("live-body");
+    expect(enhancePageElement).not.toHaveBeenCalled();
+    expect(renderToReadableStream).toHaveBeenCalledTimes(1);
+  });
+
+  it("propagates _document.getInitialProps errors without rendering the page", async () => {
+    const common = createCommonOptions();
+
+    function MyDocument() {
+      return null;
+    }
+    (MyDocument as unknown as { getInitialProps: unknown }).getInitialProps = async () => {
+      throw new Error("boom");
+    };
+
+    const enhancePageElement = vi.fn(() => React.createElement("p", null, "enhanced"));
+
+    await expect(
+      renderPagesPageResponse({
+        ...common.options,
+        DocumentComponent: MyDocument as unknown as React.ComponentType,
+        enhancePageElement,
+      }),
+    ).rejects.toThrow("boom");
+
+    expect(enhancePageElement).not.toHaveBeenCalled();
+  });
+
+  it.each([undefined, null, 42, {}])(
+    "rejects invalid _document html %j without rendering the page",
+    async (html) => {
+      const common = createCommonOptions();
+
+      function MyDocument() {
+        return null;
+      }
+      (MyDocument as unknown as { getInitialProps: unknown }).getInitialProps = async () => ({
+        html,
+      });
+
+      const enhancePageElement = vi.fn(() => React.createElement("p", null, "enhanced"));
+      const renderToReadableStream = vi.fn(common.options.renderToReadableStream);
+
+      await expect(
+        renderPagesPageResponse({
+          ...common.options,
+          DocumentComponent: MyDocument as unknown as React.ComponentType,
+          enhancePageElement,
+          renderToReadableStream,
+        }),
+      ).rejects.toThrow('should resolve to an object with a "html" prop');
+
+      expect(enhancePageElement).not.toHaveBeenCalled();
+      expect(renderToReadableStream).not.toHaveBeenCalled();
+    },
+  );
+
+  it("propagates _document style serialization errors", async () => {
+    const common = createCommonOptions();
+
+    function MyDocument() {
+      return null;
+    }
+    (MyDocument as unknown as { getInitialProps: unknown }).getInitialProps = async (ctx: {
+      renderPage: () => Promise<{ html: string }>;
+    }) => ({ ...(await ctx.renderPage()), styles: React.createElement("style") });
+
+    const enhancePageElement = vi.fn(() => React.createElement("p", null, "enhanced"));
+    const renderToReadableStream = vi.fn(async () => {
+      if (renderToReadableStream.mock.calls.length === 1) return createStream(["enhanced"]);
+      throw new Error("style serialization failed");
+    });
+
+    await expect(
+      renderPagesPageResponse({
+        ...common.options,
+        DocumentComponent: MyDocument as unknown as React.ComponentType,
+        enhancePageElement,
+        renderToReadableStream,
+      }),
+    ).rejects.toThrow("style serialization failed");
+
+    expect(enhancePageElement).toHaveBeenCalledTimes(1);
+    expect(renderToReadableStream).toHaveBeenCalledTimes(2);
+  });
+
+  // ---------------------------------------------------------------------------
+  // Bot / crawler buffering (streaming-ssr-edge compat)
+  // ---------------------------------------------------------------------------
+
+  // Mirrors the Next.js test: "should not stream to crawlers or google pagerender bot"
+  // from test/e2e/streaming-ssr-edge/streaming-ssr-edge.test.ts.
+  // When the UA is Googlebot the response must be fully buffered (single chunk)
+  // and carry an ETag header.
+  it("buffers the response for Googlebot and attaches an ETag", async () => {
+    const common = createCommonOptions();
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      userAgent: "Googlebot",
+    });
+
+    // Bot responses are NOT streamed — they are plain Responses, not the
+    // marked PagesStreamedHtmlResponse shape.
+    expect(
+      (response as Response & { __vinextStreamedHtmlResponse?: boolean })
+        .__vinextStreamedHtmlResponse,
+    ).toBeUndefined();
+
+    const etag = response.headers.get("etag");
+    expect(etag).toBeDefined();
+    expect(typeof etag).toBe("string");
+    expect((etag as string).length).toBeGreaterThan(0);
+
+    const html = await response.text();
+    expect(html).toContain("live-body");
+    expect(html).toContain('<script id="__NEXT_DATA__" type="application/json">');
+  });
+
+  it("buffers the response for Google-PageRenderer and attaches an ETag", async () => {
+    const common = createCommonOptions();
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      userAgent:
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36 Google-PageRenderer Google (+https://developers.google.com/+/web/snippet/)",
+    });
+
+    const etag = response.headers.get("etag");
+    expect(etag).toBeDefined();
+    expect(typeof etag).toBe("string");
+
+    const html = await response.text();
+    expect(html).toContain("live-body");
+  });
+
+  it("does not buffer the response for a normal browser UA", async () => {
+    const common = createCommonOptions();
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      userAgent:
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
+    });
+
+    // Normal browsers still get the streaming response marker.
+    expect(
+      (response as Response & { __vinextStreamedHtmlResponse?: boolean })
+        .__vinextStreamedHtmlResponse,
+    ).toBe(true);
+    // No ETag on streaming responses.
+    expect(response.headers.get("etag")).toBeNull();
+  });
+
+  it("does not buffer when userAgent is omitted", async () => {
+    const common = createCommonOptions();
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      // userAgent intentionally not provided
+    });
+
+    expect(
+      (response as Response & { __vinextStreamedHtmlResponse?: boolean })
+        .__vinextStreamedHtmlResponse,
+    ).toBe(true);
+    expect(response.headers.get("etag")).toBeNull();
+  });
+
+  // ---------------------------------------------------------------------------
+  // If-None-Match / 304 handling and ISR cache-HIT ETag
+  // ---------------------------------------------------------------------------
+
+  it("returns 304 for a weak If-None-Match on a strong bot ETag", async () => {
+    const common = createCommonOptions();
+
+    // First request: compute the ETag from a full bot render.
+    const firstResponse = await renderPagesPageResponse({
+      ...common.options,
+      userAgent: "Googlebot",
+    });
+    const etag = firstResponse.headers.get("etag");
+    expect(etag).toBeTruthy();
+
+    // Second request: send the strong ETag as a weak validator.
+    const common2 = createCommonOptions();
+    const notModifiedResponse = await renderPagesPageResponse({
+      ...common2.options,
+      userAgent: "Googlebot",
+      ifNoneMatch: `W/${etag}`,
+    });
+
+    expect(notModifiedResponse.status).toBe(304);
+    // 304 must have no body.
+    const body = await notModifiedResponse.text();
+    expect(body).toBe("");
+    // ETag header still present on 304.
+    expect(notModifiedResponse.headers.get("etag")).toBe(etag);
+  });
+
+  it("returns the page for a matching If-None-Match when the CDN adapter sends the 304", async () => {
+    const common = createCommonOptions();
+    const etag = (
+      await renderPagesPageResponse({ ...common.options, userAgent: "Googlebot" })
+    ).headers.get("etag");
+    expect(etag).toBeTruthy();
+
+    // Next.js stores the page before it evaluates the ETag, so an adapter that
+    // stores the completed response receives the page rather than a 304.
+    setCdnCacheAdapter(
+      Object.assign(new DefaultCdnCacheAdapter(), { deferNotModifiedResponse: () => true }),
+    );
+    let response: Response;
+    try {
+      response = await renderPagesPageResponse({
+        ...createCommonOptions().options,
+        userAgent: "Googlebot",
+        ifNoneMatch: etag ?? undefined,
+      });
+    } finally {
+      setCdnCacheAdapter(new DefaultCdnCacheAdapter());
+    }
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("etag")).toBe(etag);
+    expect(generatePagesETag(await response.text())).toBe(etag);
+  });
+
+  it("keeps the 304 for a bodiless page status when the CDN adapter sends the 304", async () => {
+    const deferNotModifiedResponse = vi.fn(() => true);
+    setCdnCacheAdapter(Object.assign(new DefaultCdnCacheAdapter(), { deferNotModifiedResponse }));
+    let response: Response;
+    try {
+      response = await renderPagesPageResponse({
+        ...createCommonOptions().options,
+        statusCode: 204,
+        userAgent: "Googlebot",
+        ifNoneMatch: "*",
+      });
+    } finally {
+      setCdnCacheAdapter(new DefaultCdnCacheAdapter());
+    }
+
+    expect(response.status).toBe(304);
+    expect(deferNotModifiedResponse).not.toHaveBeenCalled();
+  });
+
+  it("returns 200 + ETag when If-None-Match does not match on bot response", async () => {
+    const common = createCommonOptions();
+
+    const response = await renderPagesPageResponse({
+      ...common.options,
+      userAgent: "Googlebot",
+      ifNoneMatch: '"stale-etag-that-wont-match"',
+    });
+
+    expect(response.status).toBe(200);
+    const etag = response.headers.get("etag");
+    expect(etag).toBeTruthy();
+    expect(etag).not.toBe('"stale-etag-that-wont-match"');
+    const html = await response.text();
+    expect(html).toContain("live-body");
+  });
+
+  it("returns the page for a matching If-None-Match sent with If-Modified-Since", async () => {
+    const etag = (
+      await renderPagesPageResponse({ ...createCommonOptions().options, userAgent: "Googlebot" })
+    ).headers.get("etag");
+    expect(etag).toBeTruthy();
+
+    // Next.js gives a page no Last-Modified, so fresh() sends it in full.
+    const response = await renderPagesPageResponse({
+      ...createCommonOptions().options,
+      userAgent: "Googlebot",
+      ifNoneMatch: etag ?? undefined,
+      ifModifiedSince: "Sat, 10 Oct 2026 00:00:00 GMT",
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("etag")).toBe(etag);
+  });
+
+  it("ignores If-None-Match for non-bot UAs (never 304)", async () => {
+    const common = createCommonOptions();
+    // Get a bot ETag first.
+    const botResponse = await renderPagesPageResponse({
+      ...common.options,
+      userAgent: "Googlebot",
+    });
+    const etag = botResponse.headers.get("etag") as string;
+
+    // Non-bot with same ETag — must NOT get a 304.
+    const common2 = createCommonOptions();
+    const browserResponse = await renderPagesPageResponse({
+      ...common2.options,
+      userAgent: "Mozilla/5.0 Chrome/120",
+      ifNoneMatch: etag,
+    });
+
+    expect(browserResponse.status).toBe(200);
+    expect(browserResponse.headers.get("etag")).toBeNull();
+  });
+
+  it("attaches ETag to ISR cache-HIT response for bot UAs", async () => {
+    // Build a fake cached ISR entry and confirm that cache-HIT + bot UA yields ETag.
+    const cachedHtml =
+      '<!DOCTYPE html><html><head></head><body><div id="__next"><p>cached</p></div>' +
+      "<script>window.__NEXT_DATA__ = {}</script></body></html>";
+    const expectedEtag = generatePagesETag(cachedHtml);
+
+    const isrGetMock = vi.fn(async () => ({
+      isStale: false,
+      value: {
+        value: {
+          kind: "PAGES" as const,
+          html: cachedHtml,
+          pageData: {},
+          headers: undefined,
+          status: 200,
+        },
+        cacheControl: { revalidate: 60, expire: undefined },
+      },
+    }));
+
+    const result = await resolvePagesPageData({
+      applyRequestContexts: vi.fn(),
+      isDataReq: false,
+      createGsspReqRes: vi.fn() as never,
+      createPageElement: vi.fn(),
+      fontLinkHeader: "",
+      i18n: { locale: "en", locales: ["en"], defaultLocale: "en" },
+      isrCacheKey: (_router: string, pathname: string) => `pages:${pathname}`,
+      isrGet: isrGetMock as never,
+      isrSet: vi.fn(async () => {}),
+      expireSeconds: undefined,
+      pageModule: {
+        // getStaticProps triggers the ISR cache lookup path
+        getStaticProps: vi.fn(async () => ({ props: {}, revalidate: 60 })),
+      },
+      params: {},
+      query: {},
+      route: { isDynamic: false },
+      routePattern: "/posts",
+      routeUrl: "/posts",
+      runInFreshUnifiedContext: async (cb) => cb(),
+      safeJsonStringify: JSON.stringify,
+      sanitizeDestination: (d) => d,
+      triggerBackgroundRegeneration: vi.fn(),
+      renderIsrDocument: vi.fn(async () => {}),
+      userAgent: "Googlebot",
+    });
+
+    expect(result.kind).toBe("response");
+    if (result.kind === "response") {
+      expect(result.response.headers.get("etag")).toBe(expectedEtag);
+      expect(result.response.status).toBe(200);
+    }
+  });
+
+  it("returns 304 on ISR cache-HIT when bot If-None-Match matches", async () => {
+    const cachedHtml =
+      '<!DOCTYPE html><html><head></head><body><div id="__next"><p>cached</p></div>' +
+      "<script>window.__NEXT_DATA__ = {}</script></body></html>";
+    const expectedEtag = generatePagesETag(cachedHtml);
+
+    const isrGetMock = vi.fn(async () => ({
+      isStale: false,
+      value: {
+        value: {
+          kind: "PAGES" as const,
+          html: cachedHtml,
+          pageData: {},
+          headers: undefined,
+          status: 200,
+        },
+        cacheControl: { revalidate: 60, expire: undefined },
+      },
+    }));
+
+    const result = await resolvePagesPageData({
+      applyRequestContexts: vi.fn(),
+      isDataReq: false,
+      createGsspReqRes: vi.fn() as never,
+      createPageElement: vi.fn(),
+      fontLinkHeader: "",
+      i18n: { locale: "en", locales: ["en"], defaultLocale: "en" },
+      isrCacheKey: (_router: string, pathname: string) => `pages:${pathname}`,
+      isrGet: isrGetMock as never,
+      isrSet: vi.fn(async () => {}),
+      expireSeconds: undefined,
+      pageModule: {
+        getStaticProps: vi.fn(async () => ({ props: {}, revalidate: 60 })),
+      },
+      params: {},
+      query: {},
+      route: { isDynamic: false },
+      routePattern: "/posts",
+      routeUrl: "/posts",
+      runInFreshUnifiedContext: async (cb) => cb(),
+      safeJsonStringify: JSON.stringify,
+      sanitizeDestination: (d) => d,
+      triggerBackgroundRegeneration: vi.fn(),
+      renderIsrDocument: vi.fn(async () => {}),
+      userAgent: "Googlebot",
+      ifNoneMatch: expectedEtag,
+    });
+
+    expect(result.kind).toBe("response");
+    if (result.kind === "response") {
+      expect(result.response.status).toBe(304);
+      const body = await result.response.text();
+      expect(body).toBe("");
+      expect(result.response.headers.get("etag")).toBe(expectedEtag);
+    }
+  });
+
+  it("returns the cached page on ISR cache-HIT for If-None-Match sent with If-Modified-Since", async () => {
+    const cachedHtml =
+      '<!DOCTYPE html><html><head></head><body><div id="__next"><p>cached</p></div>' +
+      "<script>window.__NEXT_DATA__ = {}</script></body></html>";
+    const expectedEtag = generatePagesETag(cachedHtml);
+
+    const isrGetMock = vi.fn(async () => ({
+      isStale: false,
+      value: {
+        value: {
+          kind: "PAGES" as const,
+          html: cachedHtml,
+          pageData: {},
+          headers: undefined,
+          status: 200,
+        },
+        cacheControl: { revalidate: 60, expire: undefined },
+      },
+    }));
+
+    const result = await resolvePagesPageData({
+      applyRequestContexts: vi.fn(),
+      isDataReq: false,
+      createGsspReqRes: vi.fn() as never,
+      createPageElement: vi.fn(),
+      fontLinkHeader: "",
+      i18n: { locale: "en", locales: ["en"], defaultLocale: "en" },
+      isrCacheKey: (_router: string, pathname: string) => `pages:${pathname}`,
+      isrGet: isrGetMock as never,
+      isrSet: vi.fn(async () => {}),
+      expireSeconds: undefined,
+      pageModule: {
+        getStaticProps: vi.fn(async () => ({ props: {}, revalidate: 60 })),
+      },
+      params: {},
+      query: {},
+      route: { isDynamic: false },
+      routePattern: "/posts",
+      routeUrl: "/posts",
+      runInFreshUnifiedContext: async (cb) => cb(),
+      safeJsonStringify: JSON.stringify,
+      sanitizeDestination: (d) => d,
+      triggerBackgroundRegeneration: vi.fn(),
+      renderIsrDocument: vi.fn(async () => {}),
+      userAgent: "Googlebot",
+      ifNoneMatch: expectedEtag,
+      // Next.js gives a page no Last-Modified, so fresh() sends it in full.
+      ifModifiedSince: "Sat, 10 Oct 2026 00:00:00 GMT",
+    });
+
+    expect(result.kind).toBe("response");
+    if (result.kind === "response") {
+      expect(result.response.status).toBe(200);
+      expect(await result.response.text()).toBe(cachedHtml);
+      expect(result.response.headers.get("etag")).toBe(expectedEtag);
+    }
+  });
+
+  it("returns the cached page on ISR cache-HIT when the CDN adapter sends the 304", async () => {
+    const cachedHtml =
+      '<!DOCTYPE html><html><head></head><body><div id="__next"><p>cached</p></div>' +
+      "<script>window.__NEXT_DATA__ = {}</script></body></html>";
+    const expectedEtag = generatePagesETag(cachedHtml);
+
+    const isrGetMock = vi.fn(async () => ({
+      isStale: false,
+      value: {
+        value: {
+          kind: "PAGES" as const,
+          html: cachedHtml,
+          pageData: {},
+          headers: undefined,
+          status: 200,
+        },
+        cacheControl: { revalidate: 60, expire: undefined },
+      },
+    }));
+
+    setCdnCacheAdapter(
+      Object.assign(new DefaultCdnCacheAdapter(), { deferNotModifiedResponse: () => true }),
+    );
+    const result = await resolvePagesPageData({
+      applyRequestContexts: vi.fn(),
+      isDataReq: false,
+      createGsspReqRes: vi.fn() as never,
+      createPageElement: vi.fn(),
+      fontLinkHeader: "",
+      i18n: { locale: "en", locales: ["en"], defaultLocale: "en" },
+      isrCacheKey: (_router: string, pathname: string) => `pages:${pathname}`,
+      isrGet: isrGetMock as never,
+      isrSet: vi.fn(async () => {}),
+      expireSeconds: undefined,
+      pageModule: {
+        getStaticProps: vi.fn(async () => ({ props: {}, revalidate: 60 })),
+      },
+      params: {},
+      query: {},
+      route: { isDynamic: false },
+      routePattern: "/posts",
+      routeUrl: "/posts",
+      runInFreshUnifiedContext: async (cb) => cb(),
+      safeJsonStringify: JSON.stringify,
+      sanitizeDestination: (d) => d,
+      triggerBackgroundRegeneration: vi.fn(),
+      renderIsrDocument: vi.fn(async () => {}),
+      userAgent: "Googlebot",
+      ifNoneMatch: expectedEtag,
+    }).finally(() => setCdnCacheAdapter(new DefaultCdnCacheAdapter()));
+
+    expect(result.kind).toBe("response");
+    if (result.kind === "response") {
+      expect(result.response.status).toBe(200);
+      expect(await result.response.text()).toBe(cachedHtml);
+      expect(result.response.headers.get("etag")).toBe(expectedEtag);
+    }
+  });
+
+  // ISR cache-STALE ETag / 304 — mirrors the HIT tests above but for the stale
+  // branch (where a background regeneration is also triggered).
+
+  it("attaches ETag to ISR cache-STALE response for bot UAs", async () => {
+    const cachedHtml =
+      '<!DOCTYPE html><html><head></head><body><div id="__next"><p>stale</p></div>' +
+      "<script>window.__NEXT_DATA__ = {}</script></body></html>";
+    const expectedEtag = generatePagesETag(cachedHtml);
+
+    const isrGetMock = vi.fn(async () => ({
+      isStale: true,
+      value: {
+        value: {
+          kind: "PAGES" as const,
+          html: cachedHtml,
+          pageData: {},
+          headers: undefined,
+          status: 200,
+        },
+        cacheControl: { revalidate: 60, expire: undefined },
+      },
+    }));
+
+    const result = await resolvePagesPageData({
+      applyRequestContexts: vi.fn(),
+      isDataReq: false,
+      createGsspReqRes: vi.fn() as never,
+      createPageElement: vi.fn(),
+      fontLinkHeader: "",
+      i18n: { locale: "en", locales: ["en"], defaultLocale: "en" },
+      isrCacheKey: (_router: string, pathname: string) => `pages:${pathname}`,
+      isrGet: isrGetMock as never,
+      isrSet: vi.fn(async () => {}),
+      expireSeconds: undefined,
+      pageModule: {
+        getStaticProps: vi.fn(async () => ({ props: {}, revalidate: 60 })),
+      },
+      params: {},
+      query: {},
+      route: { isDynamic: false },
+      routePattern: "/posts",
+      routeUrl: "/posts",
+      runInFreshUnifiedContext: async (cb) => cb(),
+      safeJsonStringify: JSON.stringify,
+      sanitizeDestination: (d) => d,
+      triggerBackgroundRegeneration: vi.fn(),
+      renderIsrDocument: vi.fn(async () => {}),
+      userAgent: "Googlebot",
+    });
+
+    expect(result.kind).toBe("response");
+    if (result.kind === "response") {
+      expect(result.response.headers.get("etag")).toBe(expectedEtag);
+      expect(result.response.headers.get("x-vinext-cache")).toBe("STALE");
+      expect(result.response.status).toBe(200);
+    }
+  });
+
+  it("returns 304 on ISR cache-STALE when bot If-None-Match matches", async () => {
+    const cachedHtml =
+      '<!DOCTYPE html><html><head></head><body><div id="__next"><p>stale</p></div>' +
+      "<script>window.__NEXT_DATA__ = {}</script></body></html>";
+    const expectedEtag = generatePagesETag(cachedHtml);
+
+    const isrGetMock = vi.fn(async () => ({
+      isStale: true,
+      value: {
+        value: {
+          kind: "PAGES" as const,
+          html: cachedHtml,
+          pageData: {},
+          headers: undefined,
+          status: 200,
+        },
+        cacheControl: { revalidate: 60, expire: undefined },
+      },
+    }));
+
+    const result = await resolvePagesPageData({
+      applyRequestContexts: vi.fn(),
+      isDataReq: false,
+      createGsspReqRes: vi.fn() as never,
+      createPageElement: vi.fn(),
+      fontLinkHeader: "",
+      i18n: { locale: "en", locales: ["en"], defaultLocale: "en" },
+      isrCacheKey: (_router: string, pathname: string) => `pages:${pathname}`,
+      isrGet: isrGetMock as never,
+      isrSet: vi.fn(async () => {}),
+      expireSeconds: undefined,
+      pageModule: {
+        getStaticProps: vi.fn(async () => ({ props: {}, revalidate: 60 })),
+      },
+      params: {},
+      query: {},
+      route: { isDynamic: false },
+      routePattern: "/posts",
+      routeUrl: "/posts",
+      runInFreshUnifiedContext: async (cb) => cb(),
+      safeJsonStringify: JSON.stringify,
+      sanitizeDestination: (d) => d,
+      triggerBackgroundRegeneration: vi.fn(),
+      renderIsrDocument: vi.fn(async () => {}),
+      userAgent: "Googlebot",
+      ifNoneMatch: expectedEtag,
+    });
+
+    expect(result.kind).toBe("response");
+    if (result.kind === "response") {
+      expect(result.response.status).toBe(304);
+      const body = await result.response.text();
+      expect(body).toBe("");
+      expect(result.response.headers.get("etag")).toBe(expectedEtag);
+    }
+  });
+
+  it("does not return 304 on ISR cache-STALE when non-bot UA matches ETag", async () => {
+    const cachedHtml =
+      '<!DOCTYPE html><html><head></head><body><div id="__next"><p>stale</p></div>' +
+      "<script>window.__NEXT_DATA__ = {}</script></body></html>";
+    const etag = generatePagesETag(cachedHtml);
+
+    const isrGetMock = vi.fn(async () => ({
+      isStale: true,
+      value: {
+        value: {
+          kind: "PAGES" as const,
+          html: cachedHtml,
+          pageData: {},
+          headers: undefined,
+          status: 200,
+        },
+        cacheControl: { revalidate: 60, expire: undefined },
+      },
+    }));
+
+    const result = await resolvePagesPageData({
+      applyRequestContexts: vi.fn(),
+      isDataReq: false,
+      createGsspReqRes: vi.fn() as never,
+      createPageElement: vi.fn(),
+      fontLinkHeader: "",
+      i18n: { locale: "en", locales: ["en"], defaultLocale: "en" },
+      isrCacheKey: (_router: string, pathname: string) => `pages:${pathname}`,
+      isrGet: isrGetMock as never,
+      isrSet: vi.fn(async () => {}),
+      expireSeconds: undefined,
+      pageModule: {
+        getStaticProps: vi.fn(async () => ({ props: {}, revalidate: 60 })),
+      },
+      params: {},
+      query: {},
+      route: { isDynamic: false },
+      routePattern: "/posts",
+      routeUrl: "/posts",
+      runInFreshUnifiedContext: async (cb) => cb(),
+      safeJsonStringify: JSON.stringify,
+      sanitizeDestination: (d) => d,
+      triggerBackgroundRegeneration: vi.fn(),
+      renderIsrDocument: vi.fn(async () => {}),
+      userAgent: "Mozilla/5.0 Chrome/120",
+      ifNoneMatch: etag,
+    });
+
+    expect(result.kind).toBe("response");
+    if (result.kind === "response") {
+      // Non-bot UAs: no ETag, never 304.
+      expect(result.response.status).toBe(200);
+      expect(result.response.headers.get("etag")).toBeNull();
+    }
+  });
+
+  // Cache-Control: no-cache — must bypass 304 even when ETag matches.
+
+  it("skips 304 on fresh-MISS bot response when request has Cache-Control: no-cache", async () => {
+    const common = createCommonOptions();
+    // First, get the ETag from a normal bot render.
+    const firstResponse = await renderPagesPageResponse({
+      ...common.options,
+      userAgent: "Googlebot",
+    });
+    const etag = firstResponse.headers.get("etag") as string;
+    expect(etag).toBeTruthy();
+
+    // Second request: bot + matching If-None-Match + Cache-Control: no-cache.
+    const common2 = createCommonOptions();
+    const response = await renderPagesPageResponse({
+      ...common2.options,
+      userAgent: "Googlebot",
+      ifNoneMatch: etag,
+      requestCacheControl: "no-cache",
+    });
+
+    // Must get full 200 response, not 304.
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain("live-body");
+  });
+
+  it("skips 304 on ISR cache-HIT bot response when request has Cache-Control: no-cache", async () => {
+    const cachedHtml =
+      '<!DOCTYPE html><html><head></head><body><div id="__next"><p>cached</p></div>' +
+      "<script>window.__NEXT_DATA__ = {}</script></body></html>";
+    const expectedEtag = generatePagesETag(cachedHtml);
+
+    const isrGetMock = vi.fn(async () => ({
+      isStale: false,
+      value: {
+        value: {
+          kind: "PAGES" as const,
+          html: cachedHtml,
+          pageData: {},
+          headers: undefined,
+          status: 200,
+        },
+        cacheControl: { revalidate: 60, expire: undefined },
+      },
+    }));
+
+    const result = await resolvePagesPageData({
+      applyRequestContexts: vi.fn(),
+      isDataReq: false,
+      createGsspReqRes: vi.fn() as never,
+      createPageElement: vi.fn(),
+      fontLinkHeader: "",
+      i18n: { locale: "en", locales: ["en"], defaultLocale: "en" },
+      isrCacheKey: (_router: string, pathname: string) => `pages:${pathname}`,
+      isrGet: isrGetMock as never,
+      isrSet: vi.fn(async () => {}),
+      expireSeconds: undefined,
+      pageModule: {
+        getStaticProps: vi.fn(async () => ({ props: {}, revalidate: 60 })),
+      },
+      params: {},
+      query: {},
+      route: { isDynamic: false },
+      routePattern: "/posts",
+      routeUrl: "/posts",
+      runInFreshUnifiedContext: async (cb) => cb(),
+      safeJsonStringify: JSON.stringify,
+      sanitizeDestination: (d) => d,
+      triggerBackgroundRegeneration: vi.fn(),
+      renderIsrDocument: vi.fn(async () => {}),
+      userAgent: "Googlebot",
+      ifNoneMatch: expectedEtag,
+      requestCacheControl: "no-cache",
+    });
+
+    expect(result.kind).toBe("response");
+    if (result.kind === "response") {
+      // ETag is still attached, but must get 200 not 304.
+      expect(result.response.status).toBe(200);
+      expect(result.response.headers.get("etag")).toBe(expectedEtag);
+    }
+  });
+
+  it("skips 304 on ISR cache-STALE bot response when request has Cache-Control: no-cache", async () => {
+    const cachedHtml =
+      '<!DOCTYPE html><html><head></head><body><div id="__next"><p>stale</p></div>' +
+      "<script>window.__NEXT_DATA__ = {}</script></body></html>";
+    const expectedEtag = generatePagesETag(cachedHtml);
+
+    const isrGetMock = vi.fn(async () => ({
+      isStale: true,
+      value: {
+        value: {
+          kind: "PAGES" as const,
+          html: cachedHtml,
+          pageData: {},
+          headers: undefined,
+          status: 200,
+        },
+        cacheControl: { revalidate: 60, expire: undefined },
+      },
+    }));
+
+    const result = await resolvePagesPageData({
+      applyRequestContexts: vi.fn(),
+      isDataReq: false,
+      createGsspReqRes: vi.fn() as never,
+      createPageElement: vi.fn(),
+      fontLinkHeader: "",
+      i18n: { locale: "en", locales: ["en"], defaultLocale: "en" },
+      isrCacheKey: (_router: string, pathname: string) => `pages:${pathname}`,
+      isrGet: isrGetMock as never,
+      isrSet: vi.fn(async () => {}),
+      expireSeconds: undefined,
+      pageModule: {
+        getStaticProps: vi.fn(async () => ({ props: {}, revalidate: 60 })),
+      },
+      params: {},
+      query: {},
+      route: { isDynamic: false },
+      routePattern: "/posts",
+      routeUrl: "/posts",
+      runInFreshUnifiedContext: async (cb) => cb(),
+      safeJsonStringify: JSON.stringify,
+      sanitizeDestination: (d) => d,
+      triggerBackgroundRegeneration: vi.fn(),
+      renderIsrDocument: vi.fn(async () => {}),
+      userAgent: "Googlebot",
+      ifNoneMatch: expectedEtag,
+      requestCacheControl: "no-cache",
+    });
+
+    expect(result.kind).toBe("response");
+    if (result.kind === "response") {
+      // ETag is still attached, but must get 200 not 304.
+      expect(result.response.status).toBe(200);
+      expect(result.response.headers.get("etag")).toBe(expectedEtag);
+    }
+  });
+
+  it("propagates renderPage errors without a fallback render", async () => {
+    const common = createCommonOptions();
+
+    function MyDocument() {
+      return null;
+    }
+    (MyDocument as unknown as { getInitialProps: unknown }).getInitialProps = async (ctx: {
+      // oxlint-disable-next-line @typescript-eslint/no-explicit-any
+      renderPage: (opts?: any) => Promise<{ html: string }>;
+    }) => {
+      // Calling renderPage triggers renderToReadableStream, which throws below.
+      const result = await ctx.renderPage();
+      return { html: result.html };
+    };
+
+    const enhancePageElement = vi.fn(() => React.createElement("p", null, "enhanced"));
+
+    const renderToReadableStream = vi.fn(async () => {
+      throw new Error("stream render failed");
+    });
+    await expect(
+      renderPagesPageResponse({
+        ...common.options,
+        DocumentComponent: MyDocument as unknown as React.ComponentType,
+        enhancePageElement,
+        renderToReadableStream,
+      }),
+    ).rejects.toThrow("stream render failed");
+
+    expect(enhancePageElement).toHaveBeenCalledTimes(1);
+    expect(renderToReadableStream).toHaveBeenCalledTimes(1);
+  });
+
+  it("propagates a throwing enhancer without rendering the page", async () => {
+    const common = createCommonOptions();
+
+    function MyDocument() {
+      return null;
+    }
+    (MyDocument as unknown as { getInitialProps: unknown }).getInitialProps = async (ctx: {
+      renderPage: (enhancer: (Comp: React.ComponentType) => React.ComponentType) => Promise<{
+        html: string;
+      }>;
+    }) =>
+      ctx.renderPage(() => {
+        throw new Error("enhancer failed");
+      });
+
+    const enhancePageElement = vi.fn(
+      (opts: {
+        enhanceApp?: (App: React.ComponentType<{ children?: React.ReactNode }>) => unknown;
+        enhanceComponent?: (Comp: React.ComponentType<unknown>) => unknown;
+      }) => {
+        opts.enhanceComponent?.(() => null);
+        return React.createElement("p", null, "unreachable");
+      },
+    );
+    const renderToReadableStream = vi.fn(async () => createStream(["unreachable"]));
+
+    await expect(
+      renderPagesPageResponse({
+        ...common.options,
+        DocumentComponent: MyDocument as unknown as React.ComponentType,
+        enhancePageElement,
+        renderToReadableStream,
+      }),
+    ).rejects.toThrow("enhancer failed");
+
+    expect(enhancePageElement).toHaveBeenCalledTimes(1);
+    expect(renderToReadableStream).not.toHaveBeenCalled();
+  });
+
+  it("propagates a throwing page after one renderer invocation", async () => {
+    const common = createCommonOptions();
+
+    function MyDocument() {
+      return null;
+    }
+    (MyDocument as unknown as { getInitialProps: unknown }).getInitialProps = async (ctx: {
+      renderPage: () => Promise<{ html: string }>;
+    }) => ctx.renderPage();
+
+    function ThrowingPage(): React.ReactNode {
+      throw new Error("page failed");
+    }
+    const enhancePageElement = vi.fn(() => React.createElement(ThrowingPage));
+    const reactDomServer = await import("react-dom/server.edge");
+    const renderToReadableStream = vi.fn(async (element: React.ReactNode) =>
+      reactDomServer.renderToReadableStream(element as React.ReactElement),
+    );
+
+    await expect(
+      renderPagesPageResponse({
+        ...common.options,
+        DocumentComponent: MyDocument as unknown as React.ComponentType,
+        enhancePageElement,
+        renderToReadableStream,
+      }),
+    ).rejects.toThrow("page failed");
+
+    expect(enhancePageElement).toHaveBeenCalledTimes(1);
+    expect(renderToReadableStream).toHaveBeenCalledTimes(1);
+  });
+});

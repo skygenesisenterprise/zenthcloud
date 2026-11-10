@@ -1,0 +1,143 @@
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { createBuilder } from "vite";
+import { describe, expect, it } from "vite-plus/test";
+import vinext from "../packages/vinext/src/index.js";
+
+const ROOT_NODE_MODULES = path.resolve(import.meta.dirname, "../node_modules");
+
+async function writeFile(file: string, source: string): Promise<void> {
+  await fs.mkdir(path.dirname(file), { recursive: true });
+  await fs.writeFile(file, source, "utf8");
+}
+
+async function createFixture(): Promise<string> {
+  const fixtureRoot = await fs.mkdtemp(path.join(os.tmpdir(), "vinext-client-assets-build-"));
+  await fs.symlink(ROOT_NODE_MODULES, path.join(fixtureRoot, "node_modules"), "junction");
+  await writeFile(
+    path.join(fixtureRoot, "package.json"),
+    `${JSON.stringify({ type: "module", dependencies: {} }, null, 2)}\n`,
+  );
+  await writeFile(
+    path.join(fixtureRoot, "app", "layout.tsx"),
+    `export default function Layout({ children }: { children: React.ReactNode }) {
+  return <html><body>{children}</body></html>;
+}
+`,
+  );
+  await writeFile(
+    path.join(fixtureRoot, "app", "page.tsx"),
+    `"use client";
+import { useState } from "react";
+export default function Page() {
+  const [count, setCount] = useState(0);
+  return <button onClick={() => setCount(count + 1)}>{count}</button>;
+}
+`,
+  );
+  return fixtureRoot;
+}
+
+describe("client asset sidecar builds", () => {
+  it("keeps App Router metadata at the stable root of nested custom server outputs", async () => {
+    const fixtureRoot = await createFixture();
+    const outRoot = await fs.mkdtemp(path.join(os.tmpdir(), "vinext-client-assets-out-"));
+    try {
+      const serverRoot = path.join(outRoot, "custom", "server");
+      const rscOutDir = path.join(serverRoot, "rsc");
+      const ssrOutDir = serverRoot;
+      const clientOutDir = path.join(outRoot, "custom", "client");
+      const builder = await createBuilder({
+        root: fixtureRoot,
+        configFile: false,
+        logLevel: "silent",
+        plugins: [vinext({ appDir: fixtureRoot, rscOutDir, ssrOutDir, clientOutDir })],
+      });
+      await builder.buildApp();
+
+      const rscSidecar = await fs.readFile(path.join(rscOutDir, "vinext-client-assets.js"), "utf8");
+      const ssrSidecar = await fs.readFile(path.join(ssrOutDir, "vinext-client-assets.js"), "utf8");
+      expect(rscSidecar).toContain('"appBootstrapPreinitModules"');
+      // The RSC render names each client reference's chunks (#4179).
+      expect(rscSidecar).toContain('"appClientReferenceChunks"');
+      expect(rscSidecar).not.toBe("export default {};\n");
+      expect(ssrSidecar).toBe(rscSidecar);
+
+      const rscEntry = await fs.readFile(path.join(rscOutDir, "index.js"), "utf8");
+      expect(rscEntry).toContain("./vinext-client-assets.js");
+
+      const adjacentServerManifest = await fs.readFile(
+        path.join(rscOutDir, "vinext-server.json"),
+        "utf8",
+      );
+      expect(
+        await fs.readFile(path.join(fixtureRoot, "dist/server/vinext-server.json"), "utf8"),
+      ).toBe(adjacentServerManifest);
+
+      // The client bundle honours clientOutDir too, rather than landing in the
+      // default dist/client where parallel builds would clobber each other.
+      await expect(
+        fs.stat(path.join(clientOutDir, ".vite", "manifest.json")),
+      ).resolves.toBeTruthy();
+      await expect(fs.stat(path.join(fixtureRoot, "dist", "client"))).rejects.toThrow();
+    } finally {
+      await fs.rm(fixtureRoot, { recursive: true, force: true });
+      await fs.rm(outRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("rejects a clientOutDir that contains a server output directory", async () => {
+    const fixtureRoot = await createFixture();
+    try {
+      // The client build runs last and empties its outDir, which would delete
+      // build/rsc/index.js and leave no request handler.
+      await expect(
+        createBuilder({
+          root: fixtureRoot,
+          configFile: false,
+          logLevel: "silent",
+          plugins: [
+            vinext({
+              appDir: fixtureRoot,
+              clientOutDir: "build",
+              rscOutDir: "build/rsc",
+              ssrOutDir: "build/ssr",
+            }),
+          ],
+        }),
+      ).rejects.toThrow('clientOutDir "build" contains rscOutDir "build/rsc"');
+    } finally {
+      await fs.rm(fixtureRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("keeps disjoint App Router outputs self-contained", async () => {
+    const fixtureRoot = await createFixture();
+    const outRoot = await fs.mkdtemp(path.join(os.tmpdir(), "vinext-client-assets-disjoint-"));
+    try {
+      const rscOutDir = path.join(outRoot, "rsc-output");
+      const ssrOutDir = path.join(outRoot, "ssr-output");
+      const clientOutDir = path.join(outRoot, "client-output");
+      const builder = await createBuilder({
+        root: fixtureRoot,
+        configFile: false,
+        logLevel: "silent",
+        plugins: [vinext({ appDir: fixtureRoot, rscOutDir, ssrOutDir, clientOutDir })],
+      });
+      await builder.buildApp();
+
+      const rscSidecar = await fs.readFile(path.join(rscOutDir, "vinext-client-assets.js"), "utf8");
+      const ssrSidecar = await fs.readFile(path.join(ssrOutDir, "vinext-client-assets.js"), "utf8");
+      expect(rscSidecar).toContain('"appBootstrapPreinitModules"');
+      expect(ssrSidecar).toBe(rscSidecar);
+      await expect(fs.access(path.join(outRoot, "vinext-client-assets.js"))).rejects.toThrow();
+
+      const rscEntry = await fs.readFile(path.join(rscOutDir, "index.js"), "utf8");
+      expect(rscEntry).toContain("./vinext-client-assets.js");
+    } finally {
+      await fs.rm(fixtureRoot, { recursive: true, force: true });
+      await fs.rm(outRoot, { recursive: true, force: true });
+    }
+  });
+});

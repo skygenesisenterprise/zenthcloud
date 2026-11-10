@@ -1,0 +1,882 @@
+import React, { type ComponentType, type ReactNode } from "react";
+import type { VinextNextData } from "../client/vinext-next-data.js";
+import type { CachedPagesValue } from "vinext/shims/cache-handler";
+import { withScriptNonce } from "vinext/shims/script-nonce-context";
+import { getCdnCacheAdapter } from "vinext/shims/cdn-cache";
+import { markRouteCacheabilityExplicitResponsePolicy } from "vinext/shims/cacheability-classification";
+import { getRequestExecutionContext } from "vinext/shims/request-context";
+import {
+  createDocumentPlaceholderToken,
+  withDocumentPlaceholders,
+} from "vinext/shims/document-placeholders";
+import {
+  applyCdnResponseHeaders,
+  hasCdnResponsePolicy,
+  BROWSER_REVALIDATE_CACHE_CONTROL,
+  shouldUseNextDeployCacheControl,
+} from "./cache-control.js";
+import {
+  buildMissIsrCacheControl,
+  ISR_NEVER_CACHE_CONTROL,
+  ISR_NO_STORE_CACHE_CONTROL,
+} from "./isr-decision.js";
+import { isrCacheControl, type IsrWritePolicy } from "./isr-cache.js";
+import { pagesPathCacheTag } from "./pages-cache-tag.js";
+import { applyPrerenderCacheLifeHeader } from "./prerender-cache-life-header.js";
+import { setCacheStateHeaders } from "./cache-headers.js";
+import { createNonceAttribute, escapeHtmlAttr } from "./html.js";
+import { getClientTraceMetadataHTML } from "./client-trace-metadata.js";
+import { reportRequestError } from "./instrumentation.js";
+import {
+  loadUserDocumentInitialProps,
+  type RenderPageEnhancers,
+  runDocumentRenderPage,
+} from "./pages-document-initial-props.js";
+import { fnv1a52 } from "../utils/hash.js";
+import { readStreamAsText } from "../utils/text-stream.js";
+import { callDocumentGetInitialProps } from "./document-initial-head.js";
+import { appendAssetDeploymentIdQuery } from "../utils/deployment-id.js";
+import {
+  applyDocumentAssetProps,
+  extractDocumentAssetProps,
+} from "./pages-document-asset-props.js";
+import {
+  spliceDocumentHeadClose,
+  spliceDocumentHeadOpen,
+  spliceDocumentScripts,
+  splitDocumentAtMain,
+} from "./pages-document-splice.js";
+import { isBotUserAgent } from "../utils/html-limited-bots.js";
+import {
+  NEXTJS_CACHE_HEADER,
+  VINEXT_PRERENDER_CACHE_LIFE_HEADER,
+  VINEXT_REVALIDATED_CACHE_TAG_HEADER,
+} from "./headers.js";
+import { isPageNotModified } from "./http-conditional.js";
+import { logRequestError } from "./request-error-log.js";
+
+// ---------------------------------------------------------------------------
+// Bot / crawler detection for Pages Router edge-runtime SSR
+//
+// These bots cannot parse streamed HTML correctly (they may read metadata
+// only from the initial <head> flush), so we buffer the full response and emit
+// it in a single chunk, identical to the Node.js path.
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns true when the User-Agent belongs to a bot or crawler that cannot
+ * reliably consume a streamed HTML response.
+ */
+export function isPagesStreamingBot(userAgent: string): boolean {
+  return isBotUserAgent(userAgent);
+}
+
+// ---------------------------------------------------------------------------
+// ETag generation — FNV-1a 52-bit, matching Next.js's generateETag() in
+// packages/next/src/server/lib/etag.ts. Both produce a strong ETag (no W/
+// prefix) when weak=false, which is the default Next.js uses at runtime.
+// ---------------------------------------------------------------------------
+
+export function generatePagesETag(payload: string): string {
+  return '"' + fnv1a52(payload).toString(36) + payload.length.toString(36) + '"';
+}
+
+/**
+ * Whether a render answers a matching If-None-Match with a 304. Next.js stores
+ * the page before it evaluates the ETag, so when the CDN adapter stores the
+ * completed response, the render returns the page and the adapter sends the 304.
+ * A page whose status carries no body has nothing to store.
+ */
+export function rendersPagesNotModified(status: number): boolean {
+  return (
+    status === 204 ||
+    status === 205 ||
+    status === 304 ||
+    getCdnCacheAdapter().deferNotModifiedResponse?.() !== true
+  );
+}
+
+/**
+ * Hand the revalidate getStaticProps returned to build/prerender.ts, which
+ * records it in vinext-prerender.json like Next.js's `initialRevalidateSeconds`.
+ * The CDN adapter may rewrite Cache-Control, so the build cannot read it there.
+ * Only build-time renders carry this header.
+ */
+export function applyPagesPrerenderRevalidateHeader(
+  headers: Headers,
+  revalidateSeconds: number | false,
+): void {
+  if (typeof process === "undefined" || process.env?.VINEXT_PRERENDER !== "1") return;
+  // A notFound result replaces the policy of the 404 page rendered for it.
+  headers.delete(VINEXT_PRERENDER_CACHE_LIFE_HEADER);
+  if (typeof revalidateSeconds === "number") {
+    applyPrerenderCacheLifeHeader(headers, { revalidate: revalidateSeconds });
+  }
+}
+
+type PagesFontPreload = {
+  href: string;
+  type: string;
+};
+
+/**
+ * The `__NEXT_DATA__` fields beyond the always-present core that the Pages
+ * renderer serializes: the `__vinext` block plus the readiness flags
+ * (gssp/gsp/gip/appGip/autoExport/nextExport/isExperimentalCompile) the client uses to
+ * recompute the initial `router.isReady`. Shared by every render path
+ * (initial, ISR regeneration) so they emit identical readiness state.
+ */
+export type PagesNextDataExtras = Pick<
+  VinextNextData,
+  | "__vinext"
+  | "appGip"
+  | "autoExport"
+  | "gip"
+  | "gsp"
+  | "gssp"
+  | "isExperimentalCompile"
+  | "nextExport"
+>;
+
+export type PagesI18nRenderContext = {
+  locale?: string;
+  locales?: string[];
+  defaultLocale?: string;
+  domainLocales?: unknown;
+};
+
+export type PagesGsspResponse = {
+  headersSent?: boolean;
+  statusCode: number;
+  getHeaders(): Record<string, string | number | boolean | string[]>;
+};
+
+type PagesDocumentReqRes = {
+  req: unknown;
+  res: PagesGsspResponse;
+  responsePromise?: Promise<Response>;
+};
+
+type PagesStreamedHtmlResponse = {
+  __vinextStreamedHtmlResponse?: boolean;
+} & Response;
+
+type RenderPagesPageResponseOptions = {
+  assetTags: string;
+  buildId: string | null;
+  clearSsrContext: () => void;
+  createPageElement: (pageProps: Record<string, unknown>) => ReactNode;
+  /**
+   * Build the page React tree with optional App/Component enhancers applied,
+   * supporting the Pages Router `_document.getInitialProps` contract:
+   *
+   *   ctx.renderPage({ enhanceApp, enhanceComponent })
+   *
+   * Used by CSS-in-JS libraries (styled-components, emotion) to wrap the
+   * App/Component tree so styles can be collected during SSR. When omitted,
+   * `renderPage` falls back to rendering the plain `createPageElement` tree
+   * (enhancers are ignored).
+   */
+  enhancePageElement?: ((opts: RenderPageEnhancers) => ReactNode) | undefined;
+  DocumentComponent: ComponentType | null;
+  err?: Error;
+  flushPreloads?: (() => Promise<void> | void) | undefined;
+  fontLinkHeader: string;
+  fontPreloads: PagesFontPreload[];
+  getFontLinks: () => string[];
+  getFontStyles: () => string[];
+  getSSRHeadHTML?: (() => string) | undefined;
+  /**
+   * Allow-list of OpenTelemetry propagation keys (from
+   * `experimental.clientTraceMetadata`) to emit as `<meta>` tags in the SSR
+   * head. Undefined or empty disables emission.
+   */
+  clientTraceMetadata?: readonly string[] | undefined;
+  setDocumentInitialHead?: ((head: ReactNode[]) => void) | undefined;
+  documentReqRes?: PagesDocumentReqRes | null;
+  gsspRes: PagesGsspResponse | null;
+  /** A page or custom `_app` getInitialProps render; rendered per request like gSSP. */
+  isInitialPropsRender?: boolean;
+  isrCacheKey: (router: string, pathname: string) => string;
+  /** Filesystem-route identity used for ISR persistence and cache tags. */
+  isrCachePathname?: string;
+  expireSeconds?: number;
+  isrRevalidateSeconds: number | false | null;
+  /** Synchronous `res.revalidate()` render; cache persistence must finish before returning. */
+  isOnDemandRevalidate?: boolean;
+  /** Background ISR regeneration; the cache write must finish before returning. */
+  isStaleRegeneration?: boolean;
+  isStaticPropsRoute?: boolean;
+  isrSet: (key: string, data: CachedPagesValue, policy: IsrWritePolicy) => Promise<void>;
+  i18n: PagesI18nRenderContext;
+  /**
+   * True when rendering a `getStaticPaths` fallback shell for a path that
+   * isn't pre-rendered (`fallback: true` + unlisted path). Forwarded to
+   * `buildPagesNextDataScript` so the client serialises `isFallback: true`
+   * into `__NEXT_DATA__`, then later hydrates by fetching the data URL.
+   */
+  isFallback?: boolean;
+  pageProps: Record<string, unknown>;
+  props?: Record<string, unknown>;
+  params: Record<string, unknown>;
+  query?: Record<string, unknown>;
+  renderDocumentToString: (element: ReactNode) => Promise<string>;
+  renderToReadableStream: (element: ReactNode) => Promise<ReadableStream<Uint8Array>>;
+  traceDocument?: <
+    T extends {
+      bodyStream?: ReadableStream<Uint8Array>;
+      waitForBody?: boolean;
+    },
+  >(
+    callback: () => Promise<T>,
+  ) => Promise<T>;
+  resetSSRHead?: (() => void) | undefined;
+  routePattern: string;
+  routeUrl: string;
+  safeJsonStringify: (value: unknown) => string;
+  scriptNonce?: string;
+  initialStylesheetHrefs?: ReadonlySet<string>;
+  crossOrigin?: string;
+  disableOptimizedLoading: boolean;
+  statusCode?: number;
+  vinext?: VinextNextData["__vinext"];
+  nextData?: PagesNextDataExtras;
+  /**
+   * The request's User-Agent string (from `request.headers.get('user-agent')`).
+   * When this matches a known crawler / bot pattern, the response is fully
+   * buffered before sending so bots receive a single complete HTML chunk with
+   * an ETag header. Omitting this field disables bot-detection (streaming as
+   * normal), which is the correct behaviour for non-HTML requests and tests.
+   */
+  userAgent?: string;
+  /**
+   * The incoming request's `If-None-Match` header value. When set and the
+   * computed ETag matches (weak-ETag semantics, mirroring Next.js's
+   * `sendEtagResponse`), a `304 Not Modified` is returned with an empty body.
+   * Only evaluated on bot/buffered responses that carry an ETag.
+   */
+  ifNoneMatch?: string;
+  /**
+   * The incoming request's `If-Modified-Since` header value. As in Next.js,
+   * which gives a page no Last-Modified, a request with it gets the page.
+   */
+  ifModifiedSince?: string;
+  /**
+   * The incoming request's `Cache-Control` header value. When the value
+   * contains `no-cache`, the 304 short-circuit is skipped and a full 200
+   * response is always returned — mirroring the `fresh` package used by
+   * Next.js's `sendEtagResponse`.
+   */
+  requestCacheControl?: string;
+};
+
+function buildPagesFontHeadHtml(
+  fontLinks: string[],
+  fontPreloads: PagesFontPreload[],
+  fontStyles: string[],
+  scriptNonce?: string,
+): string {
+  let html = "";
+  const nonceAttr = createNonceAttribute(scriptNonce);
+
+  for (const link of fontLinks) {
+    html += `<link rel="stylesheet"${nonceAttr} href="${escapeHtmlAttr(appendAssetDeploymentIdQuery(link))}" />\n  `;
+  }
+
+  for (const preload of fontPreloads) {
+    // Font files are content-hashed immutable assets. Keep the preload URL
+    // byte-identical to the @font-face source so the browser consumes it.
+    html += `<link rel="preload"${nonceAttr} href="${escapeHtmlAttr(preload.href)}" as="font" type="${escapeHtmlAttr(preload.type)}" crossorigin="anonymous" />\n  `;
+  }
+
+  if (fontStyles.length > 0) {
+    html += `<style data-vinext-fonts${nonceAttr}>${fontStyles.join("\n")}</style>\n  `;
+  }
+
+  return html;
+}
+
+export function buildPagesNextDataScript(
+  options: Pick<
+    RenderPagesPageResponseOptions,
+    | "buildId"
+    | "i18n"
+    | "isFallback"
+    | "pageProps"
+    | "props"
+    | "params"
+    | "routePattern"
+    | "safeJsonStringify"
+    | "scriptNonce"
+    | "nextData"
+  > & {
+    vinext?: VinextNextData["__vinext"];
+  },
+): string {
+  const nextDataPayload: Record<string, unknown> = {
+    props: options.props ?? { pageProps: options.pageProps },
+    page: options.routePattern,
+    // Next.js fallback:true shells intentionally omit the matched route
+    // params. The live slug is published by the hydration query update after
+    // the fallback data request resolves.
+    query: options.isFallback === true ? {} : options.params,
+    buildId: options.buildId,
+    isFallback: options.isFallback === true,
+  };
+
+  if (options.nextData) {
+    for (const [key, value] of Object.entries(options.nextData)) {
+      if (value !== undefined) {
+        nextDataPayload[key] = value;
+      }
+    }
+  }
+
+  if (options.i18n.locales) {
+    nextDataPayload.locale = options.i18n.locale;
+    nextDataPayload.locales = options.i18n.locales;
+    nextDataPayload.defaultLocale = options.i18n.defaultLocale;
+    nextDataPayload.domainLocales = options.i18n.domainLocales;
+  }
+
+  if (options.vinext) {
+    nextDataPayload.__vinext = {
+      ...options.nextData?.__vinext,
+      ...options.vinext,
+    };
+  }
+
+  return `<script id="__NEXT_DATA__" type="application/json"${createNonceAttribute(options.scriptNonce)}>${options.safeJsonStringify(nextDataPayload)}</script>`;
+}
+
+async function buildPagesShellHtml(
+  fontHeadHTML: string,
+  nextDataScript: string,
+  options: Pick<
+    RenderPagesPageResponseOptions,
+    "assetTags" | "disableOptimizedLoading" | "DocumentComponent" | "renderDocumentToString"
+  > & {
+    ssrHeadHTML: string;
+    /** Head content that Next.js renders after custom Document children and generated assets. */
+    tailHeadHTML: string;
+    /**
+     * Document props already resolved by `runDocumentRenderPage`. When set,
+     * `getInitialProps` was consumed by the renderPage path and must not be
+     * re-invoked via `loadUserDocumentInitialProps` (which would call it a
+     * second time). `null` means use the normal fast path.
+     */
+    resolvedDocProps?: Record<string, unknown> | null;
+    crossOrigin?: string;
+  },
+): Promise<{ prefix: string; suffix: string }> {
+  if (options.DocumentComponent) {
+    const docProps =
+      options.resolvedDocProps ?? (await loadUserDocumentInitialProps(options.DocumentComponent));
+    const docElement = docProps
+      ? React.createElement(options.DocumentComponent, docProps)
+      : React.createElement(options.DocumentComponent);
+    const token = createDocumentPlaceholderToken();
+    const renderedDocument = extractDocumentAssetProps(
+      await options.renderDocumentToString(withDocumentPlaceholders(docElement, token)),
+      token,
+    );
+    let html = renderedDocument.html;
+    const generatedAssetTags = applyDocumentAssetProps(options.assetTags, renderedDocument.props, {
+      configuredCrossOrigin: options.crossOrigin,
+      // Next.js emits optimized framework scripts from Head. When optimized
+      // loading is disabled, NextScript owns those same script tags instead.
+      scriptOwner: options.disableOptimizedLoading ? "next-script" : "head",
+    });
+    const generatedNextDataScript = applyDocumentAssetProps(
+      nextDataScript,
+      renderedDocument.props,
+      { configuredCrossOrigin: options.crossOrigin },
+    );
+    // Next.js renders the collected `next/head` array before children declared
+    // inside a custom Document's <Head>. Insert it after the opening tag so the
+    // default charset remains the first element even when <Head> has props.
+    html = spliceDocumentHeadOpen(html, token, options.ssrHeadHTML);
+    html = spliceDocumentHeadClose(
+      html,
+      token,
+      generatedAssetTags || fontHeadHTML || options.tailHeadHTML
+        ? `  ${fontHeadHTML}\n  ${generatedAssetTags}\n  ${options.tailHeadHTML}\n`
+        : "",
+    );
+    html = spliceDocumentScripts(html, token, generatedNextDataScript);
+    return splitDocumentAtMain(html, token);
+  }
+
+  // charset + viewport are emitted via getSSRHeadHTML() (next/head's
+  // defaultHead seeds them with data-next-head=""), matching Next.js's
+  // canonical ordering. Don't duplicate them here.
+  const generatedAssetTags = applyDocumentAssetProps(
+    options.assetTags,
+    {},
+    {
+      configuredCrossOrigin: options.crossOrigin,
+    },
+  );
+  const generatedNextDataScript = applyDocumentAssetProps(
+    nextDataScript,
+    {},
+    {
+      configuredCrossOrigin: options.crossOrigin,
+    },
+  );
+  return {
+    prefix:
+      "<!DOCTYPE html>\n<html>\n<head>\n" +
+      `  ${options.ssrHeadHTML}${fontHeadHTML}\n` +
+      `  ${generatedAssetTags}\n` +
+      `  ${options.tailHeadHTML}\n` +
+      "</head>\n<body>\n" +
+      '  <div id="__next">',
+    suffix: `</div>\n  ${generatedNextDataScript}\n</body>\n</html>`,
+  };
+}
+
+async function buildPagesCompositeStream(
+  bodyStream: ReadableStream<Uint8Array>,
+  shellPrefix: string,
+  shellSuffix: string,
+): Promise<ReadableStream<Uint8Array>> {
+  const encoder = new TextEncoder();
+
+  return new ReadableStream({
+    async start(controller) {
+      controller.enqueue(encoder.encode(shellPrefix));
+      const reader = bodyStream.getReader();
+      try {
+        for (;;) {
+          const chunk = await reader.read();
+          if (chunk.done) {
+            break;
+          }
+          controller.enqueue(chunk.value);
+        }
+      } finally {
+        reader.releaseLock();
+      }
+      controller.enqueue(encoder.encode(shellSuffix));
+      controller.close();
+    },
+  });
+}
+
+async function reportPagesIsrCacheWriteError(
+  error: unknown,
+  cacheKey: string,
+  routePattern: string,
+): Promise<void> {
+  logRequestError(`[vinext] Pages ISR cache write failed for ${cacheKey}:`, error);
+  try {
+    await reportRequestError(
+      error,
+      { path: cacheKey, method: "GET", headers: {} },
+      {
+        routerKind: "Pages Router",
+        routePath: routePattern,
+        routeType: "render",
+        revalidateReason: undefined,
+      },
+    );
+  } catch {
+    // Cache-write failure reporting must never make the background task reject.
+  }
+}
+
+async function writePagesIsrCache(options: {
+  cacheKey: string;
+  expireSeconds?: number;
+  pageData: Record<string, unknown>;
+  revalidateSeconds: number | false;
+  routePattern: string;
+  shellPrefix: string;
+  shellSuffix: string;
+  status: number;
+  stream: ReadableStream<Uint8Array>;
+  setCache: RenderPagesPageResponseOptions["isrSet"];
+}): Promise<void> {
+  const bodyHtml = await readStreamAsText(options.stream);
+  await options.setCache(
+    options.cacheKey,
+    {
+      kind: "PAGES",
+      html: options.shellPrefix + bodyHtml + options.shellSuffix,
+      pageData: options.pageData,
+      headers: undefined,
+      status: options.status,
+    },
+    {
+      cacheControl: isrCacheControl(options.revalidateSeconds, {
+        expireSeconds: options.expireSeconds,
+      }),
+    },
+  );
+}
+
+function schedulePagesIsrCacheWrite(options: Parameters<typeof writePagesIsrCache>[0]): void {
+  const cacheWritePromise = writePagesIsrCache(options).catch((error: unknown) =>
+    reportPagesIsrCacheWriteError(error, options.cacheKey, options.routePattern),
+  );
+  getRequestExecutionContext()?.waitUntil(cacheWritePromise);
+}
+
+function applyGsspHeaders(
+  headers: Headers,
+  gsspRes: PagesGsspResponse | null,
+  statusCode?: number,
+): number {
+  if (!gsspRes) {
+    return statusCode ?? 200;
+  }
+
+  const gsspHeaders = gsspRes.getHeaders();
+  for (const key of Object.keys(gsspHeaders)) {
+    const value = gsspHeaders[key];
+    const lowerKey = key.toLowerCase();
+    if (lowerKey === "set-cookie" && Array.isArray(value)) {
+      for (const cookie of value) {
+        headers.append("set-cookie", String(cookie));
+      }
+      continue;
+    }
+    if (Array.isArray(value)) {
+      headers.set(key, value.join(", "));
+      continue;
+    }
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      headers.set(key, String(value));
+    }
+  }
+  if (!headers.has("Content-Type")) {
+    headers.set("Content-Type", "text/html; charset=utf-8");
+  }
+  return statusCode ?? gsspRes.statusCode;
+}
+
+export async function renderPagesPageResponse(
+  options: RenderPagesPageResponseOptions,
+): Promise<Response> {
+  const renderProps = options.props ?? { pageProps: options.pageProps };
+  options.resetSSRHead?.();
+  await options.flushPreloads?.();
+
+  const fontHeadHTML = buildPagesFontHeadHtml(
+    options.getFontLinks(),
+    options.fontPreloads,
+    options.getFontStyles(),
+    options.scriptNonce,
+  );
+  const nextDataScript = buildPagesNextDataScript({
+    buildId: options.buildId,
+    i18n: options.i18n,
+    isFallback: options.isFallback,
+    pageProps: options.pageProps,
+    props: renderProps,
+    params: options.params,
+    routePattern: options.routePattern,
+    safeJsonStringify: options.safeJsonStringify,
+    scriptNonce: options.scriptNonce,
+    nextData: options.nextData,
+    vinext: options.vinext,
+  });
+
+  // Custom `_document.getInitialProps()` may opt in to wrapping the page tree
+  // via `ctx.renderPage({ enhanceApp, enhanceComponent })` (e.g. for
+  // styled-components / emotion style collection). When that contract is in
+  // use the body must be a single complete string before `_document` renders
+  // — Next.js does this in `loadDocumentInitialProps` and we mirror it here.
+  // The streaming path stays as the default for the common case where the
+  // user does not define `getInitialProps`. The contract (including
+  // `withScriptNonce` and `styles` rendering) lives in the shared helper so
+  // prod and dev stay in lockstep.
+  const traceDocument = options.traceDocument ?? ((callback) => callback());
+  const documentResult = await traceDocument(async () => {
+    const documentRenderPage = await runDocumentRenderPage({
+      DocumentComponent: options.DocumentComponent,
+      enhancePageElement: options.enhancePageElement,
+      renderToReadableStream: options.renderToReadableStream,
+      // Render the collected `styles` fragment with the plain stream renderer
+      // rather than the full `<Document>` shell renderer — the styles tree is a
+      // standalone fragment, so it doesn't need the heavier document pipeline.
+      renderStylesToString: async (element) =>
+        readStreamAsText(await options.renderToReadableStream(element)),
+      scriptNonce: options.scriptNonce,
+      initialStylesheetHrefs: options.initialStylesheetHrefs,
+      context: {
+        err: options.err,
+        req: options.documentReqRes?.req,
+        res: options.documentReqRes?.res,
+        pathname: options.routePattern,
+        query: options.query ?? options.params,
+        asPath: options.routeUrl,
+      },
+    });
+    if (
+      // Next.js still renders and stores a getStaticProps page whose response
+      // was sent; it returns the sent response after the ISR write below.
+      !options.isStaticPropsRoute &&
+      options.documentReqRes?.res.headersSent &&
+      options.documentReqRes.responsePromise
+    ) {
+      return { documentRenderPage, responseSent: true };
+    }
+
+    let bodyStream: ReadableStream<Uint8Array>;
+    if (documentRenderPage.status === "rendered") {
+      bodyStream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(documentRenderPage.bodyHtml));
+          controller.close();
+        },
+      });
+    } else {
+      // Start the body render before collecting its head state, then let the
+      // tracing adapter keep the span alive without delaying the response.
+      const pageElement = withScriptNonce(
+        React.createElement(React.Fragment, null, options.createPageElement(renderProps)),
+        options.scriptNonce,
+        options.initialStylesheetHrefs,
+      );
+      bodyStream = await options.renderToReadableStream(pageElement);
+    }
+
+    if (documentRenderPage.status === "skipped") {
+      await callDocumentGetInitialProps(options.DocumentComponent, options.setDocumentInitialHead);
+    } else {
+      options.setDocumentInitialHead?.(documentRenderPage.head);
+    }
+
+    return {
+      bodyStream,
+      documentRenderPage,
+      responseSent: false,
+      waitForBody: documentRenderPage.status === "skipped",
+    };
+  });
+  if (documentResult.responseSent && options.documentReqRes?.responsePromise) {
+    return options.documentReqRes.responsePromise;
+  }
+  const { bodyStream, documentRenderPage } = documentResult;
+  if (!bodyStream) throw new Error("Pages document render did not produce a body stream");
+
+  const headFromShim = options.getSSRHeadHTML?.() ?? "";
+  // Trace meta tags from the active OpenTelemetry context. When the
+  // allow-list is unset (the common case) or OTel is not installed,
+  // `getClientTraceMetadataHTML` returns "" and we forward the head HTML
+  // verbatim — keeping the no-op path zero-overhead.
+  const traceMetaHTML = getClientTraceMetadataHTML(options.clientTraceMetadata);
+  const ssrHeadHTML = headFromShim;
+  let tailHeadHTML = traceMetaHTML;
+  // `styles` returned by `_document.getInitialProps()` (e.g. collected
+  // styled-components / emotion <style> tags) is already rendered to a string
+  // by the shared helper, ready to merge into the SSR head.
+  if (documentRenderPage.status === "rendered" && documentRenderPage.stylesHTML) {
+    if (tailHeadHTML) tailHeadHTML += "\n  ";
+    tailHeadHTML += documentRenderPage.stylesHTML;
+  }
+  const { prefix: shellPrefix, suffix: shellSuffix } = await buildPagesShellHtml(
+    fontHeadHTML,
+    nextDataScript,
+    {
+      assetTags: options.assetTags,
+      disableOptimizedLoading: options.disableOptimizedLoading,
+      DocumentComponent: options.DocumentComponent,
+      renderDocumentToString: options.renderDocumentToString,
+      ssrHeadHTML,
+      tailHeadHTML,
+      // When the renderPage path already invoked getInitialProps, reuse its
+      // resolved props instead of calling it a second time.
+      // `skipped` means it was never invoked → fall through to the fast path.
+      resolvedDocProps:
+        documentRenderPage.status === "skipped" ? null : documentRenderPage.docProps,
+      crossOrigin: options.crossOrigin,
+    },
+  );
+
+  options.clearSsrContext();
+
+  const responseHeaders = new Headers({ "Content-Type": "text/html; charset=utf-8" });
+  const finalStatus = applyGsspHeaders(
+    responseHeaders,
+    options.gsspRes ?? options.documentReqRes?.res ?? null,
+    options.statusCode,
+  );
+
+  let responseBodyStream = bodyStream;
+  if (
+    // Keep nonce-bearing pages out of ISR writes so one request's nonce is
+    // never replayed to other visitors from the shared cache.
+    !options.scriptNonce &&
+    options.isrRevalidateSeconds !== null &&
+    (options.isrRevalidateSeconds === false || options.isrRevalidateSeconds > 0)
+  ) {
+    const cacheBodyStreamPair = bodyStream.tee();
+    responseBodyStream = cacheBodyStreamPair[0];
+    const cacheBodyStream = cacheBodyStreamPair[1];
+    const isrPathname = options.isrCachePathname ?? options.routeUrl.split("?")[0];
+    const cacheKey = options.isrCacheKey("pages", isrPathname);
+
+    const cacheWriteOptions = {
+      cacheKey,
+      expireSeconds: options.expireSeconds,
+      // The Pages data route serializes the complete App props envelope, not
+      // the pageProps object by itself. Keeping the same shape in the ISR
+      // entry makes HTML-first and data-first cache population equivalent.
+      pageData: options.props ?? { pageProps: options.pageProps },
+      revalidateSeconds: options.isrRevalidateSeconds,
+      routePattern: options.routePattern,
+      setCache: options.isrSet,
+      shellPrefix,
+      shellSuffix,
+      // Next.js stores no status for a Pages entry, so one that `_app` or
+      // `_document` set on its res never replays from the cache.
+      status: options.isStaticPropsRoute ? (options.statusCode ?? 200) : finalStatus,
+      stream: cacheBodyStream,
+    };
+    if (options.isOnDemandRevalidate || options.isStaleRegeneration) {
+      // Next.js's internal revalidate path waits for `mocked.res.hasStreamed`.
+      // Do the equivalent here so `await res.revalidate()` cannot resolve
+      // before the regenerated HTML is fully rendered and persisted. Stale
+      // regeneration likewise has no response for the write to outlive.
+      await writePagesIsrCache(cacheWriteOptions);
+    } else {
+      schedulePagesIsrCacheWrite(cacheWriteOptions);
+    }
+  }
+
+  // `_app` or `_document` sent the response of a getStaticProps page. The
+  // entry above is still stored, but the visitor gets the sent response. An
+  // on-demand revalidation reports the regenerated entry instead.
+  if (
+    !options.isOnDemandRevalidate &&
+    options.documentReqRes?.res.headersSent &&
+    options.documentReqRes.responsePromise
+  ) {
+    // Cancelling one tee branch settles only once the cache branch finishes,
+    // so don't hold the sent response for the rest of the render.
+    responseBodyStream.cancel().catch(() => {});
+    return options.documentReqRes.responsePromise;
+  }
+
+  const compositeStream = await buildPagesCompositeStream(
+    responseBodyStream,
+    shellPrefix,
+    shellSuffix,
+  );
+
+  // Capture user-set Cache-Control (from getServerSideProps's res.setHeader)
+  // so a downstream user override survives the gssp default below, and only
+  // the default, never ISR/nonce Cache-Control which the runtime owns. Matches
+  // Next.js's pages-handler.ts: `if (!res.getHeader('Cache-Control'))`.
+  // responseHeaders/finalStatus are declared above so finalStatus can also feed
+  // the ISR cache write; applyGsspHeaders is the only Cache-Control writer before
+  // this point, so the captured value matches main's original capture site.
+  const userSetCacheControl = responseHeaders.has("Cache-Control");
+  if (hasCdnResponsePolicy(responseHeaders)) markRouteCacheabilityExplicitResponsePolicy();
+
+  if (options.scriptNonce) {
+    responseHeaders.set("Cache-Control", ISR_NO_STORE_CACHE_CONTROL);
+  } else if (options.isrRevalidateSeconds !== null) {
+    // Fresh ISR (MISS) response: route through the CDN adapter with the path tag
+    // used by Pages Router invalidation while the default emits Cache-Control.
+    const isrPathname = options.isrCachePathname ?? options.routeUrl.split("?")[0];
+    const pathTag = pagesPathCacheTag(isrPathname);
+    applyCdnResponseHeaders(responseHeaders, {
+      cacheControl: buildMissIsrCacheControl(options.isrRevalidateSeconds, options.expireSeconds),
+      tags: [pathTag],
+    });
+    applyPagesPrerenderRevalidateHeader(responseHeaders, options.isrRevalidateSeconds);
+    if (options.isOnDemandRevalidate) {
+      responseHeaders.set(NEXTJS_CACHE_HEADER, "REVALIDATED");
+      responseHeaders.set(VINEXT_REVALIDATED_CACHE_TAG_HEADER, encodeURIComponent(pathTag));
+    } else {
+      setCacheStateHeaders(responseHeaders, "MISS");
+    }
+  } else if (options.isStaticPropsRoute && shouldUseNextDeployCacheControl()) {
+    responseHeaders.set("Cache-Control", BROWSER_REVALIDATE_CACHE_CONTROL);
+  } else if (
+    (options.gsspRes || options.isInitialPropsRender || options.isFallback) &&
+    !userSetCacheControl
+  ) {
+    // Default for every render that is not a getStaticProps result, and for a
+    // getStaticPaths fallback shell, matching Next.js pages-handler.ts
+    // (`!hasStaticProps || isIsrFallback` → revalidate: 0 →
+    // getCacheControlHeader). Without this, CDNs and browsers could cache
+    // per-request gSSP and getInitialProps responses.
+    responseHeaders.set("Cache-Control", ISR_NEVER_CACHE_CONTROL);
+  }
+  if (options.fontLinkHeader) {
+    responseHeaders.set("Link", options.fontLinkHeader);
+  }
+
+  // Bot / crawler path: buffer the complete HTML, emit as a single chunk, and
+  // attach an ETag. Bots (Googlebot, Google-PageRenderer, etc.) cannot parse
+  // incrementally-streamed HTML — metadata tags pushed after the initial <head>
+  // flush are invisible to them.
+  //
+  // INTENTIONAL DIVERGENCE FROM NEXT.JS: Next.js gates this buffering/ETag on
+  // `!result.isDynamic` (i.e., only static/ISR pages get it, not GSSP pages).
+  // Vinext instead gates on the crawler User-Agent — buffering ALL bot requests
+  // regardless of whether the route uses getServerSideProps or getStaticProps.
+  // This is deliberate: edge-runtime streaming is unreliable for bots on any
+  // route type, so the UA check is the correct signal here. See also the ISR
+  // cache-HIT path in `pages-page-data.ts` which applies the same UA gate for
+  // consistent ETag coverage on cached responses.
+  //
+  // A consequence of UA-gating is that the ETag/304 path below can also fire
+  // for dynamic (GSSP) responses, which Next.js never 304s (`isDynamic` renders
+  // skip ETag generation entirely). The risk is minimal in practice: GSSP
+  // responses carry `Cache-Control: private, no-cache, no-store,
+  // must-revalidate`, so a conformant client won't revalidate them with
+  // `If-None-Match` — but a dynamic page may legitimately differ between the
+  // ETag-generating render and a revalidation request.
+  //
+  // When the incoming `If-None-Match` header matches the computed ETag, return
+  // `304 Not Modified` with no body (mirrors Next.js `sendEtagResponse`
+  // semantics in packages/next/src/server/send-payload.ts, with weak-ETag
+  // comparison per RFC 7232 §2.3.2).
+  //
+  // NOTE: This check is intentionally placed after the Cache-Control / header
+  // setup above so bot responses still carry the correct cache semantics.
+  if (options.userAgent && isPagesStreamingBot(options.userAgent)) {
+    const fullHtml = await readStreamAsText(compositeStream);
+    const etag = generatePagesETag(fullHtml);
+    responseHeaders.set("ETag", etag);
+    if (
+      isPageNotModified(
+        {
+          cacheControl: options.requestCacheControl,
+          ifModifiedSince: options.ifModifiedSince,
+          ifNoneMatch: options.ifNoneMatch,
+        },
+        etag,
+      ) &&
+      rendersPagesNotModified(finalStatus)
+    ) {
+      return new Response(null, {
+        status: 304,
+        headers: responseHeaders,
+      });
+    }
+    return new Response(fullHtml, {
+      status: finalStatus,
+      headers: responseHeaders,
+    });
+  }
+
+  const response: PagesStreamedHtmlResponse = Object.assign(
+    new Response(compositeStream, {
+      status: finalStatus,
+      headers: responseHeaders,
+    }),
+    {
+      __vinextStreamedHtmlResponse: true,
+    },
+  );
+  // Mark the normal streamed HTML render so the Node prod server can strip
+  // stale Content-Length only for this path, not for custom gSSP responses.
+  return response;
+}

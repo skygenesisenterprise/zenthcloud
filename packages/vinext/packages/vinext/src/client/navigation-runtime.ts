@@ -1,0 +1,469 @@
+import {
+  decodeBrowserRouteManifest,
+  type BrowserRouteManifest,
+  type BrowserRouteManifestInterception,
+  type BrowserRouteManifestWire,
+} from "../routing/browser-route-manifest.js";
+import { isUnknownRecord } from "../utils/record.js";
+import type { AppRouterScrollIntent } from "vinext/shims/app-router-scroll-state";
+import type { CachedRscResponse } from "vinext/shims/app-router-navigation";
+import { NAVIGATION_RUNTIME_SYMBOL_DESCRIPTION } from "./browser-globals.js";
+
+type NavigationRuntimeSnapshot = {
+  pathname: string;
+  searchParams: [string, string][];
+};
+
+export type NavigationRuntimeRscChunk = string | [3, string];
+
+export type NavigationRuntimeRscBootstrap = {
+  /** The server's App Router RSC compatibility ID for this page. */
+  compatibilityId?: string;
+  done?: boolean;
+  dynamicStaleTimeSeconds?: number;
+  initialCacheKind?: "dynamic" | "static";
+  searchParamsFromBrowser?: boolean;
+  nav?: NavigationRuntimeSnapshot;
+  params?: Record<string, string | string[]>;
+  /**
+   * The query SSR rendered client pages with, sent after the head when the
+   * render turned dynamic too late for `nav` to carry it.
+   */
+  renderedSearch?: string;
+  rsc: NavigationRuntimeRscChunk[];
+  /**
+   * Client reuse bound in seconds resolved from the initial render's completed
+   * `cacheLife` — the done-script sibling of `dynamicStaleTimeSeconds`, which
+   * carries the `experimental.staleTimes` config value instead.
+   */
+  staleTimeSeconds?: number;
+};
+
+type NavigationRuntimeKind = "navigate" | "traverse" | "refresh";
+
+type NavigationRuntimeHistoryUpdateMode = "push" | "replace";
+
+export type NavigationRuntimeVisibleCommitMode = "transition" | "synchronous";
+
+type NavigationRuntimePrefetchRouterState = {
+  pathAndSearch: string;
+  routeId: string;
+};
+
+type NavigationRuntimeTraversalIntent = {
+  direction: "back" | "forward" | "unknown";
+  historyState: unknown;
+  targetHistoryIndex: number | null;
+};
+
+export type NavigationRuntimeNavigate = (
+  href: string,
+  redirectDepth?: number,
+  navigationKind?: NavigationRuntimeKind,
+  historyUpdateMode?: NavigationRuntimeHistoryUpdateMode,
+  previousNextUrlOverride?: string | null,
+  programmaticTransition?: boolean,
+  traversalIntent?: NavigationRuntimeTraversalIntent,
+  scrollIntent?: AppRouterScrollIntent | null,
+  visibleCommitMode?: NavigationRuntimeVisibleCommitMode,
+  bypassNavigationCache?: boolean,
+) => Promise<void>;
+
+export type NavigationRuntimeFunctions = {
+  clearNavigationCaches?: (options?: { pingVisibleLinks?: boolean }) => void;
+  commitHashNavigation?: (
+    href: string,
+    historyUpdateMode: NavigationRuntimeHistoryUpdateMode,
+    scroll: boolean,
+  ) => void;
+  navigateExternal?: (
+    href: string,
+    historyUpdateMode: NavigationRuntimeHistoryUpdateMode,
+  ) => Promise<void>;
+  navigate?: NavigationRuntimeNavigate;
+  getPrefetchRouterState?: () => NavigationRuntimePrefetchRouterState | null;
+  /**
+   * Called at the start of every App Router navigation so the <Link> shim can
+   * reset any link that is still showing a `useLinkStatus()` pending state but
+   * is not the one driving this navigation (e.g. a programmatic router.push or
+   * a shallow-routing transition). Registered by shims/link.tsx; decoupled
+   * through the runtime to avoid a circular import with
+   * shims/app-router-navigation.ts.
+   */
+  notifyLinkNavigationStart?: () => void;
+  pingVisibleLinks?: () => void;
+  preparePrefetchResponse?: (response: Response) => Promise<unknown>;
+  /**
+   * The visited (BFCache) response a full prefetch can be fulfilled from, and
+   * until when a navigation would still reuse it (null if it wouldn't).
+   */
+  readVisitedResponseForFullPrefetch?: (
+    rscUrls: readonly string[],
+    interceptionContext: string | null,
+    mountedSlotsHeader: string | null,
+  ) => {
+    navigatedAt: number;
+    navigationFreshUntil: number | null;
+    response: CachedRscResponse;
+  } | null;
+  claimCurrentHistoryTreeSnapshot?: (
+    historyUpdateMode: NavigationRuntimeHistoryUpdateMode,
+    previousHistoryState: unknown,
+  ) => void;
+  commitAppOwnedHistoryStateWrite?: (
+    historyUpdateMode: NavigationRuntimeHistoryUpdateMode,
+    previousHistoryState: unknown,
+  ) => void;
+  /**
+   * Called after a raw (non-app-owned) history.pushState/replaceState with a
+   * URL so an App Router navigation that has not committed yet is discarded,
+   * matching Next.js' ACTION_RESTORE.
+   */
+  discardPendingNavigation?: () => void;
+  /**
+   * Called before any history.pushState/replaceState so a navigation React is
+   * committing writes its URL first, as Next.js does from an insertion effect.
+   */
+  flushCommittingNavigationUrl?: () => void;
+  /**
+   * Starts loading the browser RouteManifest chunk, or joins the load in
+   * progress. Returns null once the manifest is registered. Created by
+   * createNavigationRuntimeRouteManifestLoader.
+   */
+  loadRouteManifest?: () => Promise<boolean> | null;
+};
+
+export type NavigationRuntimeBootstrap = {
+  routeManifest: BrowserRouteManifest | null;
+  rsc: NavigationRuntimeRscBootstrap | undefined;
+};
+
+export type NavigationRuntime = {
+  bootstrap: NavigationRuntimeBootstrap;
+  functions: NavigationRuntimeFunctions;
+};
+
+export const NAVIGATION_RUNTIME_KEY = Symbol.for(NAVIGATION_RUNTIME_SYMBOL_DESCRIPTION);
+
+const ROUTE_MANIFEST_SEGMENT_GRAPH_MAP_KEYS: readonly string[] = [
+  "interceptions",
+  "interceptionsBySlotId",
+  "layouts",
+  "rootBoundaries",
+  "routes",
+  "slotBindings",
+];
+
+function createNavigationRuntime(): NavigationRuntime {
+  return {
+    bootstrap: {
+      routeManifest: null,
+      rsc: undefined,
+    },
+    functions: {},
+  };
+}
+
+function readRuntimeWindow(): Window | null {
+  if (typeof window === "undefined") return null;
+  return window;
+}
+
+export function isNavigationRuntimeFunctions(value: unknown): value is NavigationRuntimeFunctions {
+  if (!isUnknownRecord(value)) return false;
+  return (
+    isOptionalRuntimeFunction(Reflect.get(value, "clearNavigationCaches")) &&
+    isOptionalRuntimeFunction(Reflect.get(value, "commitHashNavigation")) &&
+    isOptionalRuntimeFunction(Reflect.get(value, "navigateExternal")) &&
+    isOptionalRuntimeFunction(Reflect.get(value, "navigate")) &&
+    isOptionalRuntimeFunction(Reflect.get(value, "getPrefetchRouterState")) &&
+    isOptionalRuntimeFunction(Reflect.get(value, "notifyLinkNavigationStart")) &&
+    isOptionalRuntimeFunction(Reflect.get(value, "pingVisibleLinks")) &&
+    isOptionalRuntimeFunction(Reflect.get(value, "preparePrefetchResponse")) &&
+    isOptionalRuntimeFunction(Reflect.get(value, "readVisitedResponseForFullPrefetch")) &&
+    isOptionalRuntimeFunction(Reflect.get(value, "claimCurrentHistoryTreeSnapshot")) &&
+    isOptionalRuntimeFunction(Reflect.get(value, "commitAppOwnedHistoryStateWrite")) &&
+    isOptionalRuntimeFunction(Reflect.get(value, "discardPendingNavigation")) &&
+    isOptionalRuntimeFunction(Reflect.get(value, "flushCommittingNavigationUrl")) &&
+    isOptionalRuntimeFunction(Reflect.get(value, "loadRouteManifest"))
+  );
+}
+
+function isNavigationRuntimeRscChunk(value: unknown): value is NavigationRuntimeRscChunk {
+  if (typeof value === "string") return true;
+  return (
+    Array.isArray(value) && value.length === 2 && value[0] === 3 && typeof value[1] === "string"
+  );
+}
+
+function isNavigationRuntimeSnapshot(value: unknown): value is NavigationRuntimeSnapshot {
+  if (!isUnknownRecord(value)) return false;
+  const pathname = Reflect.get(value, "pathname");
+  const searchParams = Reflect.get(value, "searchParams");
+  return (
+    typeof pathname === "string" &&
+    Array.isArray(searchParams) &&
+    searchParams.every(
+      (entry): entry is [string, string] =>
+        Array.isArray(entry) &&
+        entry.length === 2 &&
+        typeof entry[0] === "string" &&
+        typeof entry[1] === "string",
+    )
+  );
+}
+
+function isNavigationRuntimeParams(value: unknown): value is Record<string, string | string[]> {
+  if (!isUnknownRecord(value)) return false;
+  return Object.values(value).every(
+    (entry) =>
+      typeof entry === "string" ||
+      (Array.isArray(entry) && entry.every((part) => typeof part === "string")),
+  );
+}
+
+function isNavigationRuntimeRscBootstrap(value: unknown): value is NavigationRuntimeRscBootstrap {
+  if (!isUnknownRecord(value)) return false;
+  const compatibilityId = Reflect.get(value, "compatibilityId");
+  const done = Reflect.get(value, "done");
+  const dynamicStaleTimeSeconds = Reflect.get(value, "dynamicStaleTimeSeconds");
+  const initialCacheKind = Reflect.get(value, "initialCacheKind");
+  const searchParamsFromBrowser = Reflect.get(value, "searchParamsFromBrowser");
+  const nav = Reflect.get(value, "nav");
+  const params = Reflect.get(value, "params");
+  const renderedSearch = Reflect.get(value, "renderedSearch");
+  const rsc = Reflect.get(value, "rsc");
+  const staleTimeSeconds = Reflect.get(value, "staleTimeSeconds");
+  // getNavigationRuntime() runs at bootstrap/read boundaries, not per chunk.
+  // Keep full validation here so malformed ambient state is rejected before
+  // hydration consumes it instead of caching a stale validation result.
+  return (
+    (compatibilityId === undefined || typeof compatibilityId === "string") &&
+    (done === undefined || typeof done === "boolean") &&
+    isOptionalStaleTimeSeconds(dynamicStaleTimeSeconds) &&
+    (initialCacheKind === undefined ||
+      initialCacheKind === "dynamic" ||
+      initialCacheKind === "static") &&
+    (searchParamsFromBrowser === undefined || typeof searchParamsFromBrowser === "boolean") &&
+    (nav === undefined || isNavigationRuntimeSnapshot(nav)) &&
+    (params === undefined || isNavigationRuntimeParams(params)) &&
+    (renderedSearch === undefined || typeof renderedSearch === "string") &&
+    Array.isArray(rsc) &&
+    rsc.every(isNavigationRuntimeRscChunk) &&
+    isOptionalStaleTimeSeconds(staleTimeSeconds)
+  );
+}
+
+function isOptionalStaleTimeSeconds(value: unknown): boolean {
+  return value === undefined || (typeof value === "number" && Number.isFinite(value) && value >= 0);
+}
+
+function isReadonlyStringArray(value: unknown): value is readonly string[] {
+  return Array.isArray(value) && value.every((entry) => typeof entry === "string");
+}
+
+function isNullableString(value: unknown): value is string | null {
+  return value === null || typeof value === "string";
+}
+
+function isNavigationRuntimeInterception(
+  value: unknown,
+): value is BrowserRouteManifestInterception {
+  if (!isUnknownRecord(value)) return false;
+  return (
+    typeof value.id === "string" &&
+    isReadonlyStringArray(value.sourcePatternParts) &&
+    isReadonlyStringArray(value.targetPatternParts) &&
+    typeof value.slotId === "string" &&
+    isNullableString(value.ownerLayoutId) &&
+    isNullableString(value.targetRouteId)
+  );
+}
+
+function isNavigationRuntimeInterceptionArray(
+  value: unknown,
+): value is readonly BrowserRouteManifestInterception[] {
+  return Array.isArray(value) && value.every(isNavigationRuntimeInterception);
+}
+
+function isNavigationRuntimeRouteManifest(value: unknown): value is BrowserRouteManifest {
+  if (!isUnknownRecord(value)) return false;
+  const graphVersion = Reflect.get(value, "graphVersion");
+  const segmentGraph = Reflect.get(value, "segmentGraph");
+  if (typeof graphVersion !== "string" || !isUnknownRecord(segmentGraph)) return false;
+  const interceptions = Reflect.get(segmentGraph, "interceptions");
+  const interceptionsBySlotId = Reflect.get(segmentGraph, "interceptionsBySlotId");
+  if (
+    !ROUTE_MANIFEST_SEGMENT_GRAPH_MAP_KEYS.every(
+      (key) => Reflect.get(segmentGraph, key) instanceof Map,
+    ) ||
+    !(interceptions instanceof Map) ||
+    !(interceptionsBySlotId instanceof Map)
+  ) {
+    return false;
+  }
+
+  for (const interception of interceptions.values()) {
+    if (!isNavigationRuntimeInterception(interception)) return false;
+  }
+  for (const slotInterceptions of interceptionsBySlotId.values()) {
+    if (!isNavigationRuntimeInterceptionArray(slotInterceptions)) return false;
+  }
+  return true;
+}
+
+function isNavigationRuntimeBootstrap(value: unknown): value is NavigationRuntimeBootstrap {
+  if (!isUnknownRecord(value)) return false;
+  const routeManifest = Reflect.get(value, "routeManifest");
+  const rsc = Reflect.get(value, "rsc");
+  return (
+    (routeManifest === null || isNavigationRuntimeRouteManifest(routeManifest)) &&
+    (rsc === undefined || isNavigationRuntimeRscBootstrap(rsc))
+  );
+}
+
+function isNavigationRuntime(value: unknown): value is NavigationRuntime {
+  if (!isUnknownRecord(value)) return false;
+  if (!("bootstrap" in value) || !("functions" in value)) return false;
+  const { bootstrap, functions } = value;
+  return isNavigationRuntimeBootstrap(bootstrap) && isNavigationRuntimeFunctions(functions);
+}
+
+function isOptionalRuntimeFunction(value: unknown): boolean {
+  return value === undefined || typeof value === "function";
+}
+
+export function getNavigationRuntime(): NavigationRuntime | null {
+  const runtimeWindow = readRuntimeWindow();
+  if (runtimeWindow === null) return null;
+
+  const runtime: unknown = Reflect.get(runtimeWindow, NAVIGATION_RUNTIME_KEY);
+  return isNavigationRuntime(runtime) ? runtime : null;
+}
+
+/**
+ * Returns the registered browser runtime, creating it when a window exists.
+ * Without a window, callers receive a detached runtime and must retain the
+ * returned reference themselves; server calls are intentionally not global.
+ */
+function ensureNavigationRuntime(): NavigationRuntime {
+  const runtimeWindow = readRuntimeWindow();
+  if (runtimeWindow === null) {
+    return createNavigationRuntime();
+  }
+
+  const existingRuntime: unknown = Reflect.get(runtimeWindow, NAVIGATION_RUNTIME_KEY);
+  const runtime = isNavigationRuntime(existingRuntime)
+    ? existingRuntime
+    : createNavigationRuntime();
+  Reflect.set(runtimeWindow, NAVIGATION_RUNTIME_KEY, runtime);
+  return runtime;
+}
+
+export function registerNavigationRuntimeBootstrap(
+  bootstrap: Partial<NavigationRuntimeBootstrap>,
+): NavigationRuntime {
+  const runtime = ensureNavigationRuntime();
+  runtime.bootstrap = {
+    ...runtime.bootstrap,
+    ...bootstrap,
+  };
+  return runtime;
+}
+
+export function registerNavigationRuntimeFunctions(
+  functions: Partial<NavigationRuntimeFunctions>,
+): NavigationRuntime {
+  const runtime = ensureNavigationRuntime();
+  runtime.functions = {
+    ...runtime.functions,
+    ...functions,
+  };
+  return runtime;
+}
+
+export function ensureNavigationRuntimeRscBootstrap(): NavigationRuntimeRscBootstrap {
+  const runtime = ensureNavigationRuntime();
+  return ensureNavigationRuntimeRscBootstrapForRuntime(runtime);
+}
+
+function ensureNavigationRuntimeRscBootstrapForRuntime(
+  runtime: NavigationRuntime,
+): NavigationRuntimeRscBootstrap {
+  const rscBootstrap = runtime.bootstrap.rsc;
+  if (rscBootstrap === undefined) {
+    const nextRscBootstrap: NavigationRuntimeRscBootstrap = { rsc: [] };
+    runtime.bootstrap.rsc = nextRscBootstrap;
+    return nextRscBootstrap;
+  }
+
+  return rscBootstrap;
+}
+
+/**
+ * The browser entry does not inline the RouteManifest: the manifest grows with
+ * every route of the app, so it lives in its own chunk that loads alongside
+ * hydration. The navigation planner needs it to classify commits (root layout
+ * changes, intercepted payloads, preserved slots), so navigations, commits and
+ * prefetches that read it wait for this load first.
+ */
+export function createNavigationRuntimeRouteManifestLoader(
+  importManifest: () => Promise<{ default: BrowserRouteManifestWire | null }>,
+): () => Promise<boolean> | null {
+  let loaded = false;
+  let reportedFailure = false;
+  let pending: Promise<boolean> | null = null;
+  return () => {
+    if (loaded) return null;
+    pending ??= importManifest()
+      .then(({ default: wire }) => {
+        registerNavigationRuntimeBootstrap({
+          routeManifest: wire === null ? null : decodeBrowserRouteManifest(wire),
+        });
+        loaded = true;
+        return true;
+      })
+      .catch((error: unknown) => {
+        // Resolves false: the waiting operation must not classify a commit or
+        // resolve an interception context without the manifest, so navigations
+        // fall back to a document navigation and prefetches are skipped. The
+        // next caller retries the load. Every navigation and prefetch retries,
+        // so report the failure once.
+        pending = null;
+        if (!reportedFailure) {
+          reportedFailure = true;
+          console.error("[vinext] Failed to load the App Router route manifest:", error);
+        }
+        return false;
+      });
+    return pending;
+  };
+}
+
+/**
+ * Starts or joins the RouteManifest load. Resolves whether it loaded, and
+ * returns null once it has (or when no App Router runtime registered a loader).
+ */
+export function loadNavigationRuntimeRouteManifest(): Promise<boolean> | null {
+  return getNavigationRuntime()?.functions.loadRouteManifest?.() ?? null;
+}
+
+export function hasAppNavigationRuntime(): boolean {
+  return typeof getNavigationRuntime()?.functions.navigate === "function";
+}
+
+/**
+ * True when the App Router has installed its runtime bootstrap on `window`,
+ * which the inline runtime-metadata script does synchronously in `<head>`.
+ *
+ * This is a stronger early-life signal than `hasAppNavigationRuntime()` — the
+ * latter checks for the fully-wired `navigate` function and so returns false
+ * during the brief window between HTML parse and the bootstrap module
+ * finishing initialization. Code that needs to differentiate App Router from
+ * Pages Router *during hydration* (e.g. the Script shim deciding whether the
+ * server-side pre-head splice already emitted the inline beforeInteractive
+ * tag) should call this instead.
+ */
+export function hasAppNavigationRuntimeBootstrap(): boolean {
+  return getNavigationRuntime() !== null;
+}

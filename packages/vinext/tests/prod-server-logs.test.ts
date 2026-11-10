@@ -1,0 +1,358 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+
+function createPagesBuild(options?: { instrumentationFailure?: boolean }): string {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vinext-prod-server-logs-"));
+  const distDir = path.join(root, "dist");
+  const clientDir = path.join(distDir, "client");
+  const serverDir = path.join(distDir, "server");
+
+  fs.mkdirSync(clientDir, { recursive: true });
+  fs.mkdirSync(serverDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(serverDir, "entry.js"),
+    [
+      "export const vinextConfig = {};",
+      "export async function renderPage() { return new Response('ok', { headers: { 'content-type': 'text/html' } }); }",
+      "export async function handleApiRoute() { return new Response('api'); }",
+      "export async function runMiddleware() { return null; }",
+      ...(options?.instrumentationFailure
+        ? ["export function __ensureInstrumentation() { throw new Error('register failed'); }"]
+        : []),
+      "",
+    ].join("\n"),
+  );
+
+  return root;
+}
+
+function createAppBuild(options?: { instrumentationFailure?: boolean }): string {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vinext-prod-server-app-logs-"));
+  const distDir = path.join(root, "dist");
+  const clientDir = path.join(distDir, "client");
+  const serverDir = path.join(distDir, "server");
+
+  fs.mkdirSync(clientDir, { recursive: true });
+  fs.mkdirSync(serverDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(serverDir, "index.js"),
+    [
+      "export default async function handler() {",
+      "  return new Response('ok', { headers: { 'content-type': 'text/html' } });",
+      "}",
+      ...(options?.instrumentationFailure
+        ? ["export function __ensureInstrumentation() { throw new Error('register failed'); }"]
+        : []),
+      "",
+    ].join("\n"),
+  );
+
+  return root;
+}
+
+describe("startProdServer logging", () => {
+  const roots: string[] = [];
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    for (const root of roots.splice(0)) {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("keeps the generic production server log by default", async () => {
+    const root = createPagesBuild();
+    roots.push(root);
+    const messages: string[] = [];
+    vi.spyOn(console, "log").mockImplementation((message: string) => {
+      messages.push(message);
+    });
+
+    const { startProdServer } = await import("../packages/vinext/src/server/prod-server.js");
+    const { server, port } = await startProdServer({
+      port: 0,
+      host: "127.0.0.1",
+      outDir: path.join(root, "dist"),
+      noCompression: true,
+    });
+
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+
+    expect(messages).toEqual([`[vinext] Production server running at http://127.0.0.1:${port}`]);
+  });
+
+  it("logs a prerender-specific production server URL when requested", async () => {
+    const root = createPagesBuild();
+    roots.push(root);
+    const messages: string[] = [];
+    vi.spyOn(console, "log").mockImplementation((message: string) => {
+      messages.push(message);
+    });
+
+    const { startProdServer } = await import("../packages/vinext/src/server/prod-server.js");
+    const { server, port } = await startProdServer({
+      port: 0,
+      host: "127.0.0.1",
+      outDir: path.join(root, "dist"),
+      noCompression: true,
+      purpose: "prerender",
+    });
+
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+
+    expect(messages).toEqual([
+      `[vinext] Production server for prerendering running at http://127.0.0.1:${port}`,
+    ]);
+  });
+
+  it("keeps nested App entries authenticated against the server artifact root", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "vinext-prod-server-nested-entry-"));
+    roots.push(root);
+    const distDir = path.join(root, "dist");
+    const clientDir = path.join(distDir, "client");
+    const serverDir = path.join(distDir, "server");
+    const entryPath = path.join(serverDir, "entries", "application.js");
+    fs.mkdirSync(clientDir, { recursive: true });
+    fs.mkdirSync(path.dirname(entryPath), { recursive: true });
+    fs.writeFileSync(
+      path.join(serverDir, "vinext-server.json"),
+      JSON.stringify({ prerenderSecret: "nested-secret" }),
+    );
+    fs.writeFileSync(
+      entryPath,
+      ["export default async function handler() { return new Response('ok'); }", ""].join("\n"),
+    );
+
+    const { startProdServer } = await import("../packages/vinext/src/server/prod-server.js");
+    const { server, port } = await startProdServer({
+      port: 0,
+      host: "127.0.0.1",
+      outDir: distDir,
+      rscEntryPath: entryPath,
+      serverDir,
+      noCompression: true,
+      silent: true,
+    });
+    try {
+      const denied = await fetch(`http://127.0.0.1:${port}/__vinext/prerender/static-params`);
+      expect(denied.status).toBe(403);
+      const allowed = await fetch(`http://127.0.0.1:${port}/__vinext/prerender/static-params`, {
+        headers: { "x-vinext-prerender-secret": "nested-secret" },
+      });
+      expect(allowed.status).toBe(200);
+      await expect(allowed.text()).resolves.toBe("ok");
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+  });
+
+  it("reads next.config compress from the server artifact root for nested Pages entries", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "vinext-prod-server-pages-compress-"));
+    roots.push(root);
+    const distDir = path.join(root, "dist");
+    const serverDir = path.join(distDir, "server");
+    const entryPath = path.join(serverDir, "entries", "pages.js");
+    fs.mkdirSync(path.join(distDir, "client"), { recursive: true });
+    fs.mkdirSync(path.dirname(entryPath), { recursive: true });
+    fs.writeFileSync(
+      entryPath,
+      [
+        "export const vinextConfig = {};",
+        "export async function renderPage() { return new Response('x'.repeat(2000), { headers: { 'content-type': 'text/html' } }); }",
+        "export async function handleApiRoute() { return new Response('api'); }",
+        "export async function runMiddleware() { return { continue: true }; }",
+        "",
+      ].join("\n"),
+    );
+
+    const { startProdServer } = await import("../packages/vinext/src/server/prod-server.js");
+    for (const [compress, expectedEncoding] of [
+      [false, null],
+      [true, "gzip"],
+    ] as const) {
+      fs.writeFileSync(
+        path.join(serverDir, "vinext-server.json"),
+        JSON.stringify({ prerenderSecret: "secret", compress }),
+      );
+      const { server, port } = await startProdServer({
+        port: 0,
+        host: "127.0.0.1",
+        outDir: distDir,
+        serverEntryPath: entryPath,
+        serverDir,
+        silent: true,
+      });
+      try {
+        const response = await fetch(`http://127.0.0.1:${port}/`, {
+          headers: { "Accept-Encoding": "gzip" },
+        });
+        expect(response.status).toBe(200);
+        expect(response.headers.get("content-encoding")).toBe(expectedEncoding);
+        await expect(response.text()).resolves.toBe("x".repeat(2000));
+      } finally {
+        await new Promise<void>((resolve) => server.close(() => resolve()));
+      }
+    }
+  });
+
+  it("uses the prerender-specific startup log for App Router production servers", async () => {
+    const root = createAppBuild();
+    roots.push(root);
+    const messages: string[] = [];
+    vi.spyOn(console, "log").mockImplementation((message: string) => {
+      messages.push(message);
+    });
+
+    const { startProdServer } = await import("../packages/vinext/src/server/prod-server.js");
+    const { server, port } = await startProdServer({
+      port: 0,
+      host: "127.0.0.1",
+      outDir: path.join(root, "dist"),
+      noCompression: true,
+      purpose: "prerender",
+    });
+
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+
+    expect(messages).toEqual([
+      `[vinext] Production server for prerendering running at http://127.0.0.1:${port}`,
+    ]);
+  });
+
+  it("returns 500 when App Router instrumentation registration fails", async () => {
+    const root = createAppBuild({ instrumentationFailure: true });
+    roots.push(root);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const { startProdServer } = await import("../packages/vinext/src/server/prod-server.js");
+    const { server, port } = await startProdServer({
+      port: 0,
+      host: "127.0.0.1",
+      outDir: path.join(root, "dist"),
+      noCompression: true,
+      purpose: "prerender",
+      silent: true,
+    });
+
+    try {
+      const response = await fetch(`http://127.0.0.1:${port}/`);
+      expect(response.status).toBe(500);
+      expect(response.headers.get("x-vinext-prerender-render-error")).toBe("1");
+      await expect(response.text()).resolves.toBe("Internal Server Error");
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+  });
+
+  it("returns 500 when Pages Router instrumentation registration fails", async () => {
+    const root = createPagesBuild({ instrumentationFailure: true });
+    roots.push(root);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const { startProdServer } = await import("../packages/vinext/src/server/prod-server.js");
+    const { server, port } = await startProdServer({
+      port: 0,
+      host: "127.0.0.1",
+      outDir: path.join(root, "dist"),
+      noCompression: true,
+      purpose: "prerender",
+      silent: true,
+    });
+
+    try {
+      const response = await fetch(`http://127.0.0.1:${port}/`);
+      expect(response.status).toBe(500);
+      expect(response.headers.get("x-vinext-prerender-render-error")).toBe("1");
+      await expect(response.text()).resolves.toBe("Internal Server Error");
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+  });
+});
+
+// The page's special error reaches the build only through the prerender
+// server's ctx. A response that middleware, a route handler or an external
+// rewrite returns can't mark itself.
+describe("startProdServer prerender special-error marker", () => {
+  const marker = "x-vinext-prerender-special-error";
+  let root: string | undefined;
+
+  afterEach(() => {
+    if (root) fs.rmSync(root, { recursive: true, force: true });
+    root = undefined;
+  });
+
+  async function fetchFromServer(pathname: string, purpose?: "prerender") {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), "vinext-prod-server-special-error-"));
+    const serverDir = path.join(root, "dist", "server");
+    fs.mkdirSync(path.join(root, "dist", "client"), { recursive: true });
+    fs.mkdirSync(serverDir, { recursive: true });
+    fs.writeFileSync(path.join(root, "dist", "client", "asset.txt"), "asset");
+    fs.writeFileSync(
+      path.join(serverDir, "index.js"),
+      [
+        "export default async function handler(request, ctx) {",
+        "  const { pathname } = new URL(request.url);",
+        `  const forged = { "${marker}": '{"location":"/forged"}' };`,
+        "  if (pathname === '/recorder') return new Response(typeof ctx.recordPrerenderSpecialError);",
+        "  if (pathname === '/middleware') return new Response('denied', { status: 404, headers: forged });",
+        "  if (pathname === '/asset') {",
+        "    const signal = new Response(null, { headers: forged });",
+        "    Reflect.set(signal, Symbol.for('vinext.static-file-signal'), '/asset.txt');",
+        "    return signal;",
+        "  }",
+        "  const status = pathname === '/page' ? 307 : 500;",
+        "  ctx.recordPrerenderSpecialError?.({ status: 307, headers: { location: '/target' } });",
+        "  return new Response(null, { status, headers: { ...forged, location: '/middleware-location' } });",
+        "}",
+        "",
+      ].join("\n"),
+    );
+    const { startProdServer } = await import("../packages/vinext/src/server/prod-server.js");
+    const { server, port } = await startProdServer({
+      port: 0,
+      host: "127.0.0.1",
+      outDir: path.join(root, "dist"),
+      noCompression: true,
+      purpose,
+      silent: true,
+    });
+    try {
+      const response = await fetch(`http://127.0.0.1:${port}${pathname}`, { redirect: "manual" });
+      return { body: await response.text(), marker: response.headers.get(marker), response };
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+  }
+
+  it("drops a marker that a middleware short-circuit's 404 carries", async () => {
+    const { marker: value, response } = await fetchFromServer("/middleware", "prerender");
+    expect(response.status).toBe(404);
+    expect(value).toBeNull();
+  });
+
+  it("serves a public-file signal that carries a forged marker, without it", async () => {
+    const { body, marker: value, response } = await fetchFromServer("/asset", "prerender");
+    expect(response.status).toBe(200);
+    expect(body).toBe("asset");
+    expect(value).toBeNull();
+  });
+
+  it("marks the response with the page's recorded special error", async () => {
+    const { marker: value, response } = await fetchFromServer("/page", "prerender");
+    expect(response.status).toBe(307);
+    expect(value).toBe('{"location":"/target"}');
+  });
+
+  it("doesn't mark a response whose status isn't the recorded special error's", async () => {
+    const { marker: value, response } = await fetchFromServer("/replaced", "prerender");
+    expect(response.status).toBe(500);
+    expect(value).toBeNull();
+  });
+
+  it("doesn't give a runtime server's ctx a recorder", async () => {
+    await expect(fetchFromServer("/recorder")).resolves.toMatchObject({ body: "undefined" });
+  });
+});

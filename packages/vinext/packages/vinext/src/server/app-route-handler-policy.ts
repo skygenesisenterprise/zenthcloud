@@ -1,0 +1,266 @@
+import {
+  buildRouteHandlerAllowHeader,
+  collectRouteHandlerMethods,
+  type RouteHandlerHttpMethod,
+  type RouteHandlerModule,
+} from "./app-route-handler-runtime.js";
+import { parseNextHttpErrorDigest, parseNextRedirectDigest } from "./next-error-digest.js";
+export { isPossibleAppRouteActionRequest } from "./app-action-request.js";
+
+export type AppRouteHandlerModule = {
+  dynamic?: string;
+  dynamicParams?: unknown;
+  fetchCache?: unknown;
+  generateStaticParams?: unknown;
+  revalidate?: unknown;
+  runtime?: string;
+} & RouteHandlerModule;
+
+type AppRouteHandlerFunction = (...args: unknown[]) => unknown;
+
+type ResolvedAppRouteHandlerMethod = {
+  allowHeaderForOptions: string;
+  exportedMethods: RouteHandlerHttpMethod[];
+  handlerFn: AppRouteHandlerFunction | undefined;
+  isAutoHead: boolean;
+  shouldAutoRespondToOptions: boolean;
+};
+
+type AppRouteHandlerCacheReadOptions = {
+  dynamicConfig?: string;
+  handlerFn: unknown;
+  isAutoHead: boolean;
+  isKnownDynamic: boolean;
+  isDraftMode?: boolean;
+  isProduction: boolean;
+  method: string;
+  revalidateSeconds: number | null;
+};
+
+type AppRouteHandlerResponseCacheOptions = {
+  dynamicConfig?: string;
+  dynamicUsedInHandler: boolean;
+  hasExplicitCacheablePolicy?: boolean;
+  handlerSetCachePolicy: boolean;
+  isAutoHead: boolean;
+  isDraftMode?: boolean;
+  isProduction: boolean;
+  method: string;
+  revalidateSeconds: number | null;
+  requiresCompletedResponseAdmission?: boolean;
+};
+
+type AppRouteHandlerSpecialError =
+  | {
+      kind: "redirect";
+      location: string;
+      statusCode: number;
+    }
+  | {
+      kind: "status";
+      statusCode: number;
+    };
+
+type AppRouteHandlerSpecialErrorOptions = {
+  isAction: boolean;
+};
+
+export function getAppRouteHandlerRevalidateSeconds(
+  handler: Pick<AppRouteHandlerModule, "dynamic" | "generateStaticParams" | "revalidate">,
+): number | null {
+  // 0 is a meaningful value ("never cache") and must be preserved so the
+  // header path can emit a no-store Cache-Control.
+  // revalidate = false means "cache indefinitely" (Next.js segment config
+  // parity) — return Infinity to signal the cache-later path.
+  const { revalidate } = handler;
+  if (revalidate === false) return Infinity;
+  if (typeof revalidate === "number" && Number.isFinite(revalidate) && revalidate >= 0) {
+    return revalidate;
+  }
+  if (revalidate !== undefined) {
+    return null;
+  }
+
+  // Ported from Next.js static eligibility:
+  // packages/next/src/server/route-modules/app-route/helpers/is-static-gen-enabled.ts
+  if (
+    handler.dynamic === "force-static" ||
+    handler.dynamic === "error" ||
+    typeof handler.generateStaticParams === "function"
+  ) {
+    return Infinity;
+  }
+
+  return null;
+}
+
+export function hasAppRouteHandlerDefaultExport(handler: RouteHandlerModule): boolean {
+  return typeof handler.default === "function";
+}
+
+/** Match Next.js methods that force an App Route out of static generation. */
+export function hasNonStaticAppRouteHandlerMethods(handler: RouteHandlerModule): boolean {
+  return Boolean(handler.POST || handler.PUT || handler.DELETE || handler.PATCH || handler.OPTIONS);
+}
+
+/**
+ * How a dynamic App Route admits params outside its `generateStaticParams`.
+ * Next.js enforces `dynamicParams = false` through the route's prerender
+ * manifest entry. Dev writes that entry from `generateStaticParams`.
+ * A production build leaves out routes that bail out of static generation,
+ * and lists a route without `generateStaticParams` only when it is static.
+ * Edge routes never prerender, so they have no entry.
+ *
+ * Non-static methods bail out only while a generated path prerenders, so
+ * Next.js still lists such a route when its generator returns no params.
+ * vinext doesn't run the generator per request to find that case: as soon
+ * as it lists one param, Next.js serves every param too.
+ * https://github.com/vercel/next.js/blob/v16.2.7/packages/next/src/build/index.ts
+ * https://github.com/vercel/next.js/blob/v16.2.7/packages/next/src/build/templates/app-route.ts
+ */
+export function resolveAppRouteHandlerStaticParamsEnforcement(
+  handler: AppRouteHandlerModule,
+  isProduction: boolean,
+): "enforce" | "skip" {
+  if (handler.dynamicParams !== false) return "skip";
+  const hasGenerateStaticParams = typeof handler.generateStaticParams === "function";
+  if (!isProduction) return hasGenerateStaticParams ? "enforce" : "skip";
+  if (handler.runtime === "edge" || handler.runtime === "experimental-edge") return "skip";
+  if (handler.dynamic === "force-dynamic" || handler.revalidate === 0) return "skip";
+  // With no generated paths to prerender, no method can bail out.
+  if (!hasGenerateStaticParams) {
+    return handler.dynamic === "force-static" || handler.dynamic === "error" ? "enforce" : "skip";
+  }
+  return hasNonStaticAppRouteHandlerMethods(handler) ? "skip" : "enforce";
+}
+
+export function resolveAppRouteHandlerMethod(
+  handler: AppRouteHandlerModule,
+  method: string,
+): ResolvedAppRouteHandlerMethod {
+  const exportedMethods = collectRouteHandlerMethods(handler);
+  const allowHeaderForOptions = buildRouteHandlerAllowHeader(exportedMethods);
+  const shouldAutoRespondToOptions = method === "OPTIONS" && typeof handler.OPTIONS !== "function";
+
+  let handlerFn =
+    typeof handler[method as RouteHandlerHttpMethod] === "function"
+      ? (handler[method as RouteHandlerHttpMethod] as AppRouteHandlerFunction)
+      : undefined;
+  let isAutoHead = false;
+
+  if (
+    method === "HEAD" &&
+    typeof handler.HEAD !== "function" &&
+    typeof handler.GET === "function"
+  ) {
+    handlerFn = handler.GET as AppRouteHandlerFunction;
+    isAutoHead = true;
+  }
+
+  return {
+    allowHeaderForOptions,
+    exportedMethods,
+    handlerFn,
+    isAutoHead,
+    shouldAutoRespondToOptions,
+  };
+}
+
+export function shouldReadAppRouteHandlerCache(options: AppRouteHandlerCacheReadOptions): boolean {
+  // revalidateSeconds === 0 means "never cache" and must skip the ISR read.
+  // A previously written entry (e.g. from before the handler opted out)
+  // must never be replayed once the author set revalidate = 0.
+  return (
+    options.isProduction &&
+    options.revalidateSeconds !== null &&
+    options.revalidateSeconds > 0 &&
+    options.dynamicConfig !== "force-dynamic" &&
+    !options.isDraftMode &&
+    !options.isKnownDynamic &&
+    (options.method === "GET" || options.isAutoHead) &&
+    typeof options.handlerFn === "function"
+  );
+}
+
+export function shouldApplyAppRouteHandlerRevalidateHeader(
+  options: Omit<AppRouteHandlerResponseCacheOptions, "dynamicConfig" | "isProduction">,
+): boolean {
+  // Includes revalidateSeconds === 0. That case emits the no-store
+  // Cache-Control, which is exactly the header a never-cache handler
+  // needs to suppress heuristic caching.
+  return (
+    options.revalidateSeconds !== null &&
+    !options.isDraftMode &&
+    !options.dynamicUsedInHandler &&
+    (options.method === "GET" || options.isAutoHead) &&
+    !options.handlerSetCachePolicy
+  );
+}
+
+/**
+ * Next.js consumes the full body before completing static generation for an
+ * App Route. Keep that completion boundary for every response that can still
+ * receive a public framework cache policy, including
+ * `revalidate = false` (represented by Infinity).
+ */
+export function shouldCompleteAppRouteHandlerResponse(
+  options: AppRouteHandlerResponseCacheOptions,
+): boolean {
+  return (
+    options.isProduction &&
+    ((options.revalidateSeconds !== null && options.revalidateSeconds > 0) ||
+      options.requiresCompletedResponseAdmission === true ||
+      options.hasExplicitCacheablePolicy === true) &&
+    options.dynamicConfig !== "force-dynamic" &&
+    !options.isDraftMode &&
+    !options.dynamicUsedInHandler &&
+    (options.method === "GET" || options.isAutoHead)
+  );
+}
+
+export function shouldWriteAppRouteHandlerCache(
+  options: AppRouteHandlerResponseCacheOptions,
+): boolean {
+  // Excludes revalidateSeconds === 0. A never-cache response must not be
+  // persisted to ISR, even though it still needs a Cache-Control header.
+  return (
+    options.isProduction &&
+    options.revalidateSeconds !== null &&
+    options.revalidateSeconds > 0 &&
+    options.dynamicConfig !== "force-dynamic" &&
+    !options.isDraftMode &&
+    !options.dynamicUsedInHandler &&
+    (options.method === "GET" || options.isAutoHead)
+  );
+}
+
+export function resolveAppRouteHandlerSpecialError(
+  error: unknown,
+  options?: AppRouteHandlerSpecialErrorOptions,
+): AppRouteHandlerSpecialError | null {
+  if (!(error && typeof error === "object" && "digest" in error)) {
+    return null;
+  }
+
+  const digest = String(error.digest);
+  const redirect = parseNextRedirectDigest(digest);
+  if (redirect) {
+    // Next.js sends the target `redirect()` received, so the response is the
+    // same on every host that shares its cache entry.
+    return {
+      kind: "redirect",
+      location: redirect.url,
+      statusCode: options?.isAction ? 303 : redirect.status,
+    };
+  }
+
+  const httpError = parseNextHttpErrorDigest(digest);
+  if (httpError) {
+    return {
+      kind: "status",
+      statusCode: httpError.status,
+    };
+  }
+
+  return null;
+}

@@ -1,0 +1,757 @@
+import { buildRouteTrie, trieMatchRaw } from "../routing/route-trie.js";
+import {
+  extractRawRoutePatternParams,
+  matchRoutePatternRaw,
+  matchRoutePatternPrefix,
+  type RoutePatternParams,
+} from "../routing/route-pattern.js";
+import { createAppRouteGraphInterceptionId } from "../routing/app-route-ids.js";
+import { decodeMatchedParams, decodeRouteSegment, splitPathSegments } from "../routing/utils.js";
+import { canonicalizeAppPageParams } from "./app-page-segment-state.js";
+import { getRenderedConcreteUrlPathsForRoute } from "./pregenerated-concrete-paths.js";
+
+/**
+ * Sentinel slot key used for sibling-style interception entries.
+ * When a matched intercept carries this key, the render layer replaces the
+ * route's main page element instead of a parallel slot.
+ */
+export const SIBLING_PAGE_INTERCEPT_SLOT_KEY = "__vinext_page_intercept";
+
+type AppRscRouteParams = RoutePatternParams;
+
+type AppRscInterceptForMatching = {
+  targetPattern: string;
+  /**
+   * URL pattern of the *intercepting route* (the path that owns the slot,
+   * with route groups and `@slot` segments stripped). Mirrors Next.js'
+   * `interceptingRoute` from `extractInterceptionRouteInformation`.
+   *
+   * Next.js implements interception as a rewrite that fires only when the
+   * `Next-URL` header matches `^<sourceMatchPattern>(?:/.*)?$`. vinext's
+   * matcher enforces the same constraint at `findIntercept`: an intercept
+   * whose `targetPattern` matches the request URL is only valid when the
+   * provided source pathname (X-Vinext-Interception-Context / Next-URL)
+   * matches this pattern, with descendants allowed.
+   *
+   * Optional for backwards compat: when absent or empty, the matcher falls
+   * back to the legacy behavior of matching by target alone (still gated on
+   * a non-null source pathname).
+   *
+   * @see https://github.com/vercel/next.js/blob/canary/packages/next/src/lib/generate-interception-routes-rewrites.ts
+   */
+  sourceMatchPattern?: string;
+  sourcePageSegments?: readonly string[];
+  interceptLayouts: readonly unknown[];
+  interceptLayoutSegments?: readonly (readonly string[])[];
+  interceptBranchSegments?: readonly string[];
+  interceptLoadings?: readonly unknown[];
+  interceptLoadingTreePositions?: readonly number[];
+  interceptNotFoundBranchSegments?: readonly string[];
+  interceptNotFounds?: readonly unknown[];
+  interceptNotFoundTreePositions?: readonly number[];
+  __loadInterceptLayouts?: readonly (() => Promise<unknown>)[] | null;
+  __loadInterceptLoadings?: readonly (() => Promise<unknown>)[] | null;
+  __loadInterceptNotFounds?: readonly (() => Promise<unknown>)[] | null;
+  page: unknown;
+  __pageLoader?: (() => Promise<unknown>) | null;
+  notFound?: unknown;
+  __loadNotFound?: (() => Promise<unknown>) | null;
+  notFoundTreePosition?: number | null;
+  interceptForbiddens?: readonly unknown[];
+  interceptForbiddenTreePositions?: readonly number[];
+  __loadInterceptForbiddens?: readonly (() => Promise<unknown>)[] | null;
+  interceptUnauthorizeds?: readonly unknown[];
+  interceptUnauthorizedTreePositions?: readonly number[];
+  __loadInterceptUnauthorizeds?: readonly (() => Promise<unknown>)[] | null;
+  interceptErrors?: readonly unknown[];
+  interceptErrorTreePositions?: readonly number[];
+  __loadInterceptErrors?: readonly (() => Promise<unknown>)[] | null;
+  params: readonly string[];
+};
+
+type AppRscSlotForMatching = {
+  id?: string | null;
+  intercepts?: readonly AppRscInterceptForMatching[];
+};
+
+type AppRscSiblingInterceptForMatching = {
+  id?: string | null;
+  targetPattern: string;
+  sourceMatchPattern: string | null;
+  sourcePageSegments?: readonly string[];
+  slotId: string | null;
+  interceptLayouts: readonly unknown[];
+  interceptLayoutSegments?: readonly (readonly string[])[];
+  interceptBranchSegments?: readonly string[];
+  interceptLoadings?: readonly unknown[];
+  interceptLoadingTreePositions?: readonly number[];
+  interceptNotFoundBranchSegments?: readonly string[];
+  interceptNotFounds?: readonly unknown[];
+  interceptNotFoundTreePositions?: readonly number[];
+  __loadInterceptLayouts?: readonly (() => Promise<unknown>)[] | null;
+  __loadInterceptLoadings?: readonly (() => Promise<unknown>)[] | null;
+  __loadInterceptNotFounds?: readonly (() => Promise<unknown>)[] | null;
+  page: unknown;
+  // Sibling intercept pages are lazy-loaded (manifest emits `page: null` plus a
+  // `__pageLoader`) so the intercepting page's CSS chunk stays isolated in
+  // production, matching slot intercepts (see #1738). The loader is awaited on
+  // demand by resolveAppPageInterceptState.
+  __pageLoader?: (() => Promise<unknown>) | null;
+  notFound?: unknown;
+  __loadNotFound?: (() => Promise<unknown>) | null;
+  notFoundTreePosition?: number | null;
+  interceptForbiddens?: readonly unknown[];
+  interceptForbiddenTreePositions?: readonly number[];
+  __loadInterceptForbiddens?: readonly (() => Promise<unknown>)[] | null;
+  interceptUnauthorizeds?: readonly unknown[];
+  interceptUnauthorizedTreePositions?: readonly number[];
+  __loadInterceptUnauthorizeds?: readonly (() => Promise<unknown>)[] | null;
+  interceptErrors?: readonly unknown[];
+  interceptErrorTreePositions?: readonly number[];
+  __loadInterceptErrors?: readonly (() => Promise<unknown>)[] | null;
+  params: readonly string[];
+};
+
+type AppRscRouteForMatching = {
+  __loadRouteHandler?: unknown;
+  ids?: {
+    route?: string | null;
+  } | null;
+  pattern: string;
+  patternParts: string[];
+  routeHandler?: unknown;
+  routeSegments?: readonly string[] | null;
+  slots?: Record<string, AppRscSlotForMatching>;
+  siblingIntercepts?: AppRscSiblingInterceptForMatching[];
+};
+
+type AppRscInterceptMatch = AppRscInterceptLookupEntry & {
+  matchedParams: AppRscRouteParams;
+  sourceRouteIsConcrete: boolean;
+  sourceMatchedParams: AppRscRouteParams;
+  /**
+   * The source route and params the request's interception context names,
+   * which the request handler authorizes. They differ from the rendered
+   * `sourceRouteIndex` only for a sibling intercept opened from a deeper
+   * source, which renders the intercepting route itself.
+   */
+  authorizationSourceRouteIndex: number;
+  authorizationSourceParams: AppRscRouteParams;
+};
+
+type AppRscInterceptLoadState = {
+  page: unknown;
+  pageLoading: Promise<unknown> | null;
+  notFound: unknown;
+  notFoundLoading: Promise<unknown> | null;
+  interceptLayoutsLoading: Promise<readonly unknown[]> | null;
+};
+
+type AppRscInterceptLookupEntry = {
+  interceptionId: string | null;
+  interceptionGraphId: string | null;
+  sourceRouteIndex: number;
+  /**
+   * A sibling intercept whose owner route's page sits in the directory of the
+   * interception marker, so the owner is the intercepting route itself.
+   */
+  ownerIsInterceptingRoute: boolean;
+  slotKey: string;
+  targetPattern: string;
+  targetPatternParts: string[];
+  sourceMatchPattern: string | null;
+  sourceMatchPatternParts: string[] | null;
+  sourcePageSegments: readonly string[] | null;
+  interceptLayouts: readonly unknown[];
+  interceptLayoutSegments?: readonly (readonly string[])[];
+  interceptBranchSegments?: readonly string[];
+  interceptLoadings?: readonly unknown[];
+  interceptLoadingTreePositions?: readonly number[];
+  interceptNotFoundBranchSegments?: readonly string[];
+  interceptNotFounds?: readonly unknown[];
+  interceptNotFoundTreePositions?: readonly number[];
+  __loadInterceptLayouts?: readonly (() => Promise<unknown>)[] | null;
+  __loadInterceptLoadings?: readonly (() => Promise<unknown>)[] | null;
+  __loadInterceptNotFounds?: readonly (() => Promise<unknown>)[] | null;
+  page: unknown;
+  __pageLoader?: (() => Promise<unknown>) | null;
+  notFound: unknown;
+  __loadNotFound?: (() => Promise<unknown>) | null;
+  notFoundTreePosition?: number | null;
+  interceptForbiddens?: readonly unknown[];
+  interceptForbiddenTreePositions?: readonly number[];
+  __loadInterceptForbiddens?: readonly (() => Promise<unknown>)[] | null;
+  interceptUnauthorizeds?: readonly unknown[];
+  interceptUnauthorizedTreePositions?: readonly number[];
+  __loadInterceptUnauthorizeds?: readonly (() => Promise<unknown>)[] | null;
+  interceptErrors?: readonly unknown[];
+  interceptErrorTreePositions?: readonly number[];
+  __loadInterceptErrors?: readonly (() => Promise<unknown>)[] | null;
+  __loadState: AppRscInterceptLoadState;
+  params: readonly string[];
+  slotId: string | null;
+  targetRouteGraphId: string | null;
+};
+
+function createRouteParams(): AppRscRouteParams {
+  return Object.create(null);
+}
+
+/**
+ * Whether each encoded raw segment is exactly the spelling the URL parser, as
+ * a browser runs it, gives its decoded form: `caf%C3%A9` for `café`, but `q&a`
+ * for `q&a`. `%61dmin`, `caf%c3%a9`, `%63af%C3%A9` and `q%26a` are other
+ * spellings of a page, which middleware never compared as its pathname.
+ */
+function isCanonicalPathEncoding(
+  rawParts: readonly string[],
+  decodedParts: readonly string[],
+): boolean {
+  return rawParts.every(
+    (rawPart, index) =>
+      !rawPart.includes("%") ||
+      rawPart === new URL(`/${decodedParts[index]}`, "http://n").pathname.slice(1),
+  );
+}
+
+function appRscPathnameParts(pathname: string): string[] {
+  const pathOnly = pathname.split("?")[0];
+  const normalizedPathname = pathOnly === "/" ? "/" : pathOnly.replace(/\/$/, "");
+  return splitPathSegments(normalizedPathname);
+}
+
+export function isAppRouteHandlerRoute(
+  route: Pick<AppRscRouteForMatching, "__loadRouteHandler" | "routeHandler">,
+): boolean {
+  // Generated manifests retain the lazy loader before the first request and
+  // hydrate routeHandler afterwards. Classification must not change when that
+  // module load completes.
+  return route.routeHandler != null || typeof route.__loadRouteHandler === "function";
+}
+
+function normalizeMatchedParamsForRoute(result: {
+  route: AppRscRouteForMatching;
+  params: AppRscRouteParams;
+}): void {
+  if (isAppRouteHandlerRoute(result.route)) {
+    decodeMatchedParams(result.params);
+  } else {
+    canonicalizeAppPageParams(result.params);
+  }
+}
+
+/**
+ * @param decodedPathnamePatterns Static page patterns that answer their
+ *   segment-decoded pathname (built by `buildAppDecodedPathnamePatterns`).
+ */
+export function createAppRscRouteMatcher<Route extends AppRscRouteForMatching>(
+  routes: Route[],
+  decodedPathnamePatterns: readonly string[] = [],
+): {
+  hasInterceptionId(interceptionId: string): boolean;
+  matchRoute(url: string): { route: Route; params: AppRscRouteParams } | null;
+  matchRequestRoute(url: string): { route: Route; params: AppRscRouteParams } | null;
+  matchRawRequestRoute(url: string): { route: Route; params: AppRscRouteParams } | null;
+  findIntercept(
+    pathname: string,
+    sourcePathname?: string | null,
+    interceptionId?: string | null,
+  ): AppRscInterceptMatch | null;
+} {
+  const routeTrie = buildRouteTrie(routes);
+  const interceptLookup = createInterceptLookup(routes);
+  const interceptionIds = new Set(
+    interceptLookup.flatMap((entry) =>
+      entry.interceptionId === null ? [] : [entry.interceptionId],
+    ),
+  );
+  const routeIndexes = new Map<Route, number>(routes.map((route, index) => [route, index]));
+  const decodedPathnamePatternSet = new Set(decodedPathnamePatterns);
+  const decodedPathnameRoutes = new Map<string, Route>();
+  for (const route of routes) {
+    const key = route.patternParts.join("/");
+    if (decodedPathnamePatternSet.has(route.pattern) && !decodedPathnameRoutes.has(key)) {
+      decodedPathnameRoutes.set(key, route);
+    }
+  }
+
+  function matchRawRequestParts(
+    rawParts: string[],
+  ): { route: Route; params: AppRscRouteParams } | null {
+    const result = trieMatchRaw(routeTrie, rawParts);
+    if (result) normalizeMatchedParamsForRoute(result);
+    return result;
+  }
+
+  function matchRequestParts(
+    rawParts: string[],
+  ): { route: Route; params: AppRscRouteParams } | null {
+    const result = matchRawRequestParts(rawParts);
+    if (!result) return null;
+    // Next.js matches the raw pathname, so `/%61` reaches `/[slug]`, but that
+    // page then answers from the response cached under the decoded pathname:
+    // the prerendered static `/a`. Render the static page itself instead, so
+    // the response and the cache entry it shares belong to one route. Encoded
+    // path delimiters (`%2F`) stay inside their segment, and a raw path that
+    // matches nothing or a Route Handler keeps that outcome, as in Next.js.
+    // Draft mode and server actions skip that cache, so the handler renders
+    // their `matchRawRequestRoute` instead.
+    //
+    // The build list only says a page may be prerendered: segment config can't
+    // tell a page that reads cookies() or searchParams, which has no cached
+    // response. So another spelling of a page (`/%61dmin`), which middleware
+    // never compared as `/admin`, renders the raw match unless the build
+    // recorded the decoded pathname's prerender. The exact spelling a browser
+    // sends for the page (`/caf%C3%A9`) is that page's own pathname, so it
+    // renders the page without one.
+    if (
+      decodedPathnameRoutes.size > 0 &&
+      result.route.patternParts.some((part) => part.startsWith(":")) &&
+      !isAppRouteHandlerRoute(result.route) &&
+      rawParts.some((part) => part.includes("%"))
+    ) {
+      const decodedParts = rawParts.map(decodeRouteSegment);
+      const decodedPathname = decodedParts.join("/");
+      const route = decodedPathnameRoutes.get(decodedPathname);
+      if (
+        route &&
+        route !== result.route &&
+        (isCanonicalPathEncoding(rawParts, decodedParts) ||
+          getRenderedConcreteUrlPathsForRoute(route.pattern)?.has(`/${decodedPathname}`) === true)
+      ) {
+        return { route, params: createRouteParams() };
+      }
+    }
+    return result;
+  }
+
+  return {
+    hasInterceptionId(interceptionId) {
+      return interceptionIds.has(interceptionId);
+    },
+    matchRoute(url) {
+      // Next.js routes a rewrite destination exactly like a direct request to
+      // it: on its still-encoded segments, so `/en/%64ashboard` is not the
+      // static `/en/dashboard` that middleware compared the pathname against.
+      return matchRequestParts(appRscPathnameParts(url));
+    },
+    matchRequestRoute(url) {
+      return matchRequestParts(appRscPathnameParts(url));
+    },
+    matchRawRequestRoute(url) {
+      return matchRawRequestParts(appRscPathnameParts(url));
+    },
+    findIntercept(pathname, sourcePathname = null, interceptionId = null) {
+      // Mirror Next.js' rewrite semantics: interception only fires when the
+      // Next-URL header is present AND matches the intercepting route's regex
+      // (with descendants allowed). Without a source pathname there is no
+      // header for the rewrite to gate on, so we render the direct route.
+      // https://github.com/vercel/next.js/blob/canary/packages/next/src/lib/generate-interception-routes-rewrites.ts
+      if (sourcePathname === null) return null;
+
+      const urlParts = appRscPathnameParts(pathname);
+      // Match the source against the raw, still-encoded path, as the Next-Url
+      // header regex does. Decoding first would let `/%66eed` claim the static
+      // `/feed` source, and the decoded static page substitution would let
+      // `/%61dmin` claim a static `/admin` that doesn't own the intercept.
+      const sourceParts = appRscPathnameParts(sourcePathname);
+      const matchedSourceRoute = matchRawRequestParts(sourceParts);
+
+      for (const entry of interceptLookup) {
+        if (interceptionId !== null && entry.interceptionId !== interceptionId) continue;
+        // Primary gate: when the intercept declares a `sourceMatchPattern`
+        // (the intercepting route's path, descendants allowed), require the
+        // request's source pathname to satisfy it. This mirrors Next.js'
+        // `^<interceptingRoute>(?:/.*)?$` header regex precisely and is the
+        // authoritative gate when the manifest carries the pattern.
+        if (!matchInterceptSource(sourceParts, entry)) continue;
+
+        const params = matchRoutePatternRaw(urlParts, entry.targetPatternParts);
+        if (params === null) continue;
+        canonicalizeAppPageParams(params);
+
+        // Resolving the claimed source pathname to its concrete descendant
+        // route (#2042) keeps dynamic source params intact, but the source
+        // pathname is an unauthenticated client header and the resolved route
+        // becomes the route that renders or dispatches. A Route Handler has no
+        // page, layouts, or parallel slots, so it can never own or sit inside
+        // an interception source tree; promoting one only lets a crafted
+        // interception context execute a `route.ts` that happens to live under
+        // the intercepting route. Fall back to the slot owner instead, which is
+        // the fixed destination Next.js' generated interception rewrite uses.
+        const concreteSourceRoute =
+          matchedSourceRoute &&
+          entry.sourceMatchPatternParts !== null &&
+          !isAppRouteHandlerRoute(matchedSourceRoute.route)
+            ? matchedSourceRoute
+            : null;
+        const concreteSourceRouteIndex = concreteSourceRoute
+          ? (routeIndexes.get(concreteSourceRoute.route) ?? entry.sourceRouteIndex)
+          : entry.sourceRouteIndex;
+        const sourceRoute = routes[concreteSourceRouteIndex];
+        // The fallback owner can itself be a Route Handler. The route graph
+        // retains slots discovered beside `route.ts`, so rejecting only a
+        // concrete descendant handler is insufficient: promoting that owner
+        // would reach the same handler dispatch branch. A handler cannot be a
+        // renderable interception source, so let another matching intercept
+        // win or reject this interception entirely.
+        if (sourceRoute && isAppRouteHandlerRoute(sourceRoute)) continue;
+        const matchedSourceParams = concreteSourceRoute
+          ? concreteSourceRoute.params
+          : sourceRoute
+            ? matchSlotOwnerSourceParams(
+                sourceParts,
+                sourceRoute.patternParts,
+                entry.sourceMatchPatternParts !== null,
+              )
+            : null;
+        if (!concreteSourceRoute && matchedSourceParams) {
+          canonicalizeAppPageParams(matchedSourceParams);
+        }
+        // A sibling intercept renders the intercepting route itself, whatever
+        // the source: Next.js rewrites it to the fixed intercepting route, so
+        // its layouts come from the owner, never from a deeper source page.
+        // The source the context names is still the one authorized.
+        const ownerRoute = routes[entry.sourceRouteIndex];
+        const rendersOwnerRoute =
+          entry.ownerIsInterceptingRoute &&
+          concreteSourceRouteIndex !== entry.sourceRouteIndex &&
+          ownerRoute !== undefined;
+        const renderedSourceParams = rendersOwnerRoute
+          ? matchSlotOwnerSourceParams(sourceParts, ownerRoute.patternParts, true)
+          : matchedSourceParams;
+        if (rendersOwnerRoute && renderedSourceParams) {
+          canonicalizeAppPageParams(renderedSourceParams);
+        }
+
+        // Secondary gate (from #1249): when the entry has no
+        // `sourceMatchPatternParts` declared (older manifest shapes), reject
+        // sources that don't match the slot owner's route pattern exactly.
+        // This is the safety net that keeps unrelated sources from pulling
+        // in a modal they have no slot for. When `sourceMatchPatternParts`
+        // *is* declared, `matchInterceptSource` above has already approved
+        // the source (including descendants), so a stricter exact-match
+        // check on the slot-owner route here would defeat the descendant
+        // semantics — fall back to empty params instead.
+        if (matchedSourceParams === null && entry.sourceMatchPatternParts === null) {
+          continue;
+        }
+        const sourceParams =
+          renderedSourceParams && entry.sourceMatchPatternParts !== null
+            ? pickPatternParams(renderedSourceParams, entry.sourceMatchPatternParts)
+            : (renderedSourceParams ?? createRouteParams());
+        return {
+          ...entry,
+          page: entry.__loadState.page,
+          sourceRouteIsConcrete: concreteSourceRoute !== null,
+          sourceRouteIndex: rendersOwnerRoute ? entry.sourceRouteIndex : concreteSourceRouteIndex,
+          matchedParams: mergeMatchedParams(sourceParams, params),
+          sourceMatchedParams: renderedSourceParams ?? createRouteParams(),
+          authorizationSourceRouteIndex: concreteSourceRouteIndex,
+          authorizationSourceParams: matchedSourceParams ?? createRouteParams(),
+        };
+      }
+      return null;
+    },
+  };
+}
+
+/**
+ * Whether a sibling intercept's owner route is the intercepting route: its
+ * page lives in the directory that holds the interception marker. An owner
+ * found elsewhere stands in for a marker directory without a page.
+ */
+function isInterceptingRoute(
+  routeSegments: readonly string[] | null | undefined,
+  sourcePageSegments: readonly string[] | null | undefined,
+): boolean {
+  if (!routeSegments || !sourcePageSegments) return false;
+  const markerIndex = sourcePageSegments.findIndex((segment) => /^\(\.+\)/.test(segment));
+  return (
+    markerIndex === routeSegments.length &&
+    routeSegments.every((segment, index) => segment === sourcePageSegments[index])
+  );
+}
+
+/**
+ * Params for the slot owner when interception falls back to it instead of a
+ * concrete descendant source route. The owner is what renders, and
+ * `matchInterceptRoute` reads the promoted route's params solely from these,
+ * so dropping them would render a dynamic owner without its segments.
+ *
+ * An exact match covers a source that names the owner itself. It cannot
+ * succeed when the source names a deeper descendant — a rejected Route
+ * Handler, or a path with no concrete route — so once the descendants-allowed
+ * gate has approved the source, take the owner's params from that prefix.
+ */
+function matchSlotOwnerSourceParams(
+  sourceParts: readonly string[],
+  patternParts: readonly string[],
+  descendantsAllowed: boolean,
+): AppRscRouteParams | null {
+  const exact = matchRoutePatternRaw(sourceParts, patternParts);
+  if (exact !== null) return exact;
+  if (!descendantsAllowed || !matchRoutePatternPrefix(sourceParts, patternParts)) return null;
+  return extractRawRoutePatternParams(patternParts, sourceParts);
+}
+
+/**
+ * Check whether the request's source pathname (Next-URL / interception
+ * context) satisfies the intercept entry's intercepting-route pattern, with
+ * descendants allowed. Mirrors the header regex shape Next.js emits for the
+ * generated interception rewrite: `^<pattern>(?:/.*)?$`.
+ *
+ * When the entry has no declared `sourceMatchPatternParts`, fall back to the
+ * legacy behavior of accepting any source (we still require the source to be
+ * non-null at the caller — see `findIntercept`).
+ */
+function matchInterceptSource(sourceParts: string[], entry: AppRscInterceptLookupEntry): boolean {
+  const patternParts = entry.sourceMatchPatternParts;
+  if (!patternParts) return true;
+  // Root pattern (`/`) matches any source.
+  if (patternParts.length === 0) return true;
+  return matchRoutePatternPrefix(sourceParts, patternParts);
+}
+
+function interceptSegmentPrecedence(segment: string): number {
+  if (!segment.startsWith(":")) return 0;
+  if (segment.endsWith("*")) return 3;
+  if (segment.endsWith("+")) return 2;
+  return 1;
+}
+
+function compareInterceptTargetPatterns(
+  a: AppRscInterceptLookupEntry,
+  b: AppRscInterceptLookupEntry,
+): number {
+  const sharedLength = Math.min(a.targetPatternParts.length, b.targetPatternParts.length);
+  for (let index = 0; index < sharedLength; index++) {
+    const aSegment = a.targetPatternParts[index];
+    const bSegment = b.targetPatternParts[index];
+    const precedence = interceptSegmentPrecedence(aSegment) - interceptSegmentPrecedence(bSegment);
+    if (precedence !== 0) return precedence;
+
+    if (aSegment !== bSegment) {
+      return aSegment.localeCompare(bSegment);
+    }
+  }
+
+  const lengthDifference = a.targetPatternParts.length - b.targetPatternParts.length;
+  return lengthDifference !== 0 ? lengthDifference : a.targetPattern.localeCompare(b.targetPattern);
+}
+
+function createRoutePatternStructureKey(patternParts: readonly string[]): string {
+  return JSON.stringify(
+    patternParts.map((part) => {
+      if (!part.startsWith(":")) return ["static", part];
+      if (part.endsWith("*")) return ["optional-catch-all"];
+      if (part.endsWith("+")) return ["catch-all"];
+      return ["dynamic"];
+    }),
+  );
+}
+
+function createPatternStructureToRouteGraphId<Route extends AppRscRouteForMatching>(
+  routes: readonly Route[],
+): ReadonlyMap<string, string | null> {
+  const routeGraphIds = new Map<string, string | null>();
+
+  for (const route of routes) {
+    const routeGraphId = route.ids?.route;
+    if (typeof routeGraphId !== "string") continue;
+
+    const key = createRoutePatternStructureKey(route.patternParts);
+    const previous = routeGraphIds.get(key);
+    if (previous === undefined) {
+      routeGraphIds.set(key, routeGraphId);
+    } else if (previous !== routeGraphId) {
+      // Route validation normally rejects structurally ambiguous patterns.
+      // Keep the request-time lookup conservative if malformed/generated input
+      // still contains more than one graph identity for the same URL shape.
+      routeGraphIds.set(key, null);
+    }
+  }
+
+  return routeGraphIds;
+}
+
+function createInterceptLookup<Route extends AppRscRouteForMatching>(
+  routes: Route[],
+): AppRscInterceptLookupEntry[] {
+  // Build a pattern→index map so slot intercepts resolve to the actual owner
+  // route rather than the inheriting descendant that carries the slot copy.
+  // When a route inherits a @slot from an ancestor (e.g. /groups/:id/new
+  // inheriting @modal from /interception-dyn-single), the inherited slot's
+  // interceptingRoutes include a sourceMatchPattern that names the real owner
+  // ("/interception-dyn-single"). Using that pattern's index as sourceRouteIndex
+  // ensures resolveAppPageInterceptState produces kind="source-route" (owner ≠
+  // current) rather than kind="current-route" (owner === current), which would
+  // render the descendant page instead of the owner's layout+page tree.
+  const patternToIndex = new Map<string, number>(routes.map((r, i) => [r.pattern, i]));
+  const patternStructureToRouteGraphId = createPatternStructureToRouteGraphId(routes);
+  const resolveTargetRouteGraphId = (targetPattern: string): string | null =>
+    patternStructureToRouteGraphId.get(
+      createRoutePatternStructureKey(targetPattern.split("/").filter(Boolean)),
+    ) ?? null;
+
+  const interceptLookup: AppRscInterceptLookupEntry[] = [];
+  for (let routeIndex = 0; routeIndex < routes.length; routeIndex++) {
+    const route = routes[routeIndex];
+    if (route.slots) {
+      for (const [slotKey, slotModule] of Object.entries(route.slots)) {
+        if (!slotModule.intercepts) continue;
+        for (const intercept of slotModule.intercepts) {
+          const sourceMatchPattern = intercept.sourceMatchPattern ?? null;
+          const sourceMatchPatternParts = sourceMatchPattern
+            ? sourceMatchPattern.split("/").filter(Boolean)
+            : null;
+          // Prefer the route whose pattern matches sourceMatchPattern (the actual
+          // slot-owner route). Fall back to routeIndex when no match is found.
+          const ownerRouteIndex =
+            sourceMatchPattern !== null
+              ? (patternToIndex.get(sourceMatchPattern) ?? routeIndex)
+              : routeIndex;
+          interceptLookup.push({
+            interceptionId:
+              typeof slotModule.id === "string" && sourceMatchPattern !== null
+                ? createAppRouteGraphInterceptionId(
+                    slotModule.id,
+                    sourceMatchPattern,
+                    intercept.targetPattern,
+                  )
+                : null,
+            interceptionGraphId: null,
+            sourceRouteIndex: ownerRouteIndex,
+            ownerIsInterceptingRoute: false,
+            slotKey,
+            slotId: typeof slotModule.id === "string" ? slotModule.id : null,
+            targetRouteGraphId: resolveTargetRouteGraphId(intercept.targetPattern),
+            targetPattern: intercept.targetPattern,
+            targetPatternParts: intercept.targetPattern.split("/").filter(Boolean),
+            sourceMatchPattern,
+            sourceMatchPatternParts,
+            sourcePageSegments: intercept.sourcePageSegments ?? null,
+            interceptLayouts: intercept.interceptLayouts,
+            interceptLayoutSegments: intercept.interceptLayoutSegments,
+            interceptBranchSegments: intercept.interceptBranchSegments,
+            interceptLoadings: intercept.interceptLoadings,
+            interceptLoadingTreePositions: intercept.interceptLoadingTreePositions,
+            interceptNotFoundBranchSegments: intercept.interceptNotFoundBranchSegments,
+            interceptNotFounds: intercept.interceptNotFounds,
+            interceptNotFoundTreePositions: intercept.interceptNotFoundTreePositions,
+            __loadInterceptNotFounds: intercept.__loadInterceptNotFounds,
+            __loadInterceptLayouts: intercept.__loadInterceptLayouts,
+            __loadInterceptLoadings: intercept.__loadInterceptLoadings,
+            page: intercept.page,
+            __pageLoader: intercept.__pageLoader,
+            notFound: intercept.notFound,
+            __loadNotFound: intercept.__loadNotFound,
+            notFoundTreePosition: intercept.notFoundTreePosition,
+            interceptForbiddens: intercept.interceptForbiddens,
+            interceptForbiddenTreePositions: intercept.interceptForbiddenTreePositions,
+            __loadInterceptForbiddens: intercept.__loadInterceptForbiddens,
+            interceptUnauthorizeds: intercept.interceptUnauthorizeds,
+            interceptUnauthorizedTreePositions: intercept.interceptUnauthorizedTreePositions,
+            __loadInterceptUnauthorizeds: intercept.__loadInterceptUnauthorizeds,
+            interceptErrors: intercept.interceptErrors,
+            interceptErrorTreePositions: intercept.interceptErrorTreePositions,
+            __loadInterceptErrors: intercept.__loadInterceptErrors,
+            __loadState: {
+              page: intercept.page,
+              pageLoading: null,
+              notFound: intercept.notFound,
+              notFoundLoading: null,
+              interceptLayoutsLoading: null,
+            },
+            params: intercept.params,
+          });
+        }
+      }
+    }
+    if (route.siblingIntercepts) {
+      for (const intercept of route.siblingIntercepts) {
+        const sourceMatchPattern = intercept.sourceMatchPattern ?? null;
+        const sourceMatchPatternParts = sourceMatchPattern
+          ? sourceMatchPattern.split("/").filter(Boolean)
+          : null;
+        interceptLookup.push({
+          interceptionId: typeof intercept.id === "string" ? intercept.id : null,
+          interceptionGraphId: typeof intercept.id === "string" ? intercept.id : null,
+          sourceRouteIndex: routeIndex,
+          // A Route Handler can stand in as the owner, but never renders a tree.
+          ownerIsInterceptingRoute:
+            !isAppRouteHandlerRoute(route) &&
+            isInterceptingRoute(route.routeSegments, intercept.sourcePageSegments),
+          slotKey: SIBLING_PAGE_INTERCEPT_SLOT_KEY,
+          slotId: typeof intercept.slotId === "string" ? intercept.slotId : null,
+          targetRouteGraphId: resolveTargetRouteGraphId(intercept.targetPattern),
+          targetPattern: intercept.targetPattern,
+          targetPatternParts: intercept.targetPattern.split("/").filter(Boolean),
+          sourceMatchPattern,
+          sourceMatchPatternParts,
+          sourcePageSegments: intercept.sourcePageSegments ?? null,
+          interceptLayouts: intercept.interceptLayouts,
+          interceptLayoutSegments: intercept.interceptLayoutSegments,
+          interceptBranchSegments: intercept.interceptBranchSegments,
+          interceptLoadings: intercept.interceptLoadings,
+          interceptLoadingTreePositions: intercept.interceptLoadingTreePositions,
+          interceptNotFoundBranchSegments: intercept.interceptNotFoundBranchSegments,
+          interceptNotFounds: intercept.interceptNotFounds,
+          interceptNotFoundTreePositions: intercept.interceptNotFoundTreePositions,
+          __loadInterceptNotFounds: intercept.__loadInterceptNotFounds,
+          __loadInterceptLayouts: intercept.__loadInterceptLayouts,
+          __loadInterceptLoadings: intercept.__loadInterceptLoadings,
+          page: intercept.page,
+          __pageLoader: intercept.__pageLoader,
+          notFound: intercept.notFound,
+          __loadNotFound: intercept.__loadNotFound,
+          notFoundTreePosition: intercept.notFoundTreePosition,
+          interceptForbiddens: intercept.interceptForbiddens,
+          interceptForbiddenTreePositions: intercept.interceptForbiddenTreePositions,
+          __loadInterceptForbiddens: intercept.__loadInterceptForbiddens,
+          interceptUnauthorizeds: intercept.interceptUnauthorizeds,
+          interceptUnauthorizedTreePositions: intercept.interceptUnauthorizedTreePositions,
+          __loadInterceptUnauthorizeds: intercept.__loadInterceptUnauthorizeds,
+          interceptErrors: intercept.interceptErrors,
+          interceptErrorTreePositions: intercept.interceptErrorTreePositions,
+          __loadInterceptErrors: intercept.__loadInterceptErrors,
+          __loadState: {
+            page: intercept.page,
+            pageLoading: null,
+            notFound: intercept.notFound,
+            notFoundLoading: null,
+            interceptLayoutsLoading: null,
+          },
+          params: intercept.params,
+        });
+      }
+    }
+  }
+  // Array.prototype.sort is stable, so entries with identical target patterns
+  // retain declaration order across slots and sources.
+  return interceptLookup.sort(compareInterceptTargetPatterns);
+}
+
+function mergeMatchedParams(
+  sourceParams: AppRscRouteParams,
+  targetParams: AppRscRouteParams,
+): AppRscRouteParams {
+  return Object.assign(createRouteParams(), sourceParams, targetParams);
+}
+
+function pickPatternParams(
+  params: AppRscRouteParams,
+  patternParts: readonly string[],
+): AppRscRouteParams {
+  const picked = createRouteParams();
+  for (const patternPart of patternParts) {
+    if (!patternPart.startsWith(":")) continue;
+    const paramName =
+      patternPart.endsWith("+") || patternPart.endsWith("*")
+        ? patternPart.slice(1, -1)
+        : patternPart.slice(1);
+    const value = params[paramName];
+    if (value !== undefined) picked[paramName] = value;
+  }
+  return picked;
+}

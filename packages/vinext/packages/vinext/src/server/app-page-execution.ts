@@ -1,0 +1,785 @@
+import {
+  applyRscCompatibilityIdHeader,
+  applyRscDeploymentIdHeader,
+  createRscRedirectLocation,
+  toPathAbsolutePathname,
+  VINEXT_RSC_CONTENT_TYPE,
+} from "./app-rsc-cache-busting.js";
+import { VINEXT_RSC_REDIRECT_HEADER, VINEXT_RSC_REDIRECT_TYPE_HEADER } from "./headers.js";
+import { applyEdgeRuntimeHeader } from "./app-page-response.js";
+import { mergeMiddlewareResponseHeaders } from "./middleware-response-headers.js";
+import {
+  copyLinkHeaderProvenance,
+  getFrameworkLinkHeader,
+  markFrameworkLinkHeaders,
+} from "./app-response-header-provenance.js";
+import { parseNextHttpErrorDigest, parseNextRedirectDigest } from "./next-error-digest.js";
+import { renderSsrErrorMetaTags } from "./app-ssr-error-meta.js";
+import { formatNextRedirectDigest } from "./app-rsc-redirect-flight.js";
+import { isHTTPAccessFallbackError, isThrownNavigationError } from "vinext/shims/navigation-errors";
+
+/**
+ * Marker we tag onto a thrown redirect/notFound error when it originates from
+ * `generateMetadata()` (vs. a server component itself). Metadata resolution is
+ * suspended/streamed in Next.js, so a redirect from metadata is not emitted as
+ * a plain HTTP-level 307. Instead the transport depends on the request:
+ *   - RSC navigation requests (`Rsc: 1`) ride inside the flight payload with a
+ *     200 status; the client router decodes the redirect digest.
+ *   - Streaming-capable document requests get a 200 HTML response carrying a
+ *     refresh meta tag (the streamed document can't switch to a 307 after the
+ *     head has flushed).
+ *   - html-limited bots (which Next.js serves a blocking, non-streamed
+ *     response) get the HTTP-level 307.
+ * Page-level redirect()s, by contrast, still produce a 307 for SSR document
+ * requests.
+ *
+ * See Next.js test:
+ *   test/e2e/app-dir/metadata-streaming/metadata-streaming.test.ts
+ */
+const APP_PAGE_METADATA_ERROR_MARKER = Symbol.for("vinext.appPage.metadataError");
+
+export function tagAppPageMetadataError<T>(error: T): T {
+  if (error && typeof error === "object") {
+    try {
+      Object.defineProperty(error, APP_PAGE_METADATA_ERROR_MARKER, {
+        value: true,
+        enumerable: false,
+        configurable: true,
+        writable: false,
+      });
+    } catch {
+      // The error object may be frozen (rare). The marker is best-effort —
+      // callers fall back to the page-level 307 path when missing, which
+      // matches the historical behavior.
+    }
+  }
+  return error;
+}
+
+/**
+ * Marker we tag onto an error a parallel slot's page or default component
+ * threw, holding the index of the layout that renders the slot. Next.js
+ * attaches HTTP access fallback boundaries only to each segment's `children`,
+ * so a slot's `notFound()` is caught by the boundary above that layout, not
+ * by the route's deepest boundary as the page's is.
+ * https://github.com/vercel/next.js/blob/canary/packages/next/src/server/app-render/create-component-tree.tsx
+ */
+const APP_PAGE_SLOT_ERROR_LAYOUT_INDEX = Symbol.for("vinext.appPage.slotErrorLayoutIndex");
+
+/**
+ * Marker holding the id of the slot's own not-found boundary that catches the
+ * slot's `notFound()` on the client, when one does. The document then renders
+ * that boundary caught (see `resolveAppPageCaughtNotFoundBoundaries`).
+ */
+const APP_PAGE_SLOT_ERROR_NOT_FOUND_BOUNDARY = Symbol.for(
+  "vinext.appPage.slotErrorNotFoundBoundary",
+);
+
+/**
+ * Marker we tag onto an error the route's page component threw, so that the
+ * document's fallback can tell it from one a layout or a template threw,
+ * which no slot tag marks either.
+ */
+const APP_PAGE_PAGE_ERROR = Symbol.for("vinext.appPage.pageError");
+
+/**
+ * Marker we tag onto an error a route layout's own component threw, holding
+ * that layout's index. Its boundaries wrap only its `children`, so the
+ * boundary above the layout catches it, as for a slot the layout renders.
+ */
+const APP_PAGE_LAYOUT_ERROR_LAYOUT_INDEX = Symbol.for("vinext.appPage.layoutErrorLayoutIndex");
+
+function tagAppPageHttpAccessFallbackError<T>(error: T, tags: PropertyDescriptorMap): T {
+  // Only an HTTP access fallback reads the tag. A thrown error can be shared
+  // across slots, renders and requests (a module-scoped rejected promise), so
+  // each throw gets its own tagged copy instead of marking the shared error.
+  if (!isHTTPAccessFallbackError(error)) return error;
+  const source = error as object;
+  const tagged = Object.setPrototypeOf(
+    new Error(String(Reflect.get(source, "message"))),
+    Object.getPrototypeOf(source),
+  );
+  Object.defineProperties(tagged, {
+    ...Object.getOwnPropertyDescriptors(source),
+    stack: { value: Reflect.get(source, "stack"), configurable: true, writable: true },
+    ...tags,
+  });
+  return tagged as T;
+}
+
+export function tagAppPageSlotError<T>(
+  error: T,
+  layoutIndex: number,
+  notFoundBoundary?: string,
+): T {
+  return tagAppPageHttpAccessFallbackError(error, {
+    [APP_PAGE_SLOT_ERROR_LAYOUT_INDEX]: { value: layoutIndex },
+    [APP_PAGE_SLOT_ERROR_NOT_FOUND_BOUNDARY]: { value: notFoundBoundary },
+  });
+}
+
+export function tagAppPagePageError<T>(error: T): T {
+  return tagAppPageHttpAccessFallbackError(error, { [APP_PAGE_PAGE_ERROR]: { value: true } });
+}
+
+export function tagAppPageLayoutError<T>(error: T, layoutIndex: number): T {
+  return tagAppPageHttpAccessFallbackError(error, {
+    [APP_PAGE_LAYOUT_ERROR_LAYOUT_INDEX]: { value: layoutIndex },
+  });
+}
+
+function isAppPagePageError(error: unknown): boolean {
+  return !!error && typeof error === "object" && Reflect.get(error, APP_PAGE_PAGE_ERROR) === true;
+}
+
+function getAppPageLayoutErrorLayoutIndex(error: unknown): number | null {
+  if (!error || typeof error !== "object") return null;
+  const layoutIndex: unknown = Reflect.get(error, APP_PAGE_LAYOUT_ERROR_LAYOUT_INDEX);
+  return typeof layoutIndex === "number" ? layoutIndex : null;
+}
+
+function getAppPageSlotErrorLayoutIndex(error: unknown): number | null {
+  if (!error || typeof error !== "object") return null;
+  const layoutIndex: unknown = Reflect.get(error, APP_PAGE_SLOT_ERROR_LAYOUT_INDEX);
+  return typeof layoutIndex === "number" ? layoutIndex : null;
+}
+
+/**
+ * The id of the not-found boundary that catches the route page's notFound():
+ * the page-level boundary, or the segment one it passes the signal up to.
+ */
+export const APP_PAGE_NOT_FOUND_BOUNDARY_ID = "page";
+
+function getAppPageSlotErrorNotFoundBoundary(error: unknown): string | null {
+  if (!error || typeof error !== "object") return null;
+  const boundary: unknown = Reflect.get(error, APP_PAGE_SLOT_ERROR_NOT_FOUND_BOUNDARY);
+  return typeof boundary === "string" ? boundary : null;
+}
+
+export type AppPageSpecialError =
+  | {
+      kind: "redirect";
+      location: string;
+      statusCode: number;
+      type?: "push" | "replace";
+      fromMetadata?: boolean;
+    }
+  | {
+      kind: "http-access-fallback";
+      statusCode: number;
+      fromMetadata?: boolean;
+      /** Set when a parallel slot threw it: the layout rendering the outermost such slot. */
+      slotLayoutIndex?: number;
+      /**
+       * Set when a route layout's own component threw it, above any slot that
+       * did: the outermost such layout, whose boundary above catches it.
+       */
+      layoutIndex?: number;
+      /**
+       * Set when the render threw a copy nothing tagged: a server component
+       * that a layout, the page or a template renders. The document's
+       * fallback then finds out whether a layout's subtree threw it.
+       */
+      unattributed?: boolean;
+    };
+
+export type AppPageFontPreload = {
+  href: string;
+  type: string;
+};
+
+type AppPageRscStreamCapture = {
+  /** Stream for createFromReadableStream (SSR). Always set. */
+  ssrStream: ReadableStream<Uint8Array>;
+  /** When capturing, the combined embed+capture stream. handleSsr consumes this. */
+  sideStream?: ReadableStream<Uint8Array>;
+};
+
+/**
+ * Builds an RSC flight payload that encodes a `redirect()` as a React error
+ * with the canonical `NEXT_REDIRECT;<type>;<url>;<status>;` digest. Mirrors
+ * Next.js's behavior in `app-render.tsx generateDynamicFlightRenderResult`
+ * where a redirect thrown during RSC rendering propagates through
+ * `renderToFlightStream`'s `onError` handler and is serialized into the
+ * stream — the HTTP response stays 200 because the redirect rides in the
+ * flight body, not the status line.
+ *
+ * Returns a stream that the caller wraps in a 200 response with the standard
+ * `text/x-component` content type. The client's `RedirectErrorBoundary`
+ * decodes the digest and performs the navigation.
+ */
+type BuildRscRedirectFlightStream = (options: { digest: string }) => ReadableStream<Uint8Array>;
+
+type BuildAppPageSpecialErrorResponseOptions = {
+  /**
+   * Optional configured basePath (e.g. "/blog"). When set, redirect Locations
+   * pointing at app-internal paths get prefixed so callers see e.g.
+   * `Location: /blog/about` for `redirect("/about")`. Mirrors Next.js's
+   * `addPathPrefix(getURLFromRedirectError(err), basePath)` in app-render.tsx.
+   * External URLs (those that resolve to a different origin than the request)
+   * are left untouched.
+   */
+  basePath?: string;
+  /**
+   * Builds the RSC flight payload used when a redirect must be encoded inside
+   * the response body instead of the status line — required for RSC navigations
+   * and for `generateMetadata()` redirects (always 200, never 307). When
+   * omitted, redirect responses fall back to the 307 + Location path; callers
+   * that handle RSC requests must supply this.
+   */
+  buildRscRedirectFlightStream?: BuildRscRedirectFlightStream;
+  clearRequestContext: () => void;
+  /**
+   * Drains and returns Set-Cookie header values that were accumulated during
+   * this render via cookies().set() / cookies().delete(). Appended to redirect
+   * responses so an auth flow that does `cookies().set("session", "...");
+   * redirect("/")` preserves the cookie on the 307. Mirrors Next.js's
+   * `appendMutableCookies(headers, requestStore.mutableCookies)` in
+   * app-render.tsx. Only applied to redirect responses to match Next.js;
+   * the http-access-fallback path leaves cookies to the rendered boundary.
+   */
+  getAndClearPendingCookies?: () => string[];
+  isEdgeRuntime?: boolean;
+  isRscRequest: boolean;
+  middlewareContext?: { headers: Headers | null };
+  renderFallbackPage?: (statusCode: number) => Promise<Response | null>;
+  request: Request;
+  serveStreamingMetadata?: boolean;
+  specialError: AppPageSpecialError;
+};
+
+function getAppPageStatusText(statusCode: number): string {
+  return statusCode === 403 ? "Forbidden" : statusCode === 401 ? "Unauthorized" : "Not Found";
+}
+
+function mergeAppPageSpecialErrorHeaders(
+  response: Response,
+  middlewareContext: { headers: Headers | null } | undefined,
+): Response {
+  const frameworkLink = getFrameworkLinkHeader(response.headers);
+  const headers = new Headers(response.headers);
+  if (frameworkLink) headers.delete("link");
+  mergeMiddlewareResponseHeaders(headers, middlewareContext?.headers ?? null);
+  if (frameworkLink) headers.append("link", frameworkLink);
+
+  const result = new Response(response.body, {
+    headers,
+    status: response.status,
+    statusText: response.statusText,
+  });
+  markFrameworkLinkHeaders(result.headers, frameworkLink);
+  return result;
+}
+
+export function resolveAppPageSpecialError(error: unknown): AppPageSpecialError | null {
+  if (!(error && typeof error === "object" && "digest" in error)) {
+    return null;
+  }
+
+  const digest = String(error.digest);
+  const fromMetadata = Reflect.get(error, APP_PAGE_METADATA_ERROR_MARKER) === true;
+
+  const redirect = parseNextRedirectDigest(digest);
+  if (redirect) {
+    return {
+      kind: "redirect",
+      location: redirect.url,
+      statusCode: redirect.status,
+      type: redirect.type === "push" ? "push" : "replace",
+      ...(fromMetadata ? { fromMetadata: true } : {}),
+    };
+  }
+
+  const httpError = parseNextHttpErrorDigest(digest);
+  if (httpError) {
+    return {
+      kind: "http-access-fallback",
+      statusCode: httpError.status,
+      ...(fromMetadata ? { fromMetadata: true } : {}),
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Resolve the special error that rejected an SSR shell. An error from the RSC
+ * render reaches the shell decoded from its Flight digest, so whether
+ * generateMetadata() threw it comes from the errors the RSC render threw with
+ * that digest. When the page threw one too, the page's decides. An error a
+ * client component threw during SSR is the page's, since generateMetadata()
+ * runs only in the RSC render. A notFound() / forbidden() / unauthorized()
+ * a parallel slot's page threw is caught above the layout rendering it,
+ * unless the slot's own not-found catches its notFound() and every other copy
+ * is the page's or another slot's. One a route layout threw is caught above
+ * that layout, and the outermost such layout wins. A copy nothing tagged,
+ * such as a template's or one from a component a layout or the page renders,
+ * marks the error unattributed.
+ */
+export function resolveAppPageShellSpecialError(
+  error: unknown,
+  renderedSpecialErrors: readonly unknown[],
+): AppPageSpecialError | null {
+  const specialError = resolveAppPageSpecialError(error);
+  if (!specialError || specialError.fromMetadata === true) return specialError;
+  if (isThrownNavigationError(error)) return specialError;
+  const fromMetadata =
+    renderedSpecialErrors.length > 0 &&
+    renderedSpecialErrors.every(
+      (rendered) => resolveAppPageSpecialError(rendered)?.fromMetadata === true,
+    );
+  if (fromMetadata) return { ...specialError, fromMetadata: true };
+  if (specialError.kind !== "http-access-fallback") return specialError;
+  // The boundary above a slot's layout is never below the page's, so the
+  // outermost slot's replaces the page's when both threw. A slot's own
+  // not-found boundary catches its notFound() inside the slot, leaving that
+  // layout and the page's boundary in place.
+  const skipsSlotCaughtNotFound =
+    specialError.statusCode === 404 &&
+    renderedSpecialErrors.every(
+      (rendered) =>
+        isAppPagePageError(rendered) || getAppPageSlotErrorLayoutIndex(rendered) !== null,
+    );
+  let slotLayoutIndex: number | null = null;
+  let layoutIndex: number | null = null;
+  let unattributed = false;
+  for (const rendered of renderedSpecialErrors) {
+    const throwingLayoutIndex = getAppPageLayoutErrorLayoutIndex(rendered);
+    if (throwingLayoutIndex !== null) {
+      if (layoutIndex === null || throwingLayoutIndex < layoutIndex) {
+        layoutIndex = throwingLayoutIndex;
+      }
+      continue;
+    }
+    if (skipsSlotCaughtNotFound && getAppPageSlotErrorNotFoundBoundary(rendered) !== null) {
+      continue;
+    }
+    const slotOwnerIndex = getAppPageSlotErrorLayoutIndex(rendered);
+    if (slotOwnerIndex !== null) {
+      if (slotLayoutIndex === null || slotOwnerIndex < slotLayoutIndex) {
+        slotLayoutIndex = slotOwnerIndex;
+      }
+      continue;
+    }
+    if (
+      !isAppPagePageError(rendered) &&
+      resolveAppPageSpecialError(rendered)?.fromMetadata !== true
+    ) {
+      unattributed = true;
+    }
+  }
+  // The boundary above the outermost layout catches it. A layout's own signal
+  // wins over its slot's, which renders inside it.
+  if (layoutIndex !== null && slotLayoutIndex !== null) {
+    if (layoutIndex <= slotLayoutIndex) slotLayoutIndex = null;
+    else layoutIndex = null;
+  }
+  if (slotLayoutIndex === null && layoutIndex === null && !unattributed) return specialError;
+  return {
+    ...specialError,
+    ...(slotLayoutIndex !== null ? { slotLayoutIndex } : {}),
+    ...(layoutIndex !== null ? { layoutIndex } : {}),
+    ...(unattributed ? { unattributed: true } : {}),
+  };
+}
+
+/**
+ * The parallel slot not-found boundaries that catch the `notFound()` that
+ * rejected an SSR shell, or null when any copy the RSC render threw isn't
+ * caught inside its slot. On the client, each slot's own not-found boundary
+ * catches its signal while the rest of the route renders, as in Next.js,
+ * which sends an empty error shell and renders them in the browser. A copy
+ * no slot threw is caught by the page's boundary beside them when the page
+ * threw it, including from a component the page renders, which nothing tags.
+ * One a layout or a template threw renders outside the caught boundaries, so
+ * the document's render from the same payload throws it again and takes the
+ * fallback, which keeps it above the slot's layout (see
+ * `resolveAppPageShellSpecialError`). Without a slot's, that fallback renders.
+ */
+export function resolveAppPageCaughtNotFoundBoundaries(
+  error: unknown,
+  renderedSpecialErrors: readonly unknown[],
+): readonly string[] | null {
+  const specialError = resolveAppPageSpecialError(error);
+  if (specialError?.kind !== "http-access-fallback" || specialError.statusCode !== 404) {
+    return null;
+  }
+  if (isThrownNavigationError(error) || renderedSpecialErrors.length === 0) return null;
+  const boundaries = new Set<string>();
+  let caughtInSlot = false;
+  for (const rendered of renderedSpecialErrors) {
+    if (resolveAppPageSpecialError(rendered)?.fromMetadata === true) return null;
+    // A layout's own signal renders outside every slot's boundary.
+    if (getAppPageLayoutErrorLayoutIndex(rendered) !== null) return null;
+    const boundary = getAppPageSlotErrorNotFoundBoundary(rendered);
+    if (boundary !== null) {
+      caughtInSlot = true;
+      boundaries.add(boundary);
+    } else if (getAppPageSlotErrorLayoutIndex(rendered) === null) {
+      boundaries.add(APP_PAGE_NOT_FOUND_BOUNDARY_ID);
+    } else {
+      return null;
+    }
+  }
+  return caughtInSlot ? Array.from(boundaries) : null;
+}
+
+/**
+ * Resolves a redirect() target against the request URL and prepends the
+ * configured basePath when the target is an app-internal absolute path.
+ *
+ * Mirrors Next.js's `addPathPrefix(getURLFromRedirectError(err), basePath)`
+ * in `app-render.tsx`: a `redirect("/about")` call from a page mounted at
+ * `/blog` (basePath) produces `Location: /blog/about`.
+ *
+ * Skips prefixing only when basePath is unset or the raw target does not start
+ * with `/`, matching Next.js's literal `addPathPrefix()` contract.
+ */
+function applyAppPageRedirectBasePath(location: string, basePath: string | undefined): string {
+  if (!basePath || !location.startsWith("/")) return location;
+
+  const queryIndex = location.indexOf("?");
+  const hashIndex = location.indexOf("#");
+  const suffixIndex =
+    queryIndex === -1 ? hashIndex : hashIndex === -1 ? queryIndex : Math.min(queryIndex, hashIndex);
+  const pathname = suffixIndex === -1 ? location : location.slice(0, suffixIndex);
+  const suffix = suffixIndex === -1 ? "" : location.slice(suffixIndex);
+  return `${basePath}${pathname}${suffix}`;
+}
+
+/**
+ * The response headers stored with a page's special-error entries: a
+ * redirect's own `location`, not the response's, which middleware may have
+ * replaced for this request.
+ */
+export function resolveAppPageSpecialErrorStoredHeaders(
+  specialError: AppPageSpecialError,
+  basePath: string | undefined,
+): Record<string, string> | undefined {
+  if (specialError.kind !== "redirect") return undefined;
+  return { location: applyAppPageRedirectBasePath(specialError.location, basePath) };
+}
+
+const REDIRECT_BASES = [
+  { host: "a.redirect-base.vinext.invalid", protocol: "https:" },
+  { host: "b.redirect-base.vinext.invalid", protocol: "http:" },
+];
+
+function resolveAgainstPlaceholder(
+  location: string,
+  requestUrl: string,
+  placeholder: (typeof REDIRECT_BASES)[number],
+) {
+  const base = new URL(requestUrl);
+  base.protocol = placeholder.protocol;
+  base.host = placeholder.host;
+  base.port = "";
+  const resolved = new URL(location, base);
+  return { relative: resolved.origin === base.origin, resolved };
+}
+
+/**
+ * A URL reference as the URL parser reads it, with every byte a header value
+ * cannot carry percent-encoded. The parser trims C0 controls and spaces and
+ * drops tabs and newlines; percent-decoding reverses the rest, including in a
+ * host, so the client resolves it as it would the raw target.
+ */
+function toHeaderSafeUrlReference(location: string): string {
+  return (
+    location
+      // oxlint-disable-next-line no-control-regex -- the URL parser trims these
+      .replace(/^[\u0000-\u0020]+|[\u0000-\u0020]+$/g, "")
+      .replace(/[\t\n\r]/g, "")
+      .replace(/[^\u0021-\u007e]+/g, (chars) =>
+        Array.from(
+          new TextEncoder().encode(chars),
+          (byte) => `%${byte.toString(16).toUpperCase().padStart(2, "0")}`,
+        ).join(""),
+      )
+  );
+}
+
+/**
+ * The redirect target embedded in the flight digest and its streamed
+ * side-channel header. An absolute target stays in the digest as `redirect()`
+ * received it, as in Next.js's digest, so every host that shares the cache
+ * entry is sent to the same place; the header carries the same reference made
+ * header-safe, so a protocol-relative or scheme-relative target still resolves
+ * against the page each client fetched. A relative target resolves against the
+ * request's path to a path-only form, which the client resolves against its
+ * own origin; a resolved pathname that begins with "//" keeps a "/." prefix
+ * so that form stays a path rather than naming another host. Resolving
+ * against two placeholder origins tells these apart the way the URL parser
+ * does, never depends on the request's origin, and cannot mistake an absolute
+ * target naming one placeholder for a relative one.
+ */
+function resolveRedirectTargets(
+  location: string,
+  requestUrl: string,
+): { digestUrl: string; headerUrl: string } {
+  try {
+    const [first, second] = REDIRECT_BASES.map((placeholder) =>
+      resolveAgainstPlaceholder(location, requestUrl, placeholder),
+    );
+    if (!first.relative || !second.relative) {
+      return { digestUrl: location, headerUrl: toHeaderSafeUrlReference(location) };
+    }
+    const { pathname, search, hash } = first.resolved;
+    const target = `${toPathAbsolutePathname(pathname)}${search}${hash}`;
+    return { digestUrl: target, headerUrl: target };
+  } catch {
+    return { digestUrl: location, headerUrl: toHeaderSafeUrlReference(location) };
+  }
+}
+
+function buildMetadataRedirectHtmlResponse(options: {
+  digest: string;
+  getAndClearPendingCookies?: () => string[];
+  isEdgeRuntime?: boolean;
+  middlewareContext?: { headers: Headers | null };
+}): Response {
+  const headers = new Headers({
+    "Content-Type": "text/html; charset=utf-8",
+  });
+  applyEdgeRuntimeHeader(headers, options.isEdgeRuntime);
+  mergeMiddlewareResponseHeaders(headers, options.middlewareContext?.headers ?? null);
+
+  const pendingCookies = options.getAndClearPendingCookies?.() ?? [];
+  for (const cookie of pendingCookies) {
+    headers.append("Set-Cookie", cookie);
+  }
+
+  const errorMetaTags = renderSsrErrorMetaTags([{ digest: options.digest }]);
+  // Intentional divergence from Next.js: Next.js inserts the redirect meta tag
+  // into the otherwise fully-rendered streamed document, whereas we emit a
+  // minimal stub (refresh meta tag, empty body). For a redirect this is
+  // functionally equivalent — the browser follows the refresh regardless of
+  // body content — and avoids re-rendering page content we're about to discard.
+  return new Response(`<!DOCTYPE html><html><head>${errorMetaTags}</head><body></body></html>`, {
+    headers,
+    status: 200,
+  });
+}
+
+export async function buildAppPageSpecialErrorResponse(
+  options: BuildAppPageSpecialErrorResponseOptions,
+): Promise<Response> {
+  if (options.specialError.kind === "redirect") {
+    options.clearRequestContext();
+    // Apply configured basePath first so app-internal targets land at
+    // /<basePath>/<target> before the RSC cache-busting transform sees them.
+    const prefixedLocation = applyAppPageRedirectBasePath(
+      options.specialError.location,
+      options.basePath,
+    );
+    const { digestUrl, headerUrl } = resolveRedirectTargets(prefixedLocation, options.request.url);
+    const digest = formatNextRedirectDigest({
+      type: options.specialError.type ?? "replace",
+      url: digestUrl,
+      statusCode: options.specialError.statusCode,
+    });
+
+    if (
+      options.specialError.fromMetadata === true &&
+      !options.isRscRequest &&
+      options.serveStreamingMetadata !== false
+    ) {
+      return buildMetadataRedirectHtmlResponse({
+        digest,
+        getAndClearPendingCookies: options.getAndClearPendingCookies,
+        isEdgeRuntime: options.isEdgeRuntime,
+        middlewareContext: options.middlewareContext,
+      });
+    }
+
+    // Two cases need a 200 + flight-payload encoding instead of an HTTP 307:
+    //   1. RSC navigation requests (`Rsc: 1` header) — the client router
+    //      decodes the redirect digest from the flight stream. A raw 307
+    //      bypasses that path and breaks cache-busting validation.
+    // Document requests that redirect from `generateMetadata()` are HTML
+    // responses instead: streaming-capable user agents get a refresh meta tag
+    // and html-limited bots get the blocking 307 above.
+    // Mirrors Next.js's `generateDynamicFlightRenderResult` path in
+    // `app-render.tsx`, where the redirect error propagates through
+    // `renderToFlightStream` and is serialized with its digest.
+    const shouldEmbedRedirectInFlight =
+      Boolean(options.buildRscRedirectFlightStream) && options.isRscRequest;
+
+    if (shouldEmbedRedirectInFlight && options.buildRscRedirectFlightStream) {
+      const stream = options.buildRscRedirectFlightStream({ digest });
+
+      const headers = new Headers({
+        "Content-Type": VINEXT_RSC_CONTENT_TYPE,
+      });
+      applyEdgeRuntimeHeader(headers, options.isEdgeRuntime);
+      // Mirror the regular RSC response by stamping the build-time compatibility
+      // ID. Without it, the client treats the response as cross-build and hard-
+      // navigates instead of following the redirect through the soft-nav loop.
+      // Preserve middleware response headers (Set-Cookie, custom headers, etc.)
+      // exactly like the 307 path does — the client will still see them.
+      mergeMiddlewareResponseHeaders(headers, options.middlewareContext?.headers ?? null);
+      applyRscCompatibilityIdHeader(headers);
+      applyRscDeploymentIdHeader(headers);
+      // Framework-owned redirect semantics must win over middleware headers.
+      // The Flight digest remains authoritative; these headers are only the
+      // early client side-channel for following it without decoding first.
+      headers.set(VINEXT_RSC_REDIRECT_HEADER, headerUrl);
+      headers.set(VINEXT_RSC_REDIRECT_TYPE_HEADER, options.specialError.type ?? "replace");
+      const pendingCookies = options.getAndClearPendingCookies?.() ?? [];
+      for (const cookie of pendingCookies) {
+        headers.append("Set-Cookie", cookie);
+      }
+
+      return new Response(stream, {
+        headers,
+        status: 200,
+      });
+    }
+
+    const location = options.isRscRequest
+      ? await createRscRedirectLocation(prefixedLocation, options.request)
+      : prefixedLocation;
+    const headers = new Headers({
+      Location: location,
+    });
+    // Middleware may contribute response headers here, but redirect() owns the
+    // status. Do not apply middlewareContext.status on special-error responses.
+    mergeMiddlewareResponseHeaders(headers, options.middlewareContext?.headers ?? null);
+    // Preserve cookies set via cookies().set() / cookies().delete() during the
+    // page render — auth flows commonly set a session cookie and immediately
+    // redirect, and those Set-Cookie values must ride on the 307.
+    const pendingCookies = options.getAndClearPendingCookies?.() ?? [];
+    for (const cookie of pendingCookies) {
+      headers.append("Set-Cookie", cookie);
+    }
+
+    return new Response(null, {
+      headers,
+      status: options.specialError.statusCode,
+    });
+  }
+
+  if (options.renderFallbackPage) {
+    const fallbackResponse = await options.renderFallbackPage(options.specialError.statusCode);
+    if (fallbackResponse) {
+      // When notFound() / forbidden() / unauthorized() is thrown from
+      // generateMetadata(), Next.js treats the error as a suspended metadata
+      // result — the not-found UI is rendered through the React boundary
+      // client-side while the HTTP response itself stays 200. Mirror that
+      // behavior by overriding the rendered boundary response status to 200.
+      // Mirrors the redirect-from-metadata path above, which also returns 200.
+      // Reference: test/e2e/app-dir/metadata-navigation
+      //   "should support notFound in generateMetadata"
+      //
+      // Exception: when serveStreamingMetadata === false (html-limited bots),
+      // metadata blocks the render synchronously. Next.js sets the real HTTP
+      // error status in this case (app-render.tsx ~2845). Mirror by not
+      // overriding the status, symmetrically with the redirect-from-metadata
+      // path which is already gated on serveStreamingMetadata !== false.
+      let responseToMerge = fallbackResponse;
+      if (options.specialError.fromMetadata === true && options.serveStreamingMetadata !== false) {
+        responseToMerge = new Response(fallbackResponse.body, {
+          headers: fallbackResponse.headers,
+          status: 200,
+          statusText: fallbackResponse.statusText,
+        });
+        copyLinkHeaderProvenance(fallbackResponse.headers, responseToMerge.headers);
+      }
+      return mergeAppPageSpecialErrorHeaders(responseToMerge, options.middlewareContext);
+    }
+  }
+
+  options.clearRequestContext();
+  // When notFound() is thrown from generateMetadata() with no fallback page
+  // available, keep the 200 status to stay consistent with the streamed
+  // metadata contract (the error is surfaced in the page UI, not the status).
+  // Exception: when serveStreamingMetadata === false (html-limited bots),
+  // metadata blocks the render synchronously — Next.js sets the real HTTP
+  // error status in this case (app-render.tsx ~2845), symmetric with the
+  // redirect-from-metadata path that is already gated on the same flag.
+  const responseStatus =
+    options.specialError.fromMetadata === true && options.serveStreamingMetadata !== false
+      ? 200
+      : options.specialError.statusCode;
+  return mergeAppPageSpecialErrorHeaders(
+    new Response(getAppPageStatusText(options.specialError.statusCode), {
+      status: responseStatus,
+    }),
+    options.middlewareContext,
+  );
+}
+
+export async function readAppPageBinaryStream(
+  stream: ReadableStream<Uint8Array>,
+): Promise<ArrayBuffer> {
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalLength = 0;
+
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+    chunks.push(value);
+    totalLength += value.byteLength;
+  }
+
+  const buffer = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    buffer.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  return buffer.buffer;
+}
+
+export async function bufferAppPageBinaryStream(
+  stream: ReadableStream<Uint8Array>,
+): Promise<ReadableStream<Uint8Array>> {
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+
+  return new ReadableStream({
+    start(controller) {
+      for (const chunk of chunks) controller.enqueue(chunk);
+      controller.close();
+    },
+  });
+}
+
+export function teeAppPageRscStreamForCapture(
+  stream: ReadableStream<Uint8Array>,
+  shouldCapture: boolean,
+): AppPageRscStreamCapture {
+  if (!shouldCapture) {
+    return {
+      ssrStream: stream,
+    };
+  }
+
+  const [ssrStream, sideStream] = stream.tee();
+  return {
+    ssrStream,
+    sideStream,
+  };
+}
+
+export function buildAppPageFontLinkHeader(
+  preloads: readonly AppPageFontPreload[] | null | undefined,
+): string {
+  if (!preloads || preloads.length === 0) {
+    return "";
+  }
+
+  return preloads
+    .map((preload) => `<${preload.href}>; rel=preload; as=font; type=${preload.type}; crossorigin`)
+    .join(", ");
+}

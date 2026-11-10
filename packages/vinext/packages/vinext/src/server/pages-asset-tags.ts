@@ -1,0 +1,401 @@
+/**
+ * Pages Router SSR asset-tag helpers.
+ *
+ * Builds the `<link rel="modulepreload">`, `<link rel="stylesheet">`, and
+ * `<script type="module">` tags injected into the SSR HTML response.
+ *
+ * Extracted from `entries/pages-server-entry.ts` so the logic is
+ * unit-testable and lives in a normal typed module rather than a codegen
+ * template string.
+ */
+
+import { createNonceAttribute } from "./html.js";
+import {
+  assetServingUrlFromBaseAnchored,
+  SSR_MANIFEST_SHARED_CHUNKS_KEY,
+} from "../utils/manifest-paths.js";
+import { appendDeploymentIdQuery } from "../utils/deployment-id.js";
+import { getPagesClientAssets } from "./pages-client-assets.js";
+
+// ---------------------------------------------------------------------------
+// Manifest helpers
+// ---------------------------------------------------------------------------
+
+// Build metadata is immutable within a build. Development invalidates the
+// virtual asset module and supplies new objects on edits. Weak keys keep these
+// derived lookups scoped to that snapshot without retaining previous builds.
+// Module IDs come from the route table, never from request URLs.
+const nonEmptyManifests = new WeakMap<object, boolean>();
+const moduleKeyOrder = new WeakMap<object, Map<string, number>>();
+const sharedChunkFiles = new WeakMap<object, string[]>();
+const lazyChunkSets = new WeakMap<string[], Set<string>>();
+
+function findModuleKey(manifest: Record<string, unknown>, moduleId: string): string | null {
+  if (manifest[moduleId]) return moduleId;
+
+  // Most built manifests have just one matching relative module path. Probe
+  // that path's suffixes directly before indexing any build-wide keys. Own
+  // enumerable keys precede inherited keys in the original for-in lookup.
+  let uniqueKey: string | null = null;
+  let candidate = moduleId;
+  while (true) {
+    if (Object.prototype.propertyIsEnumerable.call(manifest, candidate)) {
+      if (uniqueKey !== null) {
+        uniqueKey = null;
+        break;
+      }
+      uniqueKey = candidate;
+    }
+    const slash = candidate.indexOf("/");
+    if (slash === -1) break;
+    candidate = candidate.slice(slash + 1);
+  }
+  if (uniqueKey !== null) return uniqueKey;
+
+  let keyOrder = moduleKeyOrder.get(manifest);
+  if (!keyOrder) {
+    keyOrder = new Map();
+    for (const key in manifest) keyOrder.set(key, keyOrder.size);
+    moduleKeyOrder.set(manifest, keyOrder);
+  }
+
+  // Probe only slash-delimited suffixes of this path, so even the first visit
+  // to another route is independent of the total number of manifest entries.
+  // Keep the old first-enumerated-key precedence when suffixes overlap.
+  let matchedKey: string | null = null;
+  let matchedOrder = Infinity;
+  let suffix = moduleId;
+  while (true) {
+    const order = keyOrder.get(suffix);
+    if (order !== undefined && order < matchedOrder) {
+      matchedKey = suffix;
+      matchedOrder = order;
+    }
+    const slash = suffix.indexOf("/");
+    if (slash === -1) break;
+    suffix = suffix.slice(slash + 1);
+  }
+  return matchedKey;
+}
+
+/**
+ * Fallback for when no build-time `sharedChunks` list is registered. Prefers
+ * the chunk-name based list the build writes into the SSR manifest; the file
+ * name scan only matches `[name]-[hash]` names, not hash-only ones.
+ */
+export function getSharedChunkFiles(manifest: Record<string, string[]>): string[] {
+  const recorded = manifest[SSR_MANIFEST_SHARED_CHUNKS_KEY];
+  if (recorded) return recorded;
+  const cached = sharedChunkFiles.get(manifest);
+  if (cached) return cached;
+
+  const files = new Set<string>();
+  for (const key in manifest) {
+    for (const file of manifest[key] ?? []) {
+      const basename = file.slice(file.lastIndexOf("/") + 1);
+      if (
+        basename.startsWith("framework-") ||
+        basename.startsWith("vinext-") ||
+        basename.includes("vinext-client-entry") ||
+        basename.includes("vinext-app-browser-entry")
+      ) {
+        files.add(file);
+      }
+    }
+  }
+  const result = [...files];
+  sharedChunkFiles.set(manifest, result);
+  return result;
+}
+
+/**
+ * Resolve the effective SSR manifest: prefer the caller-supplied object and
+ * fall back to the registered client build metadata.
+ */
+export function resolveSsrManifest(
+  manifest: Record<string, string[]> | null | undefined,
+): Record<string, string[]> | null {
+  if (manifest) {
+    let nonEmpty = nonEmptyManifests.get(manifest);
+    if (nonEmpty === undefined) {
+      nonEmpty = Object.keys(manifest).length > 0;
+      nonEmptyManifests.set(manifest, nonEmpty);
+    }
+    if (nonEmpty) return manifest;
+  }
+  return getPagesClientAssets().ssrManifest ?? null;
+}
+
+/**
+ * Look up the asset-file list for a module ID in the SSR manifest.
+ *
+ * The manifest keys may use relative paths while callers supply absolute
+ * paths, so a suffix-match fallback is used when an exact-key lookup fails.
+ */
+export function getManifestFilesForModule(
+  manifest: Record<string, string[]> | null | undefined,
+  moduleId: string | null | undefined,
+): string[] | null {
+  if (!manifest || !moduleId) return null;
+
+  const key = findModuleKey(manifest, moduleId);
+  return key === null ? null : manifest[key];
+}
+
+function collectGraphOrderedCss(
+  graph: NonNullable<ReturnType<typeof getPagesClientAssets>["cssGraph"]>,
+  moduleIds: (string | null | undefined)[],
+): string[] {
+  const ordered: string[] = [];
+  const emitted = new Set<string>();
+  const visited = new Set<string>();
+
+  function visit(key: string | null): void {
+    if (!key || visited.has(key)) return;
+    visited.add(key);
+    const chunk = graph[key];
+    if (!chunk) return;
+    for (const importedKey of chunk.imports ?? []) visit(importedKey);
+    for (const file of chunk.css ?? []) {
+      if (emitted.has(file)) continue;
+      emitted.add(file);
+      ordered.push(file);
+    }
+  }
+
+  for (const moduleId of moduleIds) {
+    if (moduleId) visit(findModuleKey(graph, moduleId));
+  }
+  return ordered;
+}
+
+/**
+ * Find the first `.js` file in the manifest for `moduleId` and return the URL it
+ * is actually SERVED from. Used to resolve the client-navigation / hydration URL
+ * for the matched page or the `_app` module (it is `import()`ed on the client),
+ * so it must point at the served location: `assetPrefix` replaces `basePath` for
+ * asset URLs. SSR-manifest values are base-anchored; re-anchor under any
+ * configured `assetPrefix` (default `""` keeps the legacy `"/" + file`).
+ */
+export function resolveClientModuleUrl(
+  manifest: Record<string, string[]> | null | undefined,
+  moduleId: string | null | undefined,
+  basePath = "",
+  assetPrefix = "",
+  _deploymentId?: string,
+): string | undefined {
+  const files = getManifestFilesForModule(resolveSsrManifest(manifest), moduleId);
+  if (!files) return undefined;
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    if (!file || !file.endsWith(".js")) continue;
+    return assetServingUrlFromBaseAnchored(file, basePath, assetPrefix);
+  }
+  return undefined;
+}
+
+// ---------------------------------------------------------------------------
+// collectAssetTags
+// ---------------------------------------------------------------------------
+
+type CollectAssetTagsOptions = {
+  /**
+   * SSR manifest mapping module file paths to their associated asset list.
+   * When empty/null the registered client build manifest is used.
+   */
+  manifest: Record<string, string[]> | null | undefined;
+  /**
+   * Module IDs whose assets should be injected (page + `_app`). When empty
+   * all manifest assets are injected.
+   */
+  moduleIds: (string | null | undefined)[];
+  /** Script nonce for CSP. */
+  scriptNonce?: string;
+  /**
+   * When `false` (default), page scripts are emitted with the `defer`
+   * attribute mirroring Next.js's `experimental.disableOptimizedLoading`
+   * default.
+   */
+  disableOptimizedLoading: boolean;
+  /**
+   * Configured `basePath` / `assetPrefix`. SSR-manifest values are base-anchored
+   * (needed for the lazy-chunk membership test), but the EMITTED href must point
+   * where the asset is actually served — `assetPrefix` replaces `basePath` for
+   * asset URLs. Default `""` (both unset) keeps the legacy `"/" + value` href.
+   */
+  basePath?: string;
+  assetPrefix?: string;
+  deploymentId?: string;
+  crossOrigin?: string;
+  initialStylesheetHrefs?: Set<string>;
+};
+
+/**
+ * Build the HTML `<link>` and `<script>` tag string for the SSR response.
+ *
+ * Mirrors Next.js `_document` behaviour:
+ * - CSS files → `<link rel="stylesheet">`.
+ * - JS files → `<link rel="modulepreload">` + `<script type="module" defer>`.
+ * - Lazy chunks (behind `React.lazy` / `next/dynamic`) are skipped.
+ * - The registered client-entry bootstrap is injected first.
+ * - Shared framework / vinext runtime chunks are always included alongside
+ *   page-specific chunks.
+ *
+ * Extracted from `entries/pages-server-entry.ts`.
+ */
+export function collectAssetTags(options: CollectAssetTagsOptions): string {
+  const m = resolveSsrManifest(options.manifest);
+  const tags: string[] = [];
+  const seen = new Set<string>();
+  const nonceAttr = createNonceAttribute(options.scriptNonce);
+  // Mirrors Next.js `_document` behaviour: when `experimental.disableOptimizedLoading`
+  // is false (the default), page scripts are emitted with `defer` in <head>. See
+  // .nextjs-ref/packages/next/src/pages/_document.tsx getScripts().
+  // vinext always emits `type="module"` (which already defers implicitly), but
+  // upstream tests (e.g. test/e2e/optimized-loading) assert the literal `defer`
+  // attribute, and adding it preserves parity without changing browser behaviour.
+  const deferAttr = options.disableOptimizedLoading ? "" : " defer";
+  const scriptCrossOriginAttr = options.crossOrigin
+    ? ` crossorigin="${options.crossOrigin}"`
+    : " crossorigin";
+  const preloadCrossOriginAttr = options.crossOrigin ? ` crossorigin="${options.crossOrigin}"` : "";
+
+  // SSR-manifest / client-entry values are base-anchored (so the lazy-chunk
+  // membership test below matches the base-anchored lazy chunk registry), but
+  // the EMITTED href must point where the asset is actually served. assetPrefix
+  // replaces basePath for asset URLs, so re-anchor each href accordingly. With
+  // no assetPrefix this is the legacy `"/" + value`.
+  const basePath = options.basePath ?? "";
+  const assetPrefix = options.assetPrefix ?? "";
+  const href = (value: string): string => {
+    const url = assetServingUrlFromBaseAnchored(value, basePath, assetPrefix);
+    // Native ESM resolves relative imports without inheriting the importing
+    // module's query string. Querying Pages JavaScript entries therefore gives
+    // the entry and its imports different module identities, which can execute
+    // the hydration bootstrap twice when a lazy page chunk imports shared code.
+    return value.endsWith(".js") ? url : appendDeploymentIdQuery(url, options.deploymentId);
+  };
+
+  // Load the set of lazy chunk filenames (only reachable via dynamic imports).
+  // These should NOT get <link rel="modulepreload"> or <script type="module">
+  // tags — they are fetched on demand when the dynamic import() executes.
+  const runtimeAssets = getPagesClientAssets();
+  const lazyChunks = runtimeAssets.lazyChunks ?? null;
+  let lazySet = lazyChunks ? lazyChunkSets.get(lazyChunks) : undefined;
+  if (lazyChunks && !lazySet) {
+    lazySet = new Set(lazyChunks);
+    lazyChunkSets.set(lazyChunks, lazySet);
+  }
+
+  // Development adapters provide the Vite-served virtual entry explicitly.
+  // Production builds use the client entry registered from the emitted sidecar.
+  const clientEntry = runtimeAssets.clientEntry;
+  if (clientEntry) {
+    seen.add(clientEntry);
+    tags.push(
+      '<link rel="modulepreload"' +
+        nonceAttr +
+        ' href="' +
+        href(clientEntry) +
+        '"' +
+        preloadCrossOriginAttr +
+        " />",
+    );
+    tags.push(
+      '<script type="module"' +
+        deferAttr +
+        nonceAttr +
+        ' src="' +
+        href(clientEntry) +
+        '"' +
+        scriptCrossOriginAttr +
+        "></script>",
+    );
+  }
+
+  if (runtimeAssets.cssGraph) {
+    for (let file of collectGraphOrderedCss(runtimeAssets.cssGraph, options.moduleIds)) {
+      if (file.charAt(0) === "/") file = file.slice(1);
+      if (seen.has(file)) continue;
+      seen.add(file);
+      const stylesheetHref = href(file);
+      options.initialStylesheetHrefs?.add(stylesheetHref);
+      tags.push('<link rel="stylesheet"' + nonceAttr + ' href="' + stylesheetHref + '" />');
+    }
+  }
+
+  if (m) {
+    const allFiles: string[] = [];
+    const moduleIds = options.moduleIds;
+
+    if (moduleIds && moduleIds.length > 0) {
+      // Collect assets for the requested page modules.
+      for (let mi = 0; mi < moduleIds.length; mi++) {
+        const id = moduleIds[mi];
+        const files = getManifestFilesForModule(m, id);
+        if (files) {
+          for (let fi = 0; fi < files.length; fi++) allFiles.push(files[fi]);
+        }
+      }
+
+      // Shared runtime files are build-wide. The registered list comes from
+      // the client build manifest's chunk names, so it also applies when the
+      // caller supplies its own copy of that build's SSR manifest (the Node
+      // production server reads one from disk). Only scan file names when no
+      // build metadata was registered.
+      const sharedFiles = runtimeAssets.sharedChunks ?? getSharedChunkFiles(m);
+      for (const file of sharedFiles) allFiles.push(file);
+    } else {
+      // No specific modules — include all assets from manifest.
+      for (const akey in m) {
+        const avals = m[akey];
+        if (avals) {
+          for (let ai = 0; ai < avals.length; ai++) allFiles.push(avals[ai]);
+        }
+      }
+    }
+
+    for (let ti = 0; ti < allFiles.length; ti++) {
+      let tf = allFiles[ti];
+      // Normalize: Vite's SSR manifest values include a leading '/'
+      // (from base path), but we prepend '/' ourselves when building
+      // href/src attributes. Strip any existing leading slash to avoid
+      // producing protocol-relative URLs like "//assets/chunk.js".
+      if (tf.charAt(0) === "/") tf = tf.slice(1);
+      if (seen.has(tf)) continue;
+      seen.add(tf);
+      if (tf.endsWith(".css")) {
+        const stylesheetHref = href(tf);
+        options.initialStylesheetHrefs?.add(stylesheetHref);
+        tags.push('<link rel="stylesheet"' + nonceAttr + ' href="' + stylesheetHref + '" />');
+      } else if (tf.endsWith(".js")) {
+        // Skip lazy chunks — they are behind dynamic import() boundaries
+        // (React.lazy, next/dynamic) and should only be fetched on demand.
+        // Membership test uses the base-anchored `tf` (same key-space as
+        // lazy chunk registry), NOT the re-anchored href.
+        if (lazySet && lazySet.has(tf)) continue;
+        tags.push(
+          '<link rel="modulepreload"' +
+            nonceAttr +
+            ' href="' +
+            href(tf) +
+            '"' +
+            preloadCrossOriginAttr +
+            " />",
+        );
+        tags.push(
+          '<script type="module"' +
+            deferAttr +
+            nonceAttr +
+            ' src="' +
+            href(tf) +
+            '"' +
+            scriptCrossOriginAttr +
+            "></script>",
+        );
+      }
+    }
+  }
+
+  return tags.join("\n  ");
+}

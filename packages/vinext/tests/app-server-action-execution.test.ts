@@ -1,0 +1,4194 @@
+import { describe, expect, it, vi } from "vite-plus/test";
+import {
+  handleServerActionRscRequest,
+  handleProgressiveServerActionRequest,
+  isProgressiveServerActionRequest,
+  type HandleServerActionRscRequestOptions,
+  readActionBodyWithLimit,
+  readActionFormDataWithLimit,
+  type HandleProgressiveServerActionRequestOptions,
+} from "../packages/vinext/src/server/app-server-action-execution.js";
+import { getRootParam, runWithRootParamsScope } from "../packages/vinext/src/shims/root-params.js";
+import {
+  createServerActionNotFoundResponse,
+  throwOnServerActionNotFound,
+} from "../packages/vinext/src/server/server-action-not-found.js";
+import {
+  redirect,
+  unstable_isUnrecognizedActionError,
+} from "../packages/vinext/src/shims/navigation.js";
+import {
+  VINEXT_RSC_COMPATIBILITY_ID_HEADER,
+  VINEXT_RSC_VARY_HEADER,
+} from "../packages/vinext/src/server/app-rsc-cache-busting.js";
+import {
+  cacheTag,
+  getAndClearActionRevalidationKind,
+  refresh,
+  revalidatePath,
+  revalidateTag,
+  unstable_cache,
+  updateTag,
+} from "../packages/vinext/src/shims/cache.js";
+import { registerCachedFunction } from "../packages/vinext/src/shims/cache-runtime.js";
+import {
+  getDataCacheHandler,
+  MemoryCacheHandler,
+  setDataCacheHandler,
+} from "../packages/vinext/src/shims/cache-handler.js";
+import {
+  createRequestContext,
+  runWithRequestContext,
+} from "../packages/vinext/src/shims/unified-request-context.js";
+import {
+  cookies,
+  getHeadersContext,
+  headersContextFromRequest,
+  setHeadersAccessPhase,
+  setHeadersContext,
+} from "../packages/vinext/src/shims/headers.js";
+import { withEnvVar } from "./env-test-helpers.js";
+import {
+  createRscOnErrorHandler as createRealRscOnErrorHandler,
+  PRODUCTION_SERVER_COMPONENTS_ERROR_MESSAGE,
+  sanitizeErrorForClient,
+} from "../packages/vinext/src/server/app-rsc-errors.js";
+
+type TestRoute = {
+  id: string;
+  page?: unknown;
+  params: readonly string[];
+  pattern: string;
+  rootParamNames?: readonly string[];
+  routeHandler?: unknown;
+  routeSegments?: readonly string[];
+  runtime?: "edge" | "experimental-edge" | "nodejs" | null;
+  /** Manifest lazy-module thunk; set when the route's page is not yet hydrated. */
+  __loadPage?: unknown;
+};
+
+type TestInterceptOptions = {
+  slot: string;
+};
+
+type TestTemporaryReferences = {
+  marker: string;
+};
+
+type TestActionModel = {
+  returnValue: unknown;
+  root?: string;
+};
+
+function registerTestServerReference(value: unknown, id: string | null): unknown {
+  if (
+    typeof value !== "function" ||
+    id === null ||
+    typeof Reflect.get(value, "$$id") === "string"
+  ) {
+    return value;
+  }
+  Object.defineProperty(value, "$$id", { configurable: true, value: id });
+  return value;
+}
+
+function getDirectTestActionId(body: FormData): string | null {
+  let actionId: string | null = null;
+  for (const key of body.keys()) {
+    if (key.startsWith("$ACTION_ID_")) actionId = key.slice("$ACTION_ID_".length);
+  }
+  return actionId;
+}
+
+function createMultipartRequest(headers?: HeadersInit): Request {
+  const requestHeaders = new Headers({
+    "content-type": "multipart/form-data; boundary=vinext",
+    host: "example.com",
+    origin: "https://example.com",
+  });
+  if (headers) {
+    for (const [key, value] of new Headers(headers)) {
+      requestHeaders.set(key, value);
+    }
+  }
+
+  return new Request("https://example.com/action-source", {
+    method: "POST",
+    headers: requestHeaders,
+  });
+}
+
+function createMultipartBodyRequest(body: FormData): Request {
+  return new Request("https://example.com/action-source", {
+    method: "POST",
+    body,
+    headers: {
+      host: "example.com",
+      origin: "https://example.com",
+    },
+  });
+}
+
+function createStreamBodyRequest(body: string, headers?: HeadersInit): Request {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(encoder.encode(body));
+      controller.close();
+    },
+  });
+  const init: RequestInit & { duplex: "half" } = {
+    method: "POST",
+    body: stream,
+    duplex: "half",
+    headers,
+  };
+
+  return new Request("https://example.com/action", init);
+}
+
+function createOptions(
+  overrides: Partial<HandleProgressiveServerActionRequestOptions> = {},
+): HandleProgressiveServerActionRequestOptions {
+  const options: HandleProgressiveServerActionRequestOptions = {
+    actionId: null,
+    allowedOrigins: [],
+    cleanPathname: "/action-source",
+    clearRequestContext() {},
+    contentType: "multipart/form-data; boundary=vinext",
+    createServerManifest() {
+      return {};
+    },
+    async decodeAction() {
+      return null;
+    },
+    async decodeFormState() {
+      return undefined;
+    },
+    getAndClearPendingCookies() {
+      return [];
+    },
+    getDraftModeCookieHeader() {
+      return null;
+    },
+    hasPageRoute: false,
+    maxActionBodySize: 1024,
+    middlewareHeaders: null,
+    async readFormDataWithLimit() {
+      return new FormData();
+    },
+    reportRequestError() {},
+    request: createMultipartRequest(),
+    routePattern: "/action-source",
+    setHeadersAccessPhase,
+    validateActionReferences() {
+      return true;
+    },
+    ...overrides,
+  };
+  const decodeAction = options.decodeAction;
+  options.decodeAction = async (body, serverManifest) =>
+    registerTestServerReference(
+      await decodeAction(body, serverManifest),
+      getDirectTestActionId(body),
+    );
+  return options;
+}
+
+type ProgressiveActionRequestResult = Awaited<
+  ReturnType<typeof handleProgressiveServerActionRequest>
+>;
+
+function requireProgressiveActionResponse(result: ProgressiveActionRequestResult): Response {
+  if (result instanceof Response) {
+    return result;
+  }
+
+  throw new Error(`Expected progressive action response, received ${result?.kind ?? "null"}`);
+}
+
+type CapturedActionModel = {
+  returnValue: { ok: boolean; data: unknown };
+  root?: string;
+};
+
+/**
+ * Captures the model passed to `renderToReadableStream` and exposes it as a
+ * non-nullable value, sidestepping the `let model: T | null` control-flow
+ * narrowing that trips the typechecker when the model is only assigned inside
+ * the callback.
+ */
+function captureRenderedModel() {
+  let captured: CapturedActionModel | null = null;
+  return {
+    capture: (model: {
+      returnValue: unknown;
+      root?: string;
+    }): ReadableStream<Uint8Array> | null => {
+      captured = model as CapturedActionModel;
+      return new Response("flight-error").body;
+    },
+    get: (): CapturedActionModel => {
+      if (!captured) {
+        throw new Error("renderToReadableStream was not called");
+      }
+      return captured;
+    },
+  };
+}
+
+function createFetchActionRequest(headers?: HeadersInit): Request {
+  const requestHeaders = new Headers({
+    "content-type": "text/plain;charset=UTF-8",
+    host: "example.com",
+    origin: "https://example.com",
+    "x-rsc-action": "action-id",
+  });
+  if (headers) {
+    for (const [key, value] of new Headers(headers)) {
+      requestHeaders.set(key, value);
+    }
+  }
+
+  return new Request("https://example.com/dashboard?tab=activity", {
+    body: "encoded-flight-body",
+    method: "POST",
+    headers: requestHeaders,
+  });
+}
+
+function createRscOptions(
+  overrides: Partial<
+    HandleServerActionRscRequestOptions<
+      string,
+      TestRoute,
+      TestInterceptOptions,
+      TestTemporaryReferences
+    >
+  > = {},
+): HandleServerActionRscRequestOptions<
+  string,
+  TestRoute,
+  TestInterceptOptions,
+  TestTemporaryReferences
+> {
+  const route: TestRoute = { id: "dashboard", page: {}, params: [], pattern: "/dashboard" };
+
+  const cleanPathname = overrides.cleanPathname ?? "/dashboard";
+  const matchRoute =
+    overrides.matchRoute ??
+    (() => ({
+      params: {},
+      route,
+    }));
+  const buildPageElement =
+    overrides.buildPageElement ??
+    (({ route: matchedRoute, params, interceptOpts }) =>
+      `${matchedRoute.id}:${JSON.stringify(params)}:${interceptOpts?.slot ?? "none"}`);
+
+  const options: HandleServerActionRscRequestOptions<
+    string,
+    TestRoute,
+    TestInterceptOptions,
+    TestTemporaryReferences
+  > = {
+    actionId: "action-id",
+    allowedOrigins: [],
+    buildPageElement,
+    clearRequestContext() {},
+    contentType: "text/plain;charset=UTF-8",
+    createNotFoundElement(routeId) {
+      return `not-found:${routeId}`;
+    },
+    createPayloadRouteId(pathname, interceptionContext) {
+      return `${pathname}:${interceptionContext ?? "none"}`;
+    },
+    createRscOnErrorHandler(_request, pathname, pattern) {
+      return () => `${pathname}:${pattern}`;
+    },
+    createServerManifest() {
+      return {};
+    },
+    createTemporaryReferenceSet() {
+      return { marker: "refs" };
+    },
+    decodeReply() {
+      return Promise.resolve([]);
+    },
+    draftModeSecret: "draft-secret",
+    async dispatchRedirectTargetRequest(request) {
+      const url = new URL(request.url);
+      const matched = matchRoute(url.pathname);
+      if (
+        !matched ||
+        matched.route.routeHandler ||
+        (!matched.route.page && !matched.route.__loadPage)
+      ) {
+        return new Response("not-rsc", {
+          status: 404,
+          headers: { "content-type": "text/plain" },
+        });
+      }
+      await overrides.ensureRouteLoaded?.(matched.route);
+      const root = buildPageElement({
+        cleanPathname: url.pathname,
+        interceptOpts: undefined,
+        isRscRequest: true,
+        mountedSlotsHeader: null,
+        params: matched.params,
+        request,
+        route: matched.route,
+        searchParams: url.searchParams,
+        renderMode: "navigation",
+      });
+      return new Response(JSON.stringify({ root, returnValue: { ok: true } }), {
+        headers: { "content-type": "text/x-component" },
+      });
+    },
+    findIntercept() {
+      return null;
+    },
+    getAndClearPendingCookies() {
+      return [];
+    },
+    getDraftModeCookieHeader() {
+      return null;
+    },
+    getRouteParamNames(matchedRoute) {
+      return matchedRoute.params;
+    },
+    getSourceRoute() {
+      return undefined;
+    },
+    isRscRequest: true,
+    loadServerAction() {
+      return Promise.resolve(() => "action-result");
+    },
+    maxActionBodySize: 1024,
+    maxActionBodySizeLabel: "1kb",
+    middlewareHeaders: null,
+    middlewareRequestHeaders: null,
+    middlewareStatus: null,
+    mountedSlotsHeader: null,
+    readBodyWithLimit() {
+      return Promise.resolve("encoded-flight-body");
+    },
+    readFormDataWithLimit() {
+      return Promise.resolve(new FormData());
+    },
+    renderToReadableStream(model) {
+      return new Response(JSON.stringify(model)).body;
+    },
+    reportRequestError() {},
+    request: createFetchActionRequest(),
+    sanitizeErrorForClient(error) {
+      return error;
+    },
+    searchParams: new URLSearchParams("tab=activity"),
+    setHeadersAccessPhase,
+    setNavigationContext() {},
+    toInterceptOpts(intercept) {
+      return { slot: intercept.slotKey };
+    },
+    validateActionReferences() {
+      return true;
+    },
+    ...overrides,
+    cleanPathname,
+    currentRouteMatch:
+      overrides.currentRouteMatch !== undefined
+        ? overrides.currentRouteMatch
+        : matchRoute(cleanPathname),
+    currentRoutePathname: overrides.currentRoutePathname ?? cleanPathname,
+    matchRoute,
+  };
+  const loadServerAction = options.loadServerAction;
+  options.loadServerAction = async (actionId) =>
+    registerTestServerReference(await loadServerAction(actionId), actionId);
+  return options;
+}
+
+describe("app server action execution helpers", () => {
+  // Ported from Next.js: test/e2e/app-dir/app-root-params-getters/simple.test.ts
+  // https://github.com/vercel/next.js/blob/v16.2.6/test/e2e/app-dir/app-root-params-getters/simple.test.ts
+  it("rejects next/root-params inside progressive server actions", async () => {
+    const formData = new FormData();
+    formData.set("$ACTION_ID_test", "");
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const result = await handleProgressiveServerActionRequest(
+      createOptions({
+        async decodeAction() {
+          return () => getRootParam("lang");
+        },
+        readFormDataWithLimit() {
+          return Promise.resolve(formData);
+        },
+      }),
+    );
+
+    const response = requireProgressiveActionResponse(result);
+    expect(response.status).toBe(500);
+    expect(await response.text()).toBe(
+      "Server action failed: `import('next/root-params').lang()` was used inside a Server Action. This is not supported. Functions from 'next/root-params' can only be called in the context of a route.",
+    );
+    errorSpy.mockRestore();
+  });
+
+  it("allows deferred root params reads after failed progressive actions", async () => {
+    const formData = new FormData();
+    formData.set("$ACTION_ID_test", "");
+    let deferredRead!: Promise<string | string[] | undefined>;
+    let releaseDeferred!: () => void;
+    const deferred = new Promise<void>((resolve) => {
+      releaseDeferred = resolve;
+    });
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await runWithRootParamsScope({ lang: "en" }, () =>
+      handleProgressiveServerActionRequest(
+        createOptions({
+          async decodeAction() {
+            return () => {
+              deferredRead = deferred.then(() => getRootParam("lang"));
+              throw new Error("action failed");
+            };
+          },
+          readFormDataWithLimit() {
+            return Promise.resolve(formData);
+          },
+        }),
+      ),
+    );
+
+    releaseDeferred();
+    await expect(deferredRead).resolves.toBe("en");
+    errorSpy.mockRestore();
+  });
+
+  it("reads streamed action text bodies and enforces the byte limit", async () => {
+    const validRequest = new Request("https://example.com/action", {
+      method: "POST",
+      body: "hello",
+    });
+
+    await expect(readActionBodyWithLimit(validRequest, 5)).resolves.toBe("hello");
+
+    const oversizedRequest = createStreamBodyRequest("hello!");
+
+    await expect(readActionBodyWithLimit(oversizedRequest, 5)).rejects.toThrow(
+      "Request body too large",
+    );
+  });
+
+  it("rejects cloned streamed action text without waiting for the sibling branch", async () => {
+    const request = createStreamBodyRequest("hello!");
+    const sibling = request.clone();
+
+    await expect(readActionBodyWithLimit(request, 5)).rejects.toThrow("Request body too large");
+    await expect(sibling.text()).resolves.toBe("hello!");
+  });
+
+  it("reads multipart action form data and enforces the streamed byte limit", async () => {
+    const body = new FormData();
+    body.set("field", "value");
+    const validRequest = new Request("https://example.com/action", {
+      method: "POST",
+      body,
+    });
+
+    const formData = await readActionFormDataWithLimit(validRequest, 1024);
+    expect(formData.get("field")).toBe("value");
+
+    const oversizedRequest = createStreamBodyRequest("x".repeat(64), {
+      "content-type": validRequest.headers.get("content-type") ?? "",
+    });
+
+    await expect(readActionFormDataWithLimit(oversizedRequest, 16)).rejects.toThrow(
+      "Request body too large",
+    );
+  });
+
+  it("rejects cloned multipart bodies without waiting for the sibling branch", async () => {
+    const request = createStreamBodyRequest("x".repeat(64), {
+      "content-type": "multipart/form-data; boundary=vinext",
+    });
+    const sibling = request.clone();
+
+    await expect(readActionFormDataWithLimit(request, 16)).rejects.toThrow(
+      "Request body too large",
+    );
+    await expect(sibling.text()).resolves.toBe("x".repeat(64));
+  });
+
+  it("identifies progressive multipart server action submissions", () => {
+    expect(
+      isProgressiveServerActionRequest(
+        { method: "post" },
+        "multipart/form-data; boundary=vinext",
+        null,
+      ),
+    ).toBe(true);
+    expect(
+      isProgressiveServerActionRequest(
+        { method: "POST" },
+        "multipart/form-data; boundary=vinext",
+        "action-id",
+      ),
+    ).toBe(false);
+    expect(isProgressiveServerActionRequest({ method: "GET" }, "multipart/form-data", null)).toBe(
+      false,
+    );
+    expect(isProgressiveServerActionRequest({ method: "POST" }, "text/plain", null)).toBe(false);
+  });
+
+  it("returns null for non-progressive action requests", async () => {
+    const response = await handleProgressiveServerActionRequest(
+      createOptions({
+        actionId: "action-id",
+        decodeAction: vi.fn(),
+      }),
+    );
+
+    expect(response).toBeNull();
+  });
+
+  it("returns null for non-action multipart posts without consuming the original body", async () => {
+    const formData = new FormData();
+    formData.set("field", "value");
+    const request = createMultipartBodyRequest(formData);
+
+    const response = await handleProgressiveServerActionRequest(
+      createOptions({
+        contentType: request.headers.get("content-type") ?? "",
+        async decodeAction() {
+          return null;
+        },
+        readFormDataWithLimit(readRequest) {
+          return readRequest.formData();
+        },
+        request,
+      }),
+    );
+
+    expect(response).toBeNull();
+    expect((await request.formData()).get("field")).toBe("value");
+  });
+
+  it("routes bound progressive actions before decoding their modules", async () => {
+    const body = new FormData();
+    body.set("$ACTION_ID_earlier-action", "");
+    body.set("$ACTION_REF_1", "");
+    body.set("$ACTION_1:0", JSON.stringify({ id: "bound-action", bound: "$@1" }));
+    const decodeAction = vi.fn();
+    const forwardAction = vi.fn(async () => new Response("forwarded"));
+
+    const response = requireProgressiveActionResponse(
+      await handleProgressiveServerActionRequest(
+        createOptions({
+          decodeAction,
+          forwardAction,
+          readFormDataWithLimit: async () => body,
+        }),
+      ),
+    );
+
+    expect(await response.text()).toBe("forwarded");
+    expect(forwardAction).toHaveBeenCalledWith("bound-action");
+    expect(decodeAction).not.toHaveBeenCalled();
+  });
+
+  it("rejects outlined action metadata before decoding its module", async () => {
+    const body = new FormData();
+    body.set("$ACTION_REF_1", "");
+    body.set("$ACTION_1:0", JSON.stringify("$1"));
+    body.set("$ACTION_1:1", JSON.stringify({ id: "protected-action", bound: null }));
+    const decodeAction = vi.fn();
+    const forwardAction = vi.fn();
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      const response = requireProgressiveActionResponse(
+        await handleProgressiveServerActionRequest(
+          createOptions({
+            decodeAction,
+            forwardAction,
+            readFormDataWithLimit: async () => body,
+          }),
+        ),
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.headers.get("x-nextjs-action-not-found")).toBe("1");
+      expect(decodeAction).not.toHaveBeenCalled();
+      expect(forwardAction).not.toHaveBeenCalled();
+    } finally {
+      warning.mockRestore();
+    }
+  });
+
+  it("rejects an empty progressive action id before decoding", async () => {
+    const body = new FormData();
+    body.set("$ACTION_ID_", "");
+    const decodeAction = vi.fn();
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      const response = requireProgressiveActionResponse(
+        await handleProgressiveServerActionRequest(
+          createOptions({
+            decodeAction,
+            forwardAction: async () => null,
+            readFormDataWithLimit: async () => body,
+            validateActionReferences: (actionIds) => !actionIds.includes(""),
+          }),
+        ),
+      );
+
+      expect(response.status).toBe(404);
+      expect(decodeAction).not.toHaveBeenCalled();
+    } finally {
+      warning.mockRestore();
+    }
+  });
+
+  it("resolves bound server references through the route-scoped manifest", async () => {
+    const body = new FormData();
+    body.set("$ACTION_REF_1", "");
+    body.set("$ACTION_1:0", JSON.stringify({ id: "selected-action", bound: "$@1" }));
+    const action = vi.fn();
+    const validateActionReferences = vi.fn((actionIds: readonly string[]) =>
+      actionIds.every((actionId) => actionId === "selected-action"),
+    );
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    try {
+      const response = requireProgressiveActionResponse(
+        await handleProgressiveServerActionRequest(
+          createOptions({
+            createServerManifest: () =>
+              new Proxy({}, { get: (_target, id) => ({ id, name: "", chunks: [] }) }),
+            // React resolves the action and each bound `$h` reference with
+            // `serverManifest[id]`.
+            async decodeAction(_body, serverManifest) {
+              Reflect.get(serverManifest, "selected-action");
+              Reflect.get(serverManifest, "nested-action");
+              return action;
+            },
+            forwardAction: async () => null,
+            readFormDataWithLimit: async () => body,
+            validateActionReferences,
+          }),
+        ),
+      );
+
+      expect(response.status).toBe(500);
+      expect(validateActionReferences).toHaveBeenCalledWith(["nested-action"]);
+      expect(action).not.toHaveBeenCalled();
+    } finally {
+      error.mockRestore();
+    }
+  });
+
+  it("enforces content-length and stream body limits", async () => {
+    const clearContext = vi.fn();
+    const lengthResponse = requireProgressiveActionResponse(
+      await handleProgressiveServerActionRequest(
+        createOptions({
+          clearRequestContext: clearContext,
+          maxActionBodySize: 10,
+          request: createMultipartRequest({ "content-length": "11" }),
+        }),
+      ),
+    );
+
+    expect(lengthResponse.status).toBe(413);
+    expect(await lengthResponse.text()).toBe("Payload Too Large");
+    expect(clearContext).toHaveBeenCalledTimes(1);
+
+    const streamLimitResponse = requireProgressiveActionResponse(
+      await handleProgressiveServerActionRequest(
+        createOptions({
+          clearRequestContext: clearContext,
+          readFormDataWithLimit() {
+            throw new Error("Request body too large");
+          },
+        }),
+      ),
+    );
+
+    expect(streamLimitResponse.status).toBe(413);
+    expect(await streamLimitResponse.text()).toBe("Payload Too Large");
+    expect(clearContext).toHaveBeenCalledTimes(2);
+  });
+
+  // Issue #1828 — for fetch (client-invoked) actions, an oversized body must not
+  // be rejected with a bare 413. Next.js returns a 500 Flight response carrying
+  // the rejected action result so the nearest client error boundary catches it.
+  // We mirror that: status 500, RSC content-type, no page root in the model, the
+  // body-exceeded error embedded in returnValue, and the action never loaded.
+  it("renders a 500 Flight error for oversized fetch action bodies via content-length (#1828)", async () => {
+    const clearContext = vi.fn();
+    const loadServerAction = vi.fn();
+    const reportRequestError = vi.fn();
+    const renderedModel = captureRenderedModel();
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        clearRequestContext: clearContext,
+        loadServerAction,
+        maxActionBodySize: 10,
+        // Verbatim config string is used in the error message, not a value
+        // reconstructed from the byte count — matches upstream byte-for-byte.
+        maxActionBodySizeLabel: "2mb",
+        reportRequestError,
+        request: createFetchActionRequest({ "content-length": "11" }),
+        renderToReadableStream: renderedModel.capture,
+      }),
+    );
+
+    expect(response?.status).toBe(500);
+    expect(response?.headers.get("content-type")).toBe("text/x-component");
+    expect(loadServerAction).not.toHaveBeenCalled();
+    // The render's onError reports the rejected action result.
+    expect(reportRequestError).not.toHaveBeenCalled();
+    expect(renderedModel.get().root).toBeUndefined();
+    expect(renderedModel.get().returnValue.ok).toBe(false);
+    // Mirrors the upstream e2e log assertion: `Error: Body exceeded 2mb limit`.
+    await expect(renderedModel.get().returnValue.data).rejects.toThrow("Body exceeded 2mb limit");
+    // Stream consumed so clearRequestContext fires after the body drains.
+    await response?.text();
+    expect(clearContext).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders a 500 Flight error for oversized fetch action bodies via stream limit (#1828)", async () => {
+    const loadServerAction = vi.fn();
+    const renderedModel = captureRenderedModel();
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        loadServerAction,
+        readBodyWithLimit() {
+          throw new Error("Request body too large");
+        },
+        renderToReadableStream: renderedModel.capture,
+      }),
+    );
+
+    expect(response?.status).toBe(500);
+    expect(response?.headers.get("content-type")).toBe("text/x-component");
+    expect(loadServerAction).not.toHaveBeenCalled();
+    expect(renderedModel.get().returnValue.ok).toBe(false);
+    await expect(renderedModel.get().returnValue.data).rejects.toThrow("Body exceeded");
+  });
+
+  it("bounds chunked multipart bodies after resolving a valid action", async () => {
+    const loadServerAction = vi.fn(() => Promise.resolve(() => "ok"));
+    const renderedModel = captureRenderedModel();
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        contentType: "multipart/form-data; boundary=VINEXTDOS",
+        loadServerAction,
+        readFormDataWithLimit() {
+          throw new Error("Request body too large");
+        },
+        renderToReadableStream: renderedModel.capture,
+      }),
+    );
+
+    expect(response?.status).toBe(500);
+    expect(response?.headers.get("content-type")).toBe("text/x-component");
+    expect(loadServerAction).toHaveBeenCalledTimes(1);
+    expect(renderedModel.get().returnValue.ok).toBe(false);
+    await expect(renderedModel.get().returnValue.data).rejects.toThrow("Body exceeded");
+  });
+
+  it("rejects declared-oversized stale multipart actions before action lookup", async () => {
+    const loadServerAction = vi.fn();
+    const readFormDataWithLimit = vi.fn();
+    const renderedModel = captureRenderedModel();
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        actionId: "stale-action-id",
+        contentType: "multipart/form-data; boundary=VINEXTDOS",
+        loadServerAction,
+        maxActionBodySize: 10,
+        readFormDataWithLimit,
+        renderToReadableStream: renderedModel.capture,
+        request: createFetchActionRequest({
+          "content-length": "11",
+          "content-type": "multipart/form-data; boundary=VINEXTDOS",
+        }),
+      }),
+    );
+
+    expect(response?.status).toBe(500);
+    expect(loadServerAction).not.toHaveBeenCalled();
+    expect(readFormDataWithLimit).not.toHaveBeenCalled();
+    expect(renderedModel.get().returnValue.ok).toBe(false);
+  });
+
+  it("rejects malformed action payloads before decoding the action", async () => {
+    const formData = new FormData();
+    formData.set("0", '"$Q1"');
+    const decodeAction = vi.fn();
+
+    const response = requireProgressiveActionResponse(
+      await handleProgressiveServerActionRequest(
+        createOptions({
+          decodeAction,
+          readFormDataWithLimit() {
+            return Promise.resolve(formData);
+          },
+        }),
+      ),
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.text()).toBe("Invalid server action payload");
+    expect(decodeAction).not.toHaveBeenCalled();
+  });
+
+  it("clears pending cookies and revalidation state for rejected progressive payloads", async () => {
+    const formData = new FormData();
+    formData.set("0", '"$Q1:x"');
+    const getAndClearPendingCookies = vi.fn(() => ["session=stale"]);
+    const previousPhase = setHeadersAccessPhase("action");
+    await Promise.resolve(revalidatePath("/stale"));
+    setHeadersAccessPhase(previousPhase);
+
+    const response = requireProgressiveActionResponse(
+      await handleProgressiveServerActionRequest(
+        createOptions({
+          getAndClearPendingCookies,
+          readFormDataWithLimit() {
+            return Promise.resolve(formData);
+          },
+        }),
+      ),
+    );
+
+    expect(response.status).toBe(400);
+    expect(getAndClearPendingCookies).toHaveBeenCalledTimes(1);
+    expect(getAndClearActionRevalidationKind()).toBe(0);
+  });
+
+  it("executes decoded form actions and converts redirects into 303 responses", async () => {
+    const phaseCalls: string[] = [];
+    const clearContext = vi.fn();
+    const formData = new FormData();
+    formData.set("$ACTION_ID_test", "");
+
+    const response = requireProgressiveActionResponse(
+      await handleProgressiveServerActionRequest(
+        createOptions({
+          clearRequestContext: clearContext,
+          async decodeAction(body) {
+            expect(body).toBe(formData);
+            return () => {
+              throw { digest: "NEXT_REDIRECT;replace;%2Fresult%3Fok%3D1;307" };
+            };
+          },
+          getAndClearPendingCookies() {
+            return ["session=1; Path=/"];
+          },
+          getDraftModeCookieHeader() {
+            return "draft=1; Path=/";
+          },
+          middlewareHeaders: new Headers([["x-middleware", "present"]]),
+          readFormDataWithLimit() {
+            return Promise.resolve(formData);
+          },
+          setHeadersAccessPhase(phase) {
+            phaseCalls.push(phase);
+            return "render";
+          },
+        }),
+      ),
+    );
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe("https://example.com/result?ok=1");
+    expect(response.headers.get("x-middleware")).toBe("present");
+    expect(response.headers.getSetCookie()).toEqual(["session=1; Path=/", "draft=1; Path=/"]);
+    expect(phaseCalls).toEqual(["action", "render"]);
+    expect(clearContext).toHaveBeenCalledTimes(1);
+  });
+
+  // Mirrors Next.js' MutableRequestCookiesAdapter behaviour: multiple
+  // `cookies().set()` calls on the same name collapse to a single Set-Cookie
+  // header with the most recent value, while sets for different names each
+  // produce their own Set-Cookie line. See issue #1481 and
+  // packages/next/src/server/web/spec-extension/adapters/request-cookies.ts.
+  it("deduplicates pending Set-Cookie headers by name (last value wins) on action redirects", async () => {
+    const formData = new FormData();
+    formData.set("$ACTION_ID_test", "");
+
+    const response = requireProgressiveActionResponse(
+      await handleProgressiveServerActionRequest(
+        createOptions({
+          async decodeAction() {
+            return () => {
+              throw { digest: "NEXT_REDIRECT;replace;%2Fresult;307" };
+            };
+          },
+          getAndClearPendingCookies() {
+            // Three sets: foo (twice), bar (once). Next.js semantics collapse
+            // the two foo entries to the final "foo=2" value and emit one
+            // Set-Cookie per distinct name.
+            return ["foo=1; Path=/", "foo=2; Path=/; HttpOnly", "bar=3; Path=/"];
+          },
+          readFormDataWithLimit() {
+            return Promise.resolve(formData);
+          },
+        }),
+      ),
+    );
+
+    expect(response.status).toBe(303);
+    expect(response.headers.getSetCookie()).toEqual(["foo=2; Path=/; HttpOnly", "bar=3; Path=/"]);
+  });
+
+  // Same dedup contract for the RSC fetch-action path (used by progressive
+  // enhancement and client-invoked actions).
+  it("deduplicates pending Set-Cookie headers by name on fetch action responses", async () => {
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        getAndClearPendingCookies() {
+          return ["session=old; Path=/", "session=new; Path=/; HttpOnly", "lang=en; Path=/"];
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(response?.headers.getSetCookie()).toEqual([
+      "session=new; Path=/; HttpOnly",
+      "lang=en; Path=/",
+    ]);
+  });
+
+  it("deduplicates pending Set-Cookie headers by name on fetch action redirects", async () => {
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        loadServerAction() {
+          return Promise.resolve(() => {
+            throw { digest: "NEXT_REDIRECT;push;%2Fresult;307" };
+          });
+        },
+        getAndClearPendingCookies() {
+          return ["session=old; Path=/", "session=new; Path=/; HttpOnly", "lang=en; Path=/"];
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(303);
+    expect(response?.headers.getSetCookie()).toEqual([
+      "session=new; Path=/; HttpOnly",
+      "lang=en; Path=/",
+    ]);
+  });
+
+  // Regression for issue #1976 — the no-JS (progressive) NON-redirect form-state
+  // path must dedupe same-name Set-Cookie entries (last value wins), matching the
+  // redirect path above and the RSC paths. Before the fix it returned the raw
+  // pending-cookie array, so two `cookies().set("foo", ...)` calls emitted two
+  // Set-Cookie headers for "foo" — diverging from Next.js' name-keyed
+  // ResponseCookies (last-wins) behaviour.
+  it("deduplicates pending Set-Cookie headers by name on non-redirect form-state actions (#1976)", async () => {
+    const formData = new FormData();
+    formData.set("$ACTION_ID_test", "");
+
+    const result = await handleProgressiveServerActionRequest(
+      createOptions({
+        async decodeAction() {
+          return () => undefined;
+        },
+        getAndClearPendingCookies() {
+          // Two sets for "foo" (last wins) plus a distinct "bar".
+          return ["foo=1; Path=/", "foo=2; Path=/; HttpOnly", "bar=3; Path=/"];
+        },
+        readFormDataWithLimit() {
+          return Promise.resolve(formData);
+        },
+      }),
+    );
+
+    expect(result).toEqual({
+      kind: "form-state",
+      formState: null,
+      pendingCookies: ["foo=2; Path=/; HttpOnly", "bar=3; Path=/"],
+      draftCookie: null,
+      // Non-zero revalidation kind because cookies were mutated.
+      revalidationKind: 1,
+    });
+  });
+
+  // Regression for issue #1483 — no-JS form POST actions that set cookies but
+  // do not redirect must still surface those Set-Cookie headers (and the
+  // revalidation marker) on the rerender response. Before the fix, the
+  // pending cookies and draft-mode cookie set during action execution were
+  // silently dropped because the non-redirect path returned only the
+  // form-state and never read them out of the request scope.
+  it("captures pending cookies, draft cookie, and revalidation kind from non-redirect actions (#1483)", async () => {
+    const formData = new FormData();
+    formData.set("$ACTION_ID_test", "");
+    const phaseCalls: string[] = [];
+
+    const result = await handleProgressiveServerActionRequest(
+      createOptions({
+        async decodeAction() {
+          return () => undefined;
+        },
+        getAndClearPendingCookies: vi.fn(() => ["session=abc; Path=/", "theme=dark; Path=/"]),
+        getDraftModeCookieHeader: vi.fn(() => "__prerender_bypass=secret; Path=/"),
+        readFormDataWithLimit() {
+          return Promise.resolve(formData);
+        },
+        setHeadersAccessPhase(phase) {
+          phaseCalls.push(phase);
+          return "render";
+        },
+      }),
+    );
+
+    expect(result).toEqual({
+      kind: "form-state",
+      formState: null,
+      // Non-zero revalidation kind because cookies were mutated.
+      revalidationKind: 1,
+      pendingCookies: ["session=abc; Path=/", "theme=dark; Path=/"],
+      draftCookie: "__prerender_bypass=secret; Path=/",
+    });
+    // Headers access phase must still be flipped back after the action runs
+    // so the subsequent page rerender sees the regular render phase.
+    expect(phaseCalls).toEqual(["action", "render"]);
+  });
+
+  // Issue #1483 — when an action reads cookies but does not mutate them and
+  // doesn't redirect, the result should report a zero revalidation kind so the
+  // client router cache is not unnecessarily invalidated.
+  it("reports a zero revalidation kind when a non-redirect action does not mutate cookies (#1483)", async () => {
+    const formData = new FormData();
+    formData.set("$ACTION_ID_test", "");
+
+    const result = await handleProgressiveServerActionRequest(
+      createOptions({
+        async decodeAction() {
+          return () => undefined;
+        },
+        readFormDataWithLimit() {
+          return Promise.resolve(formData);
+        },
+      }),
+    );
+
+    expect(result).toEqual({
+      kind: "form-state",
+      formState: null,
+      pendingCookies: [],
+      draftCookie: null,
+      revalidationKind: 0,
+    });
+  });
+
+  it("returns decoded form state after successful non-redirect actions without consuming the original body", async () => {
+    const formData = new FormData();
+    formData.set("$ACTION_ID_test", "");
+    formData.set("field", "value");
+    const request = createMultipartBodyRequest(formData);
+    const formState = ["action-result", "key-path", "reference-id", 1] as never;
+    let actionRan = false;
+    let actionManifest: object | undefined;
+
+    const result = await handleProgressiveServerActionRequest(
+      createOptions({
+        contentType: request.headers.get("content-type") ?? "",
+        async decodeAction(_body, serverManifest) {
+          actionManifest = serverManifest;
+          return () => {
+            actionRan = true;
+            return { count: 1 };
+          };
+        },
+        async decodeFormState(actionResult, body, serverManifest) {
+          expect(actionResult).toEqual({ count: 1 });
+          expect(body.get("$ACTION_ID_test")).toBe("");
+          expect(body.get("field")).toBe("value");
+          // Form state decodes the bound references again, through the same scope.
+          expect(serverManifest).toBe(actionManifest);
+          expect(() => Reflect.get(serverManifest, "foreign-action")).toThrow();
+          return formState;
+        },
+        readFormDataWithLimit(readRequest) {
+          return readRequest.formData();
+        },
+        request,
+        validateActionReferences: (actionIds) => !actionIds.includes("foreign-action"),
+      }),
+    );
+
+    expect(result).toEqual({
+      kind: "form-state",
+      formState,
+      pendingCookies: [],
+      draftCookie: null,
+      revalidationKind: 0,
+    });
+    expect(actionRan).toBe(true);
+    expect((await request.formData()).get("field")).toBe("value");
+  });
+
+  it("passes HTTP fallback errors as actionError to be rendered by error boundaries", async () => {
+    for (const digest of ["NEXT_NOT_FOUND", "NEXT_HTTP_ERROR_FALLBACK;403"]) {
+      const clearContext = vi.fn();
+      const reportedErrors: unknown[] = [];
+
+      const result = await handleProgressiveServerActionRequest(
+        createOptions({
+          clearRequestContext: clearContext,
+          async decodeAction() {
+            return () => {
+              throw { digest };
+            };
+          },
+          reportRequestError(error) {
+            reportedErrors.push(error);
+          },
+        }),
+      );
+
+      expect(result).toEqual({
+        kind: "form-state",
+        formState: null,
+        actionError: { digest },
+        actionFailed: true,
+        pendingCookies: [],
+        draftCookie: null,
+        revalidationKind: 0,
+      });
+      expect(reportedErrors).toEqual([]);
+      expect(clearContext).not.toHaveBeenCalled(); // Let app-rsc-handler clear it after render
+    }
+  });
+
+  // Ported from Next.js: test/e2e/on-request-error/server-action-error/server-action-error.test.ts
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/on-request-error/server-action-error/server-action-error.test.ts
+  // Next.js rethrows the error and answers a plain 500 that still carries the
+  // action's cookies (reproduced against next@16.2.7 build/start).
+  it("answers a plain 500 with middleware headers and the action's cookies for action execution failures", async () => {
+    const reportRequestError = vi.fn();
+    const clearedCookies = vi.fn(() => ["session=1; Path=/"]);
+    const clearContext = vi.fn();
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const error = new Error("boom");
+    const result = await handleProgressiveServerActionRequest(
+      createOptions({
+        cleanPathname: "/action-source",
+        clearRequestContext: clearContext,
+        async decodeAction() {
+          return () => {
+            throw error;
+          };
+        },
+        getAndClearPendingCookies: clearedCookies,
+        middlewareHeaders: new Headers([
+          ["x-middleware-ran", "1"],
+          ["set-cookie", "mw=1; Path=/"],
+          ["cache-control", "public, max-age=60"],
+        ]),
+        reportRequestError,
+        routePattern: "/products/[id]",
+      }),
+    );
+
+    const response = requireProgressiveActionResponse(result);
+    expect(response.headers.get("x-middleware-ran")).toBe("1");
+    expect(response.status).toBe(500);
+    expect(response.headers.get("cache-control")).toBe(
+      "no-cache, no-store, max-age=0, must-revalidate",
+    );
+    expect(response.headers.getSetCookie()).toEqual(["mw=1; Path=/", "session=1; Path=/"]);
+    expect(await response.text()).toBe("Server action failed: boom");
+    expect(reportRequestError).toHaveBeenCalledWith(
+      error,
+      expect.objectContaining({ path: "/action-source", method: "POST" }),
+      {
+        routerKind: "App Router",
+        routePath: "/products/[id]",
+        routeType: "action",
+        renderSource: "react-server-components-payload",
+        revalidateReason: undefined,
+      },
+    );
+    expect(clearedCookies).toHaveBeenCalledTimes(1);
+    expect(clearContext).toHaveBeenCalledTimes(1);
+
+    errorSpy.mockRestore();
+  });
+
+  it("answers a plain 500 for falsy action execution failures", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    try {
+      const result = await handleProgressiveServerActionRequest(
+        createOptions({
+          async decodeAction() {
+            return () => {
+              throw 0;
+            };
+          },
+        }),
+      );
+
+      const response = requireProgressiveActionResponse(result);
+      expect(response.status).toBe(500);
+      expect(await response.text()).toBe("Server action failed: 0");
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
+
+  // Ported from Next.js: test/e2e/app-dir/no-server-actions/no-server-actions.test.ts
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/no-server-actions/no-server-actions.test.ts
+  it("returns the action-not-found response for progressive action decode misses", async () => {
+    const reportedErrors: unknown[] = [];
+    const clearContext = vi.fn();
+
+    const response = requireProgressiveActionResponse(
+      await handleProgressiveServerActionRequest(
+        createOptions({
+          clearRequestContext: clearContext,
+          async decodeAction() {
+            throw new Error(
+              "Failed to find Server Action. This request might be from an older or newer deployment.\nRead more: https://nextjs.org/docs/messages/failed-to-find-server-action",
+            );
+          },
+          reportRequestError(error) {
+            reportedErrors.push(error);
+          },
+        }),
+      ),
+    );
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("x-nextjs-action-not-found")).toBe("1");
+    expect(await response.text()).toBe("Server action not found.");
+    expect(reportedErrors).toEqual([]);
+    expect(clearContext).toHaveBeenCalledTimes(1);
+  });
+
+  // The progressive (MPA / no-JS form POST) path also needs to recognise the
+  // prod-build "server reference not found" shape thrown by
+  // `@vitejs/plugin-rsc` when the referenced action id isn't in the built
+  // manifest, including when the build has no server actions at all.
+  it("returns action-not-found when the prod build has no matching reference on a progressive action", async () => {
+    const response = requireProgressiveActionResponse(
+      await handleProgressiveServerActionRequest(
+        createOptions({
+          async decodeAction() {
+            throw new Error("server reference not found 'abc123'");
+          },
+        }),
+      ),
+    );
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("x-nextjs-action-not-found")).toBe("1");
+    expect(await response.text()).toBe("Server action not found.");
+  });
+
+  it("returns action-not-found for progressive decode misses that include an action id", async () => {
+    const response = requireProgressiveActionResponse(
+      await handleProgressiveServerActionRequest(
+        createOptions({
+          async decodeAction() {
+            throw new Error(
+              'Failed to find Server Action "stale-action-id". This request might be from an older or newer deployment.\nRead more: https://nextjs.org/docs/messages/failed-to-find-server-action',
+            );
+          },
+        }),
+      ),
+    );
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("x-nextjs-action-not-found")).toBe("1");
+  });
+
+  // Ported from Next.js: test/e2e/app-dir/no-server-actions/no-server-actions.test.ts
+  // ("should error when triggering an MPA action on an app with no server actions")
+  //
+  // A multipart form POST to a *page* route that decodes to no action at all
+  // (e.g. the build has no server actions, so `decodeAction` returns null
+  // rather than throwing) must surface Next.js' 404 + action-not-found, not
+  // fall through to a 200 page render. The fetch-action variant of this case
+  // (handled via the `Next-Action` header) already worked; the MPA/form-POST
+  // variant did not. See issue #1340.
+  it("returns action-not-found when an MPA action targets a page with no server actions", async () => {
+    const clearContext = vi.fn();
+    const reportedErrors: unknown[] = [];
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      const response = requireProgressiveActionResponse(
+        await handleProgressiveServerActionRequest(
+          createOptions({
+            clearRequestContext: clearContext,
+            hasPageRoute: true,
+            async decodeAction() {
+              return null;
+            },
+            reportRequestError(error) {
+              reportedErrors.push(error);
+            },
+          }),
+        ),
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.headers.get("x-nextjs-action-not-found")).toBe("1");
+      expect(await response.text()).toBe("Server action not found.");
+      expect(reportedErrors).toEqual([]);
+      expect(clearContext).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          "Failed to find Server Action. This request might be from an older or newer deployment.",
+        ),
+      );
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  // Multipart POSTs without a page match that decode to no action fall
+  // through to the caller's normal dispatch rather than 404. The page
+  // distinction comes from the caller (`hasPageRoute`).
+  it("falls through for multipart posts that decode to no action on a non-page route", async () => {
+    const response = await handleProgressiveServerActionRequest(
+      createOptions({
+        hasPageRoute: false,
+        async decodeAction() {
+          return null;
+        },
+      }),
+    );
+
+    expect(response).toBeNull();
+  });
+
+  it("returns null for non-fetch RSC action requests", async () => {
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        actionId: null,
+        loadServerAction: vi.fn(),
+      }),
+    );
+
+    expect(response).toBeNull();
+  });
+
+  it("executes fetch actions and returns a rerendered RSC payload", async () => {
+    const phaseCalls: string[] = [];
+    const navigationContexts: Array<{
+      params: Record<string, string | string[]>;
+      pathname: string;
+    }> = [];
+    const temporaryReferences = { marker: "test-refs" };
+    let renderedModel: TestActionModel | null = null;
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        createTemporaryReferenceSet() {
+          return temporaryReferences;
+        },
+        decodeReply(body, _serverManifest, options) {
+          expect(body).toBe("encoded-flight-body");
+          expect(options.temporaryReferences).toBe(temporaryReferences);
+          return Promise.resolve(["first", "second"]);
+        },
+        getAndClearPendingCookies() {
+          return ["action=1; Path=/"];
+        },
+        getDraftModeCookieHeader() {
+          return "draft=1; Path=/";
+        },
+        loadServerAction(actionId) {
+          expect(actionId).toBe("action-id");
+          return Promise.resolve(
+            (first: unknown, second: unknown) => `${String(first)}:${String(second)}`,
+          );
+        },
+        middlewareHeaders: new Headers([["x-middleware", "present"]]),
+        renderToReadableStream(model, options) {
+          renderedModel = model;
+          expect(options.temporaryReferences).toBe(temporaryReferences);
+          return new Response("flight-payload").body;
+        },
+        setHeadersAccessPhase(phase) {
+          phaseCalls.push(phase);
+          return "render";
+        },
+        setNavigationContext(context) {
+          navigationContexts.push({
+            params: context.params,
+            pathname: context.pathname,
+          });
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("content-type")).toBe("text/x-component");
+    expect(response?.headers.get("vary")).toBe(VINEXT_RSC_VARY_HEADER);
+    expect(response?.headers.get("x-middleware")).toBe("present");
+    expect(response?.headers.getSetCookie()).toEqual(["action=1; Path=/", "draft=1; Path=/"]);
+    expect(await response?.text()).toBe("flight-payload");
+    expect(renderedModel).toEqual({
+      root: "dashboard:{}:none",
+      returnValue: { ok: true, data: "first:second" },
+    });
+    expect(phaseCalls).toEqual(["action", "render"]);
+    expect(navigationContexts).toEqual([{ params: {}, pathname: "/dashboard" }]);
+  });
+
+  // Ported from Next.js: test/e2e/app-dir/app-root-params-getters/simple.test.ts
+  // https://github.com/vercel/next.js/blob/v16.2.6/test/e2e/app-dir/app-root-params-getters/simple.test.ts
+  it("rejects next/root-params inside fetch server actions", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const buildPageElement = vi.fn(() => "should-not-render");
+    let renderedModel: TestActionModel | null = null;
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        buildPageElement,
+        decodeReply() {
+          return Promise.resolve([]);
+        },
+        loadServerAction() {
+          return Promise.resolve(() => getRootParam("lang"));
+        },
+        renderToReadableStream(model) {
+          renderedModel = model;
+          return new Response("action-error-flight").body;
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(500);
+    expect(buildPageElement).not.toHaveBeenCalled();
+    expect(renderedModel).toEqual({
+      returnValue: expect.objectContaining({ ok: false }),
+    });
+    errorSpy.mockRestore();
+  });
+
+  // Ported from Next.js: test/e2e/on-request-error/server-action-error/server-action-error.test.ts
+  // https://github.com/vercel/next.js/blob/v16.2.7/test/e2e/on-request-error/server-action-error/server-action-error.test.ts
+  it("reports a production fetch action failure once, through the render of its rejected result", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const error = new Error("connect postgres://admin:s3cret@10.0.0.5:5432/prod failed");
+      const reportRequestError = vi.fn();
+      let rejection: Promise<unknown> | undefined;
+
+      const response = await withEnvVar("NODE_ENV", "production", () =>
+        handleServerActionRscRequest(
+          createRscOptions({
+            createRscOnErrorHandler(request, pathname, routePath, overrides) {
+              return createRealRscOnErrorHandler({
+                errorContext: {
+                  routerKind: "App Router",
+                  routePath,
+                  routeType: overrides?.routeType ?? "render",
+                  renderSource: overrides?.renderSource,
+                  revalidateReason: undefined,
+                },
+                nodeEnv: "production",
+                reportRequestError,
+                requestInfo: { path: pathname, method: request.method, headers: {} },
+              });
+            },
+            loadServerAction() {
+              return Promise.resolve(() => {
+                throw error;
+              });
+            },
+            // Like React's Flight render, hand the rejection to onError.
+            renderToReadableStream(model, { onError }) {
+              rejection = (model.returnValue.data as Promise<never>).catch((reason) => ({
+                digest: onError?.(reason),
+                reason,
+              }));
+              return new Response("action-error-flight").body;
+            },
+            sanitizeErrorForClient(thrown) {
+              return sanitizeErrorForClient(thrown, "production");
+            },
+          }),
+        ),
+      );
+
+      expect(response?.status).toBe(500);
+      const { digest, reason } = (await rejection) as { digest: unknown; reason: unknown };
+      expect(reason).toBeInstanceOf(Error);
+      expect((reason as Error).message).toBe(PRODUCTION_SERVER_COMPONENTS_ERROR_MESSAGE);
+      expect(digest).toEqual(expect.any(String));
+      expect(digest).toBe((reason as { digest?: unknown }).digest);
+      expect(reportRequestError).toHaveBeenCalledTimes(1);
+      expect(reportRequestError).toHaveBeenCalledWith(
+        error,
+        expect.objectContaining({ path: "/dashboard", method: "POST" }),
+        expect.objectContaining({
+          routeType: "action",
+          renderSource: "react-server-components-payload",
+        }),
+      );
+      expect(errorSpy).toHaveBeenCalledWith("[vinext] Server action error:", error);
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
+
+  it("logs a production fetch action that throws a string under VINEXT_QUIET, as it isn't reported", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      await withEnvVar("VINEXT_QUIET", "1", () =>
+        withEnvVar("NODE_ENV", "production", () =>
+          handleServerActionRscRequest(
+            createRscOptions({
+              loadServerAction() {
+                return Promise.resolve(() => {
+                  throw "string failure";
+                });
+              },
+            }),
+          ),
+        ),
+      );
+
+      expect(errorSpy).toHaveBeenCalledWith("[vinext] Server action error:", "string failure");
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
+
+  it("logs a development fetch action failure that already has a digest", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      // The render's onError does not log errors that already have a digest.
+      const thrown = Object.assign(new Error("digested"), { digest: "custom" });
+      await handleServerActionRscRequest(
+        createRscOptions({
+          loadServerAction() {
+            return Promise.resolve(() => {
+              throw thrown;
+            });
+          },
+        }),
+      );
+
+      expect(errorSpy).toHaveBeenCalledTimes(1);
+      expect(errorSpy).toHaveBeenCalledWith("[vinext] Server action error:", thrown);
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
+
+  // Ported from Next.js: packages/next/src/lib/is-error.ts getProperError()
+  it.each([
+    [0, "0"],
+    [null, "null"],
+    [undefined, "undefined"],
+    [{ code: "DB_CONNECTION_FAILED" }, '{"code":"DB_CONNECTION_FAILED"}'],
+  ])(
+    "reports a development fetch action that throws %j once, as an Error",
+    async (thrown, message) => {
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      try {
+        const reportRequestError = vi.fn();
+        let rejection: Promise<unknown> | undefined;
+
+        await handleServerActionRscRequest(
+          createRscOptions({
+            createRscOnErrorHandler(request, pathname, routePath, overrides) {
+              return createRealRscOnErrorHandler({
+                errorContext: {
+                  routerKind: "App Router",
+                  routePath,
+                  routeType: overrides?.routeType ?? "render",
+                  renderSource: overrides?.renderSource,
+                  revalidateReason: undefined,
+                },
+                nodeEnv: "development",
+                reportRequestError,
+                requestInfo: { path: pathname, method: request.method, headers: {} },
+              });
+            },
+            loadServerAction() {
+              return Promise.resolve(() => {
+                throw thrown;
+              });
+            },
+            // Like React's Flight render, hand the rejection to onError.
+            renderToReadableStream(model, { onError }) {
+              rejection = (model.returnValue.data as Promise<never>).catch((reason) => {
+                onError?.(reason);
+                return reason;
+              });
+              return new Response("action-error-flight").body;
+            },
+          }),
+        );
+
+        // As in Next.js, the original value is rejected, and reported as an Error.
+        expect(await rejection).toBe(thrown);
+        expect(reportRequestError).toHaveBeenCalledTimes(1);
+        expect(reportRequestError).toHaveBeenCalledWith(
+          expect.objectContaining({ message }),
+          expect.objectContaining({ method: "POST" }),
+          expect.objectContaining({ routeType: "action" }),
+        );
+        expect(errorSpy).toHaveBeenCalledTimes(1);
+      } finally {
+        errorSpy.mockRestore();
+      }
+    },
+  );
+
+  it("rerenders the page for failed fetch actions that revalidate", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const buildPageElement = vi.fn(() => "rerendered-page");
+    let renderedModel: TestActionModel | null = null;
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        buildPageElement,
+        getAndClearPendingCookies() {
+          return ["action=1; Path=/"];
+        },
+        loadServerAction() {
+          return Promise.resolve(() => {
+            throw new Error("action failed");
+          });
+        },
+        renderToReadableStream(model) {
+          renderedModel = model;
+          return new Response("action-error-flight").body;
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(500);
+    expect(buildPageElement).toHaveBeenCalledOnce();
+    expect(renderedModel).toEqual({
+      root: "rerendered-page",
+      returnValue: expect.objectContaining({ ok: false }),
+    });
+    expect(response?.headers.get("x-action-revalidated")).toBe("1");
+    errorSpy.mockRestore();
+  });
+
+  it("preserves an interception-only source tree during an action revalidation rerender", async () => {
+    const sourceRoute: TestRoute = {
+      id: "feed-recent",
+      page: {},
+      params: ["locale", "tab"],
+      pattern: "/:locale/feed/:tab",
+    };
+    const sourceParams = { locale: "en", tab: "recent" };
+    const buildPageElement = vi.fn(
+      ({
+        route,
+        params,
+        interceptOpts,
+      }: Parameters<
+        HandleServerActionRscRequestOptions<
+          string,
+          TestRoute,
+          TestInterceptOptions,
+          TestTemporaryReferences
+        >["buildPageElement"]
+      >[0]) => `${route.id}:${JSON.stringify(params)}:${interceptOpts?.slot ?? "none"}`,
+    );
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        buildPageElement,
+        cleanPathname: "/photos/42",
+        currentRouteMatch: { params: sourceParams, route: sourceRoute },
+        currentRoutePathname: "/photos/42",
+        findIntercept() {
+          return {
+            matchedParams: { locale: "en", photoId: "42" },
+            sourceMatchedParams: sourceParams,
+            page: { default: "modal-photo" },
+            slotKey: "modal",
+            sourceRouteIndex: 0,
+          };
+        },
+        getSourceRoute() {
+          return sourceRoute;
+        },
+        loadServerAction() {
+          return Promise.resolve(async () => {
+            await Promise.resolve(revalidatePath("/photos/42"));
+            return "revalidated";
+          });
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("x-action-revalidated")).toBe("1");
+    expect(buildPageElement).toHaveBeenCalledWith(
+      expect.objectContaining({
+        interceptOpts: { slot: "modal" },
+        params: sourceParams,
+        route: sourceRoute,
+      }),
+    );
+    await expect(response?.json()).resolves.toMatchObject({
+      root: 'feed-recent:{"locale":"en","tab":"recent"}:modal',
+      returnValue: { data: "revalidated", ok: true },
+    });
+  });
+
+  it("allows deferred root params reads after failed fetch actions", async () => {
+    let deferredRead!: Promise<string | string[] | undefined>;
+    let releaseDeferred!: () => void;
+    const deferred = new Promise<void>((resolve) => {
+      releaseDeferred = resolve;
+    });
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await runWithRootParamsScope({ lang: "en" }, () =>
+      handleServerActionRscRequest(
+        createRscOptions({
+          loadServerAction() {
+            return Promise.resolve(() => {
+              deferredRead = deferred.then(() => getRootParam("lang"));
+              throw new Error("action failed");
+            });
+          },
+        }),
+      ),
+    );
+
+    releaseDeferred();
+    await expect(deferredRead).resolves.toBe("en");
+    errorSpy.mockRestore();
+  });
+
+  it("allows deferred root params reads after external action redirects", async () => {
+    let deferredRead!: Promise<string | string[] | undefined>;
+    let releaseDeferred!: () => void;
+    const deferred = new Promise<void>((resolve) => {
+      releaseDeferred = resolve;
+    });
+
+    await runWithRootParamsScope({ lang: "en" }, () =>
+      handleServerActionRscRequest(
+        createRscOptions({
+          loadServerAction() {
+            return Promise.resolve(() => {
+              deferredRead = deferred.then(() => getRootParam("lang"));
+              redirect("https://other.example/target");
+            });
+          },
+        }),
+      ),
+    );
+
+    releaseDeferred();
+    await expect(deferredRead).resolves.toBe("en");
+  });
+
+  // Ported from Next.js: test/e2e/app-dir/app-root-params-getters/simple.test.ts
+  // https://github.com/vercel/next.js/blob/v16.2.6/test/e2e/app-dir/app-root-params-getters/simple.test.ts
+  it("allows root params during the rerender after a successful fetch action", async () => {
+    let pageParam!: Promise<string | string[] | undefined>;
+    let metadataParam!: Promise<string | string[] | undefined>;
+    const buildPageElement = vi.fn(() => {
+      pageParam = getRootParam("lang");
+      metadataParam = getRootParam("lang");
+      return "rerendered-page";
+    });
+    const renderToReadableStream = vi.fn(
+      (model: TestActionModel) => new Response(JSON.stringify(model)).body,
+    );
+    const createRscOnErrorHandler = vi.fn(() => () => undefined);
+
+    const response = await runWithRootParamsScope({ lang: "en" }, () =>
+      handleServerActionRscRequest(
+        createRscOptions({
+          buildPageElement,
+          createRscOnErrorHandler,
+          loadServerAction() {
+            return Promise.resolve(async () => {
+              await Promise.resolve(revalidatePath("/dashboard"));
+              return "updated";
+            });
+          },
+          renderToReadableStream,
+        }),
+      ),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(buildPageElement).toHaveBeenCalledOnce();
+    await expect(pageParam).resolves.toBe("en");
+    await expect(metadataParam).resolves.toBe("en");
+    expect(JSON.parse(await response!.text())).toEqual({
+      root: "rerendered-page",
+      returnValue: { ok: true, data: "updated" },
+    });
+    expect(createRscOnErrorHandler).toHaveBeenCalledWith(
+      expect.any(Request),
+      "/dashboard",
+      "/dashboard",
+      {
+        renderSource: "react-server-components-payload",
+        routeType: "action",
+      },
+    );
+  });
+
+  it("allows deferred post-action render work to read root params", async () => {
+    let deferredRead!: Promise<string | string[] | undefined>;
+    let releaseDeferred!: () => void;
+    const deferred = new Promise<void>((resolve) => {
+      releaseDeferred = resolve;
+    });
+
+    await runWithRootParamsScope({ lang: "en" }, () =>
+      handleServerActionRscRequest(
+        createRscOptions({
+          loadServerAction() {
+            return Promise.resolve(async () => {
+              deferredRead = deferred.then(() => getRootParam("lang"));
+              await Promise.resolve(revalidatePath("/dashboard"));
+              return "updated";
+            });
+          },
+        }),
+      ),
+    );
+
+    releaseDeferred();
+    await expect(deferredRead).resolves.toBe("en");
+  });
+
+  it("skips page rerendering for fetch actions that do not revalidate", async () => {
+    let deferredRead!: Promise<string | string[] | undefined>;
+    let releaseDeferred!: () => void;
+    const deferred = new Promise<void>((resolve) => {
+      releaseDeferred = resolve;
+    });
+    const buildPageElement = vi.fn(() => "dashboard:{}:none");
+    const setNavigationContext = vi.fn();
+    const renderToReadableStream = vi.fn(
+      (model: TestActionModel) => new Response(JSON.stringify(model)).body,
+    );
+    const createRscOnErrorHandler = vi.fn(() => () => undefined);
+
+    await withEnvVar("__VINEXT_RSC_COMPATIBILITY_ID", "compat-action", async () => {
+      const response = await handleServerActionRscRequest(
+        createRscOptions({
+          buildPageElement,
+          createRscOnErrorHandler,
+          loadServerAction() {
+            return Promise.resolve(() => {
+              deferredRead = deferred.then(() => getRootParam("lang"));
+              return "action-result";
+            });
+          },
+          middlewareHeaders: new Headers([[VINEXT_RSC_COMPATIBILITY_ID_HEADER, "spoofed-compat"]]),
+          renderToReadableStream,
+          setNavigationContext,
+        }),
+      );
+
+      expect(response?.status).toBe(200);
+      expect(response?.headers.get("content-type")).toBe("text/x-component");
+      expect(response?.headers.get(VINEXT_RSC_COMPATIBILITY_ID_HEADER)).toBe("compat-action");
+      expect(response?.headers.get("x-action-revalidated")).toBeNull();
+      expect(buildPageElement).not.toHaveBeenCalled();
+      expect(setNavigationContext).not.toHaveBeenCalled();
+      expect(createRscOnErrorHandler).toHaveBeenCalledWith(
+        expect.any(Request),
+        "/dashboard",
+        "/dashboard",
+        {
+          renderSource: "react-server-components-payload",
+          routeType: "action",
+        },
+      );
+
+      const model = JSON.parse(await response!.text()) as Partial<TestActionModel>;
+      expect(model.returnValue).toEqual({ ok: true, data: "action-result" });
+      expect(model).not.toHaveProperty("root");
+
+      releaseDeferred();
+      await expect(deferredRead).rejects.toThrow("was used inside a Server Action");
+    });
+  });
+
+  // Mirrors Next.js' action revalidation header contract:
+  // packages/next/src/server/app-render/action-handler.ts addRevalidationHeader()
+  // https://github.com/vercel/next.js/blob/canary/packages/next/src/server/app-render/action-handler.ts
+  it("emits x-action-revalidated when a fetch action revalidates a path", async () => {
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        loadServerAction() {
+          return Promise.resolve(async () => {
+            await Promise.resolve(revalidatePath("/dashboard"));
+            return "revalidated";
+          });
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("x-action-revalidated")).toBe("1");
+  });
+
+  it("sends the path and query an action re-render rendered with", async () => {
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        loadServerAction() {
+          return Promise.resolve(async () => {
+            await Promise.resolve(revalidatePath("/dashboard"));
+            return "revalidated";
+          });
+        },
+        // The query a rewrite resolved, not the one in the page URL.
+        searchParams: new URLSearchParams("q=rewritten value"),
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("X-Vinext-Rendered-Path-And-Search")).toBe(
+      encodeURIComponent("/dashboard?q=rewritten+value"),
+    );
+  });
+
+  it("renders same-origin action redirects as a single-pass Flight response", async () => {
+    // Ported from Next.js: test/e2e/app-dir/actions/app-action.test.ts
+    // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/actions/app-action.test.ts
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/redirect-target"));
+        },
+        matchRoute(pathname) {
+          if (pathname === "/redirect-target") {
+            return {
+              params: {},
+              route: { id: "redirect-target", page: {}, params: [], pattern: "/redirect-target" },
+            };
+          }
+          return {
+            params: {},
+            route: { id: "dashboard", page: {}, params: [], pattern: "/dashboard" },
+          };
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(303);
+    expect(response?.headers.get("x-action-redirect")).toBe("/redirect-target");
+    expect(JSON.parse(await response!.text())).toEqual({
+      root: "redirect-target:{}:none",
+      returnValue: { ok: true },
+    });
+  });
+
+  it("passes empty request APIs to force-static action rerender targets", async () => {
+    const buildInputs: Array<{
+      query: string;
+      header: string | null;
+      isForceStatic: boolean | undefined;
+    }> = [];
+    const targetRoute: TestRoute = {
+      id: "dashboard",
+      page: {},
+      params: [],
+      pattern: "/dashboard",
+    };
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        buildPageElement({ isForceStatic, searchParams }) {
+          buildInputs.push({
+            query: searchParams.toString(),
+            header: getHeadersContext()?.headers.get("x-request-value") ?? null,
+            isForceStatic,
+          });
+          return "force-static-target";
+        },
+        loadServerAction() {
+          return Promise.resolve(async () => {
+            await Promise.resolve(revalidatePath("/dashboard"));
+            return "revalidated";
+          });
+        },
+        matchRoute() {
+          return { params: {}, route: targetRoute };
+        },
+        request: createFetchActionRequest({ "x-request-value": "present" }),
+        resolveRouteDynamicConfig() {
+          return "force-static";
+        },
+        searchParams: new URLSearchParams("user=alice"),
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    // Client pages also read an empty query in the browser.
+    expect(buildInputs).toEqual([{ query: "", header: null, isForceStatic: true }]);
+  });
+
+  it("observes searchParams access for dynamic-error action rerender targets", async () => {
+    const buildInputs: Array<{
+      metadata: boolean | undefined;
+      page: boolean | undefined;
+      query: string;
+    }> = [];
+    const targetRoute: TestRoute = {
+      id: "dashboard",
+      page: {},
+      params: [],
+      pattern: "/dashboard",
+    };
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        buildPageElement({
+          observeMetadataSearchParamsAccess,
+          observePageSearchParamsAccess,
+          searchParams,
+        }) {
+          buildInputs.push({
+            metadata: observeMetadataSearchParamsAccess,
+            page: observePageSearchParamsAccess,
+            query: searchParams.toString(),
+          });
+          return "dynamic-error-target";
+        },
+        loadServerAction() {
+          return Promise.resolve(async () => {
+            await Promise.resolve(revalidatePath("/dashboard"));
+            return "revalidated";
+          });
+        },
+        matchRoute() {
+          return { params: {}, route: targetRoute };
+        },
+        resolveRouteDynamicConfig() {
+          return "error";
+        },
+        searchParams: new URLSearchParams("user=alice"),
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(buildInputs).toEqual([{ metadata: true, page: true, query: "user=alice" }]);
+  });
+
+  it("uses empty action request APIs for force-static targets in draft mode", async () => {
+    const buildInputs: Array<{ query: string; header: string | null }> = [];
+    const route: TestRoute = {
+      id: "dashboard",
+      page: {},
+      params: [],
+      pattern: "/dashboard",
+    };
+    const request = createFetchActionRequest({
+      cookie: "__prerender_bypass=draft-secret",
+      "x-request-value": "present",
+    });
+    setHeadersContext(headersContextFromRequest(request));
+    try {
+      const response = await handleServerActionRscRequest(
+        createRscOptions({
+          buildPageElement({ searchParams }) {
+            buildInputs.push({
+              query: searchParams.toString(),
+              header: getHeadersContext()?.headers.get("x-request-value") ?? null,
+            });
+            return "draft-target";
+          },
+          loadServerAction() {
+            return Promise.resolve(async () => {
+              await Promise.resolve(revalidatePath("/dashboard"));
+              return "revalidated";
+            });
+          },
+          matchRoute() {
+            return { params: {}, route };
+          },
+          request,
+          resolveRouteDynamicConfig() {
+            return "force-static";
+          },
+          searchParams: new URLSearchParams("user=alice"),
+        }),
+      );
+
+      expect(response?.status).toBe(200);
+      expect(buildInputs).toEqual([{ query: "", header: null }]);
+    } finally {
+      setHeadersContext(null);
+    }
+  });
+
+  it("dispatches internal action redirects as full-tree RSC GET requests", async () => {
+    let targetRequest: Request | null = null;
+    const actionRequest = createFetchActionRequest({
+      cookie: "session=1; deleted=stale",
+      "next-action": "action-id",
+      "x-vinext-mw-ctx": "action-path-context",
+    });
+    Object.defineProperty(actionRequest, "cf", { value: { country: "AU" }, enumerable: true });
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        async dispatchRedirectTargetRequest(request) {
+          targetRequest = request;
+          return new Response("target-flight", {
+            headers: {
+              "content-type": "text/x-component",
+              "x-target-pipeline": "1",
+            },
+          });
+        },
+        getAndClearPendingCookies() {
+          return ["theme=dark; Path=/", "deleted=; Path=/; Max-Age=0"];
+        },
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/redirect-target?from=action"));
+        },
+        request: actionRequest,
+      }),
+    );
+
+    expect(response?.status).toBe(303);
+    expect(response?.headers.get("x-action-redirect")).toBe("/redirect-target?from=action");
+    expect(response?.headers.get("x-target-pipeline")).toBe("1");
+    expect(await response?.text()).toBe("target-flight");
+    expect(targetRequest).not.toBeNull();
+    expect(targetRequest!.method).toBe("GET");
+    expect(new URL(targetRequest!.url).pathname).toBe("/redirect-target");
+    expect(new URL(targetRequest!.url).searchParams.get("from")).toBe("action");
+    expect(new URL(targetRequest!.url).searchParams.has("_rsc")).toBe(true);
+    expect(targetRequest!.headers.get("rsc")).toBe("1");
+    expect(targetRequest!.headers.get("next-action")).toBeNull();
+    expect(targetRequest!.headers.get("x-rsc-action")).toBeNull();
+    expect(targetRequest!.headers.get("next-router-state-tree")).toBeNull();
+    expect(targetRequest!.headers.get("x-vinext-mw-ctx")).toBeNull();
+    expect(targetRequest!.headers.get("cookie")).toBe("session=1; theme=dark");
+    expect(Reflect.get(targetRequest!, "cf")).toEqual({ country: "AU" });
+  });
+
+  it("forwards source config headers before middleware and keeps target precedence", async () => {
+    let targetRequest: Request | null = null;
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        async dispatchRedirectTargetRequest(request) {
+          targetRequest = request;
+          return new Response("target-flight", {
+            headers: {
+              "content-type": "text/x-component",
+              "x-collision": "target",
+              "x-target-only": "yes",
+            },
+          });
+        },
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/redirect-target"));
+        },
+        getAndClearPendingCookies() {
+          return ["source=action; Path=/", "action=1; Path=/"];
+        },
+        middlewareHeaders: new Headers({ accept: "application/custom" }),
+        sourceConfigHeaders: new Headers([
+          ["accept", "application/config"],
+          ["set-cookie", "config=1; Path=/"],
+          ["set-cookie", "source=config; Path=/"],
+          ["x-collision", "source"],
+          ["x-source-only", "yes"],
+        ]),
+      }),
+    );
+
+    expect(targetRequest).not.toBeNull();
+    expect(targetRequest!.headers.get("accept")).toBe("application/custom");
+    expect(targetRequest!.headers.get("cookie")).toBe("config=1; source=action; action=1");
+    expect(targetRequest!.headers.get("x-source-only")).toBe("yes");
+    expect(response?.headers.get("x-source-only")).toBe("yes");
+    expect(response?.headers.get("x-target-only")).toBe("yes");
+    expect(response?.headers.get("x-collision")).toBe("target");
+  });
+
+  it("falls back to a header-only redirect when internal target dispatch throws", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    errorSpy.mockClear();
+    const clearRequestContext = vi.fn();
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        clearRequestContext,
+        dispatchRedirectTargetRequest() {
+          return Promise.reject(new Error("target unavailable"));
+        },
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/redirect-target"));
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(303);
+    expect(response?.headers.get("x-action-redirect")).toBe("/redirect-target");
+    expect(response?.headers.get("content-type")).toBeNull();
+    expect(await response?.text()).toBe("");
+    expect(clearRequestContext).toHaveBeenCalledTimes(1);
+    expect(errorSpy).toHaveBeenCalledOnce();
+    errorSpy.mockRestore();
+  });
+
+  it("falls back to a header-only redirect for a malformed followed Location", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    errorSpy.mockClear();
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        dispatchRedirectTargetRequest() {
+          return Promise.resolve(
+            new Response(null, { status: 307, headers: { location: "http://[" } }),
+          );
+        },
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/redirect-target"));
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(303);
+    expect(response?.headers.get("x-action-redirect")).toBe("/redirect-target");
+    expect(response?.headers.get("content-type")).toBeNull();
+    expect(await response?.text()).toBe("");
+    expect(errorSpy).toHaveBeenCalledOnce();
+    errorSpy.mockRestore();
+  });
+
+  it.each(["../../admin", "/base/%2e%2e/admin", "https://example.com/admin"])(
+    "does not internally dispatch basePath escape %s",
+    async (target) => {
+      const dispatchRedirectTargetRequest = vi.fn(() =>
+        Promise.resolve(
+          new Response("should-not-dispatch", {
+            headers: { "content-type": "text/x-component" },
+          }),
+        ),
+      );
+      const response = await handleServerActionRscRequest(
+        createRscOptions({
+          basePath: "/base",
+          dispatchRedirectTargetRequest,
+          loadServerAction() {
+            return Promise.resolve(() => redirect(target));
+          },
+          request: new Request("https://example.com/base/account", {
+            body: "encoded-flight-body",
+            method: "POST",
+            headers: createFetchActionRequest().headers,
+          }),
+        }),
+      );
+
+      expect(response?.status).toBe(303);
+      expect(response?.headers.get("x-action-redirect")).toBe(target);
+      expect(await response?.text()).toBe("");
+      expect(dispatchRedirectTargetRequest).not.toHaveBeenCalled();
+    },
+  );
+
+  it("keeps both request contexts alive until the dispatched Flight body is consumed", async () => {
+    const clearRequestContext = vi.fn();
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        clearRequestContext,
+        async dispatchRedirectTargetRequest() {
+          return new Response(
+            new ReadableStream<Uint8Array>({
+              pull(controller) {
+                controller.enqueue(new TextEncoder().encode("streamed-target"));
+                controller.close();
+              },
+            }),
+            { headers: { "content-type": "text/x-component" } },
+          );
+        },
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/redirect-target"));
+        },
+      }),
+    );
+
+    expect(clearRequestContext).not.toHaveBeenCalled();
+    expect(await response?.text()).toBe("streamed-target");
+    expect(clearRequestContext).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to header-only redirects when the target is not an App route", async () => {
+    // Ported from Next.js: test/e2e/app-dir/actions/app-action-node-middleware.test.ts
+    // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/actions/app-action-node-middleware.test.ts
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/pages-target"));
+        },
+        matchRoute(pathname) {
+          if (pathname === "/pages-target") return null;
+          return {
+            params: {},
+            route: { id: "dashboard", page: {}, params: [], pattern: "/dashboard" },
+          };
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(303);
+    expect(response?.headers.get("x-action-redirect")).toBe("/pages-target");
+    expect(response?.headers.get("content-type")).toBeNull();
+    expect(response?.headers.get("vary")).toBeNull();
+    expect(await response?.text()).toBe("");
+  });
+
+  it("falls back to header-only redirects when the target is an App route handler", async () => {
+    const buildPageElement = vi.fn(() => "should-not-render");
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        buildPageElement,
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/api/logout"));
+        },
+        matchRoute(pathname) {
+          if (pathname === "/api/logout") {
+            return {
+              params: {},
+              route: {
+                id: "api-logout",
+                page: null,
+                params: [],
+                pattern: "/api/logout",
+                routeHandler: {},
+              },
+            };
+          }
+          return {
+            params: {},
+            route: { id: "dashboard", page: {}, params: [], pattern: "/dashboard" },
+          };
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(303);
+    expect(response?.headers.get("x-action-redirect")).toBe("/api/logout");
+    expect(response?.headers.get("content-type")).toBeNull();
+    expect(response?.headers.get("vary")).toBeNull();
+    expect(await response?.text()).toBe("");
+    expect(buildPageElement).not.toHaveBeenCalled();
+  });
+
+  it("falls back to header-only redirects when the target route has no page", async () => {
+    const buildPageElement = vi.fn(() => "should-not-render");
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        buildPageElement,
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/layout-only"));
+        },
+        matchRoute(pathname) {
+          if (pathname === "/layout-only") {
+            return {
+              params: {},
+              route: { id: "layout-only", params: [], pattern: "/layout-only" },
+            };
+          }
+          return {
+            params: {},
+            route: { id: "dashboard", page: {}, params: [], pattern: "/dashboard" },
+          };
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(303);
+    expect(response?.headers.get("x-action-redirect")).toBe("/layout-only");
+    expect(response?.headers.get("content-type")).toBeNull();
+    expect(response?.headers.get("vary")).toBeNull();
+    expect(await response?.text()).toBe("");
+    expect(buildPageElement).not.toHaveBeenCalled();
+  });
+
+  it("falls back to a header-only redirect when the target pipeline does not return Flight", async () => {
+    const buildPageElement = vi.fn(() => "should-not-render");
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        buildPageElement,
+        async dispatchRedirectTargetRequest() {
+          return new Response("unauthorized", {
+            status: 401,
+            headers: { "content-type": "text/plain" },
+          });
+        },
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/protected"));
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(303);
+    expect(response?.headers.get("x-action-redirect")).toBe("/protected");
+    expect(response?.headers.get("content-type")).toBeNull();
+    expect(await response?.text()).toBe("");
+    expect(buildPageElement).not.toHaveBeenCalled();
+  });
+
+  it("forwards effective action headers and cookies to the target pipeline", async () => {
+    let targetRequest: Request | null = null;
+    await handleServerActionRscRequest(
+      createRscOptions({
+        async dispatchRedirectTargetRequest(request) {
+          targetRequest = request;
+          return new Response("flight", { headers: { "content-type": "text/x-component" } });
+        },
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/redirect-target"));
+        },
+        middlewareHeaders: new Headers([
+          ["set-cookie", "session=; Max-Age=0"],
+          ["set-cookie", "csrf=rotated"],
+          ["set-cookie", "admin=1; Path=/account"],
+          ["set-cookie", "encoded=%2520; Path=/"],
+          ["x-action-auth-context", "member"],
+        ]),
+        middlewareRequestHeaders: new Headers({
+          "x-middleware-override-headers": "x-auth-context",
+          "x-middleware-request-x-auth-context": "sanitized",
+        }),
+        request: createFetchActionRequest({
+          cookie: "session=live; csrf=old; theme=dark",
+          "x-attacker-controlled": "forged",
+          "x-auth-context": "untrusted",
+        }),
+      }),
+    );
+
+    expect(targetRequest).not.toBeNull();
+    expect(targetRequest!.headers.get("cookie")).toBe("csrf=rotated; admin=1; encoded=%20");
+    expect(targetRequest!.headers.get("x-auth-context")).toBe("sanitized");
+    expect(targetRequest!.headers.get("x-attacker-controlled")).toBeNull();
+    expect(targetRequest!.headers.get("x-action-auth-context")).toBe("member");
+  });
+
+  it("forwards an empty Cookie header to the target pipeline", async () => {
+    let targetRequest: Request | null = null;
+    await handleServerActionRscRequest(
+      createRscOptions({
+        async dispatchRedirectTargetRequest(request) {
+          targetRequest = request;
+          return new Response("flight", { headers: { "content-type": "text/x-component" } });
+        },
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/redirect-target"));
+        },
+      }),
+    );
+
+    expect(targetRequest).not.toBeNull();
+    expect(targetRequest!.headers.has("cookie")).toBe(true);
+    expect(targetRequest!.headers.get("cookie")).toBe("");
+  });
+
+  it("collapses repeated response cookies before forwarding the target request", async () => {
+    let targetRequest: Request | null = null;
+    await handleServerActionRscRequest(
+      createRscOptions({
+        async dispatchRedirectTargetRequest(request) {
+          targetRequest = request;
+          return new Response("flight", { headers: { "content-type": "text/x-component" } });
+        },
+        getAndClearPendingCookies() {
+          return ["foo=new; Path=/"];
+        },
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/redirect-target"));
+        },
+        middlewareHeaders: new Headers({ "set-cookie": "foo=; Max-Age=0" }),
+        request: createFetchActionRequest({ cookie: "a=1; foo=old; b=2" }),
+      }),
+    );
+
+    expect(targetRequest).not.toBeNull();
+    expect(targetRequest!.headers.get("cookie")).toBe("a=1; foo=new; b=2");
+  });
+
+  it("does not retain a stale cookie when the second response-cookie decode fails", async () => {
+    let targetRequest: Request | null = null;
+    await handleServerActionRscRequest(
+      createRscOptions({
+        async dispatchRedirectTargetRequest(request) {
+          targetRequest = request;
+          return new Response("flight", { headers: { "content-type": "text/x-component" } });
+        },
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/redirect-target"));
+        },
+        middlewareHeaders: new Headers([
+          ["set-cookie", "session=%25bad; Path=/"],
+          ["set-cookie", "raw=%; Path=/"],
+        ]),
+        request: createFetchActionRequest({ cookie: "session=old; raw=old" }),
+      }),
+    );
+
+    expect(targetRequest).not.toBeNull();
+    expect(targetRequest!.headers.get("cookie")).toBe("session=%25bad; raw=%25");
+  });
+
+  // Next.js follows same-origin redirects from its internal target fetch. The
+  // in-process dispatcher must do the same so config and middleware redirects
+  // can still produce a single action response containing the final Flight.
+  it("follows same-origin target redirects through the internal dispatcher", async () => {
+    const paths: string[] = [];
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        async dispatchRedirectTargetRequest(request) {
+          const url = new URL(request.url);
+          paths.push(url.pathname);
+          if (url.pathname === "/redirect-source") {
+            return new Response(null, { status: 307, headers: { location: "/redirect-target" } });
+          }
+          return new Response("redirect-target-flight", {
+            headers: { "content-type": "text/x-component", "x-final-target": "1" },
+          });
+        },
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/redirect-source"));
+        },
+      }),
+    );
+
+    expect(paths).toEqual(["/redirect-source", "/redirect-target"]);
+    expect(response?.headers.get("x-action-redirect")).toBe("/redirect-source");
+    expect(response?.headers.get("x-final-target")).toBe("1");
+    expect(await response?.text()).toBe("redirect-target-flight");
+  });
+
+  it("keeps action protocol headers when merging target pipeline headers", async () => {
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/redirect-target"));
+        },
+        matchRoute(pathname) {
+          if (pathname === "/redirect-target") {
+            return {
+              params: {},
+              route: { id: "redirect-target", page: {}, params: [], pattern: "/redirect-target" },
+            };
+          }
+          return {
+            params: {},
+            route: { id: "dashboard", page: {}, params: [], pattern: "/dashboard" },
+          };
+        },
+        middlewareHeaders: new Headers({
+          "content-encoding": "br",
+          location: "/mw-location",
+          "content-type": "text/html",
+          "set-cookie": "source=1; Path=/",
+          vary: "x-source",
+          "x-action-redirect": "/mw-hijack",
+          "x-action-mw": "1",
+        }),
+        async dispatchRedirectTargetRequest() {
+          return new Response("flight", {
+            headers: {
+              "accept-encoding": "gzip",
+              connection: "close",
+              "content-encoding": "gzip",
+              "content-type": "text/x-component",
+              "content-length": "0",
+              "set-cookie": "target=1; Path=/",
+              "transfer-encoding": "chunked",
+              vary: "x-target",
+              "x-action-redirect": "/target-hijack",
+              "x-target-mw": "1",
+            },
+          });
+        },
+      }),
+    );
+
+    // The wrapper's protocol headers steer the action client: a Location on the
+    // 303 would make fetch follow it before the client reads x-action-redirect,
+    // a foreign Content-Type flips the client to a hard navigation, a stale
+    // Content-Length misframes the generated Flight stream, and
+    // x-action-redirect is the destination itself. Ordinary middleware headers
+    // must still come through.
+    expect(response?.status).toBe(303);
+    expect(response?.headers.get("x-action-redirect")).toBe("/redirect-target");
+    expect(response?.headers.get("location")).toBeNull();
+    expect(response?.headers.get("content-type")).toContain("text/x-component");
+    expect(response?.headers.get("accept-encoding")).toBeNull();
+    expect(response?.headers.get("connection")).toBeNull();
+    expect(response?.headers.get("content-encoding")).toBeNull();
+    expect(response?.headers.get("content-length")).toBeNull();
+    expect(response?.headers.getSetCookie()).toEqual(["source=1; Path=/"]);
+    expect(response?.headers.get("transfer-encoding")).toBeNull();
+    expect(response?.headers.get("vary")).toBe("x-target");
+    expect(response?.headers.get("x-action-mw")).toBe("1");
+    expect(response?.headers.get("x-target-mw")).toBe("1");
+  });
+
+  it("replaces a redirect-supplied _rsc value before target dispatch", async () => {
+    let targetRequest: Request | null = null;
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/redirect-target?_rsc=abc123&tab=x"));
+        },
+        matchRoute(pathname) {
+          if (pathname === "/redirect-target") {
+            return {
+              params: {},
+              route: { id: "redirect-target", page: {}, params: [], pattern: "/redirect-target" },
+            };
+          }
+          return {
+            params: {},
+            route: { id: "dashboard", page: {}, params: [], pattern: "/dashboard" },
+          };
+        },
+        async dispatchRedirectTargetRequest(request) {
+          targetRequest = request;
+          return new Response("flight", { headers: { "content-type": "text/x-component" } });
+        },
+      }),
+    );
+
+    // The real pipeline strips `_rsc` before middleware, so matchers keyed on
+    // it would branch differently for the synthetic request than for the
+    // navigation it stands in for. The client-facing redirect header keeps the
+    // verbatim URL — a diverted re-request goes through real validation.
+    expect(targetRequest).not.toBeNull();
+    const targetUrl = new URL(targetRequest!.url);
+    expect(targetUrl.searchParams.get("_rsc")).not.toBe("abc123");
+    expect(targetUrl.searchParams.get("tab")).toBe("x");
+    expect(response?.headers.get("x-action-redirect")).toBe("/redirect-target?_rsc=abc123&tab=x");
+  });
+
+  it("does not emit x-action-revalidated when a fetch action revalidates a tag with a profile", async () => {
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        loadServerAction() {
+          return Promise.resolve(async () => {
+            await Promise.resolve(revalidateTag("dashboard", "hours"));
+            return "revalidated";
+          });
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("x-action-revalidated")).toBeNull();
+  });
+
+  it("emits x-action-revalidated when a fetch action revalidates a tag with expire zero", async () => {
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        loadServerAction() {
+          return Promise.resolve(async () => {
+            await Promise.resolve(revalidateTag("dashboard", { expire: 0 }));
+            return "revalidated";
+          });
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("x-action-revalidated")).toBe("1");
+  });
+
+  // Covers the read-your-own-writes ordering asserted by Next.js:
+  // test/e2e/app-dir/resume-data-cache/resume-data-cache.test.ts
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/resume-data-cache/resume-data-cache.test.ts
+  it("finishes updateTag invalidation before rendering the action response", async () => {
+    const previousHandler = getDataCacheHandler();
+    let markInvalidationStarted!: () => void;
+    const invalidationStarted = new Promise<void>((resolve) => {
+      markInvalidationStarted = resolve;
+    });
+    let releaseInvalidation!: () => void;
+    const invalidationGate = new Promise<void>((resolve) => {
+      releaseInvalidation = resolve;
+    });
+    let invalidationFinished = false;
+    let markSameActionReadFinished!: () => void;
+    const sameActionReadFinished = new Promise<void>((resolve) => {
+      markSameActionReadFinished = resolve;
+    });
+    let sameActionValue: unknown;
+    let sameActionUseCacheValue: unknown;
+    const renderToReadableStream = vi.fn((model: TestActionModel) => {
+      expect(invalidationFinished).toBe(true);
+      return new Response(JSON.stringify(model)).body;
+    });
+    const cachedRead = unstable_cache(async () => "fresh", ["update-tag-read-your-own-writes"], {
+      tags: ["dashboard"],
+    });
+    const useCacheRead = registerCachedFunction(async () => {
+      cacheTag("dashboard");
+      return "fresh-use-cache";
+    }, "test:update-tag-read-your-own-writes");
+
+    setDataCacheHandler({
+      async get() {
+        return {
+          lastModified: Date.now(),
+          value: {
+            kind: "FETCH",
+            data: {
+              headers: {},
+              body: JSON.stringify({ v: "stale" }),
+              url: "unstable_cache:test",
+            },
+            tags: ["dashboard"],
+            revalidate: false,
+          },
+        };
+      },
+      async set() {},
+      async revalidateTag() {
+        markInvalidationStarted();
+        await invalidationGate;
+        invalidationFinished = true;
+      },
+    });
+
+    try {
+      const responsePromise = runWithRequestContext(createRequestContext(), () =>
+        handleServerActionRscRequest(
+          createRscOptions({
+            loadServerAction() {
+              return Promise.resolve(async () => {
+                expect(updateTag("dashboard")).toBeUndefined();
+                sameActionValue = await cachedRead();
+                sameActionUseCacheValue = await useCacheRead();
+                markSameActionReadFinished();
+                return "revalidated";
+              });
+            },
+            renderToReadableStream,
+          }),
+        ),
+      );
+
+      await invalidationStarted;
+      await sameActionReadFinished;
+      expect(sameActionValue).toBe("fresh");
+      expect(sameActionUseCacheValue).toBe("fresh-use-cache");
+      expect(renderToReadableStream).not.toHaveBeenCalled();
+      releaseInvalidation();
+
+      const response = await responsePromise;
+      expect(response?.status).toBe(200);
+      expect(renderToReadableStream).toHaveBeenCalledTimes(1);
+    } finally {
+      releaseInvalidation();
+      setDataCacheHandler(previousHandler);
+    }
+  });
+
+  // Ported from Next.js: test/e2e/app-dir/use-cache/use-cache.test.ts
+  // ("should not use stale caches in server actions that have revalidated").
+  // Next.js runs an action in its page's request store, whose implicit tags
+  // let a cache read inside the action observe the action's own revalidatePath().
+  it.each([
+    { kind: "fetch", pathname: "/dashboard" },
+    { kind: "progressive", pathname: "/action-source" },
+  ])(
+    "reads caches inside a $kind action with its page's implicit tags",
+    async ({ kind, pathname }) => {
+      const previousHandler = getDataCacheHandler();
+      const memoryHandler = new MemoryCacheHandler();
+      const getSoftTags: string[][] = [];
+      setDataCacheHandler({
+        get(key, ctx) {
+          getSoftTags.push([...((ctx as { softTags?: string[] } | undefined)?.softTags ?? [])]);
+          return memoryHandler.get(key, ctx);
+        },
+        set: memoryHandler.set.bind(memoryHandler),
+        revalidateTag: memoryHandler.revalidateTag.bind(memoryHandler),
+      });
+      let calls = 0;
+      const readCached = registerCachedFunction(
+        async () => ++calls,
+        `test:action-implicit-tags-${kind}`,
+      );
+      const values: unknown[] = [];
+      const action = async () => {
+        values.push(await readCached());
+        revalidatePath(pathname);
+        values.push(await readCached());
+        return "done";
+      };
+
+      try {
+        await runWithRequestContext(createRequestContext(), () => readCached());
+        getSoftTags.length = 0;
+        await runWithRequestContext(createRequestContext(), () =>
+          kind === "fetch"
+            ? handleServerActionRscRequest(
+                createRscOptions({
+                  loadServerAction() {
+                    return Promise.resolve(action);
+                  },
+                }),
+              )
+            : handleProgressiveServerActionRequest(
+                createOptions({
+                  currentRoute: { pattern: pathname, routeSegments: [pathname.slice(1)] },
+                  async decodeAction() {
+                    return action;
+                  },
+                  readFormDataWithLimit() {
+                    const formData = new FormData();
+                    formData.set("$ACTION_ID_test", "");
+                    return Promise.resolve(formData);
+                  },
+                }),
+              ),
+        );
+        expect(getSoftTags[0]).toContain(`_N_T_${pathname}`);
+        expect(values).toEqual([1, 2]);
+      } finally {
+        setDataCacheHandler(previousHandler);
+      }
+    },
+  );
+
+  it("emits dynamic-only x-action-revalidated when a fetch action refreshes", async () => {
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        loadServerAction() {
+          return Promise.resolve(() => {
+            refresh();
+            return "refreshed";
+          });
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("x-action-revalidated")).toBe("2");
+  });
+
+  // Ported from Next.js: test/e2e/app-dir/actions/app-action.test.ts
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/actions/app-action.test.ts
+  it("rejects fetch actions with too many decoded arguments before invoking the action", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const action = vi.fn();
+      let renderedModel: TestActionModel | null = null;
+
+      const response = await handleServerActionRscRequest(
+        createRscOptions({
+          decodeReply() {
+            return Array.from({ length: 1001 }, (_, index) => index);
+          },
+          loadServerAction() {
+            return Promise.resolve(action);
+          },
+          renderToReadableStream(model) {
+            renderedModel = model;
+            return new Response("too-many-args-flight").body;
+          },
+          sanitizeErrorForClient(error) {
+            return error instanceof Error ? error.message : String(error);
+          },
+        }),
+      );
+
+      expect(response?.status).toBe(500);
+      expect(await response?.text()).toBe("too-many-args-flight");
+      expect(action).not.toHaveBeenCalled();
+      expect(renderedModel).toEqual({ returnValue: { ok: false, data: expect.any(Promise) } });
+      const { returnValue } = renderedModel as unknown as CapturedActionModel;
+      await expect(returnValue.data).rejects.toBe(
+        "Server Action arguments list is too long (1001). Maximum allowed is 1000.",
+      );
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
+
+  it("rejects malformed fetch-action payloads before decodeReply", async () => {
+    const decodeReply = vi.fn();
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        readBodyWithLimit() {
+          return Promise.resolve('{"0":"$Q1"}');
+        },
+        decodeReply,
+      }),
+    );
+
+    expect(response?.status).toBe(400);
+    expect(await response?.text()).toBe("Invalid server action payload");
+    expect(decodeReply).not.toHaveBeenCalled();
+  });
+
+  it("rejects adversarial multipart payloads through the real request reader", async () => {
+    const formData = new FormData();
+    formData.append("0", '["$Q1:x"]');
+    formData.append("0", "[]");
+    const request = createMultipartBodyRequest(formData);
+    const decodeReply = vi.fn();
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        contentType: request.headers.get("content-type") ?? "",
+        decodeReply,
+        maxActionBodySize: 1024 * 1024,
+        readFormDataWithLimit: readActionFormDataWithLimit,
+        request,
+      }),
+    );
+
+    expect(response?.status).toBe(400);
+    expect(await response?.text()).toBe("Invalid server action payload");
+    expect(decodeReply).not.toHaveBeenCalled();
+  });
+
+  it("rejects cyclic multipart graphs for valid action ids", async () => {
+    const formData = new FormData();
+    formData.set("0", '["$Q0"]');
+    const request = createMultipartBodyRequest(formData);
+    const decodeReply = vi.fn();
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        contentType: request.headers.get("content-type") ?? "",
+        decodeReply,
+        maxActionBodySize: 1024 * 1024,
+        readFormDataWithLimit: readActionFormDataWithLimit,
+        request,
+      }),
+    );
+
+    expect(response?.status).toBe(400);
+    expect(await response?.text()).toBe("Invalid server action payload");
+    expect(decodeReply).not.toHaveBeenCalled();
+  });
+
+  it("clears pending cookies and revalidation state for rejected fetch payloads", async () => {
+    const getAndClearPendingCookies = vi.fn(() => ["session=stale"]);
+    const previousPhase = setHeadersAccessPhase("action");
+    await Promise.resolve(revalidatePath("/stale"));
+    setHeadersAccessPhase(previousPhase);
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        getAndClearPendingCookies,
+        readBodyWithLimit() {
+          return Promise.resolve('{"0":"$Q1:x"}');
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(400);
+    expect(getAndClearPendingCookies).toHaveBeenCalledTimes(1);
+    expect(getAndClearActionRevalidationKind()).toBe(0);
+  });
+
+  // Regression coverage for #1340: realistic action ids include `#<exportName>`,
+  // but @vitejs/plugin-rsc's reference-validation virtual module only knows the
+  // module path portion. The dev-mode "invalid server reference '<id>'" error
+  // therefore contains the module path WITHOUT the `#<exportName>` suffix,
+  // while the caller's actionId still has it. The 404 detection has to match
+  // either form so an unknown server action does not surface as an unrelated
+  // 500.
+  it("returns action-not-found when the Vite error elides the #exportName suffix", async () => {
+    const renderToReadableStream = vi.fn();
+    const reportRequestError = vi.fn();
+    const clearRequestContext = vi.fn();
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        actionId: "/app/actions/actions.ts#staleAction",
+        clearRequestContext,
+        loadServerAction() {
+          // Vite's reference-validation virtual module reports only the module
+          // path — the `#staleAction` suffix is dropped because the validator
+          // sees the require call, not the action id.
+          return Promise.reject(
+            new Error("[vite-rsc] invalid server reference '/app/actions/actions.ts'"),
+          );
+        },
+        renderToReadableStream,
+        reportRequestError,
+      }),
+    );
+
+    expect(response?.status).toBe(404);
+    expect(response?.headers.get("x-nextjs-action-not-found")).toBe("1");
+    expect(await response?.text()).toBe("Server action not found.");
+    expect(renderToReadableStream).not.toHaveBeenCalled();
+    expect(reportRequestError).not.toHaveBeenCalled();
+    expect(clearRequestContext).toHaveBeenCalledTimes(1);
+  });
+
+  // Ported from Next.js: test/e2e/app-dir/no-server-actions/no-server-actions.test.ts
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/no-server-actions/no-server-actions.test.ts
+  it("returns the Next.js action-not-found response for stale fetch action ids", async () => {
+    const decodeReply = vi.fn();
+    const readFormDataWithLimit = vi.fn();
+    const renderToReadableStream = vi.fn();
+    const reportRequestError = vi.fn();
+    const clearRequestContext = vi.fn();
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        actionId: "stale-action-id",
+        clearRequestContext,
+        contentType: "multipart/form-data; boundary=VINEXTDOS",
+        decodeReply,
+        loadServerAction() {
+          return Promise.reject(new Error("[vite-rsc] invalid server reference 'stale-action-id'"));
+        },
+        readFormDataWithLimit,
+        renderToReadableStream,
+        reportRequestError,
+      }),
+    );
+
+    expect(response?.status).toBe(404);
+    expect(response?.headers.get("x-nextjs-action-not-found")).toBe("1");
+    expect(response?.headers.get("content-type")).toBe("text/plain");
+    expect(await response?.text()).toBe("Server action not found.");
+    expect(readFormDataWithLimit).not.toHaveBeenCalled();
+    expect(decodeReply).not.toHaveBeenCalled();
+    expect(renderToReadableStream).not.toHaveBeenCalled();
+    expect(reportRequestError).not.toHaveBeenCalled();
+    expect(clearRequestContext).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns action-not-found when a server action export is missing", async () => {
+    const decodeReply = vi.fn();
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        decodeReply,
+        loadServerAction() {
+          return Promise.resolve(undefined);
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(404);
+    expect(response?.headers.get("x-nextjs-action-not-found")).toBe("1");
+    expect(await response?.text()).toBe("Server action not found.");
+    expect(decodeReply).not.toHaveBeenCalled();
+  });
+
+  it("accepts plugin-rsc's hoisted registration for the requested source export", async () => {
+    const action = vi.fn(() => "saved");
+    Object.defineProperty(action, "$$id", {
+      value: "/app/actions.ts#$$hoist_0_save",
+    });
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        actionId: "/app/actions.ts#save",
+        loadServerAction() {
+          return Promise.resolve(action);
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(action).toHaveBeenCalledTimes(1);
+  });
+
+  it("accepts a hoisted registration for a default-exported action", async () => {
+    const action = vi.fn(() => "saved");
+    Object.defineProperty(action, "$$id", {
+      value: "/app/actions.ts#$$hoist_0_save",
+    });
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        actionId: "/app/actions.ts#default",
+        loadServerAction() {
+          return Promise.resolve(action);
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(action).toHaveBeenCalledTimes(1);
+  });
+
+  it("accepts a server action registered under another export alias", async () => {
+    const action = vi.fn(() => "saved");
+    Object.defineProperty(action, "$$id", {
+      value: "/app/actions.ts#submit",
+    });
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        actionId: "/app/actions.ts#save",
+        loadServerAction() {
+          return Promise.resolve(action);
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(action).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not mistake a cache-like user export alias for an opaque cache reference", async () => {
+    const action = vi.fn(() => "saved");
+    Object.defineProperty(action, "$$id", {
+      value: "/app/actions.ts#$$vinext_cache_custom",
+    });
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        actionId: "/app/actions.ts#save",
+        loadServerAction() {
+          return Promise.resolve(action);
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(action).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects a source export whose registered server-reference id is different", async () => {
+    const hidden = vi.fn(() => "private");
+    Object.defineProperty(hidden, "$$id", {
+      value: `/app/records.ts#$$vinext_cache_${"a".repeat(64)}`,
+    });
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        actionId: "/app/records.ts#readRecord",
+        loadServerAction() {
+          return Promise.resolve(hidden);
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(404);
+    expect(response?.headers.get("x-nextjs-action-not-found")).toBe("1");
+    expect(hidden).not.toHaveBeenCalled();
+  });
+
+  // React resolves each argument reference with `serverManifest[id]` and throws
+  // when the entry is missing; this decoder stands in for that lookup.
+  function createArgumentReferenceOptions(referenceIds: readonly string[], ownedIds: string[]) {
+    const action = vi.fn(() => "saved");
+    const validateActionReferences = vi.fn((actionIds: readonly string[]) =>
+      actionIds.every((actionId) => ownedIds.includes(actionId)),
+    );
+    const options = createRscOptions({
+      createServerManifest: () =>
+        new Proxy({}, { get: (_target, id) => ({ id, name: "", chunks: [] }) }),
+      decodeReply(_body, serverManifest) {
+        return referenceIds.map((referenceId) => {
+          const entry: unknown = Reflect.get(serverManifest, referenceId);
+          if (!entry) throw new Error(`Could not find the module "${referenceId}"`);
+          return () => entry;
+        });
+      },
+      loadServerAction: () => Promise.resolve(action),
+      validateActionReferences,
+    });
+    return { action, options, validateActionReferences };
+  }
+
+  it("decodes argument references to Server Actions of the current route", async () => {
+    const { action, options, validateActionReferences } = createArgumentReferenceOptions(
+      ["a#owned"],
+      ["a#owned"],
+    );
+
+    const response = await handleServerActionRscRequest(options);
+
+    expect(response?.status).toBe(200);
+    expect(validateActionReferences).toHaveBeenCalledWith(["a#owned"]);
+    expect(action).toHaveBeenCalledWith(expect.any(Function));
+  });
+
+  it("does not resolve argument references to Server Actions of another route", async () => {
+    const { action, options } = createArgumentReferenceOptions(
+      ["a#owned", "b#foreign"],
+      ["a#owned"],
+    );
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    try {
+      const response = await handleServerActionRscRequest(options);
+
+      expect(response?.status).toBe(500);
+      expect(action).not.toHaveBeenCalled();
+    } finally {
+      error.mockRestore();
+    }
+  });
+
+  // Reproduces the prod-build error path where the @vitejs/plugin-rsc server
+  // references manifest doesn't include the requested action id. In a build
+  // with NO server actions defined at all, the action loader throws
+  // `server reference not found '<id>'` (not the dev-mode `[vite-rsc] invalid
+  // server reference '<id>'`). Both shapes have to land on the 404 +
+  // `x-nextjs-action-not-found` response that the client router recognises.
+  //
+  // Ported from Next.js: test/e2e/app-dir/no-server-actions/no-server-actions.test.ts
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/no-server-actions/no-server-actions.test.ts
+  it("returns action-not-found when the prod build has no matching server reference", async () => {
+    const reportedErrors: unknown[] = [];
+    const renderToReadableStream = vi.fn();
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        actionId: "abc123",
+        loadServerAction() {
+          return Promise.reject(new Error("server reference not found 'abc123'"));
+        },
+        renderToReadableStream,
+        reportRequestError(error) {
+          reportedErrors.push(error);
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(404);
+    expect(response?.headers.get("x-nextjs-action-not-found")).toBe("1");
+    expect(response?.headers.get("content-type")).toBe("text/plain");
+    expect(await response?.text()).toBe("Server action not found.");
+    expect(reportedErrors).toEqual([]);
+    expect(renderToReadableStream).not.toHaveBeenCalled();
+  });
+
+  it("keeps unrelated server action loader failures on the generic error path", async () => {
+    const reportedErrors: unknown[] = [];
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        loadServerAction() {
+          return Promise.reject(new Error("module graph crashed"));
+        },
+        reportRequestError(error) {
+          reportedErrors.push(error);
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(500);
+    expect(await response?.text()).toBe("Server action failed: module graph crashed");
+    expect(
+      reportedErrors.map((error) => (error instanceof Error ? error.message : String(error))),
+    ).toEqual(["module graph crashed"]);
+
+    errorSpy.mockRestore();
+  });
+
+  it("encodes fetch-action redirects as RSC control headers", async () => {
+    const clearContext = vi.fn();
+    const renderToReadableStream = vi.fn(
+      (model: TestActionModel) => new Response(JSON.stringify(model)).body,
+    );
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        clearRequestContext: clearContext,
+        getAndClearPendingCookies() {
+          return ["action=1; Path=/"];
+        },
+        loadServerAction() {
+          return Promise.resolve(() => {
+            throw { digest: "NEXT_REDIRECT;;%2Ftarget%3Fok%3D1;308" };
+          });
+        },
+        middlewareHeaders: new Headers([["x-middleware", "present"]]),
+        renderToReadableStream,
+      }),
+    );
+
+    expect(response?.status).toBe(303);
+    expect(response?.headers.get("x-action-redirect")).toBe("/target?ok=1");
+    expect(response?.headers.get("x-action-redirect-type")).toBe("push");
+    expect(response?.headers.get("x-action-redirect-status")).toBe("308");
+    expect(response?.headers.get("x-middleware")).toBe("present");
+    expect(response?.headers.getSetCookie()).toEqual(["action=1; Path=/"]);
+    expect(JSON.parse(await response!.text())).toEqual({
+      root: "dashboard:{}:none",
+      returnValue: { ok: true },
+    });
+    expect(clearContext).toHaveBeenCalledTimes(1);
+    expect(renderToReadableStream).not.toHaveBeenCalled();
+  });
+
+  it("emits x-action-revalidated when a redirecting fetch action revalidates a tag", async () => {
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        loadServerAction() {
+          return Promise.resolve(async () => {
+            await Promise.resolve(revalidateTag("dashboard"));
+            throw { digest: "NEXT_REDIRECT;;%2Ftarget;307" };
+          });
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(303);
+    expect(response?.headers.get("x-action-revalidated")).toBe("1");
+    expect(response?.headers.get("x-action-redirect")).toBe("/target");
+  });
+
+  // Ported from Next.js: test/e2e/app-dir/actions/app-action.test.ts
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/actions/app-action.test.ts
+  it("processes forwarded action POSTs but suppresses same-page rerenders", async () => {
+    let deferredRead!: Promise<string | string[] | undefined>;
+    let releaseDeferred!: () => void;
+    const deferred = new Promise<void>((resolve) => {
+      releaseDeferred = resolve;
+    });
+    const renderToReadableStream = vi.fn(
+      (model: TestActionModel) => new Response(JSON.stringify(model)).body,
+    );
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        loadServerAction() {
+          return Promise.resolve(() => {
+            deferredRead = deferred.then(() => getRootParam("lang"));
+            return "action-result";
+          });
+        },
+        request: createFetchActionRequest({ "x-action-forwarded": "1" }),
+        renderToReadableStream,
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(JSON.parse(await response!.text())).toEqual({
+      returnValue: { ok: true, data: "action-result" },
+    });
+    expect(renderToReadableStream).toHaveBeenCalledTimes(1);
+    releaseDeferred();
+    await expect(deferredRead).rejects.toThrow("was used inside a Server Action");
+  });
+
+  it("rerenders forwarded action HTTP fallbacks", async () => {
+    let renderedModel: TestActionModel | null = null;
+    let renderedRootParam: string | string[] | undefined;
+    let deferredRead!: Promise<string | string[] | undefined>;
+    let releaseDeferred!: () => void;
+    const deferred = new Promise<void>((resolve) => {
+      releaseDeferred = resolve;
+    });
+    const fallbackError = { digest: "NEXT_HTTP_ERROR_FALLBACK;404" };
+
+    const response = await runWithRootParamsScope({ lang: "en" }, () =>
+      handleServerActionRscRequest(
+        createRscOptions({
+          loadServerAction() {
+            return Promise.resolve(() => {
+              deferredRead = deferred.then(() => getRootParam("lang"));
+              throw fallbackError;
+            });
+          },
+          request: createFetchActionRequest({ "x-action-forwarded": "1" }),
+          async renderToReadableStream(model) {
+            renderedModel = model;
+            renderedRootParam = await getRootParam("lang");
+            return new Response("fallback-flight").body;
+          },
+        }),
+      ),
+    );
+
+    expect(response?.status).toBe(404);
+    expect(renderedRootParam).toBe("en");
+    expect(renderedModel).toEqual({
+      root: "dashboard:{}:none",
+      returnValue: { ok: false, data: fallbackError },
+    });
+    releaseDeferred();
+    await expect(deferredRead).rejects.toThrow("was used inside a Server Action");
+  });
+
+  it("preserves forwarded action cookie and revalidation side effects without a rerender", async () => {
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        getAndClearPendingCookies() {
+          return ["forwarded=1; Path=/"];
+        },
+        getDraftModeCookieHeader() {
+          return "draft=1; Path=/";
+        },
+        loadServerAction() {
+          return Promise.resolve(async () => {
+            await Promise.resolve(revalidatePath("/dashboard"));
+            return "forwarded-result";
+          });
+        },
+        request: createFetchActionRequest({ "x-action-forwarded": "1" }),
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("x-action-revalidated")).toBe("1");
+    expect(response?.headers.getSetCookie()).toEqual(["forwarded=1; Path=/", "draft=1; Path=/"]);
+    expect(JSON.parse(await response!.text())).toEqual({
+      returnValue: { ok: true, data: "forwarded-result" },
+    });
+  });
+
+  // Ported from Next.js: test/e2e/app-dir/actions/app-action.test.ts
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/actions/app-action.test.ts
+  it("returns forwarded action redirects with a 200 wrapper response", async () => {
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        request: createFetchActionRequest({ "x-action-forwarded": "1" }),
+        loadServerAction() {
+          return Promise.resolve(() => {
+            throw { digest: "NEXT_REDIRECT;;%2Ftarget;307" };
+          });
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("x-action-redirect")).toBe("/target");
+    expect(JSON.parse(await response!.text())).toEqual({
+      root: "dashboard:{}:none",
+      returnValue: { ok: true },
+    });
+  });
+
+  it("returns stale child-route action redirects with a 200 wrapper response", async () => {
+    // Ported from Next.js: test/e2e/app-dir/actions/app-action.test.ts
+    // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/actions/app-action.test.ts
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        cleanPathname: "/delayed-action/node/other",
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/delayed-action/node"));
+        },
+        matchRoute(pathname) {
+          if (pathname === "/delayed-action/node") {
+            return {
+              params: {},
+              route: {
+                id: "delayed-action-node",
+                page: {},
+                params: [],
+                pattern: "/delayed-action/node",
+              },
+            };
+          }
+          return null;
+        },
+        request: createFetchActionRequest({
+          "next-action": "action-id",
+          rsc: "1",
+        }),
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("x-action-redirect")).toBe("/delayed-action/node");
+    expect(JSON.parse(await response!.text())).toEqual({
+      root: "delayed-action-node:{}:none",
+      returnValue: { ok: true },
+    });
+  });
+
+  it("returns cross-runtime action redirects with a 200 wrapper response", async () => {
+    // Ported from Next.js: test/e2e/app-dir/actions/app-action.test.ts
+    // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/actions/app-action.test.ts
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        cleanPathname: "/delayed-action/edge/other",
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/delayed-action/node"));
+        },
+        matchRoute(pathname) {
+          if (pathname === "/delayed-action/edge/other") {
+            return {
+              params: {},
+              route: {
+                id: "delayed-action-edge-other",
+                params: [],
+                pattern: "/delayed-action/edge/other",
+                runtime: "edge",
+              },
+            };
+          }
+          if (pathname === "/delayed-action/node") {
+            return {
+              params: {},
+              route: {
+                id: "delayed-action-node",
+                page: {},
+                params: [],
+                pattern: "/delayed-action/node",
+                runtime: null,
+              },
+            };
+          }
+          return null;
+        },
+        resolveRouteRuntime(route) {
+          return route.runtime ?? null;
+        },
+        request: createFetchActionRequest({
+          "next-action": "action-id",
+          rsc: "1",
+        }),
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("x-action-redirect")).toBe("/delayed-action/node");
+    expect(JSON.parse(await response!.text())).toEqual({
+      root: "delayed-action-node:{}:none",
+      returnValue: { ok: true },
+    });
+  });
+
+  it("returns cross-runtime action redirects with a 200 wrapper response (implicit Node -> Edge)", async () => {
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        cleanPathname: "/delayed-action/node",
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/delayed-action/edge"));
+        },
+        matchRoute(pathname) {
+          if (pathname === "/delayed-action/node") {
+            return {
+              params: {},
+              route: {
+                id: "delayed-action-node",
+                params: [],
+                pattern: "/delayed-action/node",
+                runtime: null, // implicit Node
+              },
+            };
+          }
+          if (pathname === "/delayed-action/edge") {
+            return {
+              params: {},
+              route: {
+                id: "delayed-action-edge",
+                page: {},
+                params: [],
+                pattern: "/delayed-action/edge",
+                runtime: "edge",
+              },
+            };
+          }
+          return null;
+        },
+        resolveRouteRuntime(route) {
+          return route.runtime ?? null;
+        },
+        request: createFetchActionRequest({
+          "next-action": "action-id",
+          rsc: "1",
+        }),
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("x-action-redirect")).toBe("/delayed-action/edge");
+    expect(JSON.parse(await response!.text())).toEqual({
+      root: "delayed-action-edge:{}:none",
+      returnValue: { ok: true },
+    });
+  });
+
+  it("returns stale child sibling action redirects with a 200 wrapper response", async () => {
+    // Ported from Next.js: test/e2e/app-dir/actions/app-action.test.ts
+    // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/actions/app-action.test.ts
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        cleanPathname: "/delayed-action/edge/other",
+        loadServerAction() {
+          return Promise.resolve(() => redirect("/delayed-action/node"));
+        },
+        matchRoute(pathname) {
+          if (pathname === "/delayed-action/edge/other") {
+            return {
+              params: {},
+              route: {
+                id: "delayed-action-edge-other",
+                params: [],
+                pattern: "/delayed-action/edge/other",
+              },
+            };
+          }
+          if (pathname === "/delayed-action/node") {
+            return {
+              params: {},
+              route: {
+                id: "delayed-action-node",
+                page: {},
+                params: [],
+                pattern: "/delayed-action/node",
+              },
+            };
+          }
+          return null;
+        },
+        request: createFetchActionRequest({
+          "next-action": "action-id",
+          rsc: "1",
+        }),
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("x-action-redirect")).toBe("/delayed-action/node");
+  });
+
+  it("does not block actions when x-action-forwarded is absent", async () => {
+    const response = await handleServerActionRscRequest(createRscOptions());
+    expect(response).not.toBeNull();
+    expect(response?.status).toBe(200);
+  });
+
+  // Ported from Next.js: packages/next/src/server/app-render/action-handler.ts
+  // https://github.com/vercel/next.js/blob/canary/packages/next/src/server/app-render/action-handler.ts
+  it("sets the HTTP fallback status while packaging fallback digests into fetch-action Flight", async () => {
+    for (const [digest, statusCode] of [
+      ["NEXT_NOT_FOUND", 404],
+      ["NEXT_HTTP_ERROR_FALLBACK;404", 404],
+      ["NEXT_HTTP_ERROR_FALLBACK;403", 403],
+    ]) {
+      let renderedModel: TestActionModel | null = null;
+      const fallbackError = { digest };
+
+      const response = await handleServerActionRscRequest(
+        createRscOptions({
+          loadServerAction() {
+            return Promise.resolve(() => {
+              throw fallbackError;
+            });
+          },
+          renderToReadableStream(model) {
+            renderedModel = model;
+            return new Response("fallback-flight").body;
+          },
+        }),
+      );
+
+      expect(response?.status).toBe(statusCode);
+      expect(await response?.text()).toBe("fallback-flight");
+      expect(renderedModel).toEqual({
+        root: "dashboard:{}:none",
+        returnValue: { ok: false, data: fallbackError },
+      });
+    }
+  });
+
+  // Regression coverage for #1340: when a server action throws `notFound()` AND
+  // the action also revalidates (so the page rerendering path runs instead of
+  // the skip-rerender shortcut), the response must still carry the 404 status
+  // and the rejected actionResult — not 200 with the original page.
+  //
+  // Mirrors Next.js: when isHTTPAccessFallbackError(err) is true, the
+  // action-handler sets res.statusCode = getAccessFallbackHTTPStatus(err)
+  // before generating the Flight payload.
+  // https://github.com/vercel/next.js/blob/canary/packages/next/src/server/app-render/action-handler.ts
+  it("preserves the 404 status when notFound() is thrown by a revalidating fetch action", async () => {
+    let renderedModel: TestActionModel | null = null;
+    const fallbackError = { digest: "NEXT_HTTP_ERROR_FALLBACK;404" };
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        // Pending cookie forces the revalidating page-rerender branch instead
+        // of the no-revalidate shortcut that already had coverage above.
+        getAndClearPendingCookies() {
+          return ["action=1; Path=/"];
+        },
+        loadServerAction() {
+          return Promise.resolve(() => {
+            throw fallbackError;
+          });
+        },
+        renderToReadableStream(model) {
+          renderedModel = model;
+          return new Response("notfound-flight").body;
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(404);
+    expect(await response?.text()).toBe("notfound-flight");
+    expect(renderedModel).toMatchObject({
+      returnValue: { ok: false, data: fallbackError },
+    });
+    expect(response?.headers.get("x-action-revalidated")).toBe("1");
+  });
+
+  it("emits the `x-edge-runtime: 1` marker on rerendered RSC action responses for edge-runtime routes", async () => {
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        isEdgeRuntime: true,
+      }),
+    );
+
+    expect(response?.headers.get("x-edge-runtime")).toBe("1");
+  });
+
+  it("omits the `x-edge-runtime` marker on rerendered RSC action responses for nodejs-runtime routes", async () => {
+    const response = await handleServerActionRscRequest(createRscOptions());
+
+    expect(response?.headers.get("x-edge-runtime")).toBeNull();
+  });
+
+  it("emits the `x-edge-runtime: 1` marker on action redirect responses for edge-runtime routes", async () => {
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        isEdgeRuntime: true,
+        loadServerAction() {
+          return Promise.resolve(() => {
+            throw { digest: "NEXT_REDIRECT;;%2Fdashboard;307" };
+          });
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(303);
+    expect(response?.headers.get("x-edge-runtime")).toBe("1");
+  });
+
+  it("emits the `x-edge-runtime: 1` marker on no-revalidate action responses for edge-runtime routes", async () => {
+    // createRscOptions defaults already return no cookies + no draft cookie,
+    // which selects the no-revalidate branch (skips page rerender).
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        isEdgeRuntime: true,
+        loadServerAction() {
+          return Promise.resolve(async () => "no-revalidate-result");
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("x-edge-runtime")).toBe("1");
+  });
+
+  it("resolves the re-render target route's dynamic config and fetch cache mode for force-dynamic fetch defaults", async () => {
+    const fetchCacheShims = await import("../packages/vinext/src/shims/fetch-cache.js");
+    const modeSpy = vi.spyOn(fetchCacheShims, "setCurrentFetchCacheMode");
+    const revalidateSpy = vi.spyOn(fetchCacheShims, "setCurrentFetchRevalidate");
+    const forceDynamicSpy = vi.spyOn(fetchCacheShims, "setCurrentForceDynamicFetchDefault");
+
+    const targetRoute: TestRoute = {
+      id: "dashboard",
+      page: {},
+      params: [],
+      pattern: "/dashboard",
+    };
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        loadServerAction() {
+          return Promise.resolve(async () => {
+            await Promise.resolve(revalidatePath("/dashboard"));
+            return "revalidated";
+          });
+        },
+        matchRoute() {
+          return { params: {}, route: targetRoute };
+        },
+        resolveRouteFetchCacheMode(route) {
+          return route === targetRoute ? "force-no-store" : null;
+        },
+        resolveRouteRevalidateSeconds(route) {
+          return route === targetRoute ? 45 : null;
+        },
+        resolveRouteDynamicConfig(route) {
+          return route === targetRoute ? "force-dynamic" : null;
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(modeSpy).toHaveBeenCalledWith("force-no-store");
+    expect(revalidateSpy).toHaveBeenCalledWith(45);
+    expect(forceDynamicSpy).toHaveBeenCalledWith(true);
+
+    modeSpy.mockRestore();
+    revalidateSpy.mockRestore();
+    forceDynamicSpy.mockRestore();
+  });
+
+  it("takes an intercepted re-render's fetch defaults from the interception, not its source route", async () => {
+    const fetchCacheShims = await import("../packages/vinext/src/shims/fetch-cache.js");
+    const modeSpy = vi.spyOn(fetchCacheShims, "setCurrentFetchCacheMode");
+    const revalidateSpy = vi.spyOn(fetchCacheShims, "setCurrentFetchRevalidate");
+    const forceDynamicSpy = vi.spyOn(fetchCacheShims, "setCurrentForceDynamicFetchDefault");
+    // app/feed/page.tsx is force-static; app/feed/@modal/(.)photos/[id] isn't.
+    const sourceRoute: TestRoute = {
+      id: "feed",
+      page: {},
+      params: [],
+      pattern: "/feed",
+      routeSegments: ["feed"],
+    };
+
+    const buildPageElement = vi.fn(() => "intercepted-page");
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        buildPageElement,
+        cleanPathname: "/photos/42",
+        currentRouteMatch: { params: {}, route: sourceRoute },
+        currentRoutePathname: "/photos/42",
+        findIntercept() {
+          return {
+            matchedParams: { id: "42" },
+            page: { default: "modal-photo", fetchCache: "force-no-store", revalidate: 30 },
+            slotKey: "modal",
+            sourceRouteIndex: 0,
+          };
+        },
+        getSourceRoute() {
+          return sourceRoute;
+        },
+        loadServerAction() {
+          return Promise.resolve(async () => {
+            await Promise.resolve(revalidatePath("/photos/42"));
+            return "revalidated";
+          });
+        },
+        resolveRouteDynamicConfig: () => "force-static",
+        resolveRouteFetchCacheMode: () => "force-cache",
+        resolveRouteRevalidateSeconds: () => 3600,
+        toInterceptOpts(intercept) {
+          const interceptOpts = {
+            interceptBranchSegments: ["photos", "[id]"],
+            interceptPage: intercept.page,
+            interceptSlotKey: intercept.slotKey,
+            slot: intercept.slotKey,
+          };
+          return interceptOpts;
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(modeSpy).toHaveBeenLastCalledWith("force-no-store");
+    expect(revalidateSpy).toHaveBeenLastCalledWith(30);
+    expect(forceDynamicSpy).toHaveBeenLastCalledWith(false);
+    // The source's force-static would have emptied the query.
+    expect(buildPageElement).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isForceStatic: false,
+        searchParams: new URLSearchParams("tab=activity"),
+      }),
+    );
+
+    modeSpy.mockRestore();
+    revalidateSpy.mockRestore();
+    forceDynamicSpy.mockRestore();
+  });
+
+  it("takes a same-route intercepted re-render's fetch defaults from the interception", async () => {
+    const fetchCacheShims = await import("../packages/vinext/src/shims/fetch-cache.js");
+    const modeSpy = vi.spyOn(fetchCacheShims, "setCurrentFetchCacheMode");
+    const revalidateSpy = vi.spyOn(fetchCacheShims, "setCurrentFetchRevalidate");
+    // app/shots/[id]/page.tsx is force-static; app/shots/@modal/(.)[id] isn't.
+    const shotRoute: TestRoute = {
+      id: "shots/[id]",
+      page: {},
+      params: ["id"],
+      pattern: "/shots/:id",
+      routeSegments: ["shots", "[id]"],
+    };
+
+    const buildPageElement = vi.fn(() => "intercepted-page");
+
+    const response = await handleServerActionRscRequest(
+      createRscOptions({
+        buildPageElement,
+        cleanPathname: "/shots/2",
+        currentRouteMatch: { params: { id: "2" }, route: shotRoute },
+        // The direct page's runtime, which the interception doesn't choose.
+        isEdgeRuntime: true,
+        currentRoutePathname: "/shots/2",
+        findIntercept() {
+          return {
+            matchedParams: { id: "2" },
+            page: { default: "modal-shot", fetchCache: "force-no-store", revalidate: 30 },
+            slotKey: "modal",
+            sourceRouteIndex: 0,
+          };
+        },
+        getSourceRoute() {
+          return shotRoute;
+        },
+        loadServerAction() {
+          return Promise.resolve(async () => {
+            await Promise.resolve(revalidatePath("/shots/2"));
+            return "revalidated";
+          });
+        },
+        resolveRouteDynamicConfig: () => "force-static",
+        resolveRouteFetchCacheMode: () => "force-cache",
+        resolveRouteRevalidateSeconds: () => 3600,
+        toInterceptOpts(intercept) {
+          const interceptOpts = {
+            interceptBranchSegments: ["[id]"],
+            interceptPage: intercept.page,
+            interceptSlotKey: intercept.slotKey,
+            slot: intercept.slotKey,
+          };
+          return interceptOpts;
+        },
+      }),
+    );
+
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("x-edge-runtime")).toBeNull();
+    expect(modeSpy).toHaveBeenLastCalledWith("force-no-store");
+    expect(revalidateSpy).toHaveBeenLastCalledWith(30);
+    expect(buildPageElement).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isForceStatic: false,
+        searchParams: new URLSearchParams("tab=activity"),
+      }),
+    );
+
+    modeSpy.mockRestore();
+    revalidateSpy.mockRestore();
+  });
+});
+
+// The client-side counterpart of `createServerActionNotFoundResponse`: when the
+// server cannot resolve an action id, client code must be able to detect the
+// deployment skew through the public `unstable_isUnrecognizedActionError`
+// predicate so it can recover (typically by reloading the page).
+//
+// Mirrors Next.js, whose server-action reducer throws `UnrecognizedActionError`
+// on the `x-nextjs-action-not-found` response header:
+// https://github.com/vercel/next.js/blob/canary/packages/next/src/client/components/router-reducer/reducers/server-action-reducer.ts
+describe("client recognition of unrecognized server actions", () => {
+  it("raises an error the public predicate recognizes, naming the stale action id", () => {
+    let caught: unknown;
+    try {
+      // `createServerActionNotFoundResponse()` is exactly what the server emits.
+      throwOnServerActionNotFound(createServerActionNotFoundResponse(), "decafc0ffeebad01");
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(unstable_isUnrecognizedActionError(caught)).toBe(true);
+    expect(String(caught)).toContain('Server Action "decafc0ffeebad01" was not found');
+  });
+
+  it("does not throw for a recognized action response", () => {
+    // A recognized action returns an ordinary response without the not-found header.
+    expect(() => throwOnServerActionNotFound(new Response("ok"), "abc")).not.toThrow();
+  });
+});
+
+describe("server reference module loading", () => {
+  // Server reference modules are imported on the first request that names
+  // them. Whatever the loaders and decoders observe is what module-scope
+  // cookies()/headers() would capture — and cache for every later caller.
+  // Next.js evaluates action modules outside the request store, where those
+  // calls throw (https://nextjs.org/docs/messages/next-dynamic-api-wrong-context).
+  function readSessionCookie(): Promise<string> {
+    return cookies().then(
+      (jar) => jar.get("session")?.value ?? "none",
+      () => "no-request",
+    );
+  }
+
+  function runAsCaller<T>(request: Request, fn: () => Promise<T>): Promise<T> {
+    return runWithRequestContext(
+      createRequestContext({ headersContext: headersContextFromRequest(request) }),
+      fn,
+    );
+  }
+
+  it("loads and decodes fetch action references outside the caller's request", async () => {
+    const request = createFetchActionRequest({ cookie: "session=first-caller" });
+    const observed: Record<string, string> = {};
+
+    const response = await runAsCaller(request, () =>
+      handleServerActionRscRequest(
+        createRscOptions({
+          request,
+          async loadServerAction() {
+            observed.loadServerAction = await readSessionCookie();
+            return async () => readSessionCookie();
+          },
+          decodeReply() {
+            // React's decodeReply() returns a lazy chunk that only resolves —
+            // and imports the server references it carries — once awaited.
+            const lazyReply: PromiseLike<unknown[]> = {
+              // oxlint-disable-next-line unicorn/no-thenable
+              then(onFulfilled, onRejected) {
+                return readSessionCookie()
+                  .then((session) => {
+                    observed.decodeReply = session;
+                    return [];
+                  })
+                  .then(onFulfilled, onRejected);
+              },
+            };
+            return lazyReply as Promise<unknown[]>;
+          },
+        }),
+      ),
+    );
+
+    expect(observed).toEqual({ loadServerAction: "no-request", decodeReply: "no-request" });
+    // The action itself still runs in the caller's request.
+    expect(JSON.parse(await response!.text()).returnValue).toEqual({
+      ok: true,
+      data: "first-caller",
+    });
+  });
+
+  it("loads multipart fetch action references outside the caller's request", async () => {
+    const request = createFetchActionRequest({ cookie: "session=first-caller" });
+    let observed: string | undefined;
+
+    await runAsCaller(request, () =>
+      handleServerActionRscRequest(
+        createRscOptions({
+          contentType: "multipart/form-data; boundary=vinext",
+          request,
+          async loadServerAction() {
+            observed = await readSessionCookie();
+            return async () => "ok";
+          },
+        }),
+      ),
+    );
+
+    expect(observed).toBe("no-request");
+  });
+
+  // The imports are memoized for the isolate, and workerd drops a canceled
+  // request's pending I/O, so the caller stays alive until they settle.
+  it.each([
+    ["decodes a progressive action", "progressive"],
+    ["loads a fetch action", "fetch"],
+  ] as const)("keeps the request that %s alive until its references load", async (_name, kind) => {
+    let entered: () => void = () => {};
+    const loading = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    let release: () => void = () => {};
+    const loaded = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const load = async () => {
+      entered();
+      await loaded;
+    };
+    const waitUntil = vi.fn();
+    const formData = new FormData();
+    formData.set("$ACTION_ID_test", "");
+    const request = kind === "progressive" ? createMultipartRequest() : createFetchActionRequest();
+
+    const handled = runWithRequestContext(
+      createRequestContext({
+        executionContext: { waitUntil },
+        headersContext: headersContextFromRequest(request),
+      }),
+      () =>
+        kind === "progressive"
+          ? handleProgressiveServerActionRequest(
+              createOptions({
+                request,
+                async decodeAction() {
+                  await load();
+                  return async () => {};
+                },
+                readFormDataWithLimit: () => Promise.resolve(formData),
+              }),
+            )
+          : handleServerActionRscRequest(
+              createRscOptions({
+                request,
+                async loadServerAction() {
+                  await load();
+                  return async () => "ok";
+                },
+              }),
+            ),
+    );
+
+    await loading;
+    expect(waitUntil).toHaveBeenCalledOnce();
+    release();
+    await handled;
+  });
+
+  it("decodes progressive action references outside the caller's request", async () => {
+    const request = createMultipartRequest({ cookie: "session=first-caller" });
+    const formData = new FormData();
+    formData.set("$ACTION_ID_test", "");
+    const observed: Record<string, string> = {};
+
+    await runAsCaller(request, () =>
+      handleProgressiveServerActionRequest(
+        createOptions({
+          request,
+          async decodeAction() {
+            observed.decodeAction = await readSessionCookie();
+            return async () => {
+              observed.action = await readSessionCookie();
+            };
+          },
+          async decodeFormState() {
+            observed.decodeFormState = await readSessionCookie();
+            return undefined;
+          },
+          readFormDataWithLimit() {
+            return Promise.resolve(formData);
+          },
+        }),
+      ),
+    );
+
+    expect(observed).toEqual({
+      decodeAction: "no-request",
+      // The action itself still runs in the caller's request.
+      action: "first-caller",
+      decodeFormState: "no-request",
+    });
+  });
+});

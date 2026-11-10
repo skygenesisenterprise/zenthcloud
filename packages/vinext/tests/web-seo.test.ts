@@ -1,0 +1,141 @@
+import { describe, expect, it, vi } from "vite-plus/test";
+import { createBenchmarkMetadata } from "../apps/web/app/benchmarks/metadata";
+import robots from "../apps/web/app/robots";
+import sitemap from "../apps/web/app/sitemap";
+import { addPreviewRobotsHeader, getCanonicalRedirect } from "../apps/web/worker/seo";
+
+vi.mock("../apps/web/app/blog/_source", () => ({
+  posts: [
+    { slug: "draft-post", date: "2026-10-10", draft: true },
+    { slug: "vinext-1-1", date: "2026-10-08", draft: false },
+    { slug: "vinext-1-0", date: "2026-09-28", updated: "2026-10-12", draft: false },
+  ],
+  // vinext-1-0 was edited after vinext-1-1 was published.
+  blogLastModified: "2026-10-12",
+  postPath: (post: { slug: string }) => `/blog/${post.slug}`,
+}));
+
+vi.mock("../apps/web/app/docs/_source", () => ({
+  docs: [
+    { slug: "" },
+    { slug: "getting-started" },
+    { slug: "getting-started/migrating" },
+    { slug: "deploying/cloudflare" },
+    { slug: "deploying/other-platforms" },
+    { slug: "guides/caching" },
+    { slug: "reference/differences" },
+    { slug: "reference/nextjs", external: "https://nextjs.org/docs/app" },
+  ],
+}));
+
+describe("vinext.dev SEO metadata", () => {
+  it("builds canonical and social metadata for benchmark detail pages", () => {
+    const metadata = createBenchmarkMetadata({
+      title: "Commit abc1234 performance benchmarks",
+      description: "Historical vinext performance measurements by commit.",
+      path: "/benchmarks/commit/abc1234",
+    });
+
+    const canonical = metadata.alternates?.canonical;
+    expect(canonical).toBe("/benchmarks/commit/abc1234");
+    expect(metadata.openGraph).toMatchObject({
+      title: "Commit abc1234 performance benchmarks — vinext",
+      url: "/benchmarks/commit/abc1234",
+      siteName: "vinext",
+    });
+    expect(metadata.robots).toBeUndefined();
+  });
+
+  it("publishes a crawlable robots policy pointing at the canonical sitemap", () => {
+    expect(robots()).toEqual({
+      rules: {
+        userAgent: "*",
+        allow: "/",
+      },
+      sitemap: "https://vinext.dev/sitemap.xml",
+    });
+  });
+
+  it("lists only stable, indexable pages in the sitemap", () => {
+    expect(sitemap().map(({ url }) => url)).toEqual([
+      "https://vinext.dev",
+      "https://vinext.dev/compatibility",
+      "https://vinext.dev/benchmarks",
+      "https://vinext.dev/blog",
+      "https://vinext.dev/blog/vinext-1-1",
+      "https://vinext.dev/blog/vinext-1-0",
+      "https://vinext.dev/docs",
+      "https://vinext.dev/docs/getting-started",
+      "https://vinext.dev/docs/getting-started/migrating",
+      "https://vinext.dev/docs/deploying/cloudflare",
+      "https://vinext.dev/docs/deploying/other-platforms",
+      "https://vinext.dev/docs/guides/caching",
+      "https://vinext.dev/docs/reference/differences",
+    ]);
+  });
+
+  it("dates the blog by its latest publish or edit, not its newest post", () => {
+    expect(sitemap().find(({ url }) => url === "https://vinext.dev/blog")?.lastModified).toBe(
+      "2026-10-12",
+    );
+  });
+});
+
+describe("vinext.dev canonical host handling", () => {
+  it.each(["www.vinext.dev", "vinext-web.vinext.workers.dev"])(
+    "redirects public documents from %s while preserving path and query",
+    (hostname) => {
+      const response = getCanonicalRedirect(
+        new Request(`https://${hostname}/benchmarks?view=bundles`),
+      );
+
+      expect(response?.status).toBe(308);
+      expect(response?.headers.get("location")).toBe("https://vinext.dev/benchmarks?view=bundles");
+    },
+  );
+
+  it("redirects HTTP documents on the canonical host to HTTPS", () => {
+    const response = getCanonicalRedirect(new Request("http://vinext.dev/benchmarks?view=bundles"));
+
+    expect(response?.status).toBe(308);
+    expect(response?.headers.get("location")).toBe("https://vinext.dev/benchmarks?view=bundles");
+  });
+
+  it("keeps the workers.dev API origin available to existing CI uploaders", () => {
+    expect(
+      getCanonicalRedirect(
+        new Request("https://vinext-web.vinext.workers.dev/api/benchmarks/upload"),
+      ),
+    ).toBeNull();
+    expect(
+      getCanonicalRedirect(
+        new Request("https://vinext-web.vinext.workers.dev/benchmarks", { method: "POST" }),
+      ),
+    ).toBeNull();
+    expect(
+      getCanonicalRedirect(
+        new Request("https://vinext-web.vinext.workers.dev/__vinext/prerender/readiness", {
+          method: "POST",
+        }),
+      ),
+    ).toBeNull();
+  });
+
+  it("marks preview aliases as non-indexable without buffering the response body", async () => {
+    const response = addPreviewRobotsHeader(
+      new Request("https://pr-123-vinext-web.vinext.workers.dev/"),
+      new Response("preview", { headers: { "content-type": "text/plain" } }),
+    );
+
+    expect(response.headers.get("x-robots-tag")).toBe("noindex");
+    expect(response.headers.get("content-type")).toBe("text/plain");
+    await expect(response.text()).resolves.toBe("preview");
+  });
+
+  it("does not add preview directives to canonical production hosts", () => {
+    for (const hostname of ["vinext.dev", "vinext-web.vinext.workers.dev"]) {
+      const original = new Response("production");
+      expect(addPreviewRobotsHeader(new Request(`https://${hostname}/`), original)).toBe(original);
+    }
+  });
+});

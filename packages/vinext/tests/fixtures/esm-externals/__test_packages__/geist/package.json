@@ -1,0 +1,10 @@
+{
+  "name": "geist",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./entry": {
+      "import": "./entry.mjs"
+    }
+  }
+}

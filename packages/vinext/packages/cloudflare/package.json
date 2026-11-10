@@ -1,0 +1,83 @@
+{
+  "name": "@vinext/cloudflare",
+  "version": "1.3.3",
+  "description": "Cloudflare cache and image adapters for vinext.",
+  "homepage": "https://vinext.dev/",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cloudflare/vinext.git",
+    "directory": "packages/cloudflare"
+  },
+  "bin": {
+    "@vinext/cloudflare": "dist/cli.js",
+    "vinext-cloudflare": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    "./internal/deploy": {
+      "types": "./dist/deploy.d.ts",
+      "import": "./dist/deploy.js"
+    },
+    "./internal/deploy-help": {
+      "types": "./dist/deploy-help.d.ts",
+      "import": "./dist/deploy-help.js"
+    },
+    "./internal/deploy-config": {
+      "types": "./dist/deploy-config.d.ts",
+      "import": "./dist/deploy-config.js"
+    },
+    "./internal/cdn-warm": {
+      "types": "./dist/cdn-warm.d.ts",
+      "import": "./dist/cdn-warm.js"
+    },
+    "./internal/version-deploy": {
+      "types": "./dist/version-deploy.d.ts",
+      "import": "./dist/version-deploy.js"
+    },
+    "./cache/*": {
+      "types": "./dist/cache/*.d.ts",
+      "import": "./dist/cache/*.js"
+    },
+    "./images/*": {
+      "types": "./dist/images/*.d.ts",
+      "import": "./dist/images/*.js"
+    }
+  },
+  "scripts": {
+    "build": "vp pack",
+    "prepack": "vp run build",
+    "dev": "vp pack --watch",
+    "test": "vp run vinext#build && vp run @cloudflare/workers-response-store#build && vp run @vinext/cloudflare#build && VINEXT_RESPONSE_STORE_MODE=self-contained VINEXT_RESPONSE_STORE_LOCATION_HINT=weur pnpm --filter response-store-demo run build && VINEXT_RESPONSE_STORE_LOCATION_HINT=wnam pnpm --filter response-store-demo run build && vp test run"
+  },
+  "dependencies": {
+    "@cloudflare/workers-response-store": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "cf": "catalog:cloudflare-vite-v2",
+    "miniflare": "catalog:",
+    "vinext": "workspace:*",
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "peerDependencies": {
+    "@cloudflare/vite-plugin": "*",
+    "cf": "*",
+    "vinext": "workspace:^"
+  },
+  "peerDependenciesMeta": {
+    "@cloudflare/vite-plugin": {
+      "optional": true
+    },
+    "cf": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

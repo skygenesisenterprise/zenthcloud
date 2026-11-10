@@ -1,0 +1,210 @@
+/**
+ * instrumentation.ts support
+ *
+ * Next.js supports an `instrumentation.ts` file at the project root that
+ * exports a `register()` function. This function is called once when the
+ * server starts, before any request handling. It's the recommended way to
+ * set up observability tools (Sentry, Datadog, OpenTelemetry, etc.).
+ *
+ * Optionally, it can also export `onRequestError()` which is called when
+ * an unhandled error occurs during request handling.
+ *
+ * References:
+ * - https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation
+ *
+ * ## App Router
+ *
+ * Node development eagerly calls `runInstrumentation()` through the same RSC
+ * runner used for requests. The generated RSC entry also awaits the shared
+ * registration promise before importing user server modules. This preserves
+ * react-server conditions, module state, and initialization order.
+ * Workers and production initialize through the generated entry in their own
+ * runtime, without an extra registration in the Node development host.
+ *
+ * The `onRequestError` handler is stored on `globalThis` so it is visible across
+ * the RSC and SSR Vite environments (separate module graphs, same Node.js process).
+ * With `@cloudflare/vite-plugin` it runs entirely inside the Worker, so
+ * `globalThis` is the Worker's global — also correct.
+ *
+ * ## Pages Router
+ *
+ * Pages Router has no RSC entry, so `configureServer()` is the right place to
+ * call `register()`. `runInstrumentation()` accepts a `ModuleRunner` (created
+ * via `createDirectRunner()`) rather than `server.ssrLoadModule()` so it is
+ * safe when `@cloudflare/vite-plugin` is present — that plugin replaces the
+ * SSR environment's hot channel, causing `ssrLoadModule()` to crash with
+ * `TypeError: Cannot read properties of undefined (reading 'outsideEmitter')`.
+ */
+
+import fs from "node:fs";
+import path from "pathslash";
+import { getRequestExecutionContext } from "vinext/shims/request-context";
+import { ValidFileMatcher } from "../routing/file-matcher.js";
+import { patternToNextFormat } from "../routing/route-validation.js";
+import { ensureInstrumentationRegistered } from "./instrumentation-runtime.js";
+/**
+ * Minimal duck-typed interface for the module runner passed to
+ * `runInstrumentation`. Only `.import()` is used — this avoids requiring
+ * callers (including tests) to provide a full `ModuleRunner` instance.
+ */
+export type ModuleImporter = {
+  import(id: string): Promise<unknown>;
+};
+
+/**
+ * Import a module via the runner and cast the result to `Record<string, any>`.
+ *
+ * Centralises the `as Record<string, any>` cast so callers don't need
+ * per-call oxlint-disable comments.
+ */
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
+export async function importModule(
+  runner: ModuleImporter,
+  id: string,
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<Record<string, any>> {
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
+  return (await runner.import(id)) as Record<string, any>;
+}
+
+const INSTRUMENTATION_LOCATIONS = ["", "src/"];
+
+function findInstrumentationHookFile(
+  root: string,
+  basename: string,
+  fileMatcher: ValidFileMatcher,
+): string | null {
+  for (const dir of INSTRUMENTATION_LOCATIONS) {
+    for (const ext of fileMatcher.dottedExtensions) {
+      const fullPath = path.join(root, dir, `${basename}${ext}`);
+      if (fs.existsSync(fullPath)) {
+        return fullPath;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Find the instrumentation file in the project root.
+ */
+export function findInstrumentationFile(
+  root: string,
+  fileMatcher: ValidFileMatcher,
+): string | null {
+  return findInstrumentationHookFile(root, "instrumentation", fileMatcher);
+}
+
+/**
+ * Find the instrumentation-client file in the project root.
+ */
+export function findInstrumentationClientFile(
+  root: string,
+  fileMatcher: ValidFileMatcher,
+): string | null {
+  return findInstrumentationHookFile(root, "instrumentation-client", fileMatcher);
+}
+
+/**
+ * The onRequestError handler type from Next.js instrumentation.
+ *
+ * Called when an unhandled error occurs during request handling.
+ * Provides the error, the request info, and an error context.
+ */
+export type OnRequestErrorContext = {
+  /** The router which handled the request. */
+  routerKind: "Pages Router" | "App Router";
+  /** The matched route pattern. */
+  routePath: string;
+  /** The request operation which failed. */
+  routeType: "render" | "route" | "action" | "proxy";
+  /** The App Router render phase which failed. */
+  renderSource?: "react-server-components" | "react-server-components-payload" | "server-rendering";
+  /** Why a static route was being regenerated. */
+  revalidateReason: "on-demand" | "stale" | undefined;
+};
+
+export type OnRequestErrorHandler = (
+  error: unknown,
+  request: Readonly<{
+    path: string;
+    method: string;
+    headers: Record<string, string | string[] | undefined>;
+  }>,
+  context: Readonly<OnRequestErrorContext>,
+) => void | Promise<void>;
+
+/**
+ * Get the registered onRequestError handler (if any).
+ *
+ * Reads from globalThis so it works across Vite environment boundaries.
+ */
+export function getOnRequestErrorHandler(): OnRequestErrorHandler | null {
+  return globalThis.__VINEXT_onRequestErrorHandler__ ?? null;
+}
+
+/**
+ * Load and execute the instrumentation file via a ModuleRunner.
+ *
+ * Called during Node development startup (`configureServer`). It:
+ * 1. Loads the instrumentation module via `runner.import()`.
+ * 2. Calls the `register()` function if exported.
+ * 3. Stores the `onRequestError()` handler on `globalThis` so it is visible
+ *    to all Vite environment module graphs (SSR and the host process share
+ *    the same Node.js `globalThis`).
+ *
+ * @param runner - The existing RSC runner for App Router, or the long-lived
+ *   direct runner for Pages-only apps. Reusing the request runner preserves
+ *   module state initialized by `register()`.
+ * @param instrumentationPath - Absolute path to the instrumentation file
+ */
+export async function runInstrumentation(
+  runner: ModuleImporter,
+  instrumentationPath: string,
+): Promise<void> {
+  const mod = (await runner.import(instrumentationPath)) as Record<string, unknown>;
+  await ensureInstrumentationRegistered(mod, instrumentationPath);
+}
+
+/**
+ * Report a request error via the instrumentation handler.
+ *
+ * No-op if no onRequestError handler is registered.
+ *
+ * Reads the handler from globalThis so this function works correctly regardless
+ * of which environment it is called from.
+ */
+export function reportRequestError(
+  error: unknown,
+  request: Readonly<{
+    path: string;
+    method: string;
+    headers: Record<string, string | string[] | undefined>;
+  }>,
+  context: OnRequestErrorContext,
+): Promise<void> {
+  const handler = getOnRequestErrorHandler();
+  if (!handler) return Promise.resolve();
+
+  const promise = (async () => {
+    try {
+      await handler(error, request, {
+        ...context,
+        routePath: patternToNextFormat(context.routePath),
+      });
+    } catch (reportErr) {
+      console.error(
+        "[vinext] onRequestError handler threw:",
+        reportErr instanceof Error ? reportErr.message : String(reportErr),
+      );
+    }
+  })();
+
+  // On Cloudflare Workers, register with ctx.waitUntil() so the isolate
+  // stays alive until the report completes (e.g. Sentry HTTP request).
+  // Awaiting callers get Next.js request-lifecycle parity. Non-blocking
+  // post-commit callers still retain the task through Workers waitUntil().
+  getRequestExecutionContext()?.waitUntil(promise);
+
+  return promise;
+}

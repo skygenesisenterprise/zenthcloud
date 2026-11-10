@@ -1,0 +1,647 @@
+import { AsyncLocalStorage } from "node:async_hooks";
+import { Buffer } from "node:buffer";
+
+import type {
+  ResponseStorePurgeOptions,
+  WorkersResponseStore,
+} from "@cloudflare/workers-response-store";
+import type {
+  CacheControlMetadata,
+  CacheHandler,
+  CacheHandlerValue,
+  IncrementalCacheValue,
+} from "vinext/shims/cache";
+import { cacheForRequest } from "vinext/cache";
+import type { CdnAppPageDocument } from "vinext/shims/cdn-cache";
+import type { VinextCacheFunctionInvocation } from "vinext/server/multi-stage";
+
+import { readCacheTimestamp } from "../utils/cache-control-metadata.js";
+import { encodeCloudflareCacheTag } from "./cdn-adapter.runtime.js";
+import { isStaleTagInvalidation } from "./workers-cache-invalidation.js";
+
+type StoredCacheEntry = {
+  cacheControl?: CacheControlMetadata;
+  lastModified: number;
+  value: IncrementalCacheValue | null;
+};
+
+type RegenerationScope = {
+  captured?: Response;
+  /**
+   * Writes the regeneration makes, its own entry's included, and the work it hands
+   * to waitUntil: callers like cached fetch, "use cache" and unstable_cache return
+   * before they finish, and a delegating cache handler may reach this one later.
+   */
+  sideWrites: Promise<void>[];
+  targetKey: string;
+};
+
+type ResponseStoreInvocation = {
+  capture?: ResponseStoreInvocationCapture;
+  replayable: boolean;
+  serialized: string;
+};
+
+export type ResponseStoreInvocationCapture = {
+  admittedResponse?: Promise<Response>;
+  /** Store the page's document beside an App page RSC response. */
+  captureDocument?: boolean;
+  captureRscData?: boolean;
+  /** The page's document, set before admission completes the response. */
+  document?: CdnAppPageDocument;
+  /** The render matched the request's If-None-Match; the adapter sends the 304. */
+  notModified?: boolean;
+  rscData?: Promise<ArrayBuffer>;
+  streamResponse?: boolean;
+};
+
+const ARRAY_BUFFER_MARKER = "$vinextArrayBuffer";
+const CACHE_MAX_AGE_SECONDS = 10 * 365 * 24 * 60 * 60;
+const DATA_ENTRY_PATH = "__vinext_data";
+const REPLAYABLE_HEADER = "X-Vinext-Response-Store-Replayable";
+/** The Store's internal header for when a response's generation started. */
+const GENERATED_AT_HEADER = "X-Workers-Response-Store-Generated-At";
+const MAX_CACHE_TAG_HEADER_BYTES = 16 * 1024;
+/** How long past its revalidate a current Store's hit can still be marked fresh: write latency. */
+const STALE_FRESH_HIT_GRACE_MS = 5_000;
+const DATA_REVALIDATOR_ID = "vinext:data";
+const CACHE_FUNCTION_REVALIDATOR_ID = "vinext:cache-function";
+const invocationStorage = new AsyncLocalStorage<ResponseStoreInvocation>();
+const regenerationStorage = new AsyncLocalStorage<RegenerationScope>();
+
+let responseStore: WorkersResponseStore | undefined;
+
+/** Connect the generated Cloudflare worker entry to the configured data adapter. */
+export function setResponseStore(store: WorkersResponseStore): void {
+  responseStore = store;
+}
+
+/** Associate data-cache writes with the response-stage invocation that produced them. */
+export function runWithResponseStoreInvocation<T>(
+  serialized: string,
+  replayable: boolean,
+  callback: () => T,
+  capture?: ResponseStoreInvocationCapture,
+): T {
+  return invocationStorage.run({ capture, replayable, serialized }, callback);
+}
+
+/** Retain the RSC side stream only when the outer response-store invocation requested it. */
+export function captureResponseStoreRscData(rscData: Promise<ArrayBuffer>): void {
+  const capture = invocationStorage.getStore()?.capture;
+  if (capture?.captureRscData) {
+    capture.rscData = rscData;
+  } else {
+    void rscData.catch(() => {});
+  }
+}
+
+/**
+ * Retain the page's document only when the outer response-store invocation
+ * requested it. Admission settles it before it completes the response.
+ */
+export function captureResponseStoreAppPageDocument():
+  | ((document: CdnAppPageDocument | null) => void)
+  | undefined {
+  const capture = invocationStorage.getStore()?.capture;
+  if (!capture?.captureDocument) return undefined;
+  return (document) => {
+    capture.document = document ?? undefined;
+  };
+}
+
+/** A shared invocation stores the page, so its adapter sends the page's 304. */
+export function deferResponseStoreNotModified(): boolean {
+  const capture = invocationStorage.getStore()?.capture;
+  if (!capture) return false;
+  capture.notModified = true;
+  return true;
+}
+
+/** Stream the foreground body while retaining an independent admission branch. */
+export function deferResponseStoreAdmission(
+  response: Response,
+  complete: (response: Response) => Promise<Response>,
+): Response | null {
+  const capture = invocationStorage.getStore()?.capture;
+  if (!capture?.streamResponse || !response.body) return null;
+
+  const source = response.body.getReader();
+  const admission = new TransformStream<Uint8Array, Uint8Array>(
+    undefined,
+    { highWaterMark: 0 },
+    { highWaterMark: 0 },
+  );
+  const writer = admission.writable.getWriter();
+  let admissionOpen = true;
+  let foregroundCancelled = false;
+  let foregroundCancelReason: unknown;
+  let writerReleased = false;
+
+  const releaseSource = () => {
+    try {
+      source.releaseLock();
+    } catch {}
+  };
+  const releaseWriter = () => {
+    if (writerReleased) return;
+    writerReleased = true;
+    try {
+      writer.releaseLock();
+    } catch {}
+  };
+  const cancelSource = (reason: unknown) => {
+    try {
+      const cancellation = source.cancel(reason);
+      releaseSource();
+      void cancellation.catch(() => {}).finally(releaseSource);
+    } catch {
+      releaseSource();
+    }
+  };
+  const finishAdmission = async (failure?: { reason: unknown }) => {
+    if (!admissionOpen) return;
+    admissionOpen = false;
+    if (failure && foregroundCancelled) {
+      cancelSource(foregroundCancelReason);
+    }
+    try {
+      if (failure) await writer.abort(failure.reason);
+      else await writer.close();
+    } catch {
+      // Admission may already have rejected or cancelled its branch.
+    } finally {
+      releaseWriter();
+    }
+  };
+  const writeAdmission = async (chunk: Uint8Array) => {
+    if (!admissionOpen) return;
+    try {
+      await writer.write(chunk);
+    } catch {
+      admissionOpen = false;
+      releaseWriter();
+    }
+  };
+  const foreground = new ReadableStream<Uint8Array>(
+    {
+      async pull(controller) {
+        try {
+          const result = await source.read();
+          if (result.done) {
+            releaseSource();
+            controller.close();
+            await finishAdmission();
+            return;
+          }
+          controller.enqueue(result.value);
+          await writeAdmission(result.value);
+        } catch (error) {
+          releaseSource();
+          controller.error(error);
+          await finishAdmission({ reason: error });
+        }
+      },
+      cancel(reason) {
+        foregroundCancelled = true;
+        foregroundCancelReason = reason;
+        if (!admissionOpen) {
+          cancelSource(reason);
+          return;
+        }
+        void (async () => {
+          try {
+            while (true) {
+              const result = await source.read();
+              if (result.done) break;
+              await writeAdmission(result.value);
+              if (!admissionOpen) {
+                cancelSource(reason);
+                break;
+              }
+            }
+            releaseSource();
+            await finishAdmission();
+          } catch (error) {
+            releaseSource();
+            await finishAdmission({ reason: error });
+          }
+        })();
+      },
+    },
+    { highWaterMark: 0 },
+  );
+
+  capture.admittedResponse = complete(new Response(admission.readable, response));
+  void capture.admittedResponse.catch((error) => finishAdmission({ reason: error }));
+  void writer.closed.catch((error) => finishAdmission({ reason: error }));
+  return new Response(foreground, response);
+}
+
+/** Keeps work a regeneration hands to waitUntil inside the regeneration. */
+export function trackResponseStoreRegenerationWork(work: Promise<unknown>): void {
+  regenerationStorage.getStore()?.sideWrites.push(
+    work.then(
+      () => undefined,
+      () => undefined,
+    ),
+  );
+}
+
+/** Re-render an invocation and return the exact rewritten data-cache entry. */
+export async function captureResponseStoreDataRegeneration(
+  key: string,
+  callback: () => Promise<void>,
+): Promise<Response> {
+  const scope: RegenerationScope = { sideWrites: [], targetKey: key };
+  try {
+    await regenerationStorage.run(scope, callback);
+  } finally {
+    // Unawaited work can be cancelled once the Store's regeneration returns, even a failed one.
+    while (scope.sideWrites.length) await Promise.allSettled(scope.sideWrites.splice(0));
+  }
+  if (!scope.captured) {
+    throw new Error(`vinext response-store regeneration did not rewrite data key ${key}`);
+  }
+  return scope.captured;
+}
+
+function readCacheControlField(
+  context: Record<string, unknown> | undefined,
+  field: "expire" | "revalidate" | "stale",
+): number | false | undefined {
+  const cacheControl = context?.cacheControl;
+  const value =
+    cacheControl && typeof cacheControl === "object"
+      ? Reflect.get(cacheControl, field)
+      : context?.[field];
+  return typeof value === "number" || (field === "revalidate" && value === false)
+    ? value
+    : undefined;
+}
+
+async function digest(value: string): Promise<string> {
+  const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Buffer.from(bytes).toString("hex");
+}
+
+async function cacheRequest(key: string, path = DATA_ENTRY_PATH): Promise<Request> {
+  return new Request(`https://vinext-data-cache.invalid/${path}/${await digest(key)}`);
+}
+
+function readStringArrayField(
+  context: Record<string, unknown> | undefined,
+  field: string,
+): string[] {
+  const value = context?.[field];
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+}
+
+function serialize(entry: StoredCacheEntry): string {
+  return JSON.stringify(entry, (_key, value: unknown) =>
+    value instanceof ArrayBuffer
+      ? { [ARRAY_BUFFER_MARKER]: Buffer.from(value).toString("base64") }
+      : value,
+  );
+}
+
+function deserialize(value: string): StoredCacheEntry | null {
+  let entry: unknown;
+  try {
+    entry = JSON.parse(value, (_key, item: unknown) => {
+      if (
+        item &&
+        typeof item === "object" &&
+        typeof Reflect.get(item, ARRAY_BUFFER_MARKER) === "string"
+      ) {
+        const bytes = Buffer.from(Reflect.get(item, ARRAY_BUFFER_MARKER), "base64");
+        return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+      }
+      return item;
+    });
+  } catch {
+    return null;
+  }
+
+  if (
+    !entry ||
+    typeof entry !== "object" ||
+    typeof Reflect.get(entry, "lastModified") !== "number"
+  ) {
+    return null;
+  }
+  const cachedValue = Reflect.get(entry, "value");
+  if (
+    cachedValue !== null &&
+    (!cachedValue ||
+      typeof cachedValue !== "object" ||
+      typeof Reflect.get(cachedValue, "kind") !== "string")
+  ) {
+    return null;
+  }
+  return entry as StoredCacheEntry;
+}
+
+function cachePolicy(revalidate: number | false | undefined, expire: number | undefined): string {
+  if (revalidate === false || revalidate === undefined) {
+    // Never stale, but still hard-expired at a finite `expire` (e.g. from cacheLife).
+    return `public, max-age=${expire === undefined ? CACHE_MAX_AGE_SECONDS : Math.max(1, Math.ceil(expire))}`;
+  }
+  // Like Next.js, an entry without `expire` (unstable_cache, cached fetch) never
+  // hard-expires: past `revalidate` it is served stale and refreshed in the background.
+  // The Store reads whole seconds only, so round fractional ones (Next.js accepts them),
+  // keeping at least a second of freshness and hard expiry no earlier than `expire`.
+  const maxAge = revalidate > 0 ? Math.max(1, Math.floor(revalidate)) : 0;
+  const staleSeconds =
+    expire === undefined ? CACHE_MAX_AGE_SECONDS : Math.max(0, Math.ceil(expire) - maxAge);
+  return `public, max-age=${maxAge}, stale-while-revalidate=${staleSeconds}`;
+}
+
+export class WorkersResponseStoreCacheHandler implements CacheHandler {
+  private readonly tagExpirations = cacheForRequest(() => new Map<string, Promise<number>>());
+  /** The revision behind each entry returned stale by the Store, for the write refreshing it. */
+  private readonly staleRevisions = new WeakMap<
+    CacheHandlerValue,
+    { revision: number; tagExpiration?: { tags: string[]; expiration: number } }
+  >();
+
+  constructor(private readonly store: WorkersResponseStore = responseStore!) {
+    if (!store) {
+      throw new Error(
+        "[vinext] The Workers Response Store adapter must run through its generated Cloudflare worker entry.",
+      );
+    }
+  }
+
+  async get(key: string, context?: Record<string, unknown>): Promise<CacheHandlerValue | null> {
+    if (regenerationStorage.getStore()?.targetKey === key) return null;
+
+    const request = await cacheRequest(key);
+    try {
+      const response = await this.store.fetch(request);
+      if (!response.ok) {
+        void response.body?.cancel().catch(() => {});
+        if (
+          response.status === 404 &&
+          response.headers.get("X-Workers-Response-Store") === "MISS"
+        ) {
+          return null;
+        }
+        throw new Error(`Workers Response Store returned ${response.status}`);
+      }
+
+      const softTags = [
+        ...new Set(readStringArrayField(context, "softTags").map(encodeCloudflareCacheTag)),
+      ].sort();
+      const getTagExpiration = () => {
+        const key = softTags.join(",");
+        const expirations = this.tagExpirations();
+        let expiration = expirations.get(key);
+        if (!expiration) {
+          expiration = Promise.resolve().then(() => this.store.getTagExpiration(softTags));
+          expirations.set(key, expiration);
+          void expiration.catch(() => {
+            if (expirations.get(key) === expiration) expirations.delete(key);
+          });
+        }
+        return expiration;
+      };
+      const storeStatus = response.headers.get("X-Workers-Response-Store");
+      const body = response.text();
+      const eagerExpiration =
+        softTags.length && (storeStatus === "BLOB-FRESH" || storeStatus === "BLOB-STALE")
+          ? getTagExpiration().then(
+              (value) => ({ value }) as const,
+              (error: unknown) => ({ error }) as const,
+            )
+          : undefined;
+      const entry = deserialize(await body);
+      if (!entry) {
+        await this.store.purge({ pathPrefixes: [new URL(request.url).pathname] });
+        return null;
+      }
+
+      let tagExpiration: { tags: string[]; expiration: number } | undefined;
+      if (softTags.length) {
+        const expiration = eagerExpiration
+          ? await eagerExpiration
+          : { value: await getTagExpiration() };
+        if ("error" in expiration) throw expiration.error;
+        if (expiration.value >= entry.lastModified) return null;
+        tagExpiration = { tags: softTags, expiration: expiration.value };
+      }
+
+      const age = Date.now() - entry.lastModified;
+      const requestedRevalidate = readCacheControlField(context, "revalidate");
+      const storedRevalidate = entry.cacheControl?.revalidate;
+      const requestedStale =
+        typeof requestedRevalidate === "number" &&
+        requestedRevalidate > 0 &&
+        age > requestedRevalidate * 1000;
+      let cacheState: string | undefined;
+      if (response.headers.get(REPLAYABLE_HEADER) === "1") {
+        // A stale Store hit has already scheduled the Store's own refresh. Reporting it
+        // stale as well would make the caller (e.g. cached fetch) refresh it a second time.
+        if (requestedStale && storeStatus !== "BLOB-STALE") cacheState = "stale";
+      } else if (
+        typeof entry.cacheControl?.expire === "number" &&
+        age > entry.cacheControl.expire * 1000
+      ) {
+        cacheState = "expired";
+      } else if (
+        // The Store can't regenerate a non-replayable entry, so the caller revalidates it
+        // once the Store reports it stale: past its stored revalidate, or after invalidate().
+        // Its own edge copy has expired by then, so the first refresh normally replaces it
+        // without an edge purge.
+        storeStatus === "BLOB-STALE" ||
+        // A shorter requested revalidate makes it stale before the Store does.
+        (requestedStale &&
+          typeof requestedRevalidate === "number" &&
+          (typeof storedRevalidate !== "number" || requestedRevalidate < storedRevalidate)) ||
+        // An edge copy still marked fresh well past revalidate came from a Store that gave
+        // it longer, e.g. an older cache Worker during a rollout: refresh it anyway.
+        (typeof storedRevalidate === "number" &&
+          storedRevalidate > 0 &&
+          age > storedRevalidate * 1000 + STALE_FRESH_HIT_GRACE_MS)
+      ) {
+        cacheState = "stale";
+      }
+      const value: CacheHandlerValue = {
+        lastModified: entry.lastModified,
+        value: entry.value,
+        ...(cacheState ? { cacheState } : {}),
+        ...(entry.cacheControl ? { cacheControl: entry.cacheControl } : {}),
+      };
+      // Only an entry the Store itself reports stale is refreshed as that revision. A copy
+      // stale only to its caller may be an edge copy, whose replacement must still purge it.
+      const revision = Number(response.headers.get("X-Workers-Response-Store-Revision"));
+      if (
+        cacheState &&
+        storeStatus === "BLOB-STALE" &&
+        Number.isSafeInteger(revision) &&
+        revision > 0
+      ) {
+        // The Store can't see soft tags (e.g. revalidatePath()) expire, so the refresh carries
+        // them with the expiration this read saw.
+        this.staleRevisions.set(value, { revision, ...(tagExpiration ? { tagExpiration } : {}) });
+      }
+      return value;
+    } catch (error) {
+      console.error(
+        JSON.stringify({
+          message: "Vinext response-store data lookup failed; treating as a cache miss",
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      );
+      return null;
+    }
+  }
+
+  set(
+    key: string,
+    value: IncrementalCacheValue | null,
+    context?: Record<string, unknown>,
+  ): Promise<void> {
+    const write = this.write(key, value, context);
+    regenerationStorage.getStore()?.sideWrites.push(write);
+    return write;
+  }
+
+  private async write(
+    key: string,
+    value: IncrementalCacheValue | null,
+    context?: Record<string, unknown>,
+  ): Promise<void> {
+    let revalidate = readCacheControlField(context, "revalidate");
+    if (value && "revalidate" in value) revalidate = value.revalidate;
+    if (revalidate === 0) return;
+    // JSON and the Store's Cache-Control can't hold Infinity, so store it as `false`
+    // (never revalidates) and drop an infinite `expire`, like the KV adapter does.
+    if (typeof revalidate === "number" && !Number.isFinite(revalidate)) revalidate = false;
+
+    const rawExpire = readCacheControlField(context, "expire");
+    const expire =
+      typeof rawExpire === "number" && Number.isFinite(rawExpire) ? rawExpire : undefined;
+    const rawStale = readCacheControlField(context, "stale");
+    const stale = typeof rawStale === "number" && Number.isFinite(rawStale) ? rawStale : undefined;
+    const cacheControl =
+      typeof revalidate === "number" || revalidate === false
+        ? {
+            revalidate,
+            ...(typeof expire === "number" ? { expire } : {}),
+            ...(typeof stale === "number" ? { stale } : {}),
+          }
+        : undefined;
+    const tags = new Set<string>();
+    if (value && "tags" in value && Array.isArray(value.tags)) {
+      for (const tag of value.tags) tags.add(tag);
+    }
+    if (Array.isArray(context?.tags)) {
+      for (const tag of context.tags) if (typeof tag === "string") tags.add(tag);
+    }
+    const tagHeader = [...tags].map(encodeCloudflareCacheTag).join(",");
+    if (tagHeader.length > MAX_CACHE_TAG_HEADER_BYTES) {
+      throw new Error("Workers Response Store cache tags exceed the Workers Cache header limit");
+    }
+
+    const invocation = invocationStorage.getStore();
+    const cacheFunctionInvocation = context?.cacheFunctionInvocation;
+    const revalidator =
+      cacheFunctionInvocation &&
+      typeof cacheFunctionInvocation === "object" &&
+      typeof Reflect.get(cacheFunctionInvocation, "referenceId") === "string" &&
+      typeof Reflect.get(cacheFunctionInvocation, "encryptedArgs") === "string"
+        ? {
+            id: CACHE_FUNCTION_REVALIDATOR_ID,
+            args: [key, JSON.stringify(cacheFunctionInvocation as VinextCacheFunctionInvocation)],
+          }
+        : invocation?.replayable
+          ? { id: DATA_REVALIDATOR_ID, args: [key, invocation.serialized] }
+          : undefined;
+    // Like Next.js, a "use cache" entry is dated from when its generation started.
+    const lastModified = readCacheTimestamp(context, Date.now());
+    const response = new Response(
+      serialize({
+        ...(cacheControl ? { cacheControl } : {}),
+        lastModified,
+        value,
+      }),
+      {
+        headers: {
+          // The Store ages it from then, and publishes it stale, or expired, if its tags were
+          // invalidated, or purged, while it was generated, including when it regenerates it.
+          ...(lastModified === context?.timestamp
+            ? { [GENERATED_AT_HEADER]: String(lastModified) }
+            : {}),
+          "Cache-Control": cachePolicy(revalidate, expire),
+          ...(tagHeader ? { "Cache-Tag": tagHeader } : {}),
+          "Content-Type": "application/json",
+          ...(revalidator ? { [REPLAYABLE_HEADER]: "1" } : {}),
+        },
+      },
+    );
+
+    // A regeneration returns its own entry to the Store; any other entry it recomputes is
+    // stored as usual, as Next.js stores every entry a revalidation recomputes. A cache
+    // function call has no page to replay, so an entry it recomputes without its own
+    // revalidator would replace one the Store can regenerate with one it can't: skip it.
+    const regeneration = regenerationStorage.getStore();
+    if (regeneration?.targetKey === key) {
+      regeneration.captured = response;
+      return;
+    }
+    if (regeneration && !revalidator) return;
+
+    // Concurrent requests that read the entry stale each refresh it, passing it as
+    // `staleEntry`. Once one has replaced that revision, the Store drops the rest instead of
+    // replacing it again and spending an edge purge on each.
+    const staleEntry = context?.staleEntry;
+    const replaces =
+      staleEntry && typeof staleEntry === "object"
+        ? this.staleRevisions.get(staleEntry as CacheHandlerValue)
+        : undefined;
+    await this.store.put(await cacheRequest(key), response, {
+      ...(revalidator ? { revalidator } : {}),
+      // A read that finds a page-replay entry expired must not wait for the replay: a page
+      // reading two such entries would replay itself for each in turn (A -> B -> A). The
+      // Store answers a miss and the caller recomputes, as in Next.js; refresh() still replays.
+      // The Store can't regenerate an entry without a revalidator either.
+      ...(revalidator?.id !== CACHE_FUNCTION_REVALIDATOR_ID
+        ? { expiryBehavior: "miss" as const }
+        : {}),
+      coalesce: true,
+      purgeExisting: true,
+      ...(replaces
+        ? {
+            replacesRevision: replaces.revision,
+            ...(replaces.tagExpiration ? { replacesTagExpiration: replaces.tagExpiration } : {}),
+          }
+        : {}),
+    });
+  }
+
+  async revalidateTag(tags: string | string[], durations?: { expire?: number }): Promise<void> {
+    const dataTags = Array.isArray(tags) ? tags : [tags];
+    const encodedTags = dataTags.map(encodeCloudflareCacheTag);
+    if (!encodedTags.length) return;
+    if (isStaleTagInvalidation(durations)) {
+      // Like Next.js, mark the entries stale and let the next read revalidate them.
+      await this.store.invalidate({
+        tags: encodedTags,
+        ...(durations?.expire === undefined ? {} : { expire: durations.expire }),
+      });
+    } else {
+      await this.store.purge({
+        tags: encodedTags,
+      } satisfies ResponseStorePurgeOptions);
+    }
+  }
+}
+
+export default function createResponseStoreDataCacheAdapter(): CacheHandler {
+  return new WorkersResponseStoreCacheHandler();
+}
+
+export { CACHE_FUNCTION_REVALIDATOR_ID, DATA_REVALIDATOR_ID };

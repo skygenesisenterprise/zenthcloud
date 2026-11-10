@@ -1,0 +1,1096 @@
+/// <reference types="@vitejs/plugin-rsc/types" />
+
+import "./server-globals.js";
+import type { ReactElement, ReactNode } from "react";
+import type { ReactFormState } from "react-dom/client";
+import {
+  preinitModule,
+  preloadModule,
+  type PreinitModuleOptions,
+  type PreloadModuleOptions,
+} from "react-dom";
+import { Fragment, createElement as createReactElement, use } from "react";
+import { createFromReadableStream } from "@vitejs/plugin-rsc/ssr";
+// Resolved per environment: React's Node build on Node and the edge build under
+// workerd/edge-light, matching how Next.js loads `react-dom/server`.
+import {
+  renderToReadableStream,
+  renderToStaticMarkup,
+  type RenderToReadableStreamOptions,
+} from "react-dom/server";
+import clientReferences, { routeClientReferences } from "virtual:vite-rsc/client-references";
+import type { NavigationContext } from "vinext/shims/navigation-server";
+import {
+  ServerInsertedHTMLContext,
+  clearServerInsertedHTML,
+  getBfcacheIdMapContext,
+  registerServerInsertedHTMLCallback,
+  renderServerInsertedHTML,
+  setNavigationContext,
+} from "vinext/shims/navigation-server";
+import { runWithNavigationContext } from "vinext/shims/navigation-state";
+import { startCandidateSearchParamsGate } from "./app-ssr-search-params-gate.js";
+import { onRenderDynamicLatched } from "vinext/shims/internal/headers-state";
+import { createClientPageSsrSearchParamsSource } from "./app-page-search-params-observation.js";
+import { runWithRootParamsScope, type RootParams } from "vinext/shims/root-params";
+import { isOpenRedirectShaped, repeatedSlashRedirectResponse } from "./open-redirect.js";
+import { notFoundResponse } from "./http-error-responses.js";
+import { isSrvxAbsoluteFormTarget } from "./srvx-request-target.js";
+import { withScriptNonce } from "vinext/shims/script-nonce-context";
+import { withAppRouterTree } from "vinext/shims/app-router-tree-context";
+import {
+  CAUGHT_NOT_FOUND_BOUNDARIES_GLOBAL,
+  withCaughtNotFoundBoundaries,
+  type CaughtNotFoundBoundaries,
+} from "vinext/shims/caught-not-found-boundaries";
+import {
+  BeforeInteractiveContext,
+  type BeforeInteractiveInlineScript,
+} from "vinext/shims/before-interactive-context";
+import {
+  createInlineScriptTag,
+  createNonceAttribute,
+  escapeHtmlAttr,
+  safeJsonStringify,
+} from "./html.js";
+import { renderBeforeInteractiveInlineScripts } from "./before-interactive-head.js";
+import {
+  createNavigationRuntimeRenderedSearchScript,
+  createNavigationRuntimeRscCompatibilityScript,
+  createNavigationRuntimeRscMetadataScript,
+  createRscEmbedTransform,
+  createTickBufferedTransform,
+  rewriteInlineCssStylesheetLinks,
+  waitAtLeastOneReactRenderTask,
+  type InitialNavigationCacheMetadata,
+} from "./app-ssr-stream.js";
+import type { AppSsrRenderResult } from "./app-page-stream.js";
+import { deferUntilStreamConsumed } from "./defer-until-stream-consumed.js";
+import { createSsrErrorMetaRenderer } from "./app-ssr-error-meta.js";
+import { createInitialDevServerErrorScript } from "./dev-initial-server-error.js";
+import {
+  getClientTraceMetadataHTML,
+  markClientTraceMetadataBlock,
+} from "./client-trace-metadata.js";
+import { AppElementsWire, type AppWireElements } from "./app-elements.js";
+import { createInitialBfcacheMaps } from "./app-bfcache-identity.js";
+import { createAppRouteTree } from "./app-route-tree.js";
+import { BfcacheIdentityMapContext } from "vinext/shims/slot";
+import { AppRouterContext } from "vinext/shims/internal/app-router-context";
+import {
+  createClientReferencePreloader,
+  resolveRouteClientReferences,
+} from "./app-client-reference-preloader.js";
+import {
+  createStreamedClientReferences,
+  resetStreamedClientReferences,
+  renderStreamedStylesheets,
+  runWithStreamedClientReferences,
+  wrapClientReferenceRequire,
+} from "./app-streamed-client-references.js";
+import { RSC_FORM_STATE_GLOBAL } from "../client/browser-globals.js";
+import { ssrServerConsumerManifest } from "./app-client-reference-manifest.js";
+import { isPprFallbackShellAbortError } from "vinext/shims/ppr-fallback-shell";
+import DefaultGlobalError from "vinext/shims/default-global-error";
+import { appendAssetDeploymentIdQuery } from "../utils/deployment-id.js";
+import { ssrAppRouterInstance } from "./app-ssr-router-instance.js";
+import { createRenderStreamCancellation, isAppRenderAbortError } from "./app-render-abort-error.js";
+import { getNextErrorDigest } from "./next-error-digest.js";
+import { isBailoutToCSRError, isDynamicServerError } from "vinext/shims/navigation-errors";
+import { isNavigationSignalError } from "../utils/navigation-signal.js";
+// @ts-expect-error — resolved by the vinext Vite plugin in SSR environments.
+import pagesClientAssets from "virtual:vinext-pages-client-assets";
+import { setPagesClientAssets, type PagesClientAssets } from "./pages-client-assets.js";
+
+setPagesClientAssets(pagesClientAssets as PagesClientAssets);
+
+/**
+ * `@types/react-dom` does not yet type `maxHeadersLength` (it pairs with the
+ * already-typed `onHeaders` to cap the emitted preload `Link` header). React
+ * supports it at runtime, so augment the option type locally.
+ */
+type SsrRenderOptions = RenderToReadableStreamOptions & {
+  maxHeadersLength?: number;
+};
+
+/**
+ * Default cap for the preload `Link` header, matching Next.js's
+ * `defaultConfig.reactMaxHeadersLength`. Used when no config value threads
+ * through (e.g. error-boundary renders) so React's internal cap agrees with
+ * the response-layer combine cap.
+ */
+const DEFAULT_REACT_MAX_HEADERS_LENGTH = 6000;
+
+/**
+ * plugin-rsc's SSR `createFromReadableStream` spreads these over its own
+ * options, whose type leaves out the consumer manifest.
+ */
+const SSR_FLIGHT_OPTIONS: NonNullable<Parameters<typeof createFromReadableStream>[1]> & {
+  serverConsumerManifest: typeof ssrServerConsumerManifest;
+} = { serverConsumerManifest: ssrServerConsumerManifest };
+
+export type FontPreload = {
+  href: string;
+  type: string;
+};
+
+export type FontData = {
+  links?: string[];
+  styles?: string[];
+  preloads?: FontPreload[];
+};
+
+type StaticPrerender = typeof import("react-dom/static").prerender;
+
+function isStaticPrerenderModule(value: unknown): value is { prerender: StaticPrerender } {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "prerender" in value &&
+    typeof value.prerender === "function"
+  );
+}
+
+async function loadStaticPrerender(): Promise<StaticPrerender> {
+  // Every react-dom/static build exports prerender() from React 19.3, the
+  // minimum vinext supports.
+  const staticRenderer: unknown = await import("react-dom/static");
+  if (isStaticPrerenderModule(staticRenderer)) {
+    return staticRenderer.prerender;
+  }
+  throw new Error("[vinext] react-dom/static did not expose prerender().");
+}
+
+function createUtf8Stream(html: string): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder();
+  return new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(encoder.encode(html));
+      controller.close();
+    },
+  });
+}
+
+function buildBootstrapModuleScript(
+  bootstrapModuleUrl?: string,
+  nonce?: string,
+  crossOrigin?: string,
+): string {
+  if (!bootstrapModuleUrl) return "";
+  // As React's bootstrapModules emits it.
+  const crossOriginAttribute =
+    crossOrigin === undefined
+      ? ""
+      : ` crossorigin="${crossOrigin === "use-credentials" ? "use-credentials" : ""}"`;
+  return (
+    `<script type="module"${createNonceAttribute(nonce)} src="` +
+    escapeHtmlAttr(bootstrapModuleUrl) +
+    `"${crossOriginAttribute} id="_R_" async="" fetchPriority="low"></script>`
+  );
+}
+
+function renderSsrErrorDocumentShell(
+  bootstrapModuleUrl?: string,
+  nonce?: string,
+  crossOrigin?: string,
+): ReadableStream<Uint8Array> {
+  const html = renderToStaticMarkup(
+    createReactElement(DefaultGlobalError, {
+      error: null,
+    }),
+  )
+    // Like Next.js's NonIndex, which the error document's 500 status turns on.
+    .replace("<head>", '<head><meta name="robots" content="noindex"/>')
+    .replace("<style>", '<style data-vinext-error-shell-style="">');
+  const bootstrapScript = buildBootstrapModuleScript(bootstrapModuleUrl, nonce, crossOrigin);
+  if (!bootstrapScript) {
+    return createUtf8Stream(`<!DOCTYPE html>${html}`);
+  }
+
+  const documentClose = "</body></html>";
+  if (!html.endsWith(documentClose)) {
+    return createUtf8Stream(`<!DOCTYPE html>${html}${bootstrapScript}`);
+  }
+
+  return createUtf8Stream(
+    `<!DOCTYPE html>${html.slice(0, -documentClose.length)}${bootstrapScript}${documentClose}`,
+  );
+}
+
+// Client references load through a wrapped loader, which must see every load
+// from the first. It hints their scripts with the render's nonce, and streams
+// the references whose modules evaluate asynchronously. The build fills
+// `async` in as chunks render; should it ever not (a plugin rewrote the
+// placeholder first), nothing streams. Development hints no scripts.
+if (process.env.NODE_ENV === "production") {
+  const async = routeClientReferences?.async;
+  wrapClientReferenceRequire(
+    new Set(
+      Array.isArray(async) ? async.map((index) => routeClientReferences!.references[index]!) : [],
+    ),
+    (id) => (clientReferences as Record<string, (() => Promise<unknown>) | undefined>)[id],
+  );
+}
+
+const clientReferencePreloader = createClientReferencePreloader({
+  getReferences() {
+    return clientReferences;
+  },
+  getClientRequire() {
+    return globalThis.__vite_rsc_client_require__;
+  },
+  onPreloadError(id, error) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("[vinext] failed to preload client ref:", id, error);
+    }
+  },
+});
+const BfcacheIdMapContext = getBfcacheIdMapContext();
+
+function ssrErrorDigest(input: string): string {
+  let hash = 5381;
+  for (let i = input.length - 1; i >= 0; i--) {
+    hash = (hash * 33) ^ input.charCodeAt(i);
+  }
+  return (hash >>> 0).toString();
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  return Object.prototype.toString.call(error);
+}
+
+function renderInsertedHtml(insertedElements: readonly unknown[]): string {
+  let insertedHTML = "";
+
+  for (const element of insertedElements) {
+    try {
+      insertedHTML += renderToStaticMarkup(
+        createReactElement(Fragment, null, element as ReactNode),
+      );
+    } catch {
+      // Ignore individual callback failures so the rest of the page can render.
+    }
+  }
+
+  return insertedHTML;
+}
+
+function renderFontHtml(
+  fontData?: FontData,
+  nonce?: string,
+  options: { includeStyles?: boolean } = {},
+): string {
+  if (!fontData) return "";
+
+  let fontHTML = "";
+  const nonceAttr = createNonceAttribute(nonce);
+  const includeStyles = options.includeStyles ?? true;
+
+  for (const url of fontData.links ?? []) {
+    fontHTML += `<link rel="stylesheet"${nonceAttr} href="${escapeHtmlAttr(appendAssetDeploymentIdQuery(url))}" />\n`;
+  }
+
+  for (const preload of fontData.preloads ?? []) {
+    // Font files are content-hashed immutable assets. Keep the preload URL
+    // byte-identical to the @font-face source so the browser consumes it;
+    // deployment IDs are only needed to cache-bust mutable static assets.
+    fontHTML += `<link rel="preload"${nonceAttr} href="${escapeHtmlAttr(preload.href)}" as="font" type="${escapeHtmlAttr(preload.type)}" crossorigin />\n`;
+  }
+
+  if (includeStyles && fontData.styles && fontData.styles.length > 0) {
+    fontHTML += `<style data-vinext-fonts${nonceAttr}>${fontData.styles.join("\n")}</style>\n`;
+  }
+
+  return fontHTML;
+}
+
+function hasInlineCssManifest(manifest: Record<string, string> | undefined): boolean {
+  return manifest !== undefined && Object.keys(manifest).length > 0;
+}
+
+/**
+ * Extract the bootstrap module URL from the `import("...")` string that
+ * `import.meta.viteRsc.loadBootstrapScriptContent("index")` returns.
+ *
+ * The plugin-rsc helper returns the bootstrap as an inline call so we can
+ * inject it via `bootstrapScriptContent`. We instead pass the URL to
+ * React's `bootstrapModules` option so a real
+ * `<script type="module" src="…">` tag ends up in the streamed HTML —
+ * this exposes the URL to anything that reads `script.attribs.src` (e.g.
+ * the Next.js asset-prefix fixture test). The same URL also feeds the
+ * `<link rel="modulepreload">` we emit ahead of the bootstrap.
+ *
+ * Returns `undefined` when the helper produced no URL (older plugin-rsc
+ * versions, or a custom client entry that disables bootstrap content).
+ */
+function extractBootstrapModuleUrl(bootstrapScriptContent?: string): string | undefined {
+  if (!bootstrapScriptContent) return undefined;
+  // Accept either quote style — plugin-rsc currently emits double quotes
+  // (`import("…")`) but a future version could switch to single quotes,
+  // and there's no public contract documenting which is used.
+  const match = bootstrapScriptContent.match(/import\(["']([^"']+)["']\)/);
+  return match?.[1] ?? undefined;
+}
+
+function buildModulePreloadHtml(bootstrapModuleUrl?: string, nonce?: string): string {
+  if (!bootstrapModuleUrl) return "";
+  return `<link rel="modulepreload"${createNonceAttribute(nonce)} href="${escapeHtmlAttr(bootstrapModuleUrl)}" crossorigin="${pagesClientAssets.crossOrigin ?? ""}" fetchPriority="low" />\n`;
+}
+
+function buildHeadInjectionHtml(
+  navContext: NavigationContext,
+  bootstrapPreloadUrl: string | undefined,
+  formState: ReactFormState | null,
+  insertedHTML: string,
+  fontHTML: string,
+  dynamicStaleTimeSeconds?: number,
+  searchParamsFromBrowser?: boolean,
+  scriptNonce?: string,
+): string {
+  const navPayload = {
+    pathname: navContext.pathname,
+    searchParams: [...navContext.searchParams.entries()],
+  };
+  const rscMetadataScript = createInlineScriptTag(
+    createNavigationRuntimeRscMetadataScript(
+      navContext.params,
+      navPayload,
+      dynamicStaleTimeSeconds,
+      searchParamsFromBrowser,
+    ),
+    scriptNonce,
+  );
+  // Rendered with the page, so a cached page keeps the ID of the deployment
+  // that rendered its embedded payload.
+  const compatibilityScript = createNavigationRuntimeRscCompatibilityScript();
+  const rscCompatibilityScript =
+    compatibilityScript === "" ? "" : createInlineScriptTag(compatibilityScript, scriptNonce);
+  const formStateScript =
+    formState === null
+      ? ""
+      : createInlineScriptTag(
+          "self[" + safeJsonStringify(RSC_FORM_STATE_GLOBAL) + "]=" + safeJsonStringify(formState),
+          scriptNonce,
+        );
+
+  return (
+    rscMetadataScript +
+    rscCompatibilityScript +
+    formStateScript +
+    buildModulePreloadHtml(bootstrapPreloadUrl, scriptNonce) +
+    insertedHTML +
+    fontHTML
+  );
+}
+
+function requireNavigationContext(navContext: NavigationContext | null): NavigationContext {
+  if (!navContext) {
+    // Guaranteed by the RSC handler (app-rsc-handler.ts) before every main
+    // render and by the ISR/revalidation path (app-page-dispatch.ts). Fallback
+    // boundary renderers synthesize one (app-page-boundary-render.ts) when
+    // request scope is gone.
+    throw new Error("App SSR requires navigation context for BFCache state keys");
+  }
+  return navContext;
+}
+
+export async function handleSsr(
+  rscStream: ReadableStream<Uint8Array>,
+  navContext: NavigationContext | null,
+  fontData?: FontData,
+  options?: {
+    scriptNonce?: string;
+    /** Pre-split side stream for embed+capture fusion. When provided,
+     *  rscStream is fed directly to createFromReadableStream (no internal tee).
+     *  The embed transform accumulates raw bytes. */
+    sideStream?: ReadableStream<Uint8Array>;
+    /** Out-parameter: filled with accumulated raw RSC bytes when sideStream is consumed. */
+    capturedRscDataRef?: { value: Promise<ArrayBuffer> | null };
+    pprFallbackShellSignal?: AbortSignal;
+    /** Aborts a streaming render whose document is given up. */
+    signal?: AbortSignal;
+    /**
+     * Pattern of the route this render shows, whose client references load
+     * before it starts, or null for a render without a route (a route-miss
+     * 404). Omitted, every client reference loads first.
+     */
+    preloadRoutePattern?: string | null;
+    formState?: ReactFormState | null;
+    basePath?: string;
+    /**
+     * Allow-list of OpenTelemetry propagation keys (from
+     * `experimental.clientTraceMetadata`) to render as `<meta>` tags in the
+     * SSR head. Undefined or empty disables emission entirely.
+     */
+    clientTraceMetadata?: readonly string[];
+    /** Private marker used to identify only this render's injected trace tags. */
+    clientTraceMetadataMarker?: string;
+    /**
+     * Maximum total length (in characters) of the preload `Link` header React
+     * emits during SSR. `0` disables emission. From `reactMaxHeadersLength` in
+     * `next.config`. Undefined falls back to React's own default.
+     */
+    reactMaxHeadersLength?: number;
+    rootParams?: RootParams;
+    /** Dev-only: original server error to surface in the browser overlay. */
+    initialDevServerError?: unknown;
+    /** Report an SSR/Fizz render failure through instrumentation. */
+    onSsrError?: (error: unknown) => unknown;
+    /** Mirror inline Flight chunks into Next.js's `self.__next_f` transport, or start
+     *  mirroring once a function returns true. */
+    mirrorNextFlight?: boolean | (() => boolean);
+    /** When true, wait for the full React tree (including Suspense boundaries)
+     *  to resolve before returning the HTML stream. Used for static prerender
+     *  and ISR cache writes to avoid caching fallback content. */
+    waitForAllReady?: boolean;
+    /** Render is producing a static/prerendered HTML artifact. */
+    isStaticGeneration?: boolean;
+    /** `dynamic = "force-static"` suppresses the useSearchParams bailout. */
+    isForceStatic?: boolean;
+    /**
+     * Production render that may be stored under a query-free key. SSR
+     * `useSearchParams()` waits on a per-request gate, and the navigation
+     * payload leaves the query for the browser to read.
+     */
+    isCacheCandidate?: boolean;
+    fallbackToErrorDocumentOnShellError?: boolean;
+    /**
+     * Whether the RSC render threw the given shell error. As in Next.js, in
+     * dev the error document carries only an error that the HTML render alone
+     * threw, for the overlay: the browser reports the others itself.
+     */
+    isServerComponentError?: (error: unknown) => boolean;
+    /**
+     * The parallel slot not-found boundaries that catch the error that
+     * rejected the shell, or null when none catches it. The document then
+     * renders again from the same payload with them caught.
+     */
+    resolveCaughtNotFoundBoundaries?: (error: unknown) => readonly string[] | null;
+    dynamicStaleTimeSeconds?: number;
+    getInitialNavigationCacheMetadata?: () => InitialNavigationCacheMetadata;
+  },
+): Promise<AppSsrRenderResult> {
+  return runWithNavigationContext(async () => {
+    const assetCrossOrigin = pagesClientAssets.crossOrigin ?? "";
+    // Static generation already bails out at once, and force-static reads an
+    // empty query, so neither needs the gate.
+    const searchParamsGate =
+      options?.isCacheCandidate === true &&
+      options.isStaticGeneration !== true &&
+      options.isForceStatic !== true
+        ? startCandidateSearchParamsGate()
+        : null;
+    // The gate stops listening once it settles, but a client page behind a
+    // later boundary can still turn the render dynamic.
+    let rendersDynamic = false;
+    const stopWatchingDynamic = searchParamsGate
+      ? onRenderDynamicLatched(() => {
+          rendersDynamic = true;
+        })
+      : null;
+    const requiredNavigationContext = requireNavigationContext(navContext);
+    const ssrNavigationContext = {
+      ...requiredNavigationContext,
+      isStaticGeneration: options?.isStaticGeneration,
+      isForceStatic: options?.isForceStatic,
+      searchParamsGate: searchParamsGate?.gate,
+      // A client page reading this marks the render dynamic, like a server
+      // page's searchParams.
+      getClientPageSearchParams: createClientPageSsrSearchParamsSource(
+        requiredNavigationContext.searchParams,
+        {
+          isForceStatic: options?.isForceStatic,
+          isPprFallbackShell: options?.pprFallbackShellSignal !== undefined,
+        },
+      ),
+    };
+
+    // A render waits for its route's client references, so a cold render
+    // shows the same document as a warm one, except for those whose modules
+    // evaluate asynchronously, which it streams like Next.js. A PPR fallback
+    // shell aborts on the next tick, so it loads every reference first.
+    const routeReferences = options?.pprFallbackShellSignal
+      ? undefined
+      : resolveRouteClientReferences(routeClientReferences, options?.preloadRoutePattern);
+    const streamedReferences = createStreamedClientReferences(
+      routeReferences,
+      options?.scriptNonce,
+      assetCrossOrigin,
+    );
+    await clientReferencePreloader.preload(
+      routeReferences?.references,
+      streamedReferences?.streamed,
+    );
+
+    setNavigationContext(ssrNavigationContext);
+
+    clearServerInsertedHTML();
+
+    const cleanup = (): void => {
+      stopWatchingDynamic?.();
+      setNavigationContext(null);
+      clearServerInsertedHTML();
+    };
+
+    const rootParams = options?.rootParams ?? {};
+    return runWithRootParamsScope(rootParams, async () => {
+      try {
+        // Fused tee path (#981): caller pre-split the stream. No internal tee needed.
+        // sideStream carries both the embed transform and raw byte accumulation.
+        // rscStream is used directly for createFromReadableStream (SSR).
+        let ssrStream: ReadableStream<Uint8Array>;
+        let rscEmbed;
+
+        if (options?.sideStream) {
+          ssrStream = rscStream;
+          rscEmbed = createRscEmbedTransform(options.sideStream, {
+            mirrorNextFlight: options?.mirrorNextFlight,
+            scriptNonce: options?.scriptNonce,
+            getInitialNavigationCacheMetadata: options?.getInitialNavigationCacheMetadata,
+          });
+          if (options.capturedRscDataRef) {
+            options.capturedRscDataRef.value = rscEmbed.getRawBuffer();
+          }
+        } else {
+          const [s1, s2] = rscStream.tee();
+          ssrStream = s1;
+          rscEmbed = createRscEmbedTransform(s2, {
+            mirrorNextFlight: options?.mirrorNextFlight,
+            scriptNonce: options?.scriptNonce,
+            getInitialNavigationCacheMetadata: options?.getInitialNavigationCacheMetadata,
+          });
+        }
+
+        if (searchParamsGate) {
+          ssrStream = searchParamsGate.settleWhenConsumed(ssrStream);
+        }
+
+        let flightRoot: PromiseLike<AppWireElements> | null = null;
+
+        function VinextFlightRoot(): ReactNode {
+          // Browsers fetch module scripts at high priority, ahead of the
+          // document's own content. Next.js loads these chunks with classic
+          // async scripts, which they fetch at low priority, and React
+          // already preloads the bootstrap module at low priority.
+          for (const moduleUrl of pagesClientAssets.appBootstrapPreinitModules ?? []) {
+            // React forwards fetchPriority; its types leave it out.
+            preinitModule(moduleUrl, {
+              as: "script",
+              crossOrigin: assetCrossOrigin,
+              fetchPriority: "low",
+              nonce: options?.scriptNonce,
+            } as PreinitModuleOptions);
+          }
+          // Evaluating these starts hydration, which needs the whole shell, so
+          // only React's bootstrap script at the end of the shell may run them.
+          for (const moduleUrl of pagesClientAssets.appBootstrapPreloadModules ?? []) {
+            // React forwards fetchPriority; its types leave it out.
+            preloadModule(moduleUrl, {
+              as: "script",
+              crossOrigin: assetCrossOrigin,
+              fetchPriority: "low",
+              nonce: options?.scriptNonce,
+            } as PreloadModuleOptions);
+          }
+          // The browser entry imports the RouteManifest chunk as it boots.
+          // Browsers fetch a dynamic import() at high priority, ahead of the
+          // document's own content; the import reuses this low-priority
+          // preload instead.
+          if (pagesClientAssets.appRouteManifestModule) {
+            // React forwards fetchPriority; its types leave it out.
+            preloadModule(pagesClientAssets.appRouteManifestModule, {
+              as: "script",
+              crossOrigin: assetCrossOrigin,
+              fetchPriority: "low",
+              nonce: options?.scriptNonce,
+            } as PreloadModuleOptions);
+          }
+          if (!flightRoot) {
+            flightRoot = createFromReadableStream<AppWireElements>(ssrStream, SSR_FLIGHT_OPTIONS);
+          }
+          const wireElements = use(flightRoot);
+          const elements = AppElementsWire.decode(wireElements);
+          const metadata = AppElementsWire.readMetadata(elements);
+          const bfcacheMaps = createInitialBfcacheMaps({
+            elements,
+            metadata,
+          });
+          const routeTree = createAppRouteTree({
+            elements,
+            historyCommit: null,
+            routeId: metadata.routeId,
+          });
+          const identityMapTree = createReactElement(
+            BfcacheIdentityMapContext.Provider,
+            { value: bfcacheMaps.identities },
+            routeTree,
+          );
+          // During SSR we only provide the id *map*, seeded entirely with the
+          // INITIAL_BFCACHE_ID sentinel. BfcacheSlotBoundary may still publish a
+          // BfcacheSegmentIdContext value here, but every map entry is the "0"
+          // sentinel, so formatPublicBfcacheId resolves useRouter().bfcacheId to
+          // the public hydration sentinel ("_b_0_") regardless until the client
+          // context takes over. Per-segment minted ids are browser-only.
+          return BfcacheIdMapContext
+            ? createReactElement(
+                BfcacheIdMapContext.Provider,
+                { value: bfcacheMaps.bfcacheIds },
+                identityMapTree,
+              )
+            : identityMapTree;
+        }
+
+        const flightRootElement = createReactElement(VinextFlightRoot);
+        const root = AppRouterContext
+          ? createReactElement(
+              AppRouterContext.Provider,
+              { value: ssrAppRouterInstance },
+              flightRootElement,
+            )
+          : flightRootElement;
+        const ssrTree = ServerInsertedHTMLContext
+          ? createReactElement(
+              ServerInsertedHTMLContext.Provider,
+              { value: registerServerInsertedHTMLCallback },
+              root,
+            )
+          : root;
+
+        // Capture inline `<Script strategy="beforeInteractive">` content so the
+        // SSR stream transform can emit it immediately after `<head ...>`
+        // opens — ahead of every React-emitted resource hint. The Script shim
+        // pushes here when it sees an inline beforeInteractive Script and
+        // returns `null` from its render so React does not also serialize the
+        // tag where the user wrote it (where Fizz would push it *after* the
+        // hoisted stylesheets/modulepreloads). See
+        // packages/vinext/src/shims/script.tsx for the capture side.
+        const beforeInteractiveInlineScripts: BeforeInteractiveInlineScript[] = [];
+        const registerBeforeInteractiveInlineScript = (
+          script: BeforeInteractiveInlineScript,
+        ): void => {
+          beforeInteractiveInlineScripts.push(script);
+        };
+        const treeWithBeforeInteractive = createReactElement(
+          BeforeInteractiveContext.Provider,
+          { value: registerBeforeInteractiveInlineScript },
+          ssrTree,
+        );
+        const ssrRoot = withScriptNonce(
+          withAppRouterTree(treeWithBeforeInteractive),
+          options?.scriptNonce,
+        );
+
+        // plugin-rsc returns the bootstrap as `import("<url>")` so callers can
+        // inject it via `bootstrapScriptContent`. We hand the URL to React's
+        // `bootstrapModules` option instead so the streamed HTML contains a
+        // real `<script type="module" src="<url>">` tag — exposing the URL
+        // to anything that inspects `script.attribs.src` (e.g. the Next.js
+        // asset-prefix fixture test "bundles should return 200 on served
+        // assetPrefix"). Mirrors Next.js's app-render path which passes
+        // `bootstrapScripts: [{ src }]` for the same reason; we use
+        // `bootstrapModules` because vinext's chunks are native ES modules
+        // (Vite output) so a `type="module"` tag is the correct loader.
+        //
+        // In dev, `<url>` is a Vite dev URL like
+        // `/@id/__x00__virtual:vinext-app-browser-entry`; the browser fetches
+        // it as a module from the dev server. In prod it's the hashed bundle
+        // URL (e.g. `/_next/static/index-abc123.js`, optionally prefixed by
+        // `assetPrefix`). Both are valid `<script type="module" src=…>` targets.
+        const bootstrapScriptContent = await import.meta.viteRsc.loadBootstrapScriptContent(
+          "index",
+        );
+        // Keep the bootstrap URL exactly as emitted by plugin-rsc. Appending a
+        // deployment query here happens after Vite has generated the client
+        // module graph, so the bootstrap entry gets a different module identity
+        // from references to the same entry inside that graph. That splits the
+        // React/RSC client singleton state and breaks hydration and server-action
+        // FormData encoding. Normal built assets are versioned earlier through
+        // Vite's renderBuiltUrl hook.
+        const bootstrapModuleUrl = extractBootstrapModuleUrl(bootstrapScriptContent);
+        const errorMetaRenderer = createSsrErrorMetaRenderer({
+          basePath: options?.basePath,
+        });
+
+        const pprFallbackShellSignal = options?.pprFallbackShellSignal;
+        const htmlCancellation = createRenderStreamCancellation();
+        // React emits a preload `Link` header (capped to `maxHeadersLength`)
+        // via `onHeaders`. It fires before the shell resolves, so `linkHeader`
+        // is populated by the time `renderToReadableStream` resolves below.
+        // `0` disables emission entirely — skip the callback so React doesn't
+        // warn about a non-positive `maxHeadersLength`. Fall back to the same
+        // 6000 default the response-layer cap uses (React's own default is
+        // 2000) so both caps agree when no config value threads through.
+        let reactLinkHeader = "";
+        const maxHeadersLength = options?.reactMaxHeadersLength ?? DEFAULT_REACT_MAX_HEADERS_LENGTH;
+        const captureHeaders = maxHeadersLength > 0;
+
+        const renderOptions: SsrRenderOptions = {
+          // `bootstrapScriptContent` was previously how vinext injected the
+          // dynamic-import call. `bootstrapModules` performs the same work
+          // natively (and exposes the URL in the DOM), so passing both would
+          // load the bootstrap module twice.
+          //
+          // CSP implications of using `bootstrapModules` instead of inline
+          // `bootstrapScriptContent`:
+          //  - Apps no longer need `script-src 'unsafe-inline'` to load the
+          //    bootstrap (improvement — inline imports required `'unsafe-inline'`).
+          //  - Apps that restrict script sources need `'self'` for the
+          //    common case, or the CDN origin when `assetPrefix` is an
+          //    absolute URL like `https://cdn.example.com`.
+          //  - React still applies `nonce` to the emitted
+          //    `<script type="module" src=…>` tag, so nonce-based CSP
+          //    (`script-src 'nonce-…' 'strict-dynamic'`) keeps working.
+          bootstrapModules: bootstrapModuleUrl
+            ? [{ src: bootstrapModuleUrl, crossOrigin: assetCrossOrigin }]
+            : undefined,
+          formState: options?.formState ?? null,
+          nonce: options?.scriptNonce,
+          onHeaders: captureHeaders
+            ? (headers: Headers) => {
+                const link = headers.get("Link");
+                if (link) {
+                  reactLinkHeader = link;
+                }
+              }
+            : undefined,
+          maxHeadersLength: captureHeaders ? maxHeadersLength : undefined,
+          signal: options?.signal,
+          onError(error: unknown) {
+            if (pprFallbackShellSignal && isPprFallbackShellAbortError(error)) {
+              return undefined;
+            }
+            if (isAppRenderAbortError(error) || htmlCancellation.isReason(error)) {
+              return undefined;
+            }
+
+            errorMetaRenderer.capture(error);
+
+            const instrumentationDigest = options?.onSsrError?.(error);
+            if (typeof instrumentationDigest === "string") {
+              return instrumentationDigest;
+            }
+
+            const existingDigest = getNextErrorDigest(error);
+            if (existingDigest !== null) return existingDigest;
+
+            if (process.env.NODE_ENV === "production" && error) {
+              const message = getErrorMessage(error);
+              const stack = error instanceof Error ? (error.stack ?? "") : "";
+              return ssrErrorDigest(message + stack);
+            }
+
+            return undefined;
+          },
+        };
+
+        let htmlStream: ReadableStream<Uint8Array>;
+        let renderComplete = Promise.resolve();
+        let shellErrorRecovered = false;
+        let ssrOnlyShellError: unknown;
+        let caughtShellError: unknown;
+        let caughtBoundaries: CaughtNotFoundBoundaries | null = null;
+        let shouldDelayInitialHtmlPull = false;
+        // Fizz has no error boundaries, so a parallel slot's notFound() rejects
+        // the shell. The root to render the document again with, from the same
+        // payload, with the slot boundaries that catch it on the client
+        // rendering their fallback, or null when any copy isn't caught in its
+        // slot. No server component runs again.
+        const prepareCaughtNotFoundRoot = (error: unknown): ReactElement | null => {
+          const caughtNotFoundBoundaries =
+            options?.resolveCaughtNotFoundBoundaries?.(error) ?? null;
+          if (!caughtNotFoundBoundaries || caughtNotFoundBoundaries.length === 0) return null;
+          // Decode the payload again inside this render, so that it hints the
+          // client references' stylesheets and modules to this document, like
+          // the render it replaces. A fallback shell's stays open, as its SSR
+          // stream does, so the references its aborted prerender omitted stay
+          // suspended. Without the payload's bytes, the shell's error goes on
+          // to the fallback above the slot's layout.
+          const replayedRscStream = rscEmbed.replay({
+            keepOpen: pprFallbackShellSignal !== undefined,
+          });
+          if (!replayedRscStream) return null;
+          ssrStream = replayedRscStream;
+          flightRoot = null;
+          beforeInteractiveInlineScripts.length = 0;
+          clearServerInsertedHTML();
+          resetStreamedClientReferences(streamedReferences, routeReferences);
+          const boundaries: CaughtNotFoundBoundaries = {
+            ids: new Set(caughtNotFoundBoundaries),
+            rendered: new Set(),
+          };
+          caughtBoundaries = boundaries;
+          return withCaughtNotFoundBoundaries(boundaries, ssrRoot);
+        };
+        if (pprFallbackShellSignal) {
+          const prerender = await loadStaticPrerender();
+          const prerenderFallbackShell = async (
+            root: ReactElement,
+          ): Promise<ReadableStream<Uint8Array>> => {
+            const htmlAbortController = new AbortController();
+            const pendingHtml = runWithStreamedClientReferences(streamedReferences, () =>
+              prerender(root, {
+                ...renderOptions,
+                signal: htmlAbortController.signal,
+              }),
+            );
+            // Known limitation: unlike Next.js, nothing waits for modules that
+            // are still loading. A next/dynamic() without `loading` whose import
+            // is pending here has no Suspense boundary of its own, so it
+            // suspends to the nearest one; with no loading.js above it, the
+            // shell is empty.
+            setTimeout(() => htmlAbortController.abort(), 0);
+            return (await pendingHtml).prelude;
+          };
+          try {
+            htmlStream = await prerenderFallbackShell(ssrRoot);
+          } catch (error) {
+            const caughtRoot = prepareCaughtNotFoundRoot(error);
+            if (!caughtRoot) throw error;
+            // A slot's not-found boundary that throws replaces the 404.
+            htmlStream = await prerenderFallbackShell(caughtRoot);
+            caughtShellError = error;
+          }
+        } else {
+          let streamingHtmlStream: Awaited<ReturnType<typeof renderToReadableStream>> | undefined;
+          try {
+            streamingHtmlStream = await runWithStreamedClientReferences(streamedReferences, () =>
+              renderToReadableStream(ssrRoot, {
+                ...renderOptions,
+              }),
+            );
+            renderComplete = streamingHtmlStream.allReady;
+
+            if (options?.waitForAllReady === true) {
+              await streamingHtmlStream.allReady;
+            } else {
+              shouldDelayInitialHtmlPull = true;
+            }
+
+            htmlStream = streamingHtmlStream;
+          } catch (error) {
+            void streamingHtmlStream?.cancel().catch(() => {});
+            const caughtRoot = prepareCaughtNotFoundRoot(error);
+            if (caughtRoot) {
+              let caughtHtmlStream: Awaited<ReturnType<typeof renderToReadableStream>> | undefined;
+              try {
+                caughtHtmlStream = await runWithStreamedClientReferences(streamedReferences, () =>
+                  renderToReadableStream(caughtRoot, renderOptions),
+                );
+                if (options?.waitForAllReady === true) await caughtHtmlStream.allReady;
+              } catch (caughtRenderError) {
+                // A slot's not-found boundary that throws replaces the 404.
+                void caughtHtmlStream?.cancel().catch(() => {});
+                throw caughtRenderError;
+              }
+              renderComplete = caughtHtmlStream.allReady;
+              shouldDelayInitialHtmlPull = options?.waitForAllReady !== true;
+              caughtShellError = error;
+              htmlStream = caughtHtmlStream;
+            } else if (
+              options?.fallbackToErrorDocumentOnShellError !== true ||
+              isNavigationSignalError(error) ||
+              isBailoutToCSRError(error) ||
+              isDynamicServerError(error)
+            ) {
+              throw error;
+            } else {
+              // Like Next.js, any other error answers with the error document,
+              // carrying the payload this render already produced. The browser
+              // renders that payload, and the error boundary it carries catches
+              // the error, so no server component runs, or reports, again.
+              // https://github.com/vercel/next.js/blob/canary/packages/next/src/server/app-render/app-render.tsx (getErrorRSCPayload)
+              shellErrorRecovered = true;
+              if (options?.isServerComponentError?.(error) !== true) ssrOnlyShellError = error;
+              htmlStream = renderSsrErrorDocumentShell(
+                bootstrapModuleUrl,
+                options?.scriptNonce,
+                assetCrossOrigin,
+              );
+            }
+          }
+        }
+
+        // Populated before any SSR request runs: at prod-server startup
+        // (prod-server.ts) or via build-time bundle injection (index.ts). Left
+        // undefined in dev, which naturally disables inline CSS there.
+        const inlineCssManifest = globalThis.__VINEXT_INLINE_CSS__;
+        const fontStyles = fontData?.styles ?? [];
+        const mergeFontStylesIntoInlineCss =
+          fontStyles.length > 0 && hasInlineCssManifest(inlineCssManifest);
+        const inlineCssFontStyles = mergeFontStylesIntoInlineCss ? fontStyles.join("\n") : "";
+        const inlineCssFontStyleFallbackHTML = mergeFontStylesIntoInlineCss
+          ? renderFontHtml({ styles: fontStyles }, options?.scriptNonce)
+          : "";
+        const fontHTML = renderFontHtml(fontData, options?.scriptNonce, {
+          includeStyles: !mergeFontStylesIntoInlineCss,
+        });
+        // Trace meta tags only need to land in the document head once.
+        // Read the active OTel context lazily so the value reflects the
+        // span that was active when the SSR shell rendered. When
+        // clientTraceMetadata is unset (the common case) this is empty.
+        let traceMetaHTML: string | null = null;
+        const getTraceMetaHTML = (): string => {
+          if (traceMetaHTML === null) {
+            traceMetaHTML = markClientTraceMetadataBlock(
+              getClientTraceMetadataHTML(options?.clientTraceMetadata, options?.isStaticGeneration),
+              options?.clientTraceMetadataMarker,
+            );
+          }
+          return traceMetaHTML;
+        };
+        let didInjectHeadHTML = false;
+        let headHidQuery = false;
+        let didSendRenderedSearch = false;
+        // A render that turns dynamic after the head hid its query won't be
+        // stored either, so a later flush sends the query its client pages
+        // read, ahead of their HTML (see `client-page-root.tsx`).
+        const getRenderedSearchHTML = (): string => {
+          if (!headHidQuery || !rendersDynamic || didSendRenderedSearch) return "";
+          didSendRenderedSearch = true;
+          const search = ssrNavigationContext.searchParams.toString();
+          return createInlineScriptTag(
+            createNavigationRuntimeRenderedSearchScript(search ? `?${search}` : ""),
+            options?.scriptNonce,
+          );
+        };
+        const getInsertedHTML = (): string => {
+          const insertedHTML = renderInsertedHtml(renderServerInsertedHTML());
+          const errorMetaHTML = errorMetaRenderer.flush();
+          const initialDevServerErrorHTML = createInitialDevServerErrorScript(
+            options?.initialDevServerError ?? ssrOnlyShellError,
+            options?.scriptNonce,
+          );
+          if (didInjectHeadHTML) return insertedHTML + errorMetaHTML + getRenderedSearchHTML();
+
+          didInjectHeadHTML = true;
+          // A stored document must not carry the request's query, so the
+          // browser reads it from its own URL instead. A gate that has
+          // already opened means the render won't be stored, so it keeps the
+          // effective query (which a rewrite may have changed).
+          const hidesQuery = searchParamsGate !== null && searchParamsGate.gate.decision !== "real";
+          headHidQuery = hidesQuery;
+          const isSearchParamsFromBrowser =
+            hidesQuery ||
+            (options?.isStaticGeneration === true ? options.isForceStatic !== true : undefined);
+          return buildHeadInjectionHtml(
+            hidesQuery
+              ? { ...ssrNavigationContext, searchParams: new URLSearchParams() }
+              : ssrNavigationContext,
+            // React preloads the bootstrap module of a document it renders.
+            shellErrorRecovered ? bootstrapModuleUrl : undefined,
+            options?.formState ?? null,
+            insertedHTML +
+              errorMetaHTML +
+              (caughtBoundaries === null
+                ? ""
+                : createInlineScriptTag(
+                    `self.${CAUGHT_NOT_FOUND_BOUNDARIES_GLOBAL}=${safeJsonStringify([...caughtBoundaries.rendered])}`,
+                    options?.scriptNonce,
+                  )) +
+              getTraceMetaHTML() +
+              initialDevServerErrorHTML +
+              // The transform inlines Fizz's stylesheet links before it adds
+              // this HTML, so inline the streamed ones here.
+              rewriteInlineCssStylesheetLinks(
+                renderStreamedStylesheets(streamedReferences),
+                inlineCssManifest,
+                "",
+                options?.scriptNonce,
+              ).html,
+            fontHTML,
+            options?.dynamicStaleTimeSeconds,
+            isSearchParamsFromBrowser,
+            options?.scriptNonce,
+          );
+        };
+
+        // The transform calls this once when it splices after `<head ...>`.
+        // By that point React Fizz has rendered the layout's `<head>` children
+        // (which is where the Script shim registers), so the captured array is
+        // populated. We deliberately return a snapshot — `flushBuffered` will
+        // not re-invoke us, and any beforeInteractive Script that renders
+        // later (inside a Suspense boundary further down the tree) falls back
+        // to its inline location, matching the documented guarantee that
+        // ordering applies to scripts rendered in the initial shell.
+        const getBeforeInteractiveHeadHTML = (): string =>
+          renderBeforeInteractiveInlineScripts(beforeInteractiveInlineScripts);
+
+        if (shouldDelayInitialHtmlPull) {
+          await waitAtLeastOneReactRenderTask();
+        }
+
+        const finalStream = deferUntilStreamConsumed(
+          htmlStream.pipeThrough(
+            createTickBufferedTransform(
+              rscEmbed,
+              getInsertedHTML,
+              getBeforeInteractiveHeadHTML,
+              inlineCssManifest,
+              inlineCssFontStyles,
+              inlineCssFontStyleFallbackHTML,
+              options?.scriptNonce,
+            ),
+          ),
+          cleanup,
+          undefined,
+          htmlCancellation.record,
+        );
+
+        return {
+          htmlStream: finalStream,
+          // `metadataReady` resolves eagerly precisely *because* `allReady` was
+          // already awaited above when `waitForAllReady` is set (the prerender
+          // path). At that point the React tree is fully rendered, so all
+          // render-time metadata (cache life, headers, captured RSC errors) is
+          // already settled and there is nothing left for the lifecycle to wait
+          // on. The promise exists to keep `renderAppPageLifecycle` agnostic to
+          // *where* the blocking happens — do not move the `allReady` await onto
+          // this promise expecting it to be load-bearing in production.
+          metadataReady: Promise.resolve(),
+          renderComplete,
+          capturedRscData: options?.capturedRscDataRef?.value ?? null,
+          shellErrorRecovered,
+          ...(caughtShellError === undefined ? {} : { caughtShellError }),
+          linkHeader: reactLinkHeader,
+        };
+      } catch (error) {
+        cleanup();
+        throw error;
+      }
+    });
+  }) as Promise<AppSsrRenderResult>;
+}
+
+export default {
+  async fetch(request: Request): Promise<Response> {
+    // Nitro's Node server takes request.url's origin from an absolute-form
+    // request target, which `vinext start` 404s before routing.
+    if (isSrvxAbsoluteFormTarget(request)) return notFoundResponse();
+    const url = new URL(request.url);
+    // Redirect repeated slashes / backslashes like Next.js and block encoded
+    // protocol-relative shapes (/%5Cevil.com/). See
+    // `guardProtocolRelativeUrl` in request-pipeline.ts for details.
+    const slashRedirect = repeatedSlashRedirectResponse(url.pathname + url.search);
+    if (slashRedirect) return slashRedirect;
+    if (isOpenRedirectShaped(url.pathname)) {
+      return notFoundResponse();
+    }
+
+    const rscModule = await import.meta.viteRsc.loadModule<{
+      default(request: Request): Promise<Response | string | null | undefined>;
+    }>("rsc", "index");
+    const result = await rscModule.default(request);
+
+    if (result instanceof Response) {
+      return result;
+    }
+
+    if (result == null) {
+      return notFoundResponse();
+    }
+
+    return new Response(String(result), { status: 200 });
+  },
+};

@@ -1,0 +1,1062 @@
+import { createStaticGenerationHeadersContext } from "./app-static-generation.js";
+import {
+  isValidMetadataImageId,
+  manifestToJson,
+  matchMetadataRoutePattern,
+  robotsToText,
+  sitemapToXml,
+  type ManifestConfig,
+  type MetadataFileRoute,
+  type RobotsConfig,
+  type SitemapEntry,
+} from "./metadata-routes.js";
+import { notFoundResponse } from "./http-error-responses.js";
+import {
+  closeAfterResponse,
+  createRequestContext,
+  markFullyBufferedBody,
+  runWithRequestContext,
+} from "vinext/shims/unified-request-context";
+import { runInWorkStoreScope } from "vinext/shims/internal/work-store-scope";
+import {
+  coalesceOnDemandResponse,
+  isrCacheControl,
+  type ISRCacheEntry,
+  type IsrWritePolicy,
+} from "./isr-cache.js";
+import {
+  buildAppRouteCacheValue,
+  buildRouteHandlerCachedResponse,
+  stripRouteHandlerFramingHeaders,
+} from "./app-route-handler-response.js";
+import {
+  _consumeRequestScopedCacheLife,
+  _isOnDemandRevalidate,
+  type CacheLifeConfig,
+} from "vinext/shims/cache-request-state";
+import {
+  applyPrerenderCacheLifeHeader,
+  applyPrerenderCacheTagsHeader,
+} from "./prerender-cache-life-header.js";
+import {
+  ensureFetchPatch,
+  getCollectedFetchTags,
+  setCurrentFetchSoftTags,
+} from "vinext/shims/fetch-cache";
+import { getRequestExecutionContext } from "vinext/shims/request-context";
+import {
+  beginRouteCacheability,
+  markRouteCacheabilityExplicitResponsePolicy,
+  markRouteCacheabilityResponseBodyComplete,
+  recordRouteCacheability,
+} from "vinext/shims/cacheability-classification";
+import {
+  applyCdnResponseHeaders,
+  hasCdnResponsePolicy,
+  NEVER_CACHE_CONTROL,
+} from "./cache-control.js";
+import type { CachedRouteValue } from "vinext/shims/cache-handler";
+import { buildPageCacheTags } from "./implicit-tags.js";
+import { resolveClientStaleTimeSeconds } from "../utils/cache-control-metadata.js";
+import { VINEXT_METADATA_ROUTE_CACHE_HEADER } from "./headers.js";
+import {
+  isRenderDynamicLatched,
+  getActiveDraftModeState,
+  hasDraftModeCookieHeader,
+  getHeadersContext,
+  replaceHeadersContext,
+} from "vinext/shims/headers";
+import { completeAppRouteHandlerResponse } from "./app-route-handler-execution.js";
+import { buildAppRouteMissIsrCacheControl } from "./isr-decision.js";
+import { canonicalizeAppPageParams } from "./app-page-segment-state.js";
+import { decodeMatchedParams, normalizePathnameForRouteMatch } from "../routing/utils.js";
+
+type AppPageParams = Record<string, string | string[]>;
+type MetadataRouteFunction = (props: Record<string, unknown>) => unknown;
+type MetadataRouteMakeThenableParams = (params: AppPageParams) => unknown;
+type MetadataRouteCacheGetter = (key: string) => Promise<ISRCacheEntry | null>;
+type MetadataRouteCacheSetter = (
+  key: string,
+  data: CachedRouteValue,
+  policy: IsrWritePolicy,
+) => Promise<void>;
+type MetadataRouteBackgroundRegenerator = (
+  key: string,
+  renderFn: () => Promise<void>,
+  errorContext?: {
+    routerKind: "App Router";
+    routePath: string;
+    routeType: "route";
+  },
+) => void;
+
+export type MetadataRuntimeRoute = MetadataFileRoute & {
+  fileDataBase64?: string;
+};
+
+type MetadataRouteRequestOptions = {
+  metadataRoutes: readonly MetadataRuntimeRoute[];
+  cleanPathname: string;
+  isrGet?: MetadataRouteCacheGetter;
+  isrRouteKey?: (pathname: string) => string;
+  isrSet?: MetadataRouteCacheSetter;
+  makeThenableParams: MetadataRouteMakeThenableParams;
+  /**
+   * The pathname params are read from. A direct request passes its raw path
+   * here and its decoded path as `cleanPathname`; a rewrite passes its
+   * destination, still percent-encoded, as both.
+   */
+  routePathname?: string;
+  scheduleBackgroundRegeneration?: MetadataRouteBackgroundRegenerator;
+};
+
+type MatchedMetadataRoute = {
+  params: AppPageParams | null;
+  imageId: string | null;
+};
+
+type MetadataRouteFunctions = {
+  defaultExport: MetadataRouteFunction | null;
+  dynamicParams: boolean | undefined;
+  generateImageMetadata: MetadataRouteFunction | null;
+  generateStaticParams: MetadataRouteFunction | null;
+  generateSitemaps: MetadataRouteFunction | null;
+  hasGeneratedImageMetadata: boolean;
+};
+
+export type PrerenderableMetadataRoute = {
+  path: string;
+  routePattern: string;
+  routeSegments: string[];
+};
+
+type RenderedMetadataRoute = {
+  browserCacheControl?: string;
+  cacheLife: CacheLifeConfig | null;
+  cacheable: boolean;
+  collectedTags: string[];
+  response: Response;
+};
+
+function isOuterMetadataCacheEnabled(): boolean {
+  return process.env.NODE_ENV !== "development";
+}
+
+const routeFunctionCache = new WeakMap<MetadataRuntimeRoute, MetadataRouteFunctions>();
+const userMetadataResponses = new WeakSet<Response>();
+const USE_CACHE_FUNCTION_SYMBOL = Symbol.for("vinext.useCacheFunction");
+const CACHE_HEADERS = {
+  noCache: "no-cache, no-store",
+  revalidate: "public, max-age=0, must-revalidate",
+} as const;
+
+function isObject(value: unknown): value is object {
+  return typeof value === "object" && value !== null;
+}
+
+function readFunction(
+  module: Record<string, unknown> | undefined,
+  key: string,
+): MetadataRouteFunction | null {
+  if (!module) {
+    return null;
+  }
+  const value = Reflect.get(module, key);
+  if (typeof value !== "function") {
+    return null;
+  }
+  const fn: MetadataRouteFunction = (props) => Reflect.apply(value, module, [props]);
+  if (Reflect.get(value, USE_CACHE_FUNCTION_SYMBOL) === true) {
+    Reflect.set(fn, USE_CACHE_FUNCTION_SYMBOL, true);
+  }
+  return fn;
+}
+
+function isSitemapEntries(value: unknown): value is SitemapEntry[] {
+  return Array.isArray(value);
+}
+
+function isRobotsConfig(value: unknown): value is RobotsConfig {
+  return isObject(value) && !Array.isArray(value);
+}
+
+function isManifestConfig(value: unknown): value is ManifestConfig {
+  return isObject(value) && !Array.isArray(value);
+}
+
+function isImageMetadataRoute(route: MetadataRuntimeRoute): boolean {
+  return (
+    route.type === "icon" ||
+    route.type === "apple-icon" ||
+    route.type === "opengraph-image" ||
+    route.type === "twitter-image"
+  );
+}
+
+function metadataRouteCacheHeader(route: MetadataRuntimeRoute): string {
+  if (route.isDynamic && isImageMetadataRoute(route) && process.env.NODE_ENV === "development") {
+    return CACHE_HEADERS.noCache;
+  }
+  return CACHE_HEADERS.revalidate;
+}
+
+// Next.js compiles metadata files into GET Route Handlers, so they share the
+// Route Handler cacheability identity.
+function beginMetadataRouteCacheability(route: MetadataRuntimeRoute): void {
+  const dynamic = route.module?.dynamic;
+  if (dynamic === "force-static" || dynamic === "error") {
+    const current = getHeadersContext();
+    const staticContext = createStaticGenerationHeadersContext({
+      dynamicConfig: dynamic,
+      routeKind: "route",
+      routePattern: route.servedUrl,
+      draftModeEnabled: getActiveDraftModeState() ?? undefined,
+      draftModeSecret: current?.draftModeSecret,
+    });
+    replaceHeadersContext(staticContext);
+  }
+  beginRouteCacheability(
+    "app-route",
+    route.patternParts ? `/${route.patternParts.join("/")}` : route.servedUrl,
+  );
+}
+
+function getMetadataRouteFunctions(route: MetadataRuntimeRoute): MetadataRouteFunctions {
+  const cached = routeFunctionCache.get(route);
+  if (cached) {
+    return cached;
+  }
+
+  const generateImageMetadata =
+    route.isDynamic && isImageMetadataRoute(route)
+      ? readFunction(route.module, "generateImageMetadata")
+      : null;
+  const functions = {
+    defaultExport: route.isDynamic ? readFunction(route.module, "default") : null,
+    dynamicParams:
+      route.isDynamic && typeof route.module?.dynamicParams === "boolean"
+        ? route.module.dynamicParams
+        : undefined,
+    generateImageMetadata,
+    generateStaticParams: route.isDynamic
+      ? readFunction(route.module, "generateStaticParams")
+      : null,
+    generateSitemaps:
+      route.type === "sitemap" && route.isDynamic
+        ? readFunction(route.module, "generateSitemaps")
+        : null,
+    hasGeneratedImageMetadata:
+      route.isDynamic && isImageMetadataRoute(route) && Boolean(generateImageMetadata),
+  };
+  routeFunctionCache.set(route, functions);
+  return functions;
+}
+
+/**
+ * Next.js compiles a metadata route into a Route Handler, and under a dynamic
+ * segment its build stores it only when the route's own module generates its
+ * params or is `force-static`/`error` (collectAppRouteSegments reads no parent
+ * layout). Its metadata loader adds generateStaticParams for
+ * generateImageMetadata. Probed on next@16.2.7: a parent layout's
+ * generateStaticParams, `revalidate` or `dynamicParams` leave the route
+ * dynamic. Generated sitemaps are only served below a static prefix.
+ */
+function isMetadataRouteStaticGenEnabled(route: MetadataRuntimeRoute): boolean {
+  if (!route.isDynamic || !route.patternParts) return true;
+  const functions = getMetadataRouteFunctions(route);
+  return (
+    route.module?.dynamic === "force-static" ||
+    route.module?.dynamic === "error" ||
+    functions.generateStaticParams !== null ||
+    functions.generateImageMetadata !== null
+  );
+}
+
+function isUseCacheFunction(value: MetadataRouteFunction | null): boolean {
+  return value !== null && Reflect.get(value, USE_CACHE_FUNCTION_SYMBOL) === true;
+}
+
+/**
+ * Enumerate metadata URLs whose default export is an explicit public
+ * `"use cache"` function. These are safe to invoke during prerendering and the
+ * resulting response can be seeded as an App Route artifact.
+ */
+export async function getPrerenderableMetadataRoutePaths(
+  metadataRoutes: readonly MetadataRuntimeRoute[],
+): Promise<PrerenderableMetadataRoute[]> {
+  const paths: PrerenderableMetadataRoute[] = [];
+
+  for (const route of metadataRoutes) {
+    if (!route.isDynamic || route.servedUrl.includes("[")) continue;
+
+    const functions = getMetadataRouteFunctions(route);
+    if (!isUseCacheFunction(functions.defaultExport)) continue;
+
+    if (route.type !== "sitemap" || !functions.generateSitemaps) {
+      paths.push({
+        path: route.servedUrl,
+        routePattern: route.servedUrl,
+        routeSegments: route.routeSegments ?? [],
+      });
+      continue;
+    }
+
+    const entries = await functions.generateSitemaps({});
+    if (!Array.isArray(entries)) continue;
+    const sitemapPrefix = route.servedUrl.slice(0, -4);
+    for (const entry of entries) {
+      if (!isObject(entry) || Reflect.get(entry, "id") == null) {
+        throw new Error("id property is required for every item returned from generateSitemaps");
+      }
+      const id = String(Reflect.get(entry, "id"));
+      if (!id || id.includes("/")) continue;
+      paths.push({
+        path: `${sitemapPrefix}/${encodeURIComponent(id)}.xml`,
+        routePattern: route.servedUrl,
+        routeSegments: route.routeSegments ?? [],
+      });
+    }
+  }
+
+  return paths;
+}
+
+function getCachedMetadataRouteValue(entry: ISRCacheEntry | null): CachedRouteValue | null {
+  const value = entry?.value.value;
+  if (!value || value.kind !== "APP_ROUTE") return null;
+  return value.headers[VINEXT_METADATA_ROUTE_CACHE_HEADER] === "1" ? value : null;
+}
+
+function buildCachedMetadataRouteResponse(
+  value: CachedRouteValue,
+  options: {
+    cacheControl: ISRCacheEntry["value"]["cacheControl"];
+    cacheState: "HIT" | "STALE";
+    revalidateSeconds: number;
+  },
+): Response {
+  return buildRouteHandlerCachedResponse(value, {
+    ...options,
+    isHead: false,
+  });
+}
+
+function markMetadataRouteCacheValue(value: CachedRouteValue): CachedRouteValue {
+  value.headers[VINEXT_METADATA_ROUTE_CACHE_HEADER] = "1";
+  return value;
+}
+
+function buildMetadataRouteTags(
+  route: MetadataRuntimeRoute,
+  cleanPathname: string,
+  collectedTags: string[],
+): string[] {
+  return buildPageCacheTags(cleanPathname, collectedTags, route.routeSegments ?? [], "route");
+}
+
+async function captureRenderedMetadataRoute(
+  response: Response,
+  route: MetadataRuntimeRoute,
+  cleanPathname: string,
+): Promise<RenderedMetadataRoute> {
+  const isUserResponse = userMetadataResponses.has(response);
+  let completed = false;
+  if (isOuterMetadataCacheEnabled()) {
+    const result = await completeAppRouteHandlerResponse(response);
+    response = result.response;
+    completed = result.completed;
+    if (completed) markRouteCacheabilityResponseBodyComplete();
+  }
+  // User streams may change their headers during consumption. Framework
+  // serializers keep their existing policy and fully-buffered body marker.
+  const browserCacheControl = response.headers.get("Cache-Control") ?? undefined;
+  const hasUserPolicy = isUserResponse && hasCdnResponsePolicy(response.headers);
+  if (hasUserPolicy) markRouteCacheabilityExplicitResponsePolicy();
+  const observedCacheLife = _consumeRequestScopedCacheLife();
+  const collectedTags = getCollectedFetchTags();
+  const revalidate =
+    typeof route.module?.revalidate === "number" ? route.module.revalidate : Infinity;
+  const frameworkRevalidate = Math.min(observedCacheLife?.revalidate ?? Infinity, revalidate);
+  const cacheLife = { ...observedCacheLife, revalidate: frameworkRevalidate };
+  const cacheable =
+    // Like Next.js's ResponseCache, an on-demand revalidation stores whatever
+    // status the route answers with, as route handlers do.
+    (_isOnDemandRevalidate() || response.status < 400 || response.status === 404) &&
+    completed &&
+    !isRenderDynamicLatched() &&
+    !getActiveDraftModeState() &&
+    !hasDraftModeCookieHeader() &&
+    route.module?.dynamic !== "force-dynamic" &&
+    isMetadataRouteStaticGenEnabled(route) &&
+    frameworkRevalidate > 0 &&
+    !response.headers.has("set-cookie");
+  const cacheControl = cacheable
+    ? buildAppRouteMissIsrCacheControl(frameworkRevalidate, cacheLife?.expire)
+    : NEVER_CACHE_CONTROL;
+  if (isUserResponse && !hasUserPolicy) {
+    // Development skips completion; fetched/redirect Responses can be immutable.
+    response = new Response(response.body, {
+      headers: new Headers(response.headers),
+      status: response.status,
+      statusText: response.statusText,
+    });
+    applyCdnResponseHeaders(response.headers, {
+      cacheControl: isOuterMetadataCacheEnabled() ? cacheControl : metadataRouteCacheHeader(route),
+    });
+  }
+  recordRouteCacheability(
+    cacheable
+      ? {
+          cacheable: true,
+          cacheControl,
+          tags: buildMetadataRouteTags(route, cleanPathname, collectedTags),
+        }
+      : { cacheable: false, dynamicUsage: true },
+  );
+  if (process.env.VINEXT_PRERENDER === "1") {
+    applyPrerenderCacheLifeHeader(response.headers, {
+      ...cacheLife,
+      revalidate: cacheable ? frameworkRevalidate : 0,
+    });
+    applyPrerenderCacheTagsHeader(response.headers, collectedTags);
+  }
+  return { browserCacheControl, cacheLife, cacheable, collectedTags, response };
+}
+
+async function writeRenderedMetadataRoute(
+  options: MetadataRouteRequestOptions,
+  route: MetadataRuntimeRoute,
+  routeKey: string,
+  rendered: RenderedMetadataRoute,
+  previousEntry: ISRCacheEntry | null,
+): Promise<void> {
+  if (!options.isrSet || !rendered.cacheable) {
+    return;
+  }
+  const previousCacheControl = previousEntry?.value.cacheControl;
+  const revalidate =
+    rendered.cacheLife?.revalidate ??
+    previousCacheControl?.revalidate ??
+    (typeof route.module?.revalidate === "number" ? route.module.revalidate : false);
+  const expire = rendered.cacheLife?.expire ?? previousCacheControl?.expire;
+  const stale = resolveClientStaleTimeSeconds(rendered.cacheLife) ?? previousCacheControl?.stale;
+  const value = markMetadataRouteCacheValue(
+    await buildAppRouteCacheValue(rendered.response, rendered.browserCacheControl),
+  );
+  await options.isrSet(routeKey, value, {
+    cacheControl: isrCacheControl(revalidate === Infinity ? false : revalidate, {
+      ...(typeof expire === "number" ? { expireSeconds: expire } : {}),
+      ...(typeof stale === "number" ? { staleSeconds: stale } : {}),
+    }),
+    tags: buildMetadataRouteTags(route, options.cleanPathname, rendered.collectedTags),
+  });
+}
+
+async function runMetadataRouteRegeneration(
+  options: MetadataRouteRequestOptions,
+  route: MetadataRuntimeRoute,
+  render: () => Promise<RenderedMetadataRoute | null>,
+  routeKey: string,
+  previousEntry: ISRCacheEntry,
+  executionContext: ReturnType<typeof getRequestExecutionContext>,
+): Promise<void> {
+  const requestContext = createRequestContext({ executionContext });
+  try {
+    await runWithRequestContext(requestContext, () =>
+      runInWorkStoreScope(async () => {
+        ensureFetchPatch();
+        beginMetadataRouteCacheability(route);
+        setCurrentFetchSoftTags(buildMetadataRouteTags(route, options.cleanPathname, []));
+        const rendered = await render();
+        if (rendered) {
+          try {
+            await writeRenderedMetadataRoute(options, route, routeKey, rendered, previousEntry);
+          } finally {
+            void rendered.response.body?.cancel().catch(() => {});
+          }
+        }
+      }),
+    );
+  } finally {
+    await closeAfterResponse(requestContext);
+  }
+}
+
+/** The outer ISR key for a matched metadata route, or null if it's never cached. */
+function getOuterMetadataCacheKey(
+  options: MetadataRouteRequestOptions,
+  route: MetadataRuntimeRoute,
+): string | null {
+  if (
+    !isOuterMetadataCacheEnabled() ||
+    !options.isrRouteKey ||
+    getActiveDraftModeState() ||
+    hasDraftModeCookieHeader() ||
+    route.module?.dynamic === "force-dynamic" ||
+    route.module?.revalidate === 0 ||
+    !isMetadataRouteStaticGenEnabled(route)
+  ) {
+    return null;
+  }
+  return options.isrRouteKey(options.cleanPathname);
+}
+
+/**
+ * Renders a matched metadata route that wasn't served from the cache, and
+ * stores it. Concurrent on-demand revalidations of one entry share a single
+ * render, as Next.js batches ResponseCache work by its key and
+ * isOnDemandRevalidate.
+ */
+async function renderMetadataRouteMiss(
+  options: MetadataRouteRequestOptions,
+  route: MetadataRuntimeRoute,
+  render: () => Promise<RenderedMetadataRoute | null>,
+  cachedEntry: ISRCacheEntry | null,
+): Promise<Response | null> {
+  const renderAndStore = async () => {
+    const rendered = await render();
+    if (!rendered) return null;
+    await writeMetadataRouteMiss(options, route, rendered, cachedEntry);
+    return stripRouteHandlerFramingHeaders(rendered.response);
+  };
+  const routeKey = _isOnDemandRevalidate() ? getOuterMetadataCacheKey(options, route) : null;
+  if (routeKey === null || !options.isrSet) return renderAndStore();
+  // A metadata route answers every method with the same response.
+  return coalesceOnDemandResponse(routeKey, "GET", renderAndStore);
+}
+
+async function readMatchedPrerenderedMetadataRouteResponse(
+  options: MetadataRouteRequestOptions,
+  route: MetadataRuntimeRoute,
+  render: () => Promise<RenderedMetadataRoute | null>,
+): Promise<{ cachedEntry: ISRCacheEntry | null; response: Response | null }> {
+  const routeKey = getOuterMetadataCacheKey(options, route);
+  if (
+    routeKey === null ||
+    !options.isrGet ||
+    // Like Next.js's ResponseCache, an authorized on-demand revalidation never
+    // serves the stored entry: it renders in the foreground and stores that.
+    _isOnDemandRevalidate()
+  ) {
+    return { cachedEntry: null, response: null };
+  }
+
+  let cached: ISRCacheEntry | null;
+  try {
+    cached = await options.isrGet(routeKey);
+  } catch (error) {
+    console.error("[vinext] Metadata route ISR cache read error:", error);
+    return { cachedEntry: null, response: null };
+  }
+  const value = getCachedMetadataRouteValue(cached);
+  if (!cached || !value) {
+    return { cachedEntry: null, response: null };
+  }
+  if (cached.isExpired) {
+    return { cachedEntry: cached, response: null };
+  }
+
+  const revalidate = cached.value.cacheControl?.revalidate;
+  const revalidateSeconds = typeof revalidate === "number" ? revalidate : Infinity;
+  if (!cached.isStale) {
+    return {
+      cachedEntry: cached,
+      response: buildCachedMetadataRouteResponse(value, {
+        cacheControl: cached.value.cacheControl,
+        cacheState: "HIT",
+        revalidateSeconds,
+      }),
+    };
+  }
+
+  if (options.isrSet && options.scheduleBackgroundRegeneration) {
+    const executionContext = getRequestExecutionContext();
+    options.scheduleBackgroundRegeneration(
+      routeKey,
+      () =>
+        runMetadataRouteRegeneration(options, route, render, routeKey, cached, executionContext),
+      {
+        routerKind: "App Router",
+        routePath: route.servedUrl,
+        routeType: "route",
+      },
+    );
+  }
+
+  return {
+    cachedEntry: cached,
+    response: buildCachedMetadataRouteResponse(value, {
+      cacheControl: cached.value.cacheControl,
+      cacheState: "STALE",
+      revalidateSeconds,
+    }),
+  };
+}
+
+function isGeneratedSitemapPath(route: MetadataRuntimeRoute, cleanPathname: string): boolean {
+  const prefix = route.servedUrl.slice(0, -4);
+  if (!cleanPathname.startsWith(`${prefix}/`) || !cleanPathname.endsWith(".xml")) return false;
+  const id = cleanPathname.slice(prefix.length + 1, -4);
+  return id.length > 0 && !id.includes("/");
+}
+
+function matchMetadataRoute(
+  route: MetadataRuntimeRoute,
+  cleanPathname: string,
+  functions: MetadataRouteFunctions,
+  getUrlParts: () => string[],
+): MatchedMetadataRoute | null {
+  if (route.patternParts) {
+    const urlParts = getUrlParts();
+    if (functions.hasGeneratedImageMetadata && urlParts.length > 0) {
+      const params = matchMetadataRoutePattern(urlParts.slice(0, -1), route.patternParts);
+      if (params) {
+        return {
+          params,
+          imageId: urlParts[urlParts.length - 1],
+        };
+      }
+    }
+
+    const params = matchMetadataRoutePattern(urlParts, route.patternParts);
+    return params ? { params, imageId: null } : null;
+  }
+
+  if (functions.hasGeneratedImageMetadata && cleanPathname.startsWith(`${route.servedUrl}/`)) {
+    const imageSuffix = cleanPathname.slice(route.servedUrl.length + 1);
+    if (!imageSuffix || imageSuffix.includes("/")) {
+      return null;
+    }
+    return { params: Object.create(null), imageId: imageSuffix };
+  }
+
+  return cleanPathname === route.servedUrl ? { params: null, imageId: null } : null;
+}
+
+function metadataRouteRawParams(
+  route: MetadataRuntimeRoute,
+  match: MatchedMetadataRoute,
+  routePathname: string,
+): AppPageParams {
+  const urlParts = routePathname.split("/").filter(Boolean);
+  if (match.imageId !== null) urlParts.pop();
+
+  const params: AppPageParams = Object.create(null);
+  let urlIndex = 0;
+  for (const part of route.patternParts ?? []) {
+    if (!part.startsWith(":")) {
+      urlIndex++;
+      continue;
+    }
+
+    const isCatchAll = part.endsWith("+") || part.endsWith("*");
+    const name = part.slice(1, isCatchAll ? -1 : undefined);
+    if (!isCatchAll) {
+      const value = urlParts[urlIndex++];
+      if (value !== undefined) params[name] = value;
+      continue;
+    }
+
+    const matchedValue = match.params?.[name];
+    const valueCount = Array.isArray(matchedValue) ? matchedValue.length : matchedValue ? 1 : 0;
+    if (valueCount > 0) params[name] = urlParts.slice(urlIndex, urlIndex + valueCount);
+    urlIndex += valueCount;
+  }
+
+  return params;
+}
+
+function findGeneratedSitemapId(entries: unknown, rawId: string): string | null {
+  if (!Array.isArray(entries)) {
+    return null;
+  }
+
+  for (const entry of entries) {
+    if (!isObject(entry) || Reflect.get(entry, "id") == null) {
+      throw new Error("id property is required for every item returned from generateSitemaps");
+    }
+    const id = Reflect.get(entry, "id");
+    if (String(id) === rawId) {
+      return rawId;
+    }
+  }
+
+  return null;
+}
+
+function makeThenableMetadataRouteId(id: string) {
+  return Object.assign(Promise.resolve(id), {
+    toString() {
+      return id;
+    },
+    valueOf() {
+      return id;
+    },
+    [Symbol.toPrimitive]() {
+      return id;
+    },
+  });
+}
+
+async function handleGeneratedSitemap(
+  route: MetadataRuntimeRoute,
+  cleanPathname: string,
+  functions: MetadataRouteFunctions,
+): Promise<Response | null> {
+  if (!functions.generateSitemaps || !functions.defaultExport) {
+    return null;
+  }
+
+  const sitemapPrefix = route.servedUrl.slice(0, -4);
+  if (!cleanPathname.startsWith(`${sitemapPrefix}/`) || !cleanPathname.endsWith(".xml")) {
+    return null;
+  }
+
+  const rawId = cleanPathname.slice(sitemapPrefix.length + 1, -4);
+  if (rawId.includes("/")) {
+    return null;
+  }
+
+  const matchedId = findGeneratedSitemapId(await functions.generateSitemaps({}), rawId);
+  if (!matchedId) {
+    return notFoundResponse();
+  }
+
+  const result = await functions.defaultExport({
+    id: makeThenableMetadataRouteId(matchedId),
+  });
+  if (result instanceof Response) {
+    userMetadataResponses.add(result);
+    return result;
+  }
+  if (!isSitemapEntries(result)) {
+    throw new TypeError("Metadata sitemap routes must return an array.");
+  }
+  // Body serialized to a string here — fully materialized, no producer left.
+  return markFullyBufferedBody(
+    new Response(sitemapToXml(result), {
+      headers: {
+        "Content-Type": route.contentType,
+        "Cache-Control": metadataRouteCacheHeader(route),
+      },
+    }),
+  );
+}
+
+function findGeneratedImageId(
+  imageMetadata: unknown,
+  imageId: string,
+  servedUrl: string,
+): string | null {
+  if (!Array.isArray(imageMetadata)) {
+    return null;
+  }
+
+  for (const item of imageMetadata) {
+    if (!isObject(item) || Reflect.get(item, "id") == null) {
+      throw new Error("id property is required for every item returned from generateImageMetadata");
+    }
+
+    const itemId = String(Reflect.get(item, "id"));
+    if (!isValidMetadataImageId(itemId)) {
+      console.warn(
+        `[vinext] Skipping metadata route ${servedUrl} image id "${itemId}" because metadata image ids must match /^[a-zA-Z0-9-_.]+$/.`,
+      );
+      continue;
+    }
+    if (itemId === imageId) {
+      return itemId;
+    }
+  }
+
+  return null;
+}
+
+async function callDynamicMetadataRoute(
+  route: MetadataRuntimeRoute,
+  match: MatchedMetadataRoute,
+  makeThenableParams: MetadataRouteMakeThenableParams,
+  functions: MetadataRouteFunctions,
+): Promise<Response> {
+  if (!functions.defaultExport) {
+    console.warn(`[vinext] Dynamic metadata route ${route.servedUrl} has no default export.`);
+    return notFoundResponse();
+  }
+
+  const paramsThenable = makeThenableParams(match.params ?? {});
+  let result: unknown;
+  if (functions.hasGeneratedImageMetadata) {
+    if (match.imageId === null || !isValidMetadataImageId(match.imageId)) {
+      return notFoundResponse();
+    }
+
+    if (!functions.generateImageMetadata) {
+      return notFoundResponse();
+    }
+
+    const matchedImageId = findGeneratedImageId(
+      await functions.generateImageMetadata({ params: paramsThenable }),
+      match.imageId,
+      route.servedUrl,
+    );
+    if (!matchedImageId) {
+      return notFoundResponse();
+    }
+
+    result = await functions.defaultExport({
+      params: paramsThenable,
+      id: makeThenableMetadataRouteId(matchedImageId),
+    });
+  } else {
+    result = await functions.defaultExport({ params: paramsThenable });
+  }
+
+  if (result instanceof Response) {
+    userMetadataResponses.add(result);
+    return result;
+  }
+
+  let body: string;
+  if (route.type === "sitemap") {
+    if (!isSitemapEntries(result)) {
+      throw new TypeError("Metadata sitemap routes must return an array.");
+    }
+    body = sitemapToXml(result);
+  } else if (route.type === "robots") {
+    if (!isRobotsConfig(result)) {
+      throw new TypeError("Metadata robots routes must return an object.");
+    }
+    body = robotsToText(result);
+  } else if (route.type === "manifest") {
+    if (!isManifestConfig(result)) {
+      throw new TypeError("Metadata manifest routes must return an object.");
+    }
+    body = manifestToJson(result);
+  } else if (isImageMetadataRoute(route)) {
+    throw new TypeError(
+      `Dynamic metadata ${route.type} route ${route.servedUrl} must return a Response.`,
+    );
+  } else {
+    body = JSON.stringify(result);
+  }
+
+  // Every branch above serialized `result` to a string — fully materialized.
+  return markFullyBufferedBody(
+    new Response(body, {
+      headers: {
+        "Content-Type": route.contentType,
+        "Cache-Control": metadataRouteCacheHeader(route),
+      },
+    }),
+  );
+}
+
+function serveStaticMetadataRoute(route: MetadataRuntimeRoute): Response {
+  if (typeof route.fileDataBase64 !== "string") {
+    throw new Error(
+      `[vinext] Static metadata route ${route.servedUrl} is missing embedded file data.`,
+    );
+  }
+
+  try {
+    const binary = atob(route.fileDataBase64);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index++) {
+      bytes[index] = binary.charCodeAt(index);
+    }
+    // Static file bytes, fully in memory — no producer left.
+    return markFullyBufferedBody(
+      new Response(bytes, {
+        headers: {
+          "Content-Type": route.contentType,
+          "Cache-Control": metadataRouteCacheHeader(route),
+        },
+      }),
+    );
+  } catch (error) {
+    const reason = error instanceof Error && error.message ? `: ${error.message}` : "";
+    throw new Error(
+      `[vinext] Failed to decode embedded metadata route file data for ${route.servedUrl}${reason}`,
+      { cause: error },
+    );
+  }
+}
+
+export function isMetadataRouteRequestPath(
+  metadataRoutes: readonly MetadataRuntimeRoute[],
+  cleanPathname: string,
+): boolean {
+  let urlParts: string[] | undefined;
+  const getUrlParts = () => (urlParts ??= cleanPathname.split("/").filter(Boolean));
+  for (const route of metadataRoutes) {
+    const functions = getMetadataRouteFunctions(route);
+    if (
+      route.type === "sitemap" &&
+      route.isDynamic &&
+      functions.generateSitemaps &&
+      isGeneratedSitemapPath(route, cleanPathname)
+    ) {
+      return true;
+    }
+    if (matchMetadataRoute(route, cleanPathname, functions, getUrlParts)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+async function writeMetadataRouteMiss(
+  options: MetadataRouteRequestOptions,
+  route: MetadataRuntimeRoute,
+  rendered: RenderedMetadataRoute,
+  cachedEntry: ISRCacheEntry | null,
+): Promise<void> {
+  if (
+    process.env.VINEXT_PRERENDER === "1" ||
+    !isOuterMetadataCacheEnabled() ||
+    !rendered.cacheable ||
+    !options.isrRouteKey ||
+    !options.isrSet
+  ) {
+    return;
+  }
+  try {
+    await writeRenderedMetadataRoute(
+      options,
+      route,
+      options.isrRouteKey(options.cleanPathname),
+      { ...rendered, response: rendered.response.clone() },
+      cachedEntry,
+    );
+  } catch (error) {
+    console.error("[vinext] Metadata route ISR cache write error:", error);
+  }
+}
+
+export async function handleMetadataRouteRequest(
+  requestOptions: MetadataRouteRequestOptions,
+): Promise<Response | null> {
+  // Serve a rewrite like a direct request to its destination: match, key and
+  // tag the decoded pathname, and read params from the encoded one, so an
+  // entry only holds the params its key spells. Next.js keys the resolved
+  // pathname: a rewrite shares the destination's entry, and a double-encoded
+  // spelling of it keeps its own.
+  const options =
+    requestOptions.routePathname === requestOptions.cleanPathname
+      ? {
+          ...requestOptions,
+          cleanPathname: normalizePathnameForRouteMatch(requestOptions.cleanPathname),
+        }
+      : requestOptions;
+  // `cleanPathname` is invariant across the loop, so its split is computed
+  // lazily and memoized: only dynamic (`patternParts`) routes need it, and the
+  // common case of zero dynamic metadata routes never splits at all.
+  let urlParts: string[] | undefined;
+  const getUrlParts = () => (urlParts ??= options.cleanPathname.split("/").filter(Boolean));
+  // Next.js selects a metadata route by the pathname as sent, like any App
+  // route, so `/%70ortal/sitemap.xml` is not `/portal/sitemap.xml`. The
+  // decoded `cleanPathname` still supplies the match, cache key and tags.
+  const routePathname = options.routePathname ?? options.cleanPathname;
+  let routeUrlParts: string[] | undefined;
+  const getRouteUrlParts = () => (routeUrlParts ??= routePathname.split("/").filter(Boolean));
+  // The shared cache entry under `cleanPathname` belongs to the first route
+  // the decoded pathname names. Once the raw pathname skips that route, a later
+  // one renders without reading or writing the entry.
+  let cacheOptions = options;
+  const skipDecodedOwner = () => {
+    cacheOptions = { ...options, isrGet: undefined, isrRouteKey: undefined, isrSet: undefined };
+  };
+
+  for (const route of options.metadataRoutes) {
+    const functions = getMetadataRouteFunctions(route);
+    if (route.type === "sitemap" && route.isDynamic) {
+      if (functions.generateSitemaps) {
+        if (!isGeneratedSitemapPath(route, options.cleanPathname)) continue;
+        if (!isGeneratedSitemapPath(route, routePathname)) {
+          skipDecodedOwner();
+        } else {
+          beginMetadataRouteCacheability(route);
+          const render = async (): Promise<RenderedMetadataRoute | null> => {
+            setCurrentFetchSoftTags(buildMetadataRouteTags(route, options.cleanPathname, []));
+            const response = await handleGeneratedSitemap(route, options.cleanPathname, functions);
+            return response
+              ? captureRenderedMetadataRoute(response, route, options.cleanPathname)
+              : null;
+          };
+          const cached = await readMatchedPrerenderedMetadataRouteResponse(
+            cacheOptions,
+            route,
+            render,
+          );
+          if (cached.response) return cached.response;
+          const response = await renderMetadataRouteMiss(
+            cacheOptions,
+            route,
+            render,
+            cached.cachedEntry,
+          );
+          if (response) return response;
+        }
+
+        // Next.js serves only generated sitemap children when generateSitemaps()
+        // exists, so the base /sitemap.xml route should not fall through.
+        continue;
+      }
+    }
+
+    const match = matchMetadataRoute(route, options.cleanPathname, functions, getUrlParts);
+    if (!match) continue;
+    if (!matchMetadataRoute(route, routePathname, functions, getRouteUrlParts)) {
+      skipDecodedOwner();
+      continue;
+    }
+    beginMetadataRouteCacheability(route);
+
+    const rawParams = route.patternParts
+      ? metadataRouteRawParams(route, match, routePathname)
+      : Object.create(null);
+    if (route.patternParts) {
+      const runtimeParams = { ...rawParams };
+      decodeMatchedParams(runtimeParams);
+      match.params = runtimeParams;
+    }
+
+    const render = async (): Promise<RenderedMetadataRoute> => {
+      setCurrentFetchSoftTags(buildMetadataRouteTags(route, options.cleanPathname, []));
+      const response = route.isDynamic
+        ? await callDynamicMetadataRoute(route, match, options.makeThenableParams, functions)
+        : serveStaticMetadataRoute(route);
+      return captureRenderedMetadataRoute(response, route, options.cleanPathname);
+    };
+    const cached = await readMatchedPrerenderedMetadataRouteResponse(cacheOptions, route, render);
+    if (cached.response) return cached.response;
+
+    // A deployment stores only the params it allows, so a cached response
+    // needs no generateStaticParams call, as for App Router pages. Next
+    // decides this from its build manifest.
+    if (route.isDynamic && isImageMetadataRoute(route) && functions.dynamicParams === false) {
+      const validationParams = { ...rawParams };
+      canonicalizeAppPageParams(validationParams);
+      const {
+        routePatternOptionalCatchAllParamNames,
+        routePatternParamNames,
+        validateAppPageDynamicParams,
+      } = await import("./app-page-request.js");
+      const dynamicParamsResponse = await validateAppPageDynamicParams({
+        enforceStaticParamsOnly: true,
+        generateStaticParams: functions.generateStaticParams,
+        isDynamicRoute: Boolean(route.patternParts),
+        optionalCatchAllParamNames: routePatternOptionalCatchAllParamNames(
+          route.patternParts ?? [],
+        ),
+        params: validationParams,
+        requiredParamNames: routePatternParamNames(route.patternParts ?? []),
+      });
+      if (dynamicParamsResponse) return dynamicParamsResponse;
+    }
+
+    return renderMetadataRouteMiss(cacheOptions, route, render, cached.cachedEntry);
+  }
+
+  return null;
+}

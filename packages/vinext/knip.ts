@@ -1,0 +1,213 @@
+import { readFileSync } from "node:fs";
+import type { KnipConfig } from "knip";
+
+function entriesFromPackageJson(relativePath: string): string[] {
+  const pkg = JSON.parse(readFileSync(new URL(relativePath, import.meta.url), "utf8")) as {
+    bin?: string | Record<string, string>;
+    exports?: Record<string, unknown>;
+  };
+  const targets = new Set<string>();
+
+  const visit = (value: unknown) => {
+    if (typeof value === "string") targets.add(value);
+    else if (value && typeof value === "object") for (const v of Object.values(value)) visit(v);
+  };
+
+  visit(pkg.bin);
+  visit(pkg.exports);
+
+  return [...targets]
+    .filter((t) => t.endsWith(".js"))
+    .map((t) =>
+      t
+        .replace(/^\.\//, "")
+        .replace(/^dist\//, "src/")
+        .replace(/\.js$/, ".{ts,tsx}"),
+    );
+}
+
+export default {
+  workspaces: {
+    ".": {
+      entry: [
+        "scripts/*.{js,ts,mjs,mts}",
+        // Loaded by Oxlint from the string paths in vite.config.ts.
+        "oxlint-plugins/*.ts",
+        "tests/**/*.test.ts",
+        "tests/helpers.ts",
+        // Filesystem route entries in the standalone Vite/Worker fixture.
+        "tests/e2e/cloudflare-workers/fixture/app/**/route.ts",
+        // Started by the package-export Workerd E2E's shell command.
+        "tests/e2e/cloudflare-workers/fixtures/client-module-with-package-type/vite.config.ts",
+        // Isolated E2E fixtures loaded through Playwright server commands and
+        // Vite's filesystem route/worker discovery rather than static imports.
+        "tests/e2e/web-worker/fixtures/**/{vite.config.ts,*.worker.ts}",
+        "tests/e2e/nextjs-worker/fixture/**/*.{js,ts,tsx}",
+        "tests/e2e/cacheability-components/fixture/{next.config.ts,vite.config.ts,app/**/{page,route}.{ts,tsx}}",
+        "tests/e2e/cloudflare-static-export/fixture/{vite.config.ts,app/**/route.ts}",
+      ],
+      project: ["tests/**/*.{js,ts}", "!tests/fixtures/**"],
+      ignoreDependencies: [
+        // Loaded dynamically by @vitejs/plugin-react when the React Compiler
+        // integration test enables `react: { compiler: true }`.
+        "oxc-transform-react",
+        // OG tests resolve these from vinext's @vercel/og install, not the root workspace.
+        "@vercel/og",
+        // The CommonJS syntax tests resolve this from vinext's install, not the root workspace.
+        "vite-plugin-commonjs",
+        // The Static Assets worker test resolves this from the Cloudflare fixture's wrangler install.
+        "miniflare",
+        // scripts/version.mts resolves release APIs from the pinned Changesets CLI,
+        // keeping its dependency tree authoritative instead of installing separate copies.
+        "@manypkg/get-packages",
+        "@changesets/config",
+        "@changesets/get-release-plan",
+        "@changesets/apply-release-plan",
+        "@changesets/should-skip-package",
+      ],
+    },
+    "packages/vinext": {
+      entry: [
+        ...entriesFromPackageJson("packages/vinext/package.json"),
+        // Build-time entries referenced by path constant (Vite reads them
+        // from disk via `fs`), so knip wouldn't otherwise trace them.
+        "src/server/app-browser-entry.ts",
+        "src/server/app-browser-server-action-client.ts",
+        "src/server/app-ssr-entry.ts",
+        // Forked as a child process by prerender-server-pool.ts via a path
+        // constant (child_process.fork), so knip can't trace it as imported.
+        "src/build/prerender-server-entry.ts",
+        // Runtime helpers imported by generated virtual entries. The imports
+        // are emitted as strings, so knip cannot trace them statically.
+        "src/client/react-instance-bootstrap.ts",
+        "src/server/app-middleware.ts",
+        "src/server/app-page-dispatch.ts",
+        "src/server/app-page-head.ts",
+        "src/server/app-page-ppr-runtime.ts",
+        "src/server/app-prerender-static-params.ts",
+        "src/server/app-route-handler-dispatch.ts",
+        "src/server/app-route-module-loader.ts",
+        "src/server/nitro-public-files.ts",
+        "src/server/nitro-public-files-plugin.ts",
+        // Client-side instrumentation bundle: loaded as a side-effect module
+        // by the generated hydration entries (import "vinext/instrumentation-client"),
+        // so its public surface (clientInstrumentationHooks, getClientInstrumentationHooks)
+        // is consumed by the user's app at runtime, not by imports knip can follow.
+        "src/client/instrumentation-client.ts",
+        "src/client/instrumentation-client-state.ts",
+        // Shims for `next/*` internal modules — their exports are consumed by
+        // type-only imports in third-party packages' .d.ts files (e.g.
+        // @clerk/nextjs, @sentry/nextjs, nextjs-toploader). Those imports
+        // originate in node_modules and are invisible to knip.
+        "src/shims/internal/api-utils.ts",
+        "src/shims/internal/app-router-context.ts",
+        "src/shims/internal/utils.ts",
+        // Typed WorkUnitStore exports consumed by cache.ts via AsyncLocalStorage
+        // generic — knip cannot trace type-only dependencies through ALS.
+        "src/shims/internal/work-unit-async-storage.ts",
+        // Imported via template string in app-rsc-entry.ts (generated code),
+        // so knip cannot trace the import statically.
+        "src/server/prerender-work-unit-setup.ts",
+        "src/server/app-page-element-builder.ts",
+        "src/server/app-hook-warning-suppression.ts",
+        "src/server/app-post-middleware-context.ts",
+        "src/server/app-route-handler-middleware-context.ts",
+        "src/server/app-request-stage-context.ts",
+        "src/server/app-request-stage-independent-entry.ts",
+        "src/server/app-request-context.ts",
+        "src/server/app-rsc-error-handler.ts",
+        "src/server/isr-cache.ts",
+        "src/server/rsc-render-stream.ts",
+        // #726-CACHE-01/04 defines the disabled proof boundary before runtime
+        // observation recording or cache reuse is wired in later slices.
+        "src/server/cache-proof.ts",
+      ],
+      project: ["src/**/*.{ts,tsx}"],
+    },
+    "packages/cloudflare": {
+      entry: [...entriesFromPackageJson("packages/cloudflare/package.json")],
+      project: ["src/**/*.{ts,tsx}"],
+    },
+    "packages/workers-response-store": {
+      entry: [
+        ...entriesFromPackageJson("packages/workers-response-store/package.json"),
+        "example/service-binding/{cache-worker,user-worker}.ts",
+      ],
+      project: ["src/**/*.{ts,tsx}", "example/**/*.ts"],
+    },
+    "packages/create-vinext-app": {
+      entry: [...entriesFromPackageJson("packages/create-vinext-app/package.json")],
+      project: ["src/**/*.{ts,tsx}"],
+      ignoreDependencies: [
+        // create-vinext-app bundles vinext init helpers into dist. These are
+        // imported by the bundled helper modules, not by src/index.ts directly.
+        "am-i-vibing",
+        "magic-string",
+        // Kept as an explicit package-local Vite+ toolchain dependency.
+        "vite",
+      ],
+    },
+    "apps/web": {
+      entry: ["cloudflare.config.ts", "worker/index.ts"],
+      // Resolved by the Vite plugin from the auxiliary Worker's config entrypoint.
+      ignoreDependencies: ["@cloudflare/workers-response-store"],
+    },
+  },
+  ignoreWorkspaces: ["examples/**", "tests/fixtures/**", "tests/e2e/**/fixture", "benchmarks/**"],
+  ignoreDependencies: [
+    // Imported only by declarations vendored from Next.js. @next/env and
+    // sharp are covered by ambient stubs in @vinext/types; server-only is a
+    // marker import supplied by compatible runtimes.
+    "@next/env",
+    "server-only",
+    "sharp",
+
+    // Declared at root package.json but imported from workspace/example code:
+    //   @mdx-js/react — no direct imports; retained for MDX runtime resolution.
+    //   @mdx-js/rollup — imported from examples/app-router-playground/vite.config.ts
+    //     which doesn't declare it locally and relies on root hoisting.
+    "@mdx-js/react",
+    "@mdx-js/rollup",
+
+    // probed via require.resolve
+    "next-intl",
+
+    // Isolated E2E fixtures are not workspace packages. Their Vite configs
+    // resolve these already-locked dependencies from existing workspace installs.
+    "@cloudflare/vite-plugin",
+    "@resvg/resvg-wasm",
+
+    // internal module name, not an actual dependency
+    "private-next-instrumentation-client",
+
+    // Cloudflare Workers runtime virtual module — provides `env` for
+    // accessing wrangler bindings. Not an npm package. Knip strips the
+    // `cloudflare:workers` specifier down to the bare scheme.
+    "cloudflare",
+  ],
+  ignoreBinaries: [
+    // Consumer-project bins invoked in CI after installing into a cloned repo.
+    "vite",
+    "vinext",
+    // system/user-project binaries invoked by runtime scripts
+    "ps",
+    "taskkill",
+    "eslint",
+    "oxlint",
+    "gh",
+    "jq",
+  ],
+  ignoreFiles: [
+    "tests/e2e/cloudflare-static-export/fixture/dist/**",
+    "tests/e2e/app-router/nextjs-compat/playwright.nextjs-compat.config.ts",
+    "tests/e2e/app-front-redirect-issue/fixture/**/*.{js,ts,tsx}",
+    // stub module loaded via `path.resolve()` as a Vite alias target
+    "packages/vinext/src/client/empty-module.ts",
+  ],
+  // Catalog check is noisy here (deps consumed from the workspace's own
+  // sub-packages or `examples/**` which we intentionally ignore).
+  // `duplicates` flags intentional compat aliases — see
+  // packages/vinext/src/shims/internal/work-unit-async-storage.ts where
+  // `requestAsyncStorage` is a legacy alias for `workUnitAsyncStorage`.
+  exclude: ["catalog", "duplicates"],
+} satisfies KnipConfig;

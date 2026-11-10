@@ -1,0 +1,850 @@
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { createHash } from "node:crypto";
+import { expect, test, type Page } from "@playwright/test";
+import { createBuilder } from "vite";
+import {
+  startChildProductionServer,
+  stopChildProductionServer,
+  type ChildProductionServer,
+} from "../production-server";
+import { waitForAppRouterHydration } from "../helpers";
+
+const FIXTURE_DIR = path.resolve(process.cwd(), "tests/fixtures/app-action-ownership");
+
+// Text that only exists in server code: the directives and the bodies of the
+// Server Functions on /ownership/sourcemap.
+const SERVER_ONLY_TEXT = [
+  "use server",
+  "use cache",
+  "SERVER_MODULE_ACTION_BODY_MARKER",
+  "INLINE_SERVER_ACTION_BODY_MARKER",
+  "CACHED_MODULE_FUNCTION_BODY_MARKER",
+  "INLINE_CACHED_FUNCTION_BODY_MARKER",
+];
+
+type ProductionApp = {
+  actionIds: {
+    adminOnly: string;
+    adminShared: string;
+    boundaryOnly: string;
+    cachedProtected: string;
+    cookieOwner: string;
+    describeArgument: string;
+    describeBoundArgument: string;
+    dynamicProtected: string;
+    globalErrorOnly: string;
+    globalNotFoundOnly: string;
+    inlineArgument: string;
+    loop: string;
+    objectWrapped: string;
+    packageClient: string;
+    protected: string;
+    protectedClient: string;
+    redirectTo: string;
+    sameNameSubmit: string;
+    sideEffectSecret: string;
+  };
+  deleteAccountIds: string[];
+  baseUrl: string;
+  fixtureRoot: string;
+  offlineProtectedActionId: string;
+  server: ChildProductionServer;
+};
+
+async function linkFixtureNodeModules(fixtureRoot: string): Promise<void> {
+  const sourceNodeModules = path.resolve(process.cwd(), "tests/fixtures/app-basic/node_modules");
+  const targetNodeModules = path.join(fixtureRoot, "node_modules");
+  await fs.mkdir(targetNodeModules, { recursive: true });
+  for (const entry of await fs.readdir(sourceNodeModules, { withFileTypes: true })) {
+    if (entry.name === ".vite" || entry.name === ".vite-temp") continue;
+    await fs.symlink(
+      path.join(sourceNodeModules, entry.name),
+      path.join(targetNodeModules, entry.name),
+      entry.isDirectory() ? "junction" : "file",
+    );
+  }
+  await fs.symlink(
+    path.join(fixtureRoot, "action-client-package"),
+    path.join(targetNodeModules, "action-client-package"),
+    "junction",
+  );
+}
+
+async function readBuiltJavaScript(directory: string): Promise<string> {
+  let output = "";
+  for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+    const entryPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) output += await readBuiltJavaScript(entryPath);
+    else if (entry.name.endsWith(".js")) output += await fs.readFile(entryPath, "utf8");
+  }
+  return output;
+}
+
+function findActionId(source: string, exportName: string): string {
+  const escapedExportName = exportName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = source.match(
+    new RegExp(`["'\`]([0-9a-f]{12})["'\`]\\s*,\\s*["'\`]${escapedExportName}["'\`]`),
+  );
+  if (!match) throw new Error(`Missing built action id for ${exportName}`);
+  return `${match[1]}#${exportName}`;
+}
+
+function findActionIds(source: string, exportName: string): string[] {
+  const escapedExportName = exportName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const matches = [
+    ...source.matchAll(
+      new RegExp(`["'\`]([0-9a-f]{12})["'\`]\\s*,\\s*["'\`]${escapedExportName}["'\`]`, "g"),
+    ),
+  ].map((match) => `${match[1]}#${exportName}`);
+  if (matches.length === 0) throw new Error(`Missing built action id for ${exportName}`);
+  return [...new Set(matches)];
+}
+
+// Cache functions register as `"<module id>:<export>"` with their reference id.
+function findCacheActionId(source: string, cacheFunction: string): string {
+  const escapedCacheFunction = cacheFunction.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = source.match(
+    new RegExp(
+      `${escapedCacheFunction}["'\`][^}]*?["']?serverReferenceId["']?\\s*:\\s*["'\`]([0-9a-f]{12}#\\$\\$vinext_cache_[0-9a-f]{64})["'\`]`,
+    ),
+  );
+  if (!match) throw new Error(`Missing built cache action id for ${cacheFunction}`);
+  return match[1]!;
+}
+
+async function buildAndServeFixture(): Promise<ProductionApp> {
+  // macOS tmpdir is behind the /var -> /private/var symlink; the build hashes
+  // action ids relative to the resolved root, so the offline id must too.
+  const fixtureRoot = await fs.realpath(
+    await fs.mkdtemp(path.join(os.tmpdir(), "vinext-action-owner-e2e-")),
+  );
+  await fs.cp(FIXTURE_DIR, fixtureRoot, { recursive: true });
+  await linkFixtureNodeModules(fixtureRoot);
+
+  const vinext = (await import("../../../packages/vinext/src/index.js")).default;
+  const builder = await createBuilder({
+    root: fixtureRoot,
+    configFile: false,
+    plugins: [vinext({ appDir: fixtureRoot })],
+    // Every action runs against a build with browser sourcemaps, like the
+    // Next.js actions fixture (`productionBrowserSourceMaps: true`).
+    environments: { client: { build: { sourcemap: true } } },
+    logLevel: "silent",
+  });
+  await builder.buildApp();
+
+  const builtSource = await readBuiltJavaScript(path.join(fixtureRoot, "dist", "server"));
+  const protectedActionPath = await fs.realpath(
+    path.join(fixtureRoot, "app/ownership/report/admin/actions.ts"),
+  );
+  const server = await startChildProductionServer(fixtureRoot);
+  return {
+    actionIds: {
+      adminOnly: findActionId(builtSource, "$$hoist_0_adminOnly"),
+      adminShared: findActionId(builtSource, "adminSharedAction"),
+      boundaryOnly: findActionId(builtSource, "boundaryOnlyAction"),
+      cachedProtected: findCacheActionId(
+        builtSource,
+        "report/cache-owner/actions.ts:cachedProtectedAction",
+      ),
+      cookieOwner: findActionId(builtSource, "$$hoist_0_readForwardedCredentials"),
+      describeArgument: findActionId(builtSource, "describeArgument"),
+      describeBoundArgument: findActionId(builtSource, "describeBoundArgument"),
+      dynamicProtected: findActionId(builtSource, "$$hoist_0_dynamicProtectedAction"),
+      globalErrorOnly: findActionId(builtSource, "globalErrorOnlyAction"),
+      globalNotFoundOnly: findActionId(builtSource, "globalNotFoundOnlyAction"),
+      inlineArgument: findActionId(builtSource, "$$hoist_0_inlineArgumentAction"),
+      loop: findActionId(builtSource, "$$hoist_0_loopAction"),
+      objectWrapped: findActionId(builtSource, "objectWrappedAction"),
+      packageClient: findActionId(builtSource, "packageClientAction"),
+      protected: findActionId(builtSource, "protectedAction"),
+      protectedClient: findActionId(builtSource, "protectedClientAction"),
+      redirectTo: findActionId(builtSource, "redirectTo"),
+      sameNameSubmit: findActionId(builtSource, "submit"),
+      sideEffectSecret: findActionId(builtSource, "sideEffectSecretAction"),
+    },
+    baseUrl: `http://127.0.0.1:${server.port}`,
+    deleteAccountIds: findActionIds(builtSource, "$$hoist_0_deleteAccount"),
+    fixtureRoot,
+    offlineProtectedActionId: `${createHash("sha256")
+      .update(path.relative(fixtureRoot, protectedActionPath))
+      .digest("hex")
+      .slice(0, 12)}#protectedAction`,
+    server,
+  };
+}
+
+async function executeAction(page: Page, route: string, id: string) {
+  await page.goto(`${app.baseUrl}/ownership/${route}`);
+  await waitForAppRouterHydration(page);
+  await page.getByTestId(id).click();
+  return page.getByTestId(`${id}-result`);
+}
+
+async function postAction(page: Page, pathname: string, actionId: string, args: unknown[] = []) {
+  await page.goto(`${app.baseUrl}${pathname}`);
+  return page.evaluate(
+    async ({ actionId, args, pathname }) => {
+      const response = await fetch(pathname, {
+        body: JSON.stringify(args),
+        headers: {
+          "content-type": "text/plain;charset=UTF-8",
+          "next-action": actionId,
+        },
+        method: "POST",
+      });
+      return {
+        body: await response.text(),
+        headers: Object.fromEntries(response.headers),
+        status: response.status,
+      };
+    },
+    { actionId, args, pathname },
+  );
+}
+
+async function postRawAction(
+  page: Page,
+  pathname: string,
+  actionId: string,
+  body: string,
+  contentType: string,
+) {
+  await page.goto(`${app.baseUrl}${pathname}`);
+  return page.evaluate(
+    async ({ actionId, body, contentType, pathname }) => {
+      const response = await fetch(pathname, {
+        body,
+        headers: { "content-type": contentType, "next-action": actionId },
+        method: "POST",
+      });
+      return {
+        body: await response.text(),
+        headers: Object.fromEntries(response.headers),
+        status: response.status,
+      };
+    },
+    { actionId, body, contentType, pathname },
+  );
+}
+
+async function postMultipartAction(
+  page: Page,
+  pathname: string,
+  actionId: string | null,
+  parts: ReadonlyArray<readonly [string, string]>,
+) {
+  await page.goto(`${app.baseUrl}${pathname}`);
+  return page.evaluate(
+    async ({ actionId, parts, pathname }) => {
+      const body = new FormData();
+      for (const [key, value] of parts) body.append(key, value);
+      const response = await fetch(pathname, {
+        body,
+        headers: actionId ? { "next-action": actionId } : {},
+        method: "POST",
+      });
+      return {
+        body: await response.text(),
+        headers: Object.fromEntries(response.headers),
+        status: response.status,
+        url: response.url,
+      };
+    },
+    { actionId, parts, pathname },
+  );
+}
+
+async function postProgressiveAction(
+  page: Page,
+  pathname: string,
+  actionId: string,
+  earlierActionIds: string[] = [],
+) {
+  await page.goto(`${app.baseUrl}${pathname}`);
+  return page.evaluate(
+    async ({ actionId, earlierActionIds, pathname }) => {
+      const body = new FormData();
+      for (const earlierActionId of earlierActionIds) {
+        body.append(`$ACTION_ID_${earlierActionId}`, "");
+      }
+      body.set(`$ACTION_ID_${actionId}`, "");
+      const response = await fetch(pathname, { body, method: "POST" });
+      return { body: await response.text(), status: response.status };
+    },
+    { actionId, earlierActionIds, pathname },
+  );
+}
+
+async function postRenderedProgressiveForm(
+  page: Page,
+  sourcePathname: string,
+  targetPathname: string,
+) {
+  await page.goto(`${app.baseUrl}${sourcePathname}`);
+  return page.evaluate(async (targetPathname) => {
+    const form = document.querySelector("form");
+    if (!(form instanceof HTMLFormElement)) throw new Error("Missing progressive action form");
+    const response = await fetch(targetPathname, { body: new FormData(form), method: "POST" });
+    return { body: await response.text(), status: response.status };
+  }, targetPathname);
+}
+
+let app: ProductionApp;
+
+test.beforeAll(async () => {
+  test.setTimeout(120_000);
+  app = await buildAndServeFixture();
+});
+
+test.afterAll(async () => {
+  if (!app) return;
+  await stopChildProductionServer(app.server);
+  await fs.rm(app.fixtureRoot, { recursive: true, force: true });
+});
+
+test.setTimeout(60_000);
+
+test.describe("production server action ownership", () => {
+  test("executes actions through every supported ownership topology", async ({ page }) => {
+    const cases = [
+      ["direct", "direct", "DIRECT_OK"],
+      ["alias", "alias", "ALIAS_OK"],
+      ["barrel", "barrel", "BARREL_OK"],
+      ["star", "star", "STAR_OK"],
+      ["namespace", "namespace", "NAMESPACE_OK"],
+      ["namespace-barrel", "namespace-barrel", "NAMESPACE_BARREL_OK"],
+      ["dynamic", "dynamic", "DYNAMIC_OK"],
+      ["default", "default", "DEFAULT_OK"],
+      ["cycle", "cycle", "CYCLE_OK"],
+      ["client", "client", "CLIENT_OK"],
+      ["client-form", "client-form", "CLIENT_FORM_OK:nested"],
+      ["object-wrapped", "object-wrapped", "OBJECT_WRAPPED_OK"],
+      ["imported-inline", "imported-inline", "IMPORTED_INLINE_OK"],
+      ["route-inline", "route-inline", "ROUTE_INLINE_OK"],
+      ["layout-owner", "layout-owner", "LAYOUT_OK"],
+      ["public", "public", "PUBLIC_OK"],
+      ["duplicate", "duplicate-first", "DUPLICATE_FIRST_OK"],
+      ["duplicate", "duplicate-second", "DUPLICATE_SECOND_OK"],
+      ["mixed", "mixed-static", "MIXED_STATIC_OK"],
+      ["mixed", "mixed-dynamic", "MIXED_DYNAMIC_OK"],
+      ["report/dynamic/example", "dynamic-protected", "DYNAMIC_PROTECTED_ACTION_EXECUTED"],
+      ["report/cache-owner", "cached-protected", "CACHED_PROTECTED_ACTION_EXECUTED"],
+      ["report/shared", "public-shared", "PUBLIC_SHARED_ACTION_EXECUTED"],
+      ["same-name/action-owner", "same-name-action", "SAME_NAME_ACTION_OK:distinct"],
+    ] as const;
+
+    const expectedAssertions = 24;
+    let completedAssertions = 0;
+    for (const [route, id, expected] of cases) {
+      await expect(await executeAction(page, route, id)).toHaveText(expected);
+      completedAssertions++;
+    }
+    if (completedAssertions !== expectedAssertions) {
+      throw new Error(
+        `Expected ${expectedAssertions} action assertions, completed ${completedAssertions}`,
+      );
+    }
+  });
+
+  test("executes a directly submitted action received through an object", async ({ page }) => {
+    await page.goto(`${app.baseUrl}/ownership/object-wrapped`);
+    await waitForAppRouterHydration(page);
+
+    const responsePromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        response.request().headers()["next-action"] === app.actionIds.objectWrapped,
+    );
+    await page.getByTestId("object-wrapped-direct").click();
+    const response = await responsePromise;
+
+    expect(response.status()).toBe(200);
+    expect(await response.text()).toContain("OBJECT_WRAPPED_OK");
+  });
+
+  test("associates every reference exported by a reachable action module", async ({ page }) => {
+    const directOwnerResponse = await page.goto(`${app.baseUrl}/ownership/admin`);
+    expect(directOwnerResponse?.status()).toBe(401);
+    await expect(page.locator("body")).toHaveText("ADMIN_BLOCKED");
+
+    await page.goto(`${app.baseUrl}/ownership/public`);
+    const response = await page.evaluate(
+      async ({ actionId }) => {
+        const result = await fetch("/ownership/public", {
+          body: "[]",
+          headers: {
+            "content-type": "text/plain;charset=UTF-8",
+            "next-action": actionId,
+          },
+          method: "POST",
+        });
+        return { body: await result.text(), status: result.status };
+      },
+      { actionId: app.actionIds.adminOnly },
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toContain("ADMIN_ONLY_EXECUTED");
+  });
+
+  test("re-enters protected owner middleware for forged public-path requests", async ({ page }) => {
+    const directOwnerResponse = await page.goto(`${app.baseUrl}/ownership/report/admin`);
+    expect(directOwnerResponse?.status()).toBe(401);
+    await expect(page.locator("body")).toHaveText("ADMIN_BLOCKED");
+
+    const response = await postAction(page, "/ownership/report/public", app.actionIds.protected);
+    expect(response.status).toBe(200);
+    expect(response.body).toBe("{}");
+    expect(response.body).not.toContain("PROTECTED_ACTION_EXECUTED");
+  });
+
+  test("routes progressive actions through protected owner middleware", async ({ page }) => {
+    const response = await postProgressiveAction(
+      page,
+      "/ownership/report/public",
+      app.actionIds.adminOnly,
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).not.toContain("ADMIN_ONLY_EXECUTED");
+  });
+
+  test("routes progressive actions using React's last action field", async ({ page }) => {
+    const response = await postProgressiveAction(
+      page,
+      "/ownership/report/public",
+      app.actionIds.adminOnly,
+      [app.actionIds.redirectTo],
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).not.toContain("ADMIN_ONLY_EXECUTED");
+  });
+
+  test("routes bound progressive actions before loading their modules", async ({ page }) => {
+    const response = await postRenderedProgressiveForm(
+      page,
+      "/ownership/same-name/action-owner",
+      "/ownership/same-name/helper-only",
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toBe("{}");
+    expect(response.body).not.toContain("SAME_NAME_ACTION_OK");
+  });
+
+  test("retains protected ownership through client component boundaries", async ({ page }) => {
+    const directOwnerResponse = await page.goto(`${app.baseUrl}/ownership/report/client-owner`);
+    expect(directOwnerResponse?.status()).toBe(401);
+
+    const response = await postAction(
+      page,
+      "/ownership/report/public",
+      app.actionIds.protectedClient,
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toBe("{}");
+    expect(response.body).not.toContain("PROTECTED_CLIENT_ACTION_EXECUTED");
+  });
+
+  test("routes callable cached references through their owner middleware", async ({ page }) => {
+    const response = await postAction(
+      page,
+      "/ownership/report/public",
+      app.actionIds.cachedProtected,
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toBe("{}");
+    expect(response.body).not.toContain("CACHED_PROTECTED_ACTION_EXECUTED");
+  });
+
+  test("keeps offline-computable production action ids harmless", async ({ page }) => {
+    expect(app.offlineProtectedActionId).toBe(app.actionIds.protected);
+
+    const response = await postAction(
+      page,
+      "/ownership/report/public",
+      app.offlineProtectedActionId,
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toBe("{}");
+    expect(response.body).not.toContain("PROTECTED_ACTION_EXECUTED");
+  });
+
+  test("does not inline middleware-gated redirect targets", async ({ page }) => {
+    const directTarget = await page.goto(`${app.baseUrl}/ownership/report/admin/secret`);
+    expect(directTarget?.status()).toBe(401);
+    await expect(page.locator("body")).toHaveText("ADMIN_BLOCKED");
+
+    const response = await postAction(page, "/ownership/report/public", app.actionIds.redirectTo, [
+      "/ownership/report/admin/secret",
+    ]);
+    expect(response.status).toBe(303);
+    expect(response.headers["x-action-redirect"]).toBe("/ownership/report/admin/secret");
+    expect(response.body).toBe("");
+    expect(response.body).not.toContain("ADMIN_SECRET_MARKER_42");
+  });
+
+  test("preserves external redirects from forwarded action owners", async ({ page }) => {
+    const response = await postAction(page, "/ownership/report/shared", app.actionIds.redirectTo, [
+      "https://example.com/destination",
+    ]);
+    expect(response.status).toBe(303);
+    expect(response.headers["x-action-redirect"]).toBe("https://example.com/destination");
+    expect(response.body).toBe("");
+  });
+
+  test("blocks encrypted closure replay across actions", async ({ page }) => {
+    await page.goto(`${app.baseUrl}/ownership/report/oracle?value=victim-carol`);
+    await waitForAppRouterHydration(page);
+    const oracleRequestPromise = page.waitForRequest(
+      (request) => request.method() === "POST" && Boolean(request.headers()["next-action"]),
+    );
+    await page.getByTestId("oracle").click();
+    await expect(page.getByTestId("oracle-result")).toHaveText("ORACLE:victim-carol");
+    const oracleRequest = await oracleRequestPromise;
+    const replayBody = oracleRequest.postData();
+    const contentType = oracleRequest.headers()["content-type"];
+    expect(replayBody).not.toBeNull();
+    expect(contentType).toBeTruthy();
+
+    for (const actionId of app.deleteAccountIds) {
+      const response = await postRawAction(
+        page,
+        "/ownership/report/public",
+        actionId,
+        replayBody!,
+        contentType!,
+      );
+      expect(response.status).toBe(200);
+      expect(response.headers["x-action-redirect"]).toBeUndefined();
+      expect(response.body).toBe("{}");
+      expect(response.body).not.toContain("ADMIN_SECRET_MARKER_42");
+      expect(response.body).not.toContain("victim-carol");
+    }
+  });
+
+  test("uses module-level ownership for shared action modules", async ({ page }) => {
+    const directAdminOwner = await page.goto(`${app.baseUrl}/ownership/report/admin/shared`);
+    expect(directAdminOwner?.status()).toBe(401);
+    const response = await postAction(page, "/ownership/report/shared", app.actionIds.adminShared);
+    expect(response.status).toBe(200);
+    expect(response.body).toContain("ADMIN_SHARED_ACTION_EXECUTED");
+  });
+
+  test("keeps same-named non-action exports isolated from action ownership", async ({ page }) => {
+    await page.goto(`${app.baseUrl}/ownership/same-name/action-owner`);
+    await expect(page.getByTestId("same-name-helper-result")).toHaveText("SAME_NAME_HELPER_OK");
+
+    await page.goto(`${app.baseUrl}/ownership/same-name/helper-only`);
+    await expect(page.getByTestId("same-name-helper-result")).toHaveText("SAME_NAME_HELPER_OK");
+    const response = await postAction(
+      page,
+      "/ownership/same-name/helper-only",
+      app.actionIds.sameNameSubmit,
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toBe("{}");
+    expect(response.body).not.toContain("SAME_NAME_ACTION_OK");
+  });
+
+  test("forwards dynamic owners using their route pattern", async ({ page }) => {
+    const response = await postAction(
+      page,
+      "/ownership/report/public",
+      app.actionIds.dynamicProtected,
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toBe("{}");
+    expect(response.body).not.toContain("DYNAMIC_PROTECTED_ACTION_EXECUTED");
+  });
+
+  test("propagates middleware request headers and response cookies", async ({ page }) => {
+    const response = await postAction(
+      page,
+      "/ownership/report/cookie-source",
+      app.actionIds.cookieOwner,
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toContain("trusted:present");
+    expect(await page.context().cookies(app.baseUrl)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "forwarded-cookie", value: "present" }),
+        expect.objectContaining({ name: "owner-action", value: "present" }),
+      ]),
+    );
+  });
+
+  test("stops recursive forwarding after an owner rewrite", async ({ page }) => {
+    const response = await postAction(page, "/ownership/report/public", app.actionIds.loop);
+    expect(response.status).toBe(200);
+    expect(response.body).toBe("{}");
+    expect(response.body).not.toContain("LOOP_ACTION_EXECUTED");
+  });
+
+  test("decodes only route-owned Server Actions as argument references", async ({ page }) => {
+    const postArgumentReference = (parts: ReadonlyArray<readonly [string, string]>) =>
+      postMultipartAction(page, "/ownership/argument-refs", app.actionIds.describeArgument, parts);
+    const metadata = (id: string, bound: string | null = null) => JSON.stringify({ id, bound });
+    const reference = (id: string) =>
+      [
+        ["0", JSON.stringify(["$h1"])],
+        ["1", metadata(id)],
+      ] as const;
+    // React reads stream and async-iterable arguments from `S<id>` parts.
+    const streamed = (type: "$R1" | "$x1", id: string) =>
+      [
+        ["0", JSON.stringify([type])],
+        ["S1", JSON.stringify("$h2")],
+        ["2", metadata(id)],
+      ] as const;
+    // The page module also exports its component; it is a server-reference
+    // module because of its inline action, but `default` is not an action.
+    const pageComponentId = app.actionIds.inlineArgument.replace(/#.*$/, "#default");
+
+    for (const parts of [
+      reference(app.actionIds.describeArgument),
+      reference(app.actionIds.inlineArgument),
+      streamed("$R1", app.actionIds.inlineArgument),
+      streamed("$x1", app.actionIds.inlineArgument),
+    ]) {
+      const response = await postArgumentReference(parts);
+      expect(response.status).toBe(200);
+      expect(response.body).toContain("FUNCTION_ARGUMENT");
+    }
+
+    // Like Next.js's page-scoped server module map, an id outside this route
+    // fails to resolve: the reply or the argument carrying it errors.
+    for (const parts of [
+      reference(app.actionIds.protected),
+      reference(pageComponentId),
+      // React retries a missing id without its last `#name`, keeping `name`
+      // as the export, which would reach this owned module's `default`.
+      reference(`${app.actionIds.inlineArgument}#default`),
+      [
+        ["0", JSON.stringify(["$h1"])],
+        ["1", metadata(app.actionIds.describeArgument, "$@2")],
+        ["2", JSON.stringify(["$h3"])],
+        ["3", metadata(app.actionIds.protected)],
+      ],
+      // A repeated part must not swap in a reference after an owned one.
+      [...reference(app.actionIds.describeArgument), ["1", metadata(app.actionIds.protected)]],
+      streamed("$R1", app.actionIds.protected),
+      streamed("$x1", app.actionIds.protected),
+    ] as const) {
+      const response = await postArgumentReference(parts);
+      expect(response.status).toBe(500);
+      expect(response.body).not.toContain("_ARGUMENT");
+    }
+  });
+
+  test("decodes only route-owned Server Actions in progressive bound arguments", async ({
+    page,
+  }) => {
+    const postBoundAction = (parts: ReadonlyArray<readonly [string, string]>) =>
+      postMultipartAction(page, "/ownership/argument-refs", null, [
+        ["$ACTION_REF_1", ""],
+        ["$ACTION_1:0", JSON.stringify({ id: app.actionIds.describeBoundArgument, bound: "$@1" })],
+        ...parts,
+      ]);
+    const metadata = (id: string) => JSON.stringify({ id, bound: null });
+    const reference = (id: string) =>
+      [
+        ["$ACTION_1:1", JSON.stringify(["$h2"])],
+        ["$ACTION_1:2", metadata(id)],
+      ] as const;
+    const pageComponentId = app.actionIds.inlineArgument.replace(/#.*$/, "#default");
+
+    // The action redirects with its description of the bound argument.
+    const owned = await postBoundAction(reference(app.actionIds.inlineArgument));
+    expect(owned.status).toBe(200);
+    expect(new URL(owned.url).searchParams.get("described")).toBe("FUNCTION_ARGUMENT");
+
+    // React resolves bound arguments through the route-scoped manifest, so an id
+    // outside this route fails decoding as it does in Next.js.
+    const streamed = (type: "$R3" | "$x3", id: string) =>
+      [
+        ["$ACTION_1:1", JSON.stringify([type])],
+        ["$ACTION_1:S3", JSON.stringify("$h2")],
+        ["$ACTION_1:2", metadata(id)],
+      ] as const;
+    for (const parts of [
+      reference(app.actionIds.protected),
+      reference(pageComponentId),
+      reference(`${app.actionIds.inlineArgument}#default`),
+      [
+        ...reference(app.actionIds.inlineArgument),
+        ["$ACTION_1:2", metadata(app.actionIds.protected)],
+      ],
+      streamed("$R3", app.actionIds.protected),
+      streamed("$x3", app.actionIds.protected),
+    ] as const) {
+      const response = await postBoundAction(parts);
+      expect(response.status).toBe(500);
+      expect(response.url).not.toContain("described=");
+    }
+  });
+
+  test("fails closed for unknown action ids", async ({ page }) => {
+    await page.goto(`${app.baseUrl}/ownership/direct`);
+    const status = await page.evaluate(async () => {
+      const response = await fetch("/ownership/direct", {
+        body: "[]",
+        headers: {
+          "content-type": "text/plain;charset=UTF-8",
+          "next-action": "000000000000#missing",
+        },
+        method: "POST",
+      });
+      return response.status;
+    });
+    expect(status).toBe(404);
+  });
+
+  test("lets multipart POSTs fall through to App Route handlers", async ({ page }) => {
+    await page.goto(`${app.baseUrl}/ownership/report/public`);
+    const response = await page.evaluate(async () => {
+      const body = new FormData();
+      body.set("value", "ROUTE_HANDLER_FORM_DATA");
+      const result = await fetch("/ownership/report/route-handler", { body, method: "POST" });
+      return {
+        actionNotFound: result.headers.get("x-nextjs-action-not-found"),
+        body: await result.json(),
+        status: result.status,
+      };
+    });
+
+    expect(response.status).toBe(202);
+    expect(response.actionNotFound).toBeNull();
+    expect(response.body).toEqual({
+      marker: "ROUTE_HANDLER_EXECUTED",
+      value: "ROUTE_HANDLER_FORM_DATA",
+    });
+  });
+
+  test("includes server-reference modules reached by side-effect imports", async ({ page }) => {
+    await page.goto(`${app.baseUrl}/ownership/side-effect`);
+    const response = await page.evaluate(
+      async ({ actionId }) => {
+        const result = await fetch("/ownership/side-effect", {
+          body: "[]",
+          headers: {
+            "content-type": "text/plain;charset=UTF-8",
+            "next-action": actionId,
+          },
+          method: "POST",
+        });
+        return { body: await result.text(), status: result.status };
+      },
+      { actionId: app.actionIds.sideEffectSecret },
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toContain("SIDE_EFFECT_SECRET_EXECUTED");
+  });
+
+  test("includes server references reached only through route boundaries", async ({ page }) => {
+    const response = await postAction(page, "/ownership/report/public", app.actionIds.boundaryOnly);
+    expect(response.status).toBe(200);
+    expect(response.body).toContain("BOUNDARY_ONLY_ACTION_EXECUTED");
+  });
+
+  test("associates global error actions with every route", async ({ page }) => {
+    const response = await postAction(
+      page,
+      "/ownership/report/public",
+      app.actionIds.globalErrorOnly,
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toContain("GLOBAL_ERROR_ONLY_ACTION_EXECUTED");
+  });
+
+  test("associates global not-found actions with every route", async ({ page }) => {
+    const response = await postAction(
+      page,
+      "/ownership/report/public",
+      app.actionIds.globalNotFoundOnly,
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toContain("GLOBAL_NOT_FOUND_ONLY_ACTION_EXECUTED");
+  });
+
+  test("resolves package Client Component action owners", async ({ page }) => {
+    const response = await postAction(
+      page,
+      "/ownership/report/public",
+      app.actionIds.packageClient,
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toContain("PACKAGE_CLIENT_ACTION_EXECUTED");
+  });
+
+  // Like Next.js's "should not expose action content in sourcemaps"
+  // (test/e2e/app-dir/actions/app-action.test.ts), the browser only gets
+  // createServerReference() proxies for "use server" and "use cache" functions.
+  test("keeps Server Function source out of every emitted client file", async () => {
+    const clientDir = path.join(app.fixtureRoot, "dist", "client");
+    const files = (await fs.readdir(clientDir, { recursive: true })).filter(
+      (file) => file.endsWith(".js") || file.endsWith(".js.map"),
+    );
+    const leaks: string[] = [];
+    const sources = new Map<string, (string | null)[]>();
+    for (const file of files) {
+      const content = await fs.readFile(path.join(clientDir, file), "utf8");
+      for (const text of SERVER_ONLY_TEXT) {
+        if (content.includes(text)) leaks.push(`${file}: ${text}`);
+      }
+      if (!file.endsWith(".map")) continue;
+      const map = JSON.parse(content) as { sources: string[]; sourcesContent?: (string | null)[] };
+      map.sources.forEach((source, index) => {
+        const contents = sources.get(source) ?? [];
+        contents.push(map.sourcesContent?.[index] ?? null);
+        sources.set(source, contents);
+      });
+    }
+    const contentOf = (suffix: string) =>
+      [...sources].filter(([source]) => source.endsWith(suffix)).flatMap(([, content]) => content);
+
+    expect(files.filter((file) => file.endsWith(".js.map")).length).toBeGreaterThan(0);
+    expect(leaks).toEqual([]);
+    // The maps still carry the Client Component and the Web Worker that import
+    // the Server Functions, so this fails if sourcemaps silently stop being emitted.
+    expect(contentOf("ownership/sourcemap/client-buttons.tsx")).toEqual([
+      expect.stringContaining("CLIENT_COMPONENT_SOURCE_MARKER"),
+    ]);
+    expect(contentOf("ownership/sourcemap/worker.ts")).toEqual([
+      expect.stringContaining("WORKER_SOURCE_MARKER"),
+    ]);
+  });
+
+  test("keeps Server Function source out of served sourcemaps", async ({ page, request }) => {
+    const scriptUrls = new Set<string>();
+    page.on("response", (response) => {
+      if (response.request().resourceType() === "script") scriptUrls.add(response.url());
+    });
+    await page.goto(`${app.baseUrl}/ownership/sourcemap`);
+    await waitForAppRouterHydration(page);
+    await expect(page.getByTestId("inline-cached")).toHaveText(
+      "INLINE_CACHED_FUNCTION_BODY_MARKER",
+    );
+    await expect(page.getByTestId("worker")).toHaveText("WORKER_SOURCE_MARKER,function,function");
+
+    // The proxies still call the server.
+    await page.getByRole("button", { name: "Call server action" }).click();
+    await expect(page.getByTestId("result")).toHaveText("SERVER_MODULE_ACTION_BODY_MARKER");
+    await page.getByRole("button", { name: "Call cached function" }).click();
+    await expect(page.getByTestId("result")).toHaveText("CACHED_MODULE_FUNCTION_BODY_MARKER");
+
+    // Follow each served script's sourceMappingURL, as any visitor can.
+    let mapCount = 0;
+    for (const scriptUrl of scriptUrls) {
+      const script = await (await request.get(scriptUrl)).text();
+      const mapUrl = script.match(/\/\/# sourceMappingURL=(\S+)\s*$/)?.[1];
+      if (!mapUrl) continue;
+      const response = await request.get(new URL(mapUrl, scriptUrl).href);
+      expect(response.status()).toBe(200);
+      const map = await response.text();
+      mapCount++;
+      for (const text of SERVER_ONLY_TEXT) expect(map, `${mapUrl}: ${text}`).not.toContain(text);
+    }
+    expect(mapCount).toBeGreaterThan(0);
+  });
+});

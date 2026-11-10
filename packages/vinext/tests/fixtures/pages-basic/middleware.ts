@@ -1,0 +1,464 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import {
+  handleRequestSignalProbe,
+  REQUEST_SIGNAL_OVERRIDE_HEADER,
+} from "./lib/request-signal-probe";
+
+export function middleware(request: NextRequest) {
+  const url = new URL(request.url);
+
+  // Coverage: tests/pages-router.test.ts ("drops a request-line fragment")
+  if (url.pathname === "/mw-request-url") {
+    return Response.json({ url: request.url, hash: request.nextUrl.hash });
+  }
+
+  // Client-disconnect coverage: tests/node-request-cancellation.test.ts
+  if (url.pathname === "/middleware-request-signal") {
+    return handleRequestSignalProbe(request);
+  }
+  if (url.pathname === "/middleware-truncated-body") {
+    // Ends early with the code Node also uses for a client disconnect.
+    return new Response(
+      new ReadableStream({
+        start(controller) {
+          controller.error(
+            Object.assign(new Error("Premature close"), { code: "ERR_STREAM_PREMATURE_CLOSE" }),
+          );
+        },
+      }),
+    );
+  }
+  // Middleware cookies must precede the API route's res.appendHeader cookies.
+  // Coverage: tests/pages-router.test.ts
+  if (url.pathname === "/api/append-header") {
+    const res = NextResponse.next();
+    res.cookies.set("mw", "1");
+    return res;
+  }
+  // Matched only with ?mw. Middleware cookies precede the edge API route's own
+  // NextResponse cookies, with no internal x-middleware-set-cookie copy.
+  // Coverage: tests/pages-router.test.ts
+  if (url.pathname === "/api/edge-next-response-cookie") {
+    const res = NextResponse.next();
+    res.cookies.set("mw-edge", "1", { httpOnly: true, path: "/" });
+    return res;
+  }
+  if (url.pathname === "/api/edge-request-signal") {
+    if (!url.searchParams.has("override")) return NextResponse.next();
+    const headers = new Headers(request.headers);
+    headers.set(REQUEST_SIGNAL_OVERRIDE_HEADER, "1");
+    return NextResponse.next({ request: { headers } });
+  }
+
+  // A `members=1` cookie admits direct requests; the image optimizer fetches
+  // its source without the caller's cookies, as Next.js does.
+  // Coverage: tests/e2e/pages-router-prod/image-middleware.spec.ts
+  if (
+    url.pathname.startsWith("/members%20only/") &&
+    request.cookies.get("members")?.value !== "1"
+  ) {
+    return new Response("blocked by middleware", {
+      status: 403,
+      headers: { "content-type": "text/plain" },
+    });
+  }
+  // A middleware Cache-Control replaces an admitted public file's default, as
+  // in Next.js. Coverage: tests/e2e/pages-router-prod/public-file-cache-control.spec.ts
+  if (
+    url.pathname.startsWith("/members%20only/") &&
+    url.searchParams.has("middleware-cache-control")
+  ) {
+    return NextResponse.next({ headers: { "cache-control": "private, no-store" } });
+  }
+  if (url.pathname === "/image-source-redirect.png") {
+    return NextResponse.redirect(new URL("/heart.png", request.url));
+  }
+  if (url.pathname === "/image-source-rewrite.png") {
+    return NextResponse.rewrite(new URL("/heart.png", request.url));
+  }
+
+  if (
+    url.pathname === "/revalidate-middleware-sentinel" &&
+    request.headers.has("x-prerender-revalidate")
+  ) {
+    return new Response("middleware must not observe on-demand revalidation", { status: 418 });
+  }
+
+  // A middleware Cache-Control replaces the getServerSideProps default on
+  // redirect and notFound exits, and the getInitialProps default, as in
+  // Next.js.
+  // Coverage: tests/pages-router.test.ts,
+  // tests/e2e/pages-router-prod/initial-props-cache-control.spec.ts
+  if (
+    (url.pathname === "/gssp-redirect" ||
+      url.pathname === "/gssp-not-found" ||
+      url.pathname === "/nav-compat-gip/cache-policy") &&
+    url.searchParams.has("mw-cache-control")
+  ) {
+    return NextResponse.next({ headers: { "cache-control": "public, max-age=60" } });
+  }
+
+  // Add a custom header to all matched requests
+  const response = NextResponse.next();
+  response.headers.set("x-custom-middleware", "active");
+  // Expose the pathname middleware actually observed. Used by tests verifying
+  // `/_next/data/<buildId>/<page>.json` is normalized to `/page` BEFORE
+  // middleware runs (matching Next.js' `handleNextDataRequest` pipeline).
+  response.headers.set("x-mw-pathname", url.pathname);
+
+  // Same-origin redirect to a double-slash path. vinext must keep the
+  // Location absolute so it never becomes protocol-relative.
+  if (url.pathname === "/mw-redirect-double-slash") {
+    return NextResponse.redirect(`${url.origin}//`);
+  }
+
+  // Redirect /old-page to /about
+  if (url.pathname === "/old-page") {
+    return NextResponse.redirect(new URL("/about", request.url));
+  }
+
+  // next.config.mjs adds config headers to /external-headers/* and proxies its
+  // before-files, after-files and fallback paths to the local upstream.
+  // Middleware proxies /external-headers/middleware/* there itself.
+  if (url.pathname.startsWith("/external-headers/")) {
+    const upstreamPort = request.headers.get("x-test-upstream-port");
+    const middlewarePath = url.pathname.slice("/external-headers/middleware".length);
+    const search = url.searchParams;
+    // Middleware's request header override for the upstream.
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-mw-request-header", "1");
+    const init = search.has("middleware-request-header")
+      ? { request: { headers: requestHeaders } }
+      : undefined;
+    const response =
+      url.pathname.startsWith("/external-headers/middleware/") && /^\d+$/.test(upstreamPort ?? "")
+        ? NextResponse.rewrite(`http://127.0.0.1:${upstreamPort}${middlewarePath}`, init)
+        : NextResponse.next(init);
+    if (search.has("middleware-cookie")) {
+      response.cookies.set("middleware-cookie", "1", { path: "/" });
+    }
+    if (search.has("middleware-header")) response.headers.set("x-mw-response-header", "1");
+    if (search.has("middleware-cache-control")) {
+      response.headers.set("Cache-Control", "private, max-age=7");
+    }
+    return response;
+  }
+
+  // next.config.mjs adds a config Set-Cookie to these paths. Middleware's own
+  // cookie replaces it, as in Next.js.
+  if (
+    url.pathname === "/config-cookie-page" ||
+    url.pathname === "/config-cookie-redirect" ||
+    url.pathname === "/config-cookie-response"
+  ) {
+    const res =
+      url.pathname === "/config-cookie-redirect"
+        ? NextResponse.redirect(new URL("/about", request.url))
+        : url.pathname === "/config-cookie-response"
+          ? new NextResponse("from middleware")
+          : NextResponse.next();
+    if (url.searchParams.has("middleware-cookie")) {
+      res.cookies.set("middleware-cookie", "1", { path: "/" });
+    }
+    // Next.js ignores an empty middleware Set-Cookie.
+    if (url.searchParams.has("empty-middleware-cookie")) res.headers.set("Set-Cookie", "");
+    return res;
+  }
+
+  // Redirect /redirect-with-cookies to /about and set cookies on the redirect
+  if (url.pathname === "/redirect-with-cookies") {
+    const res = NextResponse.redirect(new URL("/about", request.url));
+    res.cookies.set("mw-session", "abc123", { path: "/" });
+    res.cookies.set("mw-theme", "dark", { path: "/" });
+    return res;
+  }
+
+  // Rewrite /rewritten to /ssr
+  if (url.pathname === "/rewritten") {
+    return NextResponse.rewrite(new URL("/ssr", request.url));
+  }
+
+  // Ported from Next.js: test/e2e/middleware-general/app/middleware-node.js
+  // https://github.com/vercel/next.js/blob/v16.2.6/test/e2e/middleware-general/app/middleware-node.js
+  if (url.pathname === "/middleware-general-ssr") {
+    url.pathname = "/ssr";
+    return NextResponse.rewrite(url);
+  }
+
+  if (url.pathname === "/middleware-general-error-throw" && request.__isData) {
+    throw new Error("middleware data request failure");
+  }
+
+  if (
+    url.pathname === "/ssr" &&
+    url.searchParams.has("dangerous-middleware-redirect") &&
+    request.__isData
+  ) {
+    return new Response(null, {
+      status: 307,
+      headers: {
+        Location: "javascript:void(window.__VINEXT_PAGES_MIDDLEWARE_REDIRECT_EXECUTED__=true)",
+      },
+    });
+  }
+
+  // Rewrite /mw-rewrite-query to /ssr-query — preserves the original
+  // request's query params on the rewrite target so getServerSideProps
+  // sees them. Middleware preserves query by mutating `request.nextUrl`
+  // (which carries the original search) rather than constructing a new
+  // path-only URL. Mirrors Next.js: test/e2e/middleware-rewrites/app/middleware.js.
+  if (url.pathname === "/mw-rewrite-query") {
+    const target = request.nextUrl.clone();
+    target.pathname = "/ssr-query";
+    return NextResponse.rewrite(target);
+  }
+
+  // Rewrite /mw-rewrite-dynamic-query to /posts/first — the rewrite
+  // target is dynamic, so the resulting query should contain both the
+  // dynamic param (id=first) and the original query (?hello=world).
+  if (url.pathname === "/mw-rewrite-dynamic-query") {
+    const target = request.nextUrl.clone();
+    target.pathname = "/posts/first";
+    return NextResponse.rewrite(target);
+  }
+
+  // Rewrite target carries its own query — middleware overlays its key onto
+  // the existing nextUrl search before rewriting. The resulting query is the
+  // exact final URL (not an auto-merge): keys explicitly set by middleware
+  // override, untouched keys carry over because the middleware mutated the
+  // same NextURL instance that already has them.
+  if (url.pathname === "/mw-rewrite-merge-query") {
+    const target = request.nextUrl.clone();
+    target.pathname = "/ssr-query";
+    target.searchParams.set("hello", "from-rewrite");
+    return NextResponse.rewrite(target);
+  }
+
+  // Ported from Next.js: test/e2e/middleware-general/app/middleware.js
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/middleware-general/app/middleware.js
+  if (url.pathname === "/api/edge-search-params") {
+    const target = request.nextUrl.clone();
+    target.searchParams.set("foo", "bar");
+    return NextResponse.rewrite(target);
+  }
+
+  if (url.pathname.startsWith("/edge-api-rewrite/")) {
+    const id = url.pathname.slice("/edge-api-rewrite/".length);
+    const target = request.nextUrl.clone();
+    target.pathname = `/api/edge-users/${id}`;
+    target.searchParams.set("foo", "bar");
+    return NextResponse.rewrite(target);
+  }
+
+  // Issue #1342 / Next.js parity (test/e2e/middleware-rewrites
+  //   "should clear query parameters"):
+  // when middleware modifies `request.nextUrl.searchParams` (delete keys) and
+  // rewrites to it, the resulting query must match the modified destination
+  // exactly — vinext must NOT silently re-merge the original request's query.
+  if (url.pathname === "/mw-clear-query-params") {
+    const allowedKeys = new Set(["allowed"]);
+    for (const key of [...url.searchParams.keys()]) {
+      if (!allowedKeys.has(key)) url.searchParams.delete(key);
+    }
+    url.pathname = "/ssr-query";
+    return NextResponse.rewrite(url);
+  }
+
+  if (url.pathname === "/rewrite-with-cookie") {
+    const res = NextResponse.rewrite(new URL("/ssr", request.url));
+    res.cookies.set("rewrite-cookie", "visible", { path: "/" });
+    return res;
+  }
+
+  // Ported from Next.js: test/e2e/middleware-rewrites/app/middleware.js
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/middleware-rewrites/app/middleware.js
+  if (url.pathname === "/external-middleware-rewrite") {
+    return NextResponse.rewrite("https://api.example.com/from-middleware?ok=1");
+  }
+
+  if (url.pathname === "/external-middleware-rewrite-status") {
+    const target =
+      request.headers.get("x-middleware-test-rewrite-target") ??
+      "https://api.example.com/from-middleware-status";
+    return NextResponse.rewrite(target, { status: 403 });
+  }
+
+  // Ported from Next.js: test/e2e/middleware-rewrites/app/middleware.js
+  // ('/middleware-external-rewrite-body') — POST body must reach upstream.
+  if (url.pathname === "/external-middleware-rewrite-body") {
+    const target =
+      request.headers.get("x-middleware-test-rewrite-target") ??
+      "https://api.example.com/echo-body";
+    return NextResponse.rewrite(target);
+  }
+
+  // Ported from Next.js: test/e2e/middleware-rewrites/app/middleware.js
+  // ('/middleware-external-rewrite-body-headers-return-headers') — request
+  // header overrides from `NextResponse.rewrite(url, { request: { headers } })`
+  // must propagate to the proxied upstream request.
+  if (url.pathname === "/external-middleware-rewrite-with-headers") {
+    const target =
+      request.headers.get("x-middleware-test-rewrite-target") ??
+      "https://api.example.com/echo-headers";
+    const tmpHeaders = new Headers(request.headers);
+    tmpHeaders.set("x-hello-from-middleware1", "hello");
+    return NextResponse.rewrite(target, {
+      request: { headers: tmpHeaders },
+    });
+  }
+
+  // Ported from Next.js: test/e2e/middleware-rewrites/test/index.test.ts
+  // ('should rewrite to the external url for incoming data request
+  //  externally rewritten') — `_next/data/<page>.json` requests rewritten
+  // to an external host must proxy through and surface the upstream body.
+  if (url.pathname === "/data-external-rewrite") {
+    const target =
+      request.headers.get("x-middleware-test-rewrite-target") ?? "https://api.example.com/data";
+    return NextResponse.rewrite(target);
+  }
+
+  if (url.pathname === "/middleware-bad-content-length") {
+    const res = NextResponse.rewrite(new URL("/streaming-ssr", request.url));
+    res.headers.set("content-length", "1");
+    res.headers.set("x-custom-middleware", "active");
+    return res;
+  }
+
+  if (url.pathname === "/headers-before-middleware-rewrite") {
+    return NextResponse.rewrite(new URL("/ssr", request.url));
+  }
+
+  if (url.pathname === "/redirect-before-middleware-rewrite") {
+    return NextResponse.redirect(new URL("/ssr", request.url));
+  }
+
+  if (url.pathname === "/redirect-before-middleware-response") {
+    return new Response("middleware should not win", { status: 418 });
+  }
+
+  // Block /blocked with a custom response
+  if (url.pathname === "/blocked") {
+    return new Response("Access Denied", { status: 403, statusText: "Blocked by Middleware" });
+  }
+
+  if (url.pathname === "/blocked-with-cookie") {
+    const res = new NextResponse("Access Denied", {
+      status: 403,
+      statusText: "Blocked by Middleware",
+    });
+    res.cookies.set("blocked", "1", { path: "/" });
+    return res;
+  }
+
+  if (url.pathname === "/middleware-protected-data") {
+    return new Response("Access Denied", { status: 403 });
+  }
+
+  // Return a binary response (PNG 1x1 pixel) to test binary body preservation
+  if (url.pathname === "/binary-response") {
+    const pixel = new Uint8Array([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44,
+      0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02, 0x00, 0x00, 0x00, 0x90,
+      0x77, 0x53, 0xde, 0x00, 0x00, 0x00, 0x0c, 0x49, 0x44, 0x41, 0x54, 0x08, 0xd7, 0x63, 0xf8,
+      0xcf, 0xc0, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01, 0xe2, 0x21, 0xbc, 0x33, 0x00, 0x00, 0x00,
+      0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
+    ]);
+    return new Response(pixel, {
+      status: 200,
+      headers: { "content-type": "image/png" },
+    });
+  }
+
+  // Return a response with multiple Set-Cookie headers
+  if (url.pathname === "/multi-cookie-response") {
+    const res = new Response("cookies set", { status: 200 });
+    res.headers.append("set-cookie", "a=1; Path=/");
+    res.headers.append("set-cookie", "b=2; Path=/");
+    res.headers.append("set-cookie", "c=3; Path=/");
+    return res;
+  }
+
+  // Throw an error to test that middleware errors return 500, not bypass auth
+  if (url.pathname === "/middleware-throw") {
+    throw new Error("middleware crash");
+  }
+
+  // Forward modified request headers via NextResponse.next({ request: { headers } })
+  // to test that x-middleware-request-* headers survive runMiddleware stripping.
+  if (url.pathname === "/header-override") {
+    const headers = new Headers(request.headers);
+    headers.set("x-custom-injected", "from-middleware");
+    return NextResponse.next({ request: { headers } });
+  }
+
+  if (url.pathname === "/header-override-delete") {
+    const headers = new Headers(request.headers);
+    headers.delete("authorization");
+    headers.delete("cookie");
+    headers.set("x-from-middleware", "hello-from-middleware");
+    return NextResponse.next({ request: { headers } });
+  }
+
+  // Inject a cookie via middleware request headers. Config has/missing
+  // conditions should not see this cookie as the original request did
+  // not include it.
+  if (url.pathname === "/about" && url.searchParams.has("inject-login")) {
+    const headers = new Headers(request.headers);
+    const existing = headers.get("cookie") ?? "";
+    headers.set("cookie", existing ? existing + "; logged-in=1" : "logged-in=1");
+    return NextResponse.next({ request: { headers } });
+  }
+
+  // Inject mw-user=1 cookie for afterFiles rewrite gating test.
+  // afterFiles rewrites run after middleware, so they should see this cookie.
+  // The /mw-gated-rewrite rule in next.config.mjs has: [cookie:mw-user],
+  // which should match when ?mw-auth is present and middleware injects it.
+  if (url.pathname === "/mw-gated-rewrite" && url.searchParams.has("mw-auth")) {
+    const headers = new Headers(request.headers);
+    const existing = headers.get("cookie") ?? "";
+    headers.set("cookie", existing ? existing + "; mw-user=1" : "mw-user=1");
+    return NextResponse.next({ request: { headers } });
+  }
+
+  // Inject mw-before-user=1 cookie for beforeFiles rewrite gating test.
+  // beforeFiles rewrites run after middleware per Next.js docs, so they
+  // should see this cookie. The /mw-gated-before rule has: [cookie:mw-before-user].
+  if (url.pathname === "/mw-gated-before" && url.searchParams.has("mw-auth")) {
+    const headers = new Headers(request.headers);
+    const existing = headers.get("cookie") ?? "";
+    headers.set("cookie", existing ? existing + "; mw-before-user=1" : "mw-before-user=1");
+    return NextResponse.next({ request: { headers } });
+  }
+
+  if (
+    (url.pathname === "/dynamic-page" || url.pathname === "/isr-test") &&
+    url.searchParams.has("mw-csp-nonce")
+  ) {
+    response.headers.set(
+      "content-security-policy",
+      `script-src 'nonce-${url.searchParams.get("mw-csp-nonce")}' 'strict-dynamic';`,
+    );
+  }
+
+  return response;
+}
+
+export const config = {
+  matcher: [
+    "/api/edge-search-params",
+    "/api/edge-request-signal",
+    "/api/append-header",
+    "/edge-api-rewrite/:path*",
+    "/((?!api|_next|favicon\\.ico|mw-object-gated).*)",
+    {
+      source: "/api/edge-next-response-cookie",
+      has: [{ type: "query", key: "mw" }],
+    },
+    {
+      source: "/mw-object-gated",
+      has: [{ type: "header", key: "x-mw-allow", value: "1" }],
+      missing: [{ type: "cookie", key: "mw-blocked" }],
+    },
+  ],
+};

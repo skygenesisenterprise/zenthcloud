@@ -1,0 +1,424 @@
+import {
+  buildRevalidateCacheControl,
+  NEVER_CACHE_CONTROL,
+  NO_STORE_CACHE_CONTROL,
+  STATIC_CACHE_CONTROL,
+} from "./cache-control.js";
+import {
+  NEXT_CACHE_TAGS_HEADER,
+  NEXT_ROUTER_STALE_TIME_HEADER,
+  VINEXT_DYNAMIC_STALE_TIME_HEADER,
+  VINEXT_MOUNTED_SLOTS_HEADER,
+  VINEXT_PARAMS_HEADER,
+  VINEXT_RENDERED_PATH_AND_SEARCH_HEADER,
+  VINEXT_STALE_TIME_PENDING_HEADER,
+  VINEXT_TIMING_HEADER,
+} from "./headers.js";
+import { setCacheStateHeaders } from "./cache-headers.js";
+import { mergeMiddlewareResponseHeaders } from "./middleware-response-headers.js";
+import {
+  VINEXT_RSC_CONTENT_TYPE,
+  VINEXT_RSC_VARY_HEADER,
+  applyRscCompatibilityIdHeader,
+  applyRscDeploymentIdHeader,
+} from "./app-rsc-cache-busting.js";
+import { applyPrerenderCacheLifeHeader } from "./prerender-cache-life-header.js";
+import { markFrameworkLinkHeaders } from "./app-response-header-provenance.js";
+
+export type AppPageMiddlewareContext = {
+  headers: Headers | null;
+  status: number | null;
+};
+
+export type AppPageResponseTiming = {
+  compileEnd?: number;
+  handlerStart: number;
+  renderEnd?: number;
+  responseKind: "html" | "rsc";
+};
+
+type AppPageResponsePolicy = {
+  cacheControl?: string;
+  cacheState?: "MISS" | "STATIC";
+};
+
+type AppPagePrerenderCacheLife = {
+  expire?: number;
+  revalidate?: number;
+  /** Client-router dimension — see `resolveClientStaleTimeSeconds`. */
+  stale?: number;
+};
+
+type ResolveAppPageResponsePolicyBaseOptions = {
+  isDraftMode: boolean;
+  isDynamicError: boolean;
+  isForceDynamic: boolean;
+  isForceStatic: boolean;
+  isProduction: boolean;
+  /**
+   * `false` for routes Next.js classifies as dynamic (ƒ). Their responses are
+   * never cached, whatever their revalidate.
+   */
+  isStaticEligible: boolean;
+  expireSeconds?: number;
+  revalidateSeconds: number | null;
+};
+
+type ResolveAppPageRscResponsePolicyOptions = {
+  dynamicUsedDuringBuild: boolean;
+} & ResolveAppPageResponsePolicyBaseOptions;
+
+type ResolveAppPageHtmlResponsePolicyOptions = {
+  dynamicUsedDuringRender: boolean;
+  isProgressiveActionRender?: boolean;
+  hasScriptNonce: boolean;
+} & ResolveAppPageResponsePolicyBaseOptions;
+
+type AppPageHtmlResponsePolicy = {
+  shouldWriteToCache: boolean;
+} & AppPageResponsePolicy;
+
+type BuildAppPageRscResponseOptions = {
+  cacheTags?: readonly string[];
+  dynamicStaleTimeSeconds?: number;
+  /** The render is being captured for a cache write but streams before its cacheLife resolves. */
+  staleTimePending?: boolean;
+  isEdgeRuntime?: boolean;
+  middlewareContext: AppPageMiddlewareContext;
+  mountedSlotsHeader?: string | null;
+  params?: Record<string, unknown>;
+  policy: AppPageResponsePolicy;
+  renderedPathAndSearch?: string | null;
+  requestCacheLife?: AppPagePrerenderCacheLife | null;
+  timing?: AppPageResponseTiming;
+};
+
+type BuildAppPageHtmlResponseOptions = {
+  cacheTags?: readonly string[];
+  draftCookie?: string | null;
+  /** Combined preload `Link` header value (React hints + font preloads), already capped. */
+  linkHeader?: string;
+  isEdgeRuntime?: boolean;
+  middlewareContext: AppPageMiddlewareContext;
+  policy: AppPageResponsePolicy;
+  requestCacheLife?: AppPagePrerenderCacheLife | null;
+  timing?: AppPageResponseTiming;
+};
+
+function applyTimingHeader(headers: Headers, timing?: AppPageResponseTiming): void {
+  if (!timing) {
+    return;
+  }
+
+  // The dev request logger runs in Node, but this handler may run in workerd,
+  // where performance.now() is epoch-based (it returns Date.now()) rather than
+  // process-relative. Send handlerStart as wall-clock time so the logger can
+  // compare it against its own Date.now() whichever runtime the handler is in.
+  const handlerStart = Math.round(Date.now() - (performance.now() - timing.handlerStart));
+  const compileMs =
+    timing.compileEnd !== undefined ? Math.round(timing.compileEnd - timing.handlerStart) : -1;
+  const renderMs =
+    timing.responseKind === "html" &&
+    timing.renderEnd !== undefined &&
+    timing.compileEnd !== undefined
+      ? Math.round(timing.renderEnd - timing.compileEnd)
+      : -1;
+
+  headers.set(VINEXT_TIMING_HEADER, `${handlerStart},${compileMs},${renderMs}`);
+}
+
+function applyDynamicStaleTimeHeader(headers: Headers, dynamicStaleTimeSeconds?: number): void {
+  if (
+    dynamicStaleTimeSeconds !== undefined &&
+    Number.isInteger(dynamicStaleTimeSeconds) &&
+    dynamicStaleTimeSeconds >= 0
+  ) {
+    headers.set(VINEXT_DYNAMIC_STALE_TIME_HEADER, String(dynamicStaleTimeSeconds));
+  }
+}
+
+/**
+ * Only ever set from a *completed* render's cacheLife (cache replay,
+ * prerender seed, or a layout probe's early redirect) — `use cache` scopes
+ * keep resolving after headers commit, so a streaming response can never
+ * carry it.
+ */
+export function applyClientStaleTimeHeader(
+  headers: Headers,
+  staleTimeSeconds: number | undefined,
+): void {
+  if (staleTimeSeconds === undefined) return;
+  headers.set(NEXT_ROUTER_STALE_TIME_HEADER, String(Math.floor(staleTimeSeconds)));
+}
+
+function applyPrerenderCacheTagsHeader(headers: Headers, cacheTags: readonly string[] | undefined) {
+  if (cacheTags && cacheTags.length > 0) {
+    // Match Next.js's static-generation side channel. Tags are already
+    // canonicalized by buildAppPageTags before reaching response shaping.
+    headers.set(NEXT_CACHE_TAGS_HEADER, cacheTags.join(","));
+  }
+}
+
+/**
+ * Next.js sends `private, no-cache, no-store, max-age=0, must-revalidate` for
+ * an App page response it knows is dynamic. Dev responses never cache, so they
+ * keep vinext's dev `no-store` header.
+ */
+export function resolveUncacheableCacheControl(isProduction: boolean): string {
+  return isProduction ? NEVER_CACHE_CONTROL : NO_STORE_CACHE_CONTROL;
+}
+
+export function resolveAppPageRscResponsePolicy(
+  options: ResolveAppPageRscResponsePolicyOptions,
+): AppPageResponsePolicy {
+  if (options.isDraftMode) {
+    return { cacheControl: resolveUncacheableCacheControl(options.isProduction) };
+  }
+
+  if (options.isStaticEligible === false) {
+    return { cacheControl: resolveUncacheableCacheControl(options.isProduction) };
+  }
+
+  if (options.isForceDynamic || options.dynamicUsedDuringBuild) {
+    return { cacheControl: resolveUncacheableCacheControl(options.isProduction) };
+  }
+
+  // revalidate = 0 means "always dynamic, never cache" — equivalent to
+  // force-dynamic for caching purposes. Must be checked before the
+  // isForceStatic/isDynamicError branch below, which uses !revalidateSeconds
+  // and would incorrectly catch 0 as a falsy value.
+  if (options.revalidateSeconds === 0) {
+    return { cacheControl: resolveUncacheableCacheControl(options.isProduction) };
+  }
+
+  // Only force-static and dynamic = "error" renders can't turn dynamic while
+  // streaming, so only they keep their static headers unconditionally.
+  if (
+    (options.isForceStatic || options.isDynamicError) &&
+    (options.revalidateSeconds === null || options.revalidateSeconds === Infinity)
+  ) {
+    return {
+      cacheControl: STATIC_CACHE_CONTROL,
+      cacheState: "STATIC",
+    };
+  }
+
+  if (options.revalidateSeconds === Infinity) {
+    return {
+      cacheControl: STATIC_CACHE_CONTROL,
+      // Like a finite revalidate, a production MISS lets the finalizer apply
+      // pending-dynamic headers in case the render reaches a dynamic API late.
+      cacheState: options.isProduction ? "MISS" : "STATIC",
+    };
+  }
+
+  if (options.revalidateSeconds) {
+    return {
+      cacheControl: buildRevalidateCacheControl(options.revalidateSeconds, options.expireSeconds),
+      // Emit MISS as part of the initial RSC response shape rather than bolting
+      // it on later in the cache-write block so response construction stays
+      // centralized in this helper. This matches the eventual write path: the
+      // first ISR-eligible production response is a cache miss.
+      cacheState: options.isProduction ? "MISS" : undefined,
+    };
+  }
+
+  return {};
+}
+
+export function resolveAppPageHtmlResponsePolicy(
+  options: ResolveAppPageHtmlResponsePolicyOptions,
+): AppPageHtmlResponsePolicy {
+  if (options.isDraftMode) {
+    return {
+      cacheControl: resolveUncacheableCacheControl(options.isProduction),
+      shouldWriteToCache: false,
+    };
+  }
+
+  if (options.isStaticEligible === false) {
+    return {
+      cacheControl: resolveUncacheableCacheControl(options.isProduction),
+      shouldWriteToCache: false,
+    };
+  }
+
+  if (options.isForceDynamic) {
+    return {
+      cacheControl: resolveUncacheableCacheControl(options.isProduction),
+      shouldWriteToCache: false,
+    };
+  }
+
+  if (options.hasScriptNonce) {
+    return {
+      cacheControl: NO_STORE_CACHE_CONTROL,
+      shouldWriteToCache: false,
+    };
+  }
+
+  if (options.isProgressiveActionRender) {
+    return {
+      cacheControl: NO_STORE_CACHE_CONTROL,
+      shouldWriteToCache: false,
+    };
+  }
+
+  // revalidate = 0 means "always dynamic, never cache" — equivalent to
+  // force-dynamic for caching purposes. Must be checked before the
+  // isForceStatic/isDynamicError branch below, which matches revalidateSeconds
+  // === 0 and would incorrectly return a static Cache-Control.
+  if (options.revalidateSeconds === 0) {
+    return {
+      cacheControl: resolveUncacheableCacheControl(options.isProduction),
+      shouldWriteToCache: false,
+    };
+  }
+
+  if (
+    (options.isForceStatic || options.isDynamicError) &&
+    (options.revalidateSeconds === null || options.revalidateSeconds === Infinity)
+  ) {
+    return {
+      cacheControl: STATIC_CACHE_CONTROL,
+      cacheState: options.isProduction ? "MISS" : "STATIC",
+      shouldWriteToCache: options.isProduction,
+    };
+  }
+
+  if (options.dynamicUsedDuringRender) {
+    return {
+      cacheControl: resolveUncacheableCacheControl(options.isProduction),
+      shouldWriteToCache: false,
+    };
+  }
+
+  if (
+    options.revalidateSeconds !== null &&
+    options.revalidateSeconds > 0 &&
+    options.revalidateSeconds !== Infinity
+  ) {
+    return {
+      cacheControl: buildRevalidateCacheControl(options.revalidateSeconds, options.expireSeconds),
+      cacheState: options.isProduction ? "MISS" : undefined,
+      shouldWriteToCache: options.isProduction,
+    };
+  }
+
+  if (options.revalidateSeconds === Infinity) {
+    // `revalidate = false` / `revalidate = Infinity` ask for indefinite caching.
+    // The downstream Cache-Control header remains STATIC (1y s-maxage), but we
+    // also write to the ISR cache so repeated requests inside the same vinext
+    // process return identical bytes instead of re-rendering on every hit.
+    // This matches Next.js: indefinite-revalidate pages cache their rendered
+    // output and only re-render when their tags are explicitly invalidated.
+    return {
+      cacheControl: STATIC_CACHE_CONTROL,
+      cacheState: options.isProduction ? "MISS" : "STATIC",
+      shouldWriteToCache: options.isProduction,
+    };
+  }
+
+  return { shouldWriteToCache: false };
+}
+
+export { mergeMiddlewareResponseHeaders };
+
+/**
+ * Mirror Next.js' edge-runtime marker (set in edge-ssr-app.ts). Only routes
+ * whose resolved segment config is `runtime = "edge"` should advertise it —
+ * nodejs-runtime routes must not, otherwise downstream consumers can't tell
+ * the configured runtime from the response. Centralized so every response
+ * construction site can opt in without re-deriving the header name.
+ */
+export function applyEdgeRuntimeHeader(headers: Headers, isEdgeRuntime: boolean | undefined): void {
+  if (isEdgeRuntime) {
+    headers.set("x-edge-runtime", "1");
+  }
+}
+
+export function buildAppPageRscResponse(
+  body: ReadableStream,
+  options: BuildAppPageRscResponseOptions,
+): Response {
+  const headers = new Headers({
+    "Content-Type": VINEXT_RSC_CONTENT_TYPE,
+    Vary: VINEXT_RSC_VARY_HEADER,
+  });
+
+  applyEdgeRuntimeHeader(headers, options.isEdgeRuntime);
+
+  if (options.params && Object.keys(options.params).length > 0) {
+    // encodeURIComponent so non-ASCII params (e.g. Korean slugs) survive the
+    // HTTP ByteString constraint — Headers.set() rejects chars above U+00FF.
+    headers.set(VINEXT_PARAMS_HEADER, encodeURIComponent(JSON.stringify(options.params)));
+  }
+  if (options.mountedSlotsHeader) {
+    headers.set(VINEXT_MOUNTED_SLOTS_HEADER, options.mountedSlotsHeader);
+  }
+  applyDynamicStaleTimeHeader(headers, options.dynamicStaleTimeSeconds);
+  if (options.staleTimePending) {
+    headers.set(VINEXT_STALE_TIME_PENDING_HEADER, "1");
+  }
+  if (options.policy.cacheControl) {
+    headers.set("Cache-Control", options.policy.cacheControl);
+  }
+  if (options.policy.cacheState) {
+    setCacheStateHeaders(headers, options.policy.cacheState);
+  }
+  mergeMiddlewareResponseHeaders(headers, options.middlewareContext.headers);
+  if (options.renderedPathAndSearch) {
+    headers.set(
+      VINEXT_RENDERED_PATH_AND_SEARCH_HEADER,
+      encodeURIComponent(options.renderedPathAndSearch),
+    );
+  }
+  applyRscCompatibilityIdHeader(headers);
+  applyRscDeploymentIdHeader(headers);
+  applyPrerenderCacheLifeHeader(headers, options.requestCacheLife);
+  applyPrerenderCacheTagsHeader(headers, options.cacheTags);
+
+  applyTimingHeader(headers, options.timing);
+
+  return new Response(body, {
+    status: options.middlewareContext.status ?? 200,
+    headers,
+  });
+}
+
+export function buildAppPageHtmlResponse(
+  body: ReadableStream,
+  options: BuildAppPageHtmlResponseOptions,
+): Response {
+  const headers = new Headers({
+    "Content-Type": "text/html; charset=utf-8",
+    Vary: VINEXT_RSC_VARY_HEADER,
+  });
+
+  applyEdgeRuntimeHeader(headers, options.isEdgeRuntime);
+
+  if (options.policy.cacheControl) {
+    headers.set("Cache-Control", options.policy.cacheControl);
+  }
+  if (options.policy.cacheState) {
+    setCacheStateHeaders(headers, options.policy.cacheState);
+  }
+  if (options.draftCookie) {
+    headers.append("Set-Cookie", options.draftCookie);
+  }
+  mergeMiddlewareResponseHeaders(headers, options.middlewareContext.headers);
+  if (options.linkHeader) {
+    headers.append("Link", options.linkHeader);
+  }
+  applyPrerenderCacheLifeHeader(headers, options.requestCacheLife);
+  applyPrerenderCacheTagsHeader(headers, options.cacheTags);
+
+  applyTimingHeader(headers, options.timing);
+
+  const response = new Response(body, {
+    status: options.middlewareContext.status ?? 200,
+    headers,
+  });
+  markFrameworkLinkHeaders(response.headers, options.linkHeader);
+  return response;
+}

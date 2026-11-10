@@ -1,0 +1,421 @@
+/**
+ * Startup metadata cache for static file serving.
+ *
+ * Walks dist/client/ once at server boot, pre-computes response headers for
+ * every file variant (original, brotli, gzip, zstd), and caches everything
+ * in memory. The per-request hot path is just: Map.get() → string compare
+ * (ETag) → writeHead(precomputed) → pipe.
+ *
+ * Modeled after sirv's production mode. Key insight from sirv: pre-compute
+ * ALL response headers at startup — Content-Type, Content-Length, ETag,
+ * Cache-Control, Content-Encoding, Vary — as reusable objects. The common
+ * per-request path (no extraHeaders) does zero object allocation for headers.
+ */
+import fsp from "node:fs/promises";
+import path, { toSlash } from "pathslash";
+import { ASSET_PREFIX_URL_DIR } from "../utils/asset-prefix.js";
+import { isPrecompressedVariantBeneficial } from "../utils/precompressed-variant.js";
+
+/** Content-type lookup for static assets. Shared with prod-server.ts. */
+export const CONTENT_TYPES: Record<string, string> = {
+  ".avif": "image/avif",
+  ".bmp": "image/bmp",
+  ".csv": "text/csv; charset=utf-8",
+  ".eot": "application/vnd.ms-fontobject",
+  ".gif": "image/gif",
+  ".heic": "image/heic",
+  ".js": "application/javascript; charset=utf-8",
+  ".mjs": "application/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".html": "text/html; charset=utf-8",
+  ".ico": "image/x-icon",
+  ".icns": "image/x-icns",
+  ".jpeg": "image/jpeg",
+  ".jpg": "image/jpeg",
+  ".json": "application/json; charset=utf-8",
+  ".jxl": "image/jxl",
+  ".map": "application/json; charset=utf-8",
+  ".mp3": "audio/mpeg",
+  ".mp4": "video/mp4",
+  ".ogg": "audio/ogg",
+  ".ogv": "video/ogg",
+  ".otf": "font/otf",
+  ".pdf": "application/pdf",
+  ".png": "image/png",
+  ".rsc": "text/x-component",
+  ".svg": "image/svg+xml",
+  ".ttf": "font/ttf",
+  ".txt": "text/plain; charset=utf-8",
+  ".wasm": "application/wasm",
+  ".webm": "video/webm",
+  ".webmanifest": "application/manifest+json",
+  ".webp": "image/webp",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+  ".xml": "application/xml",
+};
+
+/** Resolve a path's MIME type with case-insensitive extension matching. */
+export function contentTypeForPath(filePath: string): string {
+  return CONTENT_TYPES[path.extname(filePath).toLowerCase()] ?? "application/octet-stream";
+}
+
+/**
+ * Default `Cache-Control` for a file in the client build directory. Hashed
+ * build assets never change at their URL. Every other file (`public/`) must be
+ * revalidated on each reuse, as Next.js's `send` serves it with `max-age=0`:
+ * middleware may admit it per request, so a shared cache must not reuse it
+ * without asking the origin. A `Cache-Control` set by middleware or config
+ * headers replaces this default.
+ */
+export function staticFileCacheControl(isHashed: boolean): string {
+  return isHashed ? "public, max-age=31536000, immutable" : "public, max-age=0";
+}
+
+/**
+ * Files below this size are buffered in memory at startup for zero-syscall
+ * serving via res.end(buffer). Above this, files stream via createReadStream.
+ * 64KB covers virtually all precompressed assets (a 200KB JS bundle compresses
+ * to ~50KB with brotli q5).
+ */
+const BUFFER_THRESHOLD = 64 * 1024;
+
+/** Temp files left by an interrupted atomic precompression write. */
+const PRECOMPRESSION_TEMP_FILE_RE =
+  /\.(?:br|gz|zst)\.\d+\.[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.tmp$/i;
+
+/** A servable file variant with pre-computed response headers. */
+type FileVariant = {
+  /** Absolute file path (used for streaming large files). */
+  path: string;
+  /** Uncompressed or encoded byte size for buffer-threshold decisions. */
+  size: number;
+  /** Pre-computed response headers. */
+  headers: Record<string, string>;
+  /** In-memory buffer for small files (below BUFFER_THRESHOLD). */
+  buffer?: Buffer;
+};
+
+type StaticFileEntry = {
+  /** Weak ETag for conditional request matching. */
+  etag: string;
+  /** Original file modification time for If-Range date validation. */
+  mtimeMs: number;
+  /** Pre-computed headers for 304 Not Modified response. */
+  notModifiedHeaders: Record<string, string>;
+  /** Original file variant (uncompressed). */
+  original: FileVariant;
+  /** Brotli precompressed variant, if .br file exists. */
+  br?: FileVariant;
+  /** Gzip precompressed variant, if .gz file exists. */
+  gz?: FileVariant;
+  /** Zstandard precompressed variant, if .zst file exists. */
+  zst?: FileVariant;
+};
+
+/**
+ * In-memory cache of static file metadata, populated once at server startup.
+ *
+ * Usage:
+ *   const cache = await StaticFileCache.create(clientDir);
+ *   const entry = cache.lookup("/_next/static/app-abc123.js");
+ *   // entry.br?.headers, entry.original.headers, etc.
+ */
+export class StaticFileCache {
+  private readonly entries: Map<string, StaticFileEntry>;
+
+  private constructor(entries: Map<string, StaticFileEntry>) {
+    this.entries = entries;
+  }
+
+  /**
+   * Scan the client directory and build the cache.
+   *
+   * Gracefully handles non-existent directories (returns an empty cache).
+   */
+  static async create(clientDir: string): Promise<StaticFileCache> {
+    const entries = new Map<string, StaticFileEntry>();
+
+    // First pass: collect all regular files with their metadata
+    const allFiles = new Map<string, { fullPath: string; size: number; mtimeMs: number }>();
+
+    for await (const { relativePath, fullPath, stat } of walkFilesWithStats(clientDir)) {
+      allFiles.set(relativePath, { fullPath, size: stat.size, mtimeMs: stat.mtimeMs });
+    }
+
+    // Second pass: build cache entries with pre-computed headers per variant
+    for (const [relativePath, fileInfo] of allFiles) {
+      // Skip precompressed variants — they're linked to their originals
+      if (
+        relativePath.endsWith(".br") ||
+        relativePath.endsWith(".gz") ||
+        relativePath.endsWith(".zst")
+      )
+        continue;
+
+      // Skip .vite/ internal directory
+      if (relativePath.startsWith(".vite/") || relativePath === ".vite") continue;
+
+      // Files under Vite's `assetsDir` are content-hashed. The default
+      // layout writes to `<ASSET_PREFIX_URL_DIR>/` (Next.js's canonical
+      // convention); when `assetPrefix` is a path prefix the layout
+      // becomes `<prefix>/<ASSET_PREFIX_URL_DIR>/...`. Both forms get
+      // long-lived `immutable` cache headers — the hash in the filename
+      // invalidates safely.
+      //
+      // `relativePath` is the path relative to `clientDir`, with no
+      // leading slash. Because of that, `startsWith("<dir>/")` and
+      // `includes("/<dir>/")` are NOT equivalent — the former covers the
+      // default and absolute-URL prefix layouts (no parent directory),
+      // the latter covers the path-prefix layout (under an arbitrary
+      // parent like `cdn/`).
+      const isHashed =
+        relativePath.startsWith(`${ASSET_PREFIX_URL_DIR}/`) ||
+        relativePath.includes(`/${ASSET_PREFIX_URL_DIR}/`);
+
+      // A hard process exit can strand the temporary side of an atomic
+      // precompression write. Never register that internal artifact as a URL,
+      // but preserve matching user files outside the precompression target.
+      if (isHashed && PRECOMPRESSION_TEMP_FILE_RE.test(relativePath)) continue;
+
+      const ext = path.extname(relativePath);
+      const contentType = contentTypeForPath(relativePath);
+      const cacheControl = staticFileCacheControl(isHashed);
+      const etag =
+        (isHashed && etagFromFilenameHash(relativePath, ext)) ||
+        `W/"${fileInfo.size}-${Math.floor(fileInfo.mtimeMs / 1000)}"`;
+
+      // Base headers shared by all variants (Content-Type, Cache-Control, ETag)
+      const lastModified = new Date(fileInfo.mtimeMs).toUTCString();
+      const baseHeaders = {
+        "Content-Type": contentType,
+        "Cache-Control": cacheControl,
+        ETag: etag,
+        "Last-Modified": lastModified,
+      };
+
+      // Pre-compute original variant headers
+      const original: FileVariant = {
+        path: fileInfo.fullPath,
+        size: fileInfo.size,
+        headers: { ...baseHeaders, "Content-Length": String(fileInfo.size) },
+      };
+
+      const entry: StaticFileEntry = {
+        etag,
+        mtimeMs: fileInfo.mtimeMs,
+        notModifiedHeaders: {
+          ETag: etag,
+          "Cache-Control": cacheControl,
+          "Last-Modified": lastModified,
+        },
+        original,
+      };
+
+      // Pre-compute compressed variant headers (with Content-Encoding, Vary, correct Content-Length)
+      const brInfo = allFiles.get(relativePath + ".br");
+      if (brInfo && isPrecompressedVariantBeneficial(brInfo.size, fileInfo.size, "br")) {
+        entry.br = buildVariant(brInfo, baseHeaders, "br");
+      }
+
+      const gzInfo = allFiles.get(relativePath + ".gz");
+      if (gzInfo && isPrecompressedVariantBeneficial(gzInfo.size, fileInfo.size, "gzip")) {
+        entry.gz = buildVariant(gzInfo, baseHeaders, "gzip");
+      }
+
+      const zstInfo = allFiles.get(relativePath + ".zst");
+      if (zstInfo && isPrecompressedVariantBeneficial(zstInfo.size, fileInfo.size, "zstd")) {
+        entry.zst = buildVariant(zstInfo, baseHeaders, "zstd");
+      }
+
+      // When compressed variants exist, the original needs Vary too so
+      // shared caches don't serve uncompressed to compression-capable clients.
+      if (entry.br || entry.gz || entry.zst) {
+        original.headers["Vary"] = "Accept-Encoding";
+        entry.notModifiedHeaders["Vary"] = "Accept-Encoding";
+      }
+
+      // Register under the URL pathname (leading /). Like Next.js, a file is
+      // served only at its own pathname: `/about` does not serve `about.html`
+      // and `/blog` does not serve `blog/index.html`.
+      const pathname = "/" + relativePath;
+      entries.set(pathname, entry);
+    }
+
+    // Third pass: buffer small files in memory for zero-syscall serving.
+    // For small compressed variants (e.g. a 50KB JS bundle → ~15KB brotli),
+    // res.end(buffer) is ~2x faster than createReadStream().pipe() because
+    // it skips fd open/close and stream plumbing overhead.
+    // Reads are chunked at 64 concurrent to avoid fd exhaustion on large projects.
+    const toBuffer: FileVariant[] = [];
+    for (const entry of entries.values()) {
+      for (const variant of [entry.original, entry.br, entry.gz, entry.zst]) {
+        if (!variant || variant.size > BUFFER_THRESHOLD) continue;
+        toBuffer.push(variant);
+      }
+    }
+    for (let i = 0; i < toBuffer.length; i += 64) {
+      await Promise.all(
+        toBuffer.slice(i, i + 64).map(async (v) => {
+          v.buffer = await fsp.readFile(v.path);
+        }),
+      );
+    }
+
+    return new StaticFileCache(entries);
+  }
+
+  /**
+   * Look up cached metadata for a URL pathname.
+   *
+   * Returns undefined if the file is not in the cache. The root path "/"
+   * always returns undefined — index.html is served by SSR/RSC.
+   */
+  lookup(pathname: string): StaticFileEntry | undefined {
+    if (pathname === "/") return undefined;
+
+    // Block .vite/ access (including encoded variants that were decoded before lookup)
+    if (pathname.startsWith("/.vite/") || pathname === "/.vite") return undefined;
+
+    return this.entries.get(pathname);
+  }
+}
+
+const MANAGED_CHUNKS_SEGMENT = `${ASSET_PREFIX_URL_DIR}/chunks/`;
+const MANAGED_CSS_SEGMENT = `${ASSET_PREFIX_URL_DIR}/css/`;
+const MANAGED_WORKERS_SEGMENT = `${ASSET_PREFIX_URL_DIR}/workers/`;
+const MANAGED_MEDIA_SEGMENT = `${ASSET_PREFIX_URL_DIR}/media/`;
+const HASH_ONLY_BASENAME_RE = /^[A-Za-z0-9_-]{8}$/;
+// Worker entries and chunks: `<module-id-hash>-<content-hash>` (see
+// createWorkerFileNames).
+const WORKER_BASENAME_RE = /^[0-9a-f]{8}-[A-Za-z0-9_-]{8}$/;
+
+function isInManagedDir(normalizedPath: string, segment: string): boolean {
+  return normalizedPath.startsWith(segment) || normalizedPath.includes(`/${segment}`);
+}
+
+/**
+ * Extract a stable weak ETag from a Vite hashed filename (e.g. `app-DqZc3R4n.js`).
+ * The hash is a content hash computed by the bundler — deterministic across
+ * identical builds regardless of filesystem timestamps.
+ *
+ * Must be a weak validator (W/) because the same tag is shared across
+ * content-encoded variants (original, .br, .gz, .zst) which are byte-different.
+ * Returns null if the filename doesn't contain a recognizable hash suffix,
+ * so the caller can fall back to mtime-based ETags.
+ */
+export function etagFromFilenameHash(relativePath: string, ext: string): string | null {
+  const basename = path.basename(relativePath, ext);
+
+  // vinext's default client JS and CSS names are hash-only (`chunks/[hash].js`,
+  // `css/[hash].css`), and worker names put an opaque module id before the
+  // hash. Rolldown's 8-char base64url hash can itself contain `-`, so match the
+  // whole basename before the `name-<hash>` split below would take only a
+  // fragment of it. The length checks keep `name-<hash>` files off the
+  // path-normalization work.
+  if (basename.length === 8 && HASH_ONLY_BASENAME_RE.test(basename)) {
+    const normalizedPath = toSlash(relativePath);
+    if (
+      isInManagedDir(normalizedPath, MANAGED_CHUNKS_SEGMENT) ||
+      isInManagedDir(normalizedPath, MANAGED_CSS_SEGMENT)
+    ) {
+      return `W/"${basename}"`;
+    }
+  }
+  if (
+    basename.length === 17 &&
+    WORKER_BASENAME_RE.test(basename) &&
+    isInManagedDir(toSlash(relativePath), MANAGED_WORKERS_SEGMENT)
+  ) {
+    return `W/"${basename}"`;
+  }
+
+  const lastDash = basename.lastIndexOf("-");
+  if (lastDash !== -1 && lastDash !== basename.length - 1) {
+    const suffix = basename.slice(lastDash + 1);
+    // Vite emits 8-char base64url hashes; allow 6-12 for other bundlers.
+    // If Rolldown changes its hash length, update this range.
+    if (suffix.length >= 6 && suffix.length <= 12 && /^[A-Za-z0-9_-]+$/.test(suffix)) {
+      return `W/"${suffix}"`;
+    }
+  }
+
+  // vinext-managed static image imports use Next-shaped dot-delimited names:
+  // `_next/static/media/name.<sha256-8>.<ext>`. Restrict this alternate form
+  // to that managed directory so arbitrary static files such as
+  // `_next/static/config.deadbeef.json` cannot receive a stale hash ETag.
+  if (isInManagedDir(toSlash(relativePath), MANAGED_MEDIA_SEGMENT)) {
+    const lastDot = basename.lastIndexOf(".");
+    if (lastDot !== -1) {
+      const suffix = basename.slice(lastDot + 1);
+      if (/^[0-9a-f]{8}$/.test(suffix)) return `W/"${suffix}"`;
+    }
+  }
+  return null;
+}
+
+function buildVariant(
+  info: { fullPath: string; size: number },
+  baseHeaders: Record<string, string>,
+  encoding: string,
+): FileVariant {
+  return {
+    path: info.fullPath,
+    size: info.size,
+    headers: {
+      ...baseHeaders,
+      "Content-Encoding": encoding,
+      "Content-Length": String(info.size),
+      Vary: "Accept-Encoding",
+    },
+  };
+}
+
+/** Batch size for concurrent stat() calls during directory walk. */
+const STAT_BATCH_SIZE = 64;
+
+/**
+ * Walk a directory recursively, yielding file paths and stats.
+ *
+ * Batches stat() calls per directory to avoid sequential syscall overhead
+ * for large dist/client/ directories.
+ */
+async function* walkFilesWithStats(
+  dir: string,
+  base: string = dir,
+): AsyncGenerator<{
+  relativePath: string;
+  fullPath: string;
+  stat: { size: number; mtimeMs: number };
+}> {
+  let entries;
+  try {
+    entries = await fsp.readdir(dir, { withFileTypes: true });
+  } catch {
+    return; // directory doesn't exist or unreadable
+  }
+
+  // Recurse into subdirectories first (they yield their own batched stats)
+  const files: string[] = [];
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      yield* walkFilesWithStats(fullPath, base);
+    } else if (entry.isFile()) {
+      files.push(fullPath);
+    }
+  }
+
+  // Batch stat() calls for files in this directory
+  for (let i = 0; i < files.length; i += STAT_BATCH_SIZE) {
+    const batch = files.slice(i, i + STAT_BATCH_SIZE);
+    const stats = await Promise.all(batch.map((f) => fsp.stat(f)));
+    for (let j = 0; j < batch.length; j++) {
+      yield {
+        relativePath: path.relative(base, batch[j]),
+        fullPath: batch[j],
+        stat: { size: stats[j].size, mtimeMs: stats[j].mtimeMs },
+      };
+    }
+  }
+}

@@ -1,0 +1,368 @@
+import { describe, expect, it, vi } from "vite-plus/test";
+import React from "react";
+import { renderAppPageCacheArtifacts } from "../packages/vinext/src/server/app-page-cache-render.js";
+import { hasQueryInvariantRenderProof } from "../packages/vinext/src/server/cache-proof.js";
+import { _setRequestScopedCacheLife } from "../packages/vinext/src/shims/cache-request-state.js";
+import { markDynamicUsage } from "../packages/vinext/src/shims/headers.js";
+import { runWithNavigationContext } from "../packages/vinext/src/shims/navigation-state.js";
+import {
+  createRequestContext,
+  runWithRequestContext,
+} from "../packages/vinext/src/shims/unified-request-context.js";
+import { registerFrameworkTracingIntegration } from "../packages/vinext/src/server/tracer.js";
+import type {
+  FrameworkTracingBackendSpan,
+  ResolvedFrameworkSpanDescriptor,
+} from "../packages/vinext/src/server/framework-tracer.js";
+
+type RecordedSpan = {
+  errors: unknown[];
+  status?: string;
+  type: string;
+};
+
+const recordedSpans: RecordedSpan[] = [];
+registerFrameworkTracingIntegration({
+  id: "app-page-cache-render-test",
+  enterSpan<T>(
+    descriptor: ResolvedFrameworkSpanDescriptor,
+    callback: (span: FrameworkTracingBackendSpan) => T,
+  ): T {
+    const recorded: RecordedSpan = { errors: [], type: descriptor.type };
+    recordedSpans.push(recorded);
+    return callback({
+      recordException: (error) => recorded.errors.push(error),
+      setAttribute() {},
+      setErrorStatus: (message) => {
+        recorded.status = message ?? "error";
+      },
+    });
+  },
+});
+
+function createStream(chunks: string[]): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder();
+  return new ReadableStream({
+    start(controller) {
+      for (const chunk of chunks) {
+        controller.enqueue(encoder.encode(chunk));
+      }
+      controller.close();
+    },
+  });
+}
+
+describe("renderAppPageCacheArtifacts", () => {
+  it("records a recovered regeneration error on the exact framework span", async () => {
+    recordedSpans.length = 0;
+    const failure = new TypeError("recovered regeneration failure");
+
+    await renderAppPageCacheArtifacts({
+      captureRscData: false,
+      cleanPathname: "/posts/post",
+      element: React.createElement("div", null, "page"),
+      getFontLinks: () => [],
+      getFontPreloads: () => [],
+      getFontStyles: () => [],
+      getNavigationContext: () => null,
+      loadSsrHandler: async () => ({
+        async handleSsr() {
+          return createStream(["<html>error boundary</html>"]);
+        },
+      }),
+      navigationParams: {},
+      onError: () => undefined,
+      renderToReadableStream(_element, { onError }) {
+        onError(failure, undefined, undefined);
+        return createStream(["error flight"]);
+      },
+      route: { pattern: "/posts/[slug]", routeSegments: [] },
+    });
+
+    expect(recordedSpans).toContainEqual({
+      errors: [failure],
+      status: "recovered regeneration failure",
+      type: "AppRender.getBodyResult",
+    });
+  });
+
+  it("does not mark well-known SSR control flow as a regeneration failure", async () => {
+    recordedSpans.length = 0;
+
+    await renderAppPageCacheArtifacts({
+      captureRscData: false,
+      cleanPathname: "/posts/post",
+      element: React.createElement("div", null, "page"),
+      getFontLinks: () => [],
+      getFontPreloads: () => [],
+      getFontStyles: () => [],
+      getNavigationContext: () => null,
+      isCapturedRscError: () => false,
+      loadSsrHandler: async () => ({
+        async handleSsr(_stream, _navigation, _fontData, options) {
+          options?.onSsrError?.({ digest: "NEXT_REDIRECT;replace;%2Ftarget;307" });
+          return createStream(["<html>redirect</html>"]);
+        },
+      }),
+      navigationParams: {},
+      onError: () => undefined,
+      onSsrError: () => undefined,
+      renderToReadableStream: () => createStream(["redirect flight"]),
+      route: { pattern: "/posts/[slug]", routeSegments: [] },
+    });
+
+    expect(recordedSpans).toContainEqual({
+      errors: [],
+      type: "AppRender.getBodyResult",
+    });
+  });
+
+  it("marks regenerated HTML as static generation for client navigation hooks", async () => {
+    let receivedOptions: { isStaticGeneration?: boolean; isForceStatic?: boolean } | undefined;
+
+    await renderAppPageCacheArtifacts({
+      captureRscData: false,
+      cleanPathname: "/posts/post",
+      element: React.createElement("div", null, "page"),
+      getFontLinks: () => [],
+      getFontPreloads: () => [],
+      getFontStyles: () => [],
+      getNavigationContext: () => null,
+      isForceStatic: true,
+      loadSsrHandler: async () => ({
+        async handleSsr(_rscStream, _navigationContext, _fontData, options) {
+          receivedOptions = options;
+          return createStream(["<html>page</html>"]);
+        },
+      }),
+      navigationParams: {},
+      onError: () => undefined,
+      renderToReadableStream: () => createStream(["flight-data"]),
+      route: { pattern: "/posts/[slug]", routeSegments: [] },
+    });
+
+    expect(receivedOptions).toEqual(
+      expect.objectContaining({ isStaticGeneration: true, isForceStatic: true }),
+    );
+  });
+
+  it("carries the consumed cacheLife stale onto the regenerated cacheControl", async () => {
+    // Regression: background regeneration goes through this producer, and its
+    // cacheControl feeds resolveRegeneratedAppPageCacheControl. Dropping stale
+    // here silently widened client reuse back to the configured fallback after
+    // the first regen — the mocked-cacheControl regen tests never caught it
+    // because they supplied a `stale` this producer could not emit.
+    const result = await renderAppPageCacheArtifacts({
+      captureRscData: false,
+      cleanPathname: "/posts/post",
+      element: React.createElement("div", null, "page"),
+      getFontLinks: () => [],
+      getFontPreloads: () => [],
+      getFontStyles: () => [],
+      getNavigationContext: () => null,
+      loadSsrHandler: async () => ({
+        async handleSsr() {
+          // A `use cache` scope resolving during the render.
+          _setRequestScopedCacheLife({ stale: 30, revalidate: 1, expire: 60 });
+          return createStream(["<html>page</html>"]);
+        },
+      }),
+      navigationParams: {},
+      onError: () => undefined,
+      renderToReadableStream: () => createStream(["flight-data"]),
+      route: { pattern: "/posts/[slug]", routeSegments: [] },
+    });
+
+    expect(result.cacheControl).toEqual({ revalidate: 1, expire: 60, stale: 30 });
+    expect(result.html).toBe("<html>page</html>");
+  });
+
+  it("proves a static regeneration left the query unread, so core stores it", async () => {
+    const result = await renderAppPageCacheArtifacts({
+      captureRscData: true,
+      cleanPathname: "/posts/post",
+      element: React.createElement("div", null, "page"),
+      getFontLinks: () => [],
+      getFontPreloads: () => [],
+      getFontStyles: () => [],
+      getNavigationContext: () => null,
+      loadSsrHandler: async () => ({
+        async handleSsr(_rscStream, _navigationContext, _fontData, options) {
+          if (options?.sideStream && options.capturedRscDataRef) {
+            options.capturedRscDataRef.value = new Response(options.sideStream).arrayBuffer();
+          }
+          return createStream(["<html>page</html>"]);
+        },
+      }),
+      navigationParams: {},
+      onError: () => undefined,
+      renderToReadableStream: () => createStream(["flight-data"]),
+      route: { pattern: "/posts/[slug]", routeSegments: [] },
+    });
+
+    expect(hasQueryInvariantRenderProof(result.htmlRenderObservation)).toBe(true);
+    expect(hasQueryInvariantRenderProof(result.rscRenderObservation)).toBe(true);
+    expect(result.usedDynamicApi).toBe(false);
+  });
+
+  it("returns a special error that rejects the shell as the regenerated page", async () => {
+    const redirectError = { digest: "NEXT_REDIRECT;replace;/target;307;" };
+    const result = await renderAppPageCacheArtifacts({
+      captureRscData: true,
+      cleanPathname: "/posts/post",
+      element: React.createElement("div", null, "page"),
+      getFontLinks: () => [],
+      getFontPreloads: () => [],
+      getFontStyles: () => [],
+      getNavigationContext: () => null,
+      loadSsrHandler: async () => ({
+        async handleSsr(_rscStream, _navigationContext, _fontData, options) {
+          if (options?.sideStream && options.capturedRscDataRef) {
+            options.capturedRscDataRef.value = new Response(options.sideStream).arrayBuffer();
+          }
+          throw redirectError;
+        },
+      }),
+      navigationParams: {},
+      onError: () => undefined,
+      async renderShellSpecialError(error) {
+        return error === redirectError
+          ? { headers: { location: "/target" }, html: "", status: 307 }
+          : null;
+      },
+      renderToReadableStream: () => createStream(["page-flight-with-digest"]),
+      route: { pattern: "/posts/[slug]", routeSegments: [] },
+    });
+
+    expect(result).toMatchObject({
+      headers: { location: "/target" },
+      html: "",
+      status: 307,
+      usedDynamicApi: false,
+    });
+    expect(new TextDecoder().decode(result.rscData)).toBe("page-flight-with-digest");
+  });
+
+  it("stores a special error's document that slot boundaries caught it in", async () => {
+    const notFoundError = { digest: "NEXT_HTTP_ERROR_FALLBACK;404" };
+    const renderShellSpecialError = vi.fn(
+      async (error: unknown, caughtDocument?: { html: string; linkHeader?: string }) =>
+        error === notFoundError && caughtDocument
+          ? { headers: {}, html: caughtDocument.html, status: 404 }
+          : null,
+    );
+    const result = await renderAppPageCacheArtifacts({
+      captureRscData: true,
+      cleanPathname: "/team/missing",
+      element: React.createElement("div", null, "page"),
+      getFontLinks: () => [],
+      getFontPreloads: () => [],
+      getFontStyles: () => [],
+      getNavigationContext: () => null,
+      loadSsrHandler: async () => ({
+        async handleSsr(_rscStream, _navigationContext, _fontData, options) {
+          if (options?.sideStream && options.capturedRscDataRef) {
+            options.capturedRscDataRef.value = new Response(options.sideStream).arrayBuffer();
+          }
+          return {
+            htmlStream: createStream(["<html>caught</html>"]),
+            metadataReady: Promise.resolve(),
+            capturedRscData: null,
+            caughtShellError: notFoundError,
+          };
+        },
+      }),
+      navigationParams: {},
+      onError: () => undefined,
+      renderShellSpecialError,
+      renderToReadableStream: () => createStream(["page-flight-with-digest"]),
+      route: { pattern: "/team/[id]", routeSegments: [] },
+    });
+
+    expect(renderShellSpecialError).toHaveBeenCalledWith(notFoundError, {
+      html: "<html>caught</html>",
+      linkHeader: "",
+    });
+    expect(result).toMatchObject({ html: "<html>caught</html>", status: 404 });
+    expect(new TextDecoder().decode(result.rscData)).toBe("page-flight-with-digest");
+  });
+
+  it("fails the regeneration with a shell error that is not a special error", async () => {
+    const failure = new Error("shell failed");
+    await expect(
+      renderAppPageCacheArtifacts({
+        captureRscData: false,
+        cleanPathname: "/posts/post",
+        element: React.createElement("div", null, "page"),
+        getFontLinks: () => [],
+        getFontPreloads: () => [],
+        getFontStyles: () => [],
+        getNavigationContext: () => null,
+        loadSsrHandler: async () => ({
+          async handleSsr() {
+            throw failure;
+          },
+        }),
+        navigationParams: {},
+        onError: () => undefined,
+        renderShellSpecialError: async () => null,
+        renderToReadableStream: () => createStream(["flight-data"]),
+        route: { pattern: "/posts/[slug]", routeSegments: [] },
+      }),
+    ).rejects.toBe(failure);
+  });
+
+  it("reports a regeneration that used a dynamic API", async () => {
+    const result = await renderAppPageCacheArtifacts({
+      captureRscData: false,
+      cleanPathname: "/posts/post",
+      element: React.createElement("div", null, "page"),
+      getFontLinks: () => [],
+      getFontPreloads: () => [],
+      getFontStyles: () => [],
+      getNavigationContext: () => null,
+      loadSsrHandler: async () => ({
+        async handleSsr() {
+          markDynamicUsage();
+          return createStream(["<html>page</html>"]);
+        },
+      }),
+      navigationParams: {},
+      onError: () => undefined,
+      renderToReadableStream: () => createStream(["flight-data"]),
+      route: { pattern: "/posts/[slug]", routeSegments: [] },
+    });
+
+    expect(result.usedDynamicApi).toBe(true);
+  });
+
+  it("reports a dynamic API used in SSR's child scope, such as a client page reading searchParams", async () => {
+    // SSR runs in a child scope of the render, so its mark reaches the
+    // render's dynamic latch but not the render's own flag.
+    const result = await runWithRequestContext(createRequestContext(), () =>
+      renderAppPageCacheArtifacts({
+        captureRscData: false,
+        cleanPathname: "/posts/post",
+        element: React.createElement("div", null, "page"),
+        getFontLinks: () => [],
+        getFontPreloads: () => [],
+        getFontStyles: () => [],
+        getNavigationContext: () => null,
+        loadSsrHandler: async () => ({
+          handleSsr() {
+            return runWithNavigationContext(async () => {
+              markDynamicUsage();
+              return createStream(["<html>page</html>"]);
+            });
+          },
+        }),
+        navigationParams: {},
+        onError: () => undefined,
+        renderToReadableStream: () => createStream(["flight-data"]),
+        route: { pattern: "/posts/[slug]", routeSegments: [] },
+      }),
+    );
+
+    expect(result.usedDynamicApi).toBe(true);
+  });
+});

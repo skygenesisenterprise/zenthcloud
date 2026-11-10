@@ -1,0 +1,432 @@
+import type { NextI18nConfig } from "../config/next-config.js";
+import {
+  detectDomainLocale,
+  normalizeDomainHostname,
+  type DomainLocale,
+} from "../utils/domain-locale.js";
+
+type HeaderValue = string | string[] | undefined;
+type HeaderBag = Headers | Record<string, HeaderValue> | undefined;
+
+type LocaleRedirectOptions = {
+  headers?: HeaderBag;
+  nextConfig: {
+    basePath?: string;
+    i18n?: NextI18nConfig | null;
+    trailingSlash?: boolean;
+  };
+  pathLocale?: string;
+  urlParsed: {
+    hostname?: string | null;
+    pathname: string;
+    search?: string;
+  };
+};
+
+type PagesI18nRequestInfo = {
+  locale: string;
+  url: string;
+  hadPrefix: boolean;
+  domainLocale?: DomainLocale;
+  redirectUrl?: string;
+};
+
+function readHeader(headers: HeaderBag, name: string): string | undefined {
+  if (!headers) return undefined;
+  if (headers instanceof Headers) {
+    return headers.get(name) ?? undefined;
+  }
+
+  // For Record headers, callers must pass lowercase names. Node's
+  // IncomingMessage.headers are already lowercased by the HTTP parser.
+  const direct = headers[name];
+  if (Array.isArray(direct)) return direct.join(", ");
+  return direct;
+}
+
+const normalizeHostname = normalizeDomainHostname;
+export { detectDomainLocale };
+
+const LOCALE_REDIRECT = Symbol.for("vinext.pages-locale-redirect");
+
+/**
+ * Mark a locale-detection redirect. Next.js answers it before next.config
+ * headers are staged, so it goes out without them. The global symbol crosses
+ * the App Router / Pages Router module graph boundary.
+ */
+export function markLocaleRedirect(response: Response): Response {
+  if (!isLocaleRedirect(response)) {
+    Object.defineProperty(response, LOCALE_REDIRECT, { value: true });
+  }
+  return response;
+}
+
+export function isLocaleRedirect(response: Response): boolean {
+  return LOCALE_REDIRECT in response;
+}
+
+/**
+ * Return the configured locale that the first pathname segment names, compared
+ * case-insensitively (`/EN/about` -> `"en"`), or `undefined` when there is none.
+ * The configured casing is returned, not the request's.
+ *
+ * Ported from Next.js: packages/next/src/shared/lib/i18n/normalize-locale-path.ts
+ * https://github.com/vercel/next.js/blob/canary/packages/next/src/shared/lib/i18n/normalize-locale-path.ts
+ */
+export function detectPathnameLocale(
+  pathname: string,
+  locales: readonly string[],
+): string | undefined {
+  // The first segment is the empty string before the leading "/".
+  const segment = pathname.split("/", 2)[1]?.toLowerCase();
+  if (!segment) return undefined;
+  return locales.find((locale) => locale.toLowerCase() === segment);
+}
+
+/**
+ * Prepend the default locale prefix to a pathname when i18n is configured and
+ * the path does not already carry a locale prefix. Mirrors Next.js's
+ * server-side path normalisation in `resolve-routes.ts` (lines ~250-263):
+ *
+ *   if (!initialLocaleResult.detectedLocale && !pathname.startsWith('/_next/')) {
+ *     parsedUrl.pathname = `/${defaultLocale}${pathname === '/' ? '' : pathname}`
+ *   }
+ *
+ * Run this **before** matching against `next.config.js` redirects/rewrites
+ * (which are emitted by `applyLocaleToRoutes` in locale-prefixed forms) so
+ * that requests arriving without a locale prefix still match those rules.
+ *
+ * Skips internal paths that Next.js leaves alone:
+ *   - `/_next/*` (build assets, prerender manifests, image optimisation)
+ *   - `/__vinext/*` (vinext-internal endpoints)
+ *
+ * Returns the input unchanged when i18n is not configured or when the path
+ * already starts with one of the configured locales (compared
+ * case-insensitively, like Next.js's `normalizeLocalePath`, so `/EN/about`
+ * is left alone rather than becoming `/en/EN/about`). The host-based default
+ * locale (i18n.domains[].defaultLocale) is preferred over the global default
+ * when supplied, matching Next.js's `domainLocale.defaultLocale` branch.
+ *
+ * Item 4 of issue #1336: without this normalisation, requests like
+ * `/to-sv` (default locale = en) against a rule `source: '/:locale/to-sv'`
+ * with `locale: false` do not match because there is no segment for
+ * `:locale`. After normalisation the request looks like `/en/to-sv` and
+ * the rule matches with `:locale=en`.
+ *
+ * `restoreRootTrailingSlash` makes the root `/en/` rather than `/en`; header
+ * callers compute it with `shouldRestoreLocaleRootTrailingSlash`. Redirect
+ * and rewrite callers do not pass it yet.
+ *
+ * Ported from Next.js: packages/next/src/server/lib/router-utils/resolve-routes.ts
+ * https://github.com/vercel/next.js/blob/canary/packages/next/src/server/lib/router-utils/resolve-routes.ts
+ */
+export function normalizeDefaultLocalePathname(
+  pathname: string,
+  i18n: NextI18nConfig | null | undefined,
+  options: { hostname?: string | null; restoreRootTrailingSlash?: boolean } = {},
+): string {
+  if (!i18n) return pathname;
+  // Don't touch internal paths.
+  if (pathname.startsWith("/_next/") || pathname.startsWith("/__vinext/")) return pathname;
+  // If the path already starts with a known locale, leave it alone.
+  if (detectPathnameLocale(pathname, i18n.locales)) return pathname;
+
+  // Pick the default locale: prefer the domain-mapped one when host matches.
+  const domainLocale = detectDomainLocale(i18n.domains, options.hostname ?? undefined);
+  const defaultLocale = domainLocale?.defaultLocale ?? i18n.defaultLocale;
+
+  if (pathname === "/") {
+    return options.restoreRootTrailingSlash ? `/${defaultLocale}/` : `/${defaultLocale}`;
+  }
+  return `/${defaultLocale}${pathname}`;
+}
+
+/**
+ * Whether Next.js re-adds the root's trailing slash after splicing in the
+ * default locale: the raw request pathname (basePath included, so `/docs`
+ * stays `/docs/en` while `/docs/` becomes `/docs/en/`) ends with `/`, and
+ * `trailingSlash` is on without `skipProxyUrlNormalize`.
+ *
+ * Ported from Next.js: packages/next/src/server/lib/router-utils/resolve-routes.ts
+ * (`hadTrailingSlash` + `maybeAddTrailingSlash`).
+ */
+export function shouldRestoreLocaleRootTrailingSlash(
+  rawPathname: string,
+  config: { trailingSlash?: boolean; skipProxyUrlNormalize?: boolean },
+): boolean {
+  return Boolean(
+    config.trailingSlash && !config.skipProxyUrlNormalize && rawPathname.endsWith("/"),
+  );
+}
+
+/**
+ * Extract locale prefix from a URL path.
+ * e.g. /fr/about -> { locale: "fr", url: "/about", hadPrefix: true }
+ *      /about    -> { locale: defaultLocale, url: "/about", hadPrefix: false }
+ */
+export function extractLocaleFromUrl(
+  url: string,
+  i18nConfig: NextI18nConfig,
+  defaultLocale = i18nConfig.defaultLocale,
+): { locale: string; url: string; hadPrefix: boolean } {
+  const pathname = url.split("?")[0];
+  const parts = pathname.split("/").filter(Boolean);
+  const query = url.includes("?") ? url.slice(url.indexOf("?")) : "";
+
+  const locale = i18nConfig.locales.find(
+    (candidate) => candidate.toLowerCase() === parts[0]?.toLowerCase(),
+  );
+  if (locale) {
+    const rest = "/" + parts.slice(1).join("/");
+    return { locale, url: (rest || "/") + query, hadPrefix: true };
+  }
+
+  return { locale: defaultLocale, url, hadPrefix: false };
+}
+
+/**
+ * Strip a leading i18n locale segment from a URL so the result can be used for
+ * API route matching. Mirrors Next.js's base-server behaviour for Pages
+ * Router API routes: `normalizeLocalePath(pathname, i18n.locales).pathname`
+ * runs before the `/api/*` check so `/fr/api/ok` resolves to the
+ * `pages/api/ok` handler instead of 404'ing.
+ *
+ * Returns the original URL untouched when:
+ * - `i18nConfig` is null/undefined (no i18n configured)
+ * - the URL does not start with a configured locale
+ *
+ * The query string is preserved verbatim — only the path segment is stripped.
+ *
+ * Reference: packages/next/src/shared/lib/i18n/normalize-locale-path.ts.
+ */
+export function stripI18nLocaleForApiRoute(
+  url: string,
+  i18nConfig: NextI18nConfig | null | undefined,
+): string {
+  if (!i18nConfig) return url;
+  const { url: stripped, hadPrefix } = extractLocaleFromUrl(url, i18nConfig);
+  return hadPrefix ? stripped : url;
+}
+
+/**
+ * Detect the preferred locale from the Accept-Language header.
+ * Returns the best matching locale or null.
+ */
+export function detectLocaleFromAcceptLanguage(
+  acceptLang: string | null | undefined,
+  i18nConfig: NextI18nConfig,
+): string | null {
+  if (!acceptLang) return null;
+
+  // Ported from Next.js's acceptLanguage() preference selection. In
+  // particular, configured locale order breaks equal-quality ties, language
+  // ranges match configured regional variants, q=0 excludes a selection, and
+  // `*` chooses the first configured locale that was not explicitly listed.
+  const configured = new Map<string, { locale: string; position: number }>();
+  let position = 0;
+  for (const locale of i18nConfig.locales) {
+    const lower = locale.toLowerCase();
+    configured.set(lower, { locale, position: position++ });
+    const parts = lower.split("-");
+    while (parts.length > 1) {
+      parts.pop();
+      const prefix = parts.join("-");
+      if (!configured.has(prefix)) {
+        configured.set(prefix, { locale, position: position++ });
+      }
+    }
+  }
+
+  type Selection = { token: string; headerPosition: number; quality: number; preference?: number };
+  const selections: Selection[] = [];
+  const listedTokens = new Set<string>();
+
+  try {
+    const parts = acceptLang.replace(/[ \t]/g, "").split(",");
+    for (let headerPosition = 0; headerPosition < parts.length; headerPosition++) {
+      const part = parts[headerPosition];
+      if (!part) continue;
+
+      const params = part.split(";");
+      if (params.length > 2) throw new Error("Invalid Accept-Language header");
+
+      const token = params[0].toLowerCase();
+      if (!token) throw new Error("Invalid Accept-Language header");
+
+      const selection: Selection = { token, headerPosition, quality: 1 };
+      const configuredMatch = configured.get(token);
+      if (configuredMatch) selection.preference = configuredMatch.position;
+      listedTokens.add(token);
+
+      if (params.length === 2) {
+        const [key, value] = params[1].split("=");
+        if (!value || (key !== "q" && key !== "Q")) {
+          throw new Error("Invalid Accept-Language header");
+        }
+        const quality = parseFloat(value);
+        if (quality === 0) continue;
+        if (Number.isFinite(quality) && quality >= 0.001 && quality <= 1) {
+          selection.quality = quality;
+        }
+      }
+
+      selections.push(selection);
+    }
+  } catch {
+    return null;
+  }
+
+  selections.sort((a, b) => {
+    if (b.quality !== a.quality) return b.quality - a.quality;
+    if (a.preference !== b.preference) {
+      if (a.preference === undefined) return 1;
+      if (b.preference === undefined) return -1;
+      return a.preference - b.preference;
+    }
+    return a.headerPosition - b.headerPosition;
+  });
+
+  for (const { token } of selections) {
+    if (token === "*") {
+      for (const [preference, { locale }] of configured) {
+        if (!listedTokens.has(preference)) return locale;
+      }
+      continue;
+    }
+    const match = configured.get(token);
+    if (match) return match.locale;
+  }
+  return null;
+}
+
+/**
+ * Parse the NEXT_LOCALE cookie.
+ * Returns the cookie value if it matches a configured locale, otherwise null.
+ */
+export function parseCookieLocaleFromHeader(
+  cookieHeader: string | null | undefined,
+  i18nConfig: NextI18nConfig,
+): string | null {
+  if (!cookieHeader) return null;
+
+  const match = cookieHeader.match(/(?:^|;\s*)NEXT_LOCALE=([^;]*)/);
+  if (!match) return null;
+
+  let value: string;
+  try {
+    value = decodeURIComponent(match[1].trim());
+  } catch {
+    return null;
+  }
+
+  // Match case-insensitively and return the canonical configured locale, so a
+  // cookie like `NEXT_LOCALE=EN-US` resolves to a configured `en-US`. Mirrors
+  // Next.js's `getLocaleFromCookie` (get-locale-redirect.ts), which lowercases
+  // the cookie value and finds the matching configured locale.
+  const lowerValue = value.toLowerCase();
+  return i18nConfig.locales.find((locale) => locale.toLowerCase() === lowerValue) ?? null;
+}
+
+function formatLocalizedRootPath(
+  locale: string,
+  defaultLocale: string,
+  basePath = "",
+  trailingSlash = false,
+  search = "",
+): string | undefined {
+  if (locale.toLowerCase() === defaultLocale.toLowerCase()) return undefined;
+  const rootPath = `${basePath}/${locale}${trailingSlash ? "/" : ""}`;
+  return `${rootPath.replace(/\/{2,}/g, "/")}${search}`;
+}
+
+export function getLocaleRedirect({
+  headers,
+  nextConfig,
+  pathLocale,
+  urlParsed,
+}: LocaleRedirectOptions): string | undefined {
+  const i18n = nextConfig.i18n;
+  // Next.js treats localeDetection as the global auto-redirect switch, so
+  // disabling it also disables root domain-locale redirects, including
+  // cross-domain redirects driven by the current host or Accept-Language.
+  if (!i18n || i18n.localeDetection === false || urlParsed.pathname !== "/") return undefined;
+
+  const domainLocale = detectDomainLocale(i18n.domains, urlParsed.hostname ?? undefined);
+  const defaultLocale = domainLocale?.defaultLocale || i18n.defaultLocale;
+  const preferredLocale =
+    detectLocaleFromAcceptLanguage(readHeader(headers, "accept-language"), i18n) ?? undefined;
+  const detectedLocale =
+    pathLocale ||
+    domainLocale?.defaultLocale ||
+    (parseCookieLocaleFromHeader(readHeader(headers, "cookie"), i18n) ?? undefined) ||
+    preferredLocale ||
+    i18n.defaultLocale;
+  const search = urlParsed.search ?? "";
+
+  const preferredDomain = detectDomainLocale(i18n.domains, undefined, preferredLocale);
+  if (domainLocale && preferredDomain) {
+    const sameDomain =
+      normalizeHostname(domainLocale.domain) === normalizeHostname(preferredDomain.domain);
+    const sameLocale =
+      preferredLocale !== undefined &&
+      preferredDomain.defaultLocale.toLowerCase() === preferredLocale.toLowerCase();
+
+    if (!sameDomain || !sameLocale) {
+      // sameDomain && !sameLocale yields a locale-prefixed redirect on the same
+      // host (for example /nl-BE). This matches Next.js and doesn't loop because
+      // the next request is prefixed and therefore skips getLocaleRedirect().
+      const scheme = `http${preferredDomain.http ? "" : "s"}`;
+      const localePath = sameLocale || preferredLocale === undefined ? "" : `/${preferredLocale}`;
+      const basePath = nextConfig.basePath ?? "";
+      const rootPath = `${basePath}${localePath}${nextConfig.trailingSlash ? "/" : ""}` || "/";
+      const normalizedPath = rootPath.startsWith("/") ? rootPath : `/${rootPath}`;
+      return `${scheme}://${preferredDomain.domain}${normalizedPath}${search}`;
+    }
+  }
+
+  return formatLocalizedRootPath(
+    detectedLocale,
+    defaultLocale,
+    nextConfig.basePath,
+    nextConfig.trailingSlash,
+    search,
+  );
+}
+
+export function resolvePagesI18nRequest(
+  url: string,
+  i18nConfig: NextI18nConfig,
+  headers?: HeaderBag,
+  hostname?: string | null,
+  basePath = "",
+  trailingSlash = false,
+): PagesI18nRequestInfo {
+  const domainLocale = detectDomainLocale(i18nConfig.domains, hostname ?? undefined);
+  const defaultLocale = domainLocale?.defaultLocale || i18nConfig.defaultLocale;
+  const localeInfo = extractLocaleFromUrl(url, i18nConfig, defaultLocale);
+
+  let redirectUrl: string | undefined;
+  if (!localeInfo.hadPrefix) {
+    redirectUrl = getLocaleRedirect({
+      headers,
+      nextConfig: {
+        basePath,
+        i18n: i18nConfig,
+        trailingSlash,
+      },
+      urlParsed: {
+        hostname,
+        pathname: localeInfo.url.split("?")[0] || "/",
+        search: localeInfo.url.includes("?")
+          ? localeInfo.url.slice(localeInfo.url.indexOf("?"))
+          : "",
+      },
+    });
+  }
+
+  return {
+    ...localeInfo,
+    domainLocale,
+    redirectUrl,
+  };
+}

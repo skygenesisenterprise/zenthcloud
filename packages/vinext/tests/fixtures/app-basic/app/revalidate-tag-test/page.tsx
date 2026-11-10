@@ -1,0 +1,29 @@
+/**
+ * ISR page with tagged fetch for revalidateTag testing.
+ *
+ * Ported from: https://github.com/opennextjs/opennextjs-cloudflare/blob/main/examples/e2e/app-router/open-next/app/revalidate-tag/
+ */
+
+export const revalidate = 3600; // Long TTL — only invalidated by revalidateTag
+
+async function getTaggedData() {
+  // Use a deterministic local fetch so the test exercises tag tracking without
+  // depending on external network availability.
+  await fetch("data:application/json,%7B%22ok%22%3Atrue%7D", {
+    next: { tags: ["test-data"] },
+  });
+  const timestamp = Date.now();
+  return { timestamp };
+}
+
+export default async function RevalidateTagTestPage() {
+  const data = await getTaggedData();
+
+  return (
+    <div data-testid="revalidate-tag-test-page">
+      <h1>Revalidate Tag Test</h1>
+      <p data-testid="timestamp">Fetched time: {data.timestamp}</p>
+      <p data-testid="request-id">RequestID: {Math.random().toString(36).slice(2)}</p>
+    </div>
+  );
+}

@@ -1,0 +1,174 @@
+import fs from "node:fs";
+
+export type PrerenderManifestRoute = {
+  route: string;
+  status?: string;
+  reason?: string;
+  revalidate?: number | false;
+  expire?: number;
+  /**
+   * Client-router reuse bound resolved by the prerender's `cacheLife`. Absent on
+   * manifests written by older builds, which seed entries without a
+   * client-freshness claim and leave the client on its configured staleTimes.
+   */
+  stale?: number;
+  path?: string;
+  router?: string;
+  fallback?: boolean;
+  headers?: Record<string, string | string[]>;
+  responseStatus?: number;
+  /** Pages source returned notFound, rather than rendering a custom 404 document. */
+  notFound?: true;
+  /** Original Pages redirect props, including client navigation semantics. */
+  redirectProps?: object;
+  /** Pages locale rendered for this public pathname. */
+  locale?: string;
+  routeSegments?: string[];
+  tags?: string[];
+};
+
+export type PrerenderManifest = {
+  buildId?: string;
+  trailingSlash?: boolean;
+  routes?: PrerenderManifestRoute[];
+  pregeneratedConcretePaths?: Array<[string, string[]]>;
+};
+
+export type PrerenderedPathSelectionOptions = {
+  includeErrorDocuments?: boolean;
+};
+
+export function readPrerenderManifest(manifestPath: string): PrerenderManifest | null {
+  if (!fs.existsSync(manifestPath)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
+  } catch (error) {
+    console.warn(`[vinext] Failed to read prerender manifest at ${manifestPath}:`, error);
+    return null;
+  }
+}
+
+export function getRenderedAppRoutes(routes: PrerenderManifestRoute[]): PrerenderManifestRoute[] {
+  return routes.filter((r) => r.status === "rendered" && r.router === "app");
+}
+
+export function getRenderedMetadataRoutes(
+  routes: PrerenderManifestRoute[],
+): PrerenderManifestRoute[] {
+  return routes.filter((route) => route.status === "rendered" && route.router === "metadata");
+}
+
+function groupRoutesByPattern(routes: PrerenderManifestRoute[]): Map<string, string[]> {
+  const byPattern = new Map<string, string[]>();
+  for (const r of routes) {
+    const pathname = r.path ?? r.route;
+    const existing = byPattern.get(r.route);
+    if (existing) {
+      existing.push(pathname);
+    } else {
+      byPattern.set(r.route, [pathname]);
+    }
+  }
+  return byPattern;
+}
+
+function isErrorDocumentRoute(pathname: string, route: PrerenderManifestRoute): boolean {
+  return (
+    pathname === "/404" ||
+    pathname === "/500" ||
+    pathname === "/_error" ||
+    route.route === "/404" ||
+    route.route === "/500" ||
+    route.route === "/_error"
+  );
+}
+
+/**
+ * Returns true when `pathname` contains bracket-delimited route params,
+ * indicating it is a fallback-shell placeholder (e.g. `/en/blog/[slug]`)
+ * rather than a concrete rendered URL.
+ */
+export function isFallbackShellArtifactPath(
+  pathname: string,
+  route?: PrerenderManifestRoute,
+): boolean {
+  if (route?.fallback === true) {
+    return true;
+  }
+  // Backward-compat only: manifests predating the `fallback` flag. Current
+  // builds always set `fallback`, so a concrete URL containing a literal
+  // bracket is never misclassified here.
+  if (route?.fallback === undefined) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        "[vinext] Legacy manifest detected: missing `fallback` flag for route. " +
+          "Using bracket heuristic for fallback-shell detection. " +
+          "A concrete URL containing literal brackets may be misclassified as a fallback shell.",
+      );
+    }
+    return pathname.includes("[") || pathname.includes("]");
+  }
+  return false;
+}
+
+/**
+ * Build the pregenerated concrete-path payload table from a prerender manifest.
+ *
+ * Filters out fallback-shell placeholder paths and groups remaining concrete
+ * paths by route pattern. Returns an empty array when the manifest has no
+ * rendered App routes or all routes are fallback-shell artifacts.
+ */
+export function buildPregeneratedConcretePathTable(
+  manifest: PrerenderManifest,
+): Array<[string, string[]]> {
+  const routes = manifest?.routes;
+  if (!routes?.length) return [];
+
+  const appRoutes = getRenderedAppRoutes(routes);
+  const concreteRoutes = appRoutes.filter((r) => {
+    const pathname = r.path ?? r.route;
+    return !isFallbackShellArtifactPath(pathname, r);
+  });
+
+  const byPattern = groupRoutesByPattern(concreteRoutes);
+  for (const route of routes) {
+    if (route.status === "skipped" && route.reason === "empty-static-params") {
+      if (!byPattern.has(route.route)) byPattern.set(route.route, []);
+    }
+  }
+  return Array.from(byPattern.entries());
+}
+
+/**
+ * Select concrete URL paths that were rendered by the prerender engine.
+ *
+ * This intentionally includes both App Router and Pages Router entries because
+ * deploy-time cache warmup should exercise the same URLs the prerender phase
+ * proved are statically renderable. PPR fallback-shell placeholder artifacts
+ * are always excluded, and known error documents by default, so warmup does not
+ * request synthetic bracket paths or treat a healthy 404 response as a failed
+ * warmup.
+ */
+export function getPrerenderedConcretePaths(
+  manifest: PrerenderManifest,
+  options?: PrerenderedPathSelectionOptions,
+): string[] {
+  const routes = manifest.routes;
+  if (!routes?.length) return [];
+
+  const paths: string[] = [];
+  const seen = new Set<string>();
+  for (const route of routes) {
+    // A Pages getStaticProps notFound result is a 404 snapshot, not a page URL.
+    if (route.status !== "rendered" || route.notFound) continue;
+    const pathname = route.path ?? route.route;
+    if (isFallbackShellArtifactPath(pathname, route)) continue;
+    if (!options?.includeErrorDocuments && isErrorDocumentRoute(pathname, route)) {
+      continue;
+    }
+    if (seen.has(pathname)) continue;
+    seen.add(pathname);
+    paths.push(pathname);
+  }
+  return paths;
+}

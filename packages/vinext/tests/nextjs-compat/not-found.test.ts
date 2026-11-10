@@ -1,0 +1,726 @@
+/**
+ * Next.js Compatibility Tests: not-found (basic)
+ *
+ * Ported from: https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/not-found/basic/index.test.ts
+ *
+ * Tests not-found boundary behavior in the App Router:
+ * - Root not-found.tsx renders for unmatched routes (404 status)
+ * - notFound() called in page returns 404
+ * - Dynamic route [id] with scoped not-found boundary
+ * - Escalation to parent layout when no not-found boundary exists
+ * - notFound() propagates past error boundaries
+ * - noindex meta tag in not-found response
+ *
+ * Fixture pages live in:
+ * - fixtures/app-basic/app/not-found.tsx (root, pre-existing)
+ * - fixtures/app-basic/app/notfound-test/page.tsx (pre-existing)
+ * - fixtures/app-basic/app/nextjs-compat/not-found-dynamic/ (new)
+ * - fixtures/app-basic/app/nextjs-compat/not-found-no-boundary/ (new)
+ * - fixtures/app-basic/app/nextjs-compat/not-found-error-boundary/ (new)
+ *
+ * NOTE: Some Next.js tests are browser-only (click button -> client-side notFound()).
+ * Those are marked with a comment and would need to go in Playwright specs.
+ * This file covers all HTTP-level (SSR) tests.
+ */
+
+import { describe, it, expect, beforeAll, afterAll } from "vite-plus/test";
+import type { ViteDevServer } from "vite-plus";
+import { APP_FIXTURE_DIR, startFixtureServer, fetchHtml, fetchRsc } from "../helpers.js";
+
+describe("Next.js compat: not-found", () => {
+  let server: ViteDevServer;
+  let baseUrl: string;
+
+  beforeAll(async () => {
+    ({ server, baseUrl } = await startFixtureServer(APP_FIXTURE_DIR, {
+      appRouter: true,
+    }));
+    // Warm up the server
+    await fetch(`${baseUrl}/`).catch(() => {});
+  }, 60_000);
+
+  afterAll(async () => {
+    await server?.close();
+  });
+
+  // ── Root not-found ──────────────────────────────────────────
+  // Next.js: it('should return 404 status code for custom not-found page', ...)
+  // Source: https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/not-found/basic/index.test.ts#L35-L38
+  it("should return 404 for unmatched routes", async () => {
+    const res = await fetch(`${baseUrl}/random-content-that-does-not-exist`);
+    expect(res.status).toBe(404);
+  });
+
+  // Next.js: it('should use the not-found page for non-matching routes', ...)
+  // Source: https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/not-found/basic/index.test.ts#L65-L71
+  it("should render root not-found content for non-matching routes", async () => {
+    const { html } = await fetchHtml(baseUrl, "/random-content-that-does-not-exist");
+    // Root not-found.tsx renders "404 - Page Not Found"
+    expect(html).toContain("404 - Page Not Found");
+    // Should be wrapped in root layout (html tag with lang)
+    expect(html).toContain('<html lang="en">');
+  });
+
+  // ── Shell notFound() ───────────────────────────────────────
+  // Next.js: it('should return 404 status if notFound() is called in shell', ...)
+  // Source: https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/not-found/basic/index.test.ts#L59-L63
+  it("should return 404 when notFound() is called in a page", async () => {
+    const res = await fetch(`${baseUrl}/notfound-test`);
+    expect(res.status).toBe(404);
+  });
+
+  it("should include noindex meta tag in not-found response", async () => {
+    const { html } = await fetchHtml(baseUrl, "/notfound-test");
+    expect(html).toContain("noindex");
+  });
+
+  // ── Dynamic route with scoped not-found ─────────────────────
+  // Next.js: it('should match dynamic route not-found boundary correctly', ...)
+  // Source: https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/not-found/basic/index.test.ts#L73-L87
+
+  it("dynamic index page renders normally", async () => {
+    const { res, html } = await fetchHtml(baseUrl, "/nextjs-compat/not-found-dynamic");
+    expect(res.status).toBe(200);
+    expect(html).toContain("dynamic");
+  });
+
+  it("dynamic [id] page renders for valid id", async () => {
+    const { res, html } = await fetchHtml(baseUrl, "/nextjs-compat/not-found-dynamic/123");
+    expect(res.status).toBe(200);
+    expect(html).toContain("dynamic [id]");
+  });
+
+  it("dynamic [id] notFound() uses scoped not-found boundary", async () => {
+    const { res, html } = await fetchHtml(baseUrl, "/nextjs-compat/not-found-dynamic/404");
+    expect(res.status).toBe(404);
+    // Should render the scoped not-found.tsx at [id] level, not the root one
+    expect(html).toContain("dynamic/[id] not found");
+    // Should NOT contain root not-found content
+    expect(html).not.toContain("404 - Page Not Found");
+  });
+
+  // ── Escalation without not-found boundary ──────────────────
+  // Next.js: it('should escalate notFound to parent layout if no not-found boundary present', ...)
+  // Source: https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/not-found/basic/index.test.ts#L89-L107
+
+  it("layout without not-found boundary renders its page normally", async () => {
+    const { res, html } = await fetchHtml(baseUrl, "/nextjs-compat/not-found-no-boundary");
+    expect(res.status).toBe(200);
+    expect(html).toContain("Dynamic with Layout");
+  });
+
+  it("dynamic [id] page renders for valid id (no-boundary)", async () => {
+    const { res, html } = await fetchHtml(baseUrl, "/nextjs-compat/not-found-no-boundary/123");
+    expect(res.status).toBe(200);
+    expect(html).toContain("not-found-no-boundary [id]");
+  });
+
+  it("notFound() escalates to root not-found when no local boundary exists", async () => {
+    const { res, html } = await fetchHtml(baseUrl, "/nextjs-compat/not-found-no-boundary/404");
+    expect(res.status).toBe(404);
+    // Should render ROOT not-found.tsx since there's no local not-found boundary
+    expect(html).toContain("404 - Page Not Found");
+  });
+
+  // ── Existing vinext tests: dashboard scoped not-found ──────
+  // These exercise the pre-existing dashboard/not-found.tsx with dashboard/missing/page.tsx
+  // (not from Next.js test suite, but validates the same pattern)
+
+  it("dashboard/missing calls notFound() -> dashboard-scoped not-found", async () => {
+    const { res, html } = await fetchHtml(baseUrl, "/dashboard/missing");
+    expect(res.status).toBe(404);
+    expect(html).toContain("Dashboard: Page Not Found");
+    // Should be wrapped in dashboard layout
+    expect(html).toContain("dashboard-layout");
+    // Should also be in root layout
+    expect(html).toContain('<html lang="en">');
+  });
+
+  // ── Error boundary + notFound() interaction ────────────────
+  // Next.js: it("should propagate notFound errors past a segment's error boundary", ...)
+  // Source: https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/not-found/basic/index.test.ts#L14-L29
+  //
+  // The original test uses browser-based button clicks for root + nested-2 routes
+  // (client-side notFound()), but SSR-based notFound() for the dynamic route.
+  // We test the SSR-based part here. Browser tests would go in Playwright.
+
+  it("notFound() in server component propagates past error boundary to not-found boundary", async () => {
+    // /nextjs-compat/not-found-error-boundary/nested/trigger-not-found
+    // has error.tsx at parent levels, but notFound() should bypass them
+    // and reach nested/not-found.tsx
+    const { res, html } = await fetchHtml(
+      baseUrl,
+      "/nextjs-compat/not-found-error-boundary/nested/trigger-not-found",
+    );
+    expect(res.status).toBe(404);
+    expect(html).toContain("Not Found (error-boundary/nested)");
+    // Should NOT show the error boundary content
+    expect(html).not.toContain("There was an error");
+  });
+
+  // ── Metadata cascade into not-found pages ───────────────────
+  // Next.js cascades metadata from parent layouts into not-found/error pages.
+
+  it("not-found page should inherit metadata title from parent layout", async () => {
+    const { res, html } = await fetchHtml(baseUrl, "/nextjs-compat/metadata-not-found/missing");
+    expect(res.status).toBe(404);
+    // Should render the not-found content
+    expect(html).toContain("Not Found (metadata test)");
+    // Should inherit the title from the parent layout's metadata export
+    expect(html).toContain("<title>Metadata Not Found Layout Title</title>");
+  });
+
+  it("not-found page should inherit metadata description from parent layout", async () => {
+    const { html } = await fetchHtml(baseUrl, "/nextjs-compat/metadata-not-found/missing");
+    expect(html).toContain(
+      '<meta name="description" content="Layout description for not-found test"',
+    );
+  });
+
+  it("not-found page should still include noindex meta tag alongside layout metadata", async () => {
+    const { html } = await fetchHtml(baseUrl, "/nextjs-compat/metadata-not-found/missing");
+    // noindex should still be present
+    expect(html).toContain("noindex");
+    // Layout metadata should also be present
+    expect(html).toContain("<title>Metadata Not Found Layout Title</title>");
+  });
+
+  // ── generateMetadata in fallback layout receives real params ──
+  // Regression test for: renderHTTPAccessFallbackPage was passing {} for params
+  // to resolveModuleMetadata(), so generateMetadata() would get undefined for
+  // all dynamic route params (e.g. params.slug === undefined).
+  //
+  // Fixture: nextjs-compat/layout-params-notfound/[slug]/layout.tsx exports
+  // generateMetadata({ params }) that returns title "not-found: <slug>".
+  // The page calls notFound() for invalid slugs, triggering the fallback render.
+
+  it("layout generateMetadata() in not-found fallback receives actual route params", async () => {
+    const { res, html } = await fetchHtml(
+      baseUrl,
+      "/nextjs-compat/layout-params-notfound/bad-slug",
+    );
+    expect(res.status).toBe(404);
+    // The not-found boundary must render
+    expect(html).toContain("layout-params-notfound-boundary");
+    // The title must include the actual slug -- proves params were forwarded correctly.
+    // If renderHTTPAccessFallbackPage passed {} instead of {slug:"bad-slug"},
+    // the title would be "not-found: undefined" instead.
+    expect(html).toContain("<title>not-found: bad-slug</title>");
+  });
+
+  it("layout generateMetadata() in not-found fallback uses actual slug value", async () => {
+    const { res, html } = await fetchHtml(
+      baseUrl,
+      "/nextjs-compat/layout-params-notfound/my-other-slug",
+    );
+    expect(res.status).toBe(404);
+    expect(html).toContain("<title>not-found: my-other-slug</title>");
+  });
+
+  // ── generateViewport in fallback layout receives real params ──
+  // Regression test for: renderHTTPAccessFallbackPage was passing {} for params
+  // to resolveModuleViewport(), so generateViewport() would get undefined for
+  // all dynamic route params (e.g. params.slug === undefined).
+  //
+  // Fixture: nextjs-compat/layout-params-notfound/[slug]/layout.tsx exports
+  // generateViewport({ params }) that returns themeColor "slug-<slug>".
+
+  it("layout generateViewport() in not-found fallback receives actual route params", async () => {
+    const { res, html } = await fetchHtml(
+      baseUrl,
+      "/nextjs-compat/layout-params-notfound/bad-slug",
+    );
+    expect(res.status).toBe(404);
+    // The not-found boundary must render
+    expect(html).toContain("layout-params-notfound-boundary");
+    // The theme-color must include the actual slug -- proves params were forwarded.
+    // If renderHTTPAccessFallbackPage passed {} instead of {slug:"bad-slug"},
+    // the themeColor would be "slug-undefined" instead of "slug-bad-slug".
+    expect(html).toContain('content="slug-bad-slug"');
+  });
+
+  it("layout generateViewport() in not-found fallback uses actual slug value", async () => {
+    const { res, html } = await fetchHtml(
+      baseUrl,
+      "/nextjs-compat/layout-params-notfound/my-other-slug",
+    );
+    expect(res.status).toBe(404);
+    expect(html).toContain('content="slug-my-other-slug"');
+  });
+
+  // ── notFound() from layout components ───────────────────────
+  // Tests that notFound() thrown from a layout component is caught by the
+  // parent layout's NotFoundBoundary (per-layout boundary matching Next.js).
+
+  it("valid slug renders page through layout", async () => {
+    const { res, html } = await fetchHtml(baseUrl, "/nextjs-compat/not-found-layout/hello");
+    expect(res.status).toBe(200);
+    expect(html).toContain("not-found-layout-page");
+    expect(html).toContain("not-found-layout-wrapper");
+  });
+
+  it("notFound() from layout is caught by parent boundary", async () => {
+    const { res, html } = await fetchHtml(baseUrl, "/nextjs-compat/not-found-layout/invalid");
+    expect(res.status).toBe(404);
+    // Should render the PARENT not-found.tsx (not-found-layout/not-found.tsx)
+    // because the layout at [slug] level threw, and the boundary at that level
+    // only wraps the layout's children, not the layout itself.
+    expect(html).toContain("Not Found (parent boundary)");
+    // Should NOT render the slug-level not-found (that's for page errors)
+    expect(html).not.toContain("Not Found (slug boundary)");
+    // Should NOT show the layout wrapper (layout threw before rendering)
+    expect(html).not.toContain("not-found-layout-wrapper");
+  });
+
+  it("notFound() from layout returns 404 status", async () => {
+    const res = await fetch(`${baseUrl}/nextjs-compat/not-found-layout/does-not-exist`);
+    expect(res.status).toBe(404);
+  });
+
+  // Issue #4045. Ported from the behavior of Next.js'
+  // create-component-tree.tsx: every segment wraps its children in its
+  // not-found boundary, with or without a layout, and the boundary replaces
+  // the layouts below it.
+  it("notFound() from layout is caught by a segment boundary without a layout", async () => {
+    const valid = await fetchHtml(baseUrl, "/nextjs-compat/not-found-layout-segment/en/shop/hello");
+    expect(valid.res.status).toBe(200);
+    expect(valid.html).toContain("not-found-layout-segment-page");
+
+    const { res, html } = await fetchHtml(
+      baseUrl,
+      "/nextjs-compat/not-found-layout-segment/en/shop/invalid",
+    );
+    expect(res.status).toBe(404);
+    expect(html).toContain("Not Found (segment without layout)");
+    // The document keeps the route's own head, like Next.js once its error
+    // shell hydrates, so the layouts' title applies.
+    expect(html).toContain("<title>App Basic</title>");
+    expect(html).toContain('<meta name="description" content="Shop layout description"/>');
+    // Match rendered markup: like Next.js, the flight may name skipped layouts.
+    expect(html).not.toContain("<h1>404 - Page Not Found</h1>");
+    expect(html).not.toContain("Not Found (id boundary)");
+    expect(html).not.toContain('id="not-found-layout-segment-shop"');
+    expect(html).not.toContain("not-found-layout-segment-wrapper");
+  });
+
+  // Next.js sends a layout's notFound() as an error shell whose head uses the
+  // route's deepest not-found, here the catching boundary, then renders the
+  // route's own head in the browser. vinext's document carries the title
+  // users see, the route's.
+  it("notFound() from layout keeps the route's own title", async () => {
+    const { res, html } = await fetchHtml(
+      baseUrl,
+      "/nextjs-compat/not-found-layout-segment/en/blog/invalid",
+    );
+    expect(res.status).toBe(404);
+    expect(html).toContain("Not Found (segment without layout)");
+    expect(html).toContain("<title>App Basic</title>");
+    expect(html).not.toContain("<title>Not found (en)</title>");
+    expect(html).not.toContain('id="not-found-layout-segment-blog"');
+  });
+
+  // Issue #4092: a page's notFound() is caught by its nearest not-found file,
+  // here in a segment without a layout, which replaces the layouts below it.
+  it("notFound() from page is caught by an ancestor segment boundary without a layout", async () => {
+    const { res, html } = await fetchHtml(
+      baseUrl,
+      "/nextjs-compat/not-found-layout-segment/en/shop/gone",
+    );
+    expect(res.status).toBe(404);
+    expect(html).toContain("Not Found (segment without layout)");
+    expect(html).toContain('id="not-found-layout-segment-layout"');
+    // Every layout on the route still contributes metadata.
+    expect(html).toContain('<meta name="description" content="Shop layout description"/>');
+    expect(html).not.toContain('id="not-found-layout-segment-shop"');
+  });
+
+  // Next.js attaches not-found boundaries only to each segment's `children`,
+  // so a parallel slot's notFound() is caught by the boundary above the
+  // layout rendering the slot, not by the route's deepest one (team/), as it
+  // is on client navigation. Observed in Next.js 16.2.7, webpack and Turbopack.
+  it.each([
+    ["page", "/nextjs-compat/not-found-layout-segment/en/team"],
+    ["default", "/nextjs-compat/not-found-layout-segment/en/team/roster"],
+  ])(
+    "notFound() from a parallel slot's %s is caught above the slot's layout",
+    async (_, pathname) => {
+      const { res, html } = await fetchHtml(baseUrl, pathname);
+      expect(res.status).toBe(404);
+      expect(html).toContain("Not Found (segment without layout)");
+      expect(html).toContain('id="not-found-layout-segment-layout"');
+      expect(html).not.toContain("Not Found (team boundary)");
+      expect(html).not.toContain('id="not-found-layout-segment-team"');
+    },
+  );
+
+  // A slot's own layout is no different: the slot's not-found.tsx and the
+  // segment's sit inside the layout rendering the slot, so neither catches it.
+  // Observed in Next.js 16.2.7, webpack and Turbopack.
+  it("notFound() from a parallel slot's layout is caught above the slot's layout", async () => {
+    const { res, html } = await fetchHtml(
+      baseUrl,
+      "/nextjs-compat/not-found-layout-segment/en/crew",
+    );
+    expect(res.status).toBe(404);
+    expect(html).toContain("Not Found (segment without layout)");
+    expect(html).toContain('id="not-found-layout-segment-layout"');
+    expect(html).not.toContain("Not Found (crew boundary)");
+    expect(html).not.toContain("Not Found (roles slot)");
+    expect(html).not.toContain('id="not-found-layout-segment-crew"');
+  });
+
+  // An unmatched slot renders its default.tsx as Next.js's `__DEFAULT__`
+  // segment, which carries none of the slot directory's files, so the slot's
+  // own not-found.tsx doesn't catch the default's notFound(). Observed in
+  // Next.js 16.2.7, webpack and Turbopack.
+  it("notFound() from a parallel slot's default is caught above the slot's layout, not by the slot's not-found", async () => {
+    const { res, html } = await fetchHtml(baseUrl, "/nextjs-compat/not-found-slot-own/panel");
+    expect(res.status).toBe(404);
+    expect(html).toContain('id="slot-own-layout"');
+    expect(html).toContain('id="slot-own-root-nf"');
+    expect(html).not.toContain('id="slot-own-panel-layout"');
+    expect(html).not.toContain('id="slot-own-panel-nf"');
+    expect(html).not.toContain('id="slot-own-panel-segment-nf"');
+    // Next.js sends this as an error shell whose head uses the route's deepest
+    // not-found, then renders the route's own head in the browser, so the
+    // title users see is the route's. vinext's document carries that title.
+    expect(html).toContain("<title>Slot own layout</title>");
+    expect(html).not.toContain("Not Found (panel segment)</title>");
+    expect(html).not.toContain("Not Found (panel slot)</title>");
+  });
+
+  // Turbopack orders a layout's children before its slots, so an active slot
+  // page's title wins over the page's, also when both threw notFound().
+  // Observed in Next.js 16.2.7 with Turbopack (webpack keeps the page's).
+  it.each(["ok", "missing", "both"])(
+    "an active slot page's title wins over the page's (%s)",
+    async (id) => {
+      const { html } = await fetchHtml(baseUrl, `/nextjs-compat/not-found-slot-own/team/${id}`);
+      expect(html).toContain("<title>Team slot page</title>");
+      expect(html).not.toContain("<title>Team page</title>");
+      expect(html).not.toContain("<title>Not Found");
+    },
+  );
+
+  // Next.js 16.2.7 flushes its error shell at once (35ms to first byte against
+  // a 3s generateMetadata()), and the route's title follows later.
+  it("streams a slow generateMetadata() after the 404 its page throws", async () => {
+    // The fixture's generateMetadata() takes 4 s. The deadline runs from the
+    // request, so it also fails when the response's headers wait for it.
+    const requestStart = performance.now();
+    const res = await fetch(`${baseUrl}/nextjs-compat/not-found-slow-metadata`);
+    expect(res.status).toBe(404);
+    const reader = res.body!.getReader();
+    const decoder = new TextDecoder();
+    let html = "";
+    const read = async () => {
+      const { done, value } = await reader.read();
+      if (!done) html += decoder.decode(value, { stream: true });
+      return done;
+    };
+    const readUntilBoundary = async () => {
+      while (!html.includes("404 - Page Not Found")) {
+        if (await read()) return Infinity;
+      }
+      return performance.now() - requestStart;
+    };
+    let deadlineTimer: ReturnType<typeof setTimeout> | undefined;
+    const deadline = new Promise<number>((resolve) => {
+      deadlineTimer = setTimeout(() => resolve(Infinity), 2000);
+    });
+    const boundaryAt = await Promise.race([readUntilBoundary(), deadline]);
+    clearTimeout(deadlineTimer);
+    expect(boundaryAt).toBeLessThan(2000);
+    expect(html).not.toContain("Slow metadata page");
+    while (!(await read()));
+
+    // The title streams into the body once. The inline Flight payload names it
+    // too, but no rendered title comes before it.
+    const renderedTitle = '<div hidden=""><title>Slow metadata page</title>';
+    expect(html.indexOf(renderedTitle)).toBeGreaterThan(html.indexOf("404 - Page Not Found"));
+    expect(html.indexOf(renderedTitle)).toBe(html.lastIndexOf(renderedTitle));
+    expect(html.indexOf("<title>")).toBe(html.indexOf(renderedTitle) + '<div hidden="">'.length);
+  });
+
+  // Next.js 16.2.7 streams its error shell's convention metadata too: headers
+  // in ~10ms against a 3s not-found generateMetadata(). The title users see is
+  // still the route's own.
+  it("never holds back a 404 for the not-found convention's slow generateMetadata()", async () => {
+    // The fixture's not-found generateMetadata() takes 4 s.
+    const requestStart = performance.now();
+    const res = await fetch(`${baseUrl}/nextjs-compat/not-found-slow-convention-metadata`);
+    const headersAt = performance.now() - requestStart;
+    expect(res.status).toBe(404);
+    expect(headersAt).toBeLessThan(2000);
+    const html = await res.text();
+    expect(html).toContain("Slow convention not found boundary");
+    expect(html.match(/<title>/g) ?? []).toHaveLength(1);
+    expect(html).toContain("<title>Slow convention page</title>");
+    expect(html).not.toContain("Slow convention not found</title>");
+  });
+
+  // Next.js 16.2.7 answers 404 without redirecting: its error shell's
+  // convention metadata has no outlet, so a redirect() from it is dropped.
+  it("drops a redirect() from the not-found convention's generateMetadata()", async () => {
+    const res = await fetch(`${baseUrl}/nextjs-compat/not-found-convention-redirect`, {
+      redirect: "manual",
+    });
+    expect(res.status).toBe(404);
+    const html = await res.text();
+    expect(html).toContain("Convention redirect not found boundary");
+    expect(html).toContain("<title>Convention redirect page</title>");
+  });
+
+  // When the page throws too, its notFound() is caught by its segment's
+  // not-found inside the layout rendering the slot, while the slot's own
+  // not-found catches the slot's. The document shows both, also when the
+  // page's signal is below a Suspense boundary.
+  // Observed in Next.js 16.2.7, webpack and Turbopack.
+  it.each(["both", "late"])(
+    "notFound() from a page and a slot with its own not-found keeps the slot's layout (%s)",
+    async (id) => {
+      const { res, html } = await fetchHtml(
+        baseUrl,
+        `/nextjs-compat/not-found-slot-own/team/${id}`,
+      );
+      expect(res.status).toBe(404);
+      expect(html).toContain('id="slot-own-layout"');
+      expect(html).toContain('id="slot-own-team-layout"');
+      expect(html).toContain('id="slot-own-segment-nf"');
+      // The slot keeps its own not-found beside it.
+      expect(html).toContain('id="slot-own-team-nf"');
+      expect(html).not.toContain('id="slot-own-root-nf"');
+    },
+  );
+
+  // A layout's or a template's notFound() beside the slot's is caught above
+  // the layout rendering the slot, so the not-found above it renders alone.
+  // Observed in Next.js 16.2.7, webpack and Turbopack.
+  it.each([
+    ["layout", "team/gone", "team"],
+    ["template", "tmpl", "tmpl"],
+  ])(
+    "notFound() from a %s and a slot with its own not-found is caught above the slot's layout",
+    async (_thrower, path, segment) => {
+      const { res, html } = await fetchHtml(baseUrl, `/nextjs-compat/not-found-slot-own/${path}`);
+      expect(res.status).toBe(404);
+      expect(html).toContain('id="slot-own-layout"');
+      expect(html).toContain('id="slot-own-root-nf"');
+      expect(html).not.toContain(`id="slot-own-${segment}-layout"`);
+      expect(html).not.toContain('id="slot-own-segment-nf"');
+      expect(html).not.toContain('id="slot-own-tmpl-segment-nf"');
+      expect(html).not.toContain('id="slot-own-team-nf"');
+      expect(html).not.toContain('id="slot-own-tmpl-members-nf"');
+    },
+  );
+
+  // ── notFound() from both layout AND page ─────────────────────
+  // When both the layout and the page call notFound() for invalid params,
+  // the layout's notFound() should take precedence (layouts render before
+  // pages in Next.js). Without correct pre-render ordering, the page's
+  // notFound() is caught first, and the fallback rendering includes the
+  // throwing layout, causing a 500 error.
+
+  it("layout+page notFound(): valid slug renders page", async () => {
+    const { res, html } = await fetchHtml(baseUrl, "/nextjs-compat/not-found-layout-page/hello");
+    expect(res.status).toBe(200);
+    expect(html).toContain("not-found-layout-page-content");
+    expect(html).toContain("not-found-layout-page-wrapper");
+  });
+
+  it("layout+page notFound(): invalid slug caught by parent boundary (not 500)", async () => {
+    const { res, html } = await fetchHtml(baseUrl, "/nextjs-compat/not-found-layout-page/invalid");
+    // Must be 404, NOT 500 — the layout's notFound() should be caught first,
+    // rendering with parent layouts only (excluding the throwing layout).
+    expect(res.status).toBe(404);
+    // Should render the PARENT boundary (layout threw, propagates up)
+    expect(html).toContain("Not Found (layout-page parent boundary)");
+    // Should NOT render the slug-level boundary
+    expect(html).not.toContain("Not Found (layout-page slug boundary)");
+    // Should NOT show the layout wrapper (layout threw before rendering)
+    expect(html).not.toContain("not-found-layout-page-wrapper");
+  });
+
+  it("layout+page notFound(): RSC request returns 404 (not 500)", async () => {
+    const res = await fetchRsc(baseUrl, "/nextjs-compat/not-found-layout-page/invalid");
+    // RSC response must be 404 with valid flight data, not 500
+    expect(res.status).toBe(404);
+    expect(res.headers.get("content-type")).toContain("text/x-component");
+    const body = await res.text();
+    expect(body.length).toBeGreaterThan(0);
+    // Should contain the parent boundary's not-found content
+    expect(body).toContain("layout-page parent boundary");
+  });
+
+  // ── notFound() from a page below a child layout ─────────────
+  // An ancestor segment's not-found.tsx is the boundary of that segment's
+  // children, so it replaces every layout below it, not just the page. The
+  // server's not-found render already did; this keeps it matching the client
+  // tree that #4092 fixed, which the e2e spec covers.
+  // https://github.com/cloudflare/vinext/issues/4092
+
+  it("page notFound(): ancestor not-found replaces the child layout", async () => {
+    const { res, html } = await fetchHtml(
+      baseUrl,
+      "/nextjs-compat/not-found-ancestor-boundary/section/missing",
+    );
+    expect(res.status).toBe(404);
+    expect(html).toContain("not-found-ancestor-boundary-layout");
+    expect(html).toContain("Not Found (ancestor boundary)");
+    expect(html).not.toContain("not-found-ancestor-boundary-section");
+  });
+
+  // ── RSC (client-side navigation) not-found ──────────────────
+  // When navigating client-side, the request selects RSC with `RSC: 1`.
+  // The RSC response must contain valid flight data with not-found content.
+
+  it("RSC request for unmatched route returns 404 with valid RSC payload", async () => {
+    const res = await fetchRsc(baseUrl, "/does-not-exist");
+    expect(res.status).toBe(404);
+    expect(res.headers.get("content-type")).toContain("text/x-component");
+    const body = await res.text();
+    // RSC flight payload should contain the not-found content
+    expect(body.length).toBeGreaterThan(0);
+    expect(body).toContain("404");
+  });
+
+  // As in Next.js dev, the page's notFound() streams as a digest in a 200
+  // flight; the client renders the not-found boundary from it.
+  it("RSC request for page calling notFound() streams the not-found digest", async () => {
+    const res = await fetchRsc(baseUrl, "/notfound-test");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("text/x-component");
+    const body = await res.text();
+    expect(body).toContain("NEXT_HTTP_ERROR_FALLBACK;404");
+  });
+
+  it("RSC not-found response includes client component wrappers matching normal pages", async () => {
+    // The RSC flight payload for not-found pages must include the same
+    // component wrapper structure (ErrorBoundary, LayoutSegmentProvider) as
+    // normal pages. Without these, React's tree reconciliation during
+    // client-side navigation fails, causing a blank white page.
+    const nfRes = await fetchRsc(baseUrl, "/does-not-exist");
+    const nfBody = await nfRes.text();
+    const normalRes = await fetchRsc(baseUrl, "/about");
+    const normalBody = await normalRes.text();
+
+    // Both should reference ErrorBoundary (from global-error or error boundary wrapper)
+    const normalHasErrorBoundary = normalBody.includes("ErrorBoundary");
+    if (normalHasErrorBoundary) {
+      // If the normal page has ErrorBoundary (meaning global-error.tsx exists),
+      // the not-found RSC should also include it
+      expect(nfBody).toContain("ErrorBoundary");
+    }
+
+    // Both should reference LayoutSegmentProvider
+    const normalHasLSP = normalBody.includes("LayoutSegmentProvider");
+    if (normalHasLSP) {
+      expect(nfBody).toContain("LayoutSegmentProvider");
+    }
+  });
+
+  // ── notFound() from a server action ─────────────────────────
+  // Regression coverage for issue #1340: when a fetch (RSC) server action
+  // throws via `notFound()`, the response must be 404 — not 500.
+  //
+  // Mirrors Next.js: when `isHTTPAccessFallbackError(err)` is true, the
+  // action handler sets `res.statusCode = getAccessFallbackHTTPStatus(err)`
+  // (i.e. 404) before generating the Flight payload.
+  // https://github.com/vercel/next.js/blob/canary/packages/next/src/server/app-render/action-handler.ts
+  //
+  // Browser-style flow tested in Next.js:
+  // test/e2e/app-dir/actions/app-action.test.ts — "should support notFound".
+  it("server action calling notFound() returns 404 (fetch action)", async () => {
+    // Visit the actions page first so the dev server transforms and registers
+    // the "use server" module in @vitejs/plugin-rsc's serverReferenceMetaMap.
+    await fetch(`${baseUrl}/actions`).catch(() => {});
+
+    // The action ID for non-anonymous "use server" exports follows the
+    // `/app/<file path>#<exportName>` convention (see action-headers.test.ts).
+    const actionId = "/app/actions/actions.ts#notFoundAction";
+
+    const res = await fetchRsc(baseUrl, "/actions", {
+      method: "POST",
+      headers: {
+        "x-rsc-action": actionId,
+        Origin: baseUrl,
+        Host: new URL(baseUrl).host,
+        "Content-Type": "text/plain",
+      },
+      body: "[]",
+    });
+
+    expect(res.status).toBe(404);
+    expect(res.headers.get("content-type")).toContain("text/x-component");
+    // The flight payload should carry the rejected actionResult so the
+    // client error boundary can recognise the not-found digest.
+    const body = await res.text();
+    expect(body.length).toBeGreaterThan(0);
+    // Should NOT surface as a generic 500 / internal-server-error body.
+    expect(body).not.toContain("Server action failed");
+  });
+
+  it("server action calling notFound() returns 404 (progressive form action)", async () => {
+    // Visit the page first so the action manifest is populated in dev.
+    await fetch(`${baseUrl}/actions`).catch(() => {});
+
+    // Progressive (no-JS) form submissions send multipart/form-data with the
+    // action id embedded in the body as `$ACTION_ID_<actionId>`, no
+    // `x-rsc-action` header. Mirrors Next.js' MPA action POST flow:
+    // packages/next/src/server/app-render/action-handler.ts.
+    const formData = new FormData();
+    formData.set("$ACTION_ID_/app/actions/actions.ts#notFoundAction", "");
+
+    const res = await fetch(`${baseUrl}/actions`, {
+      method: "POST",
+      headers: {
+        Origin: baseUrl,
+        Host: new URL(baseUrl).host,
+      },
+      body: formData,
+    });
+
+    expect(res.status).toBe(404);
+    // Should NOT surface as a generic 500.
+    const body = await res.text();
+    expect(body).not.toContain("Server action failed");
+    expect(body).not.toContain("Internal Server Error");
+  });
+
+  // ── Browser-only tests (need Playwright, documented here) ──
+  // These tests require clicking a button client-side which triggers notFound()
+  // in a client component. Cannot be tested via HTTP fetch alone.
+  //
+  // SKIP: Client-side notFound() from error-boundary/page.tsx button -> Root Not Found
+  //   Source: index.test.ts#L15-L17
+  //   WHY SKIPPED: Requires Playwright browser to click button, trigger client-side
+  //   state change that calls notFound(). Test that the error.tsx boundary does NOT
+  //   catch it, and instead the root not-found.tsx renders.
+  //   TO PORT: Add to tests/e2e/app-router/nextjs-compat/not-found.spec.ts as Playwright test.
+  //   FIXTURE: fixtures/app-basic/app/nextjs-compat/not-found-error-boundary/page.tsx
+  //
+  // SKIP: Client-side notFound() from error-boundary/nested/nested-2/page.tsx -> nested not-found
+  //   Source: index.test.ts#L19-L23
+  //   WHY SKIPPED: Same — requires Playwright click. Tests that nested error.tsx is bypassed
+  //   and the nested/not-found.tsx renders instead.
+  //   TO PORT: Add to same Playwright spec.
+  //   FIXTURE: fixtures/app-basic/app/nextjs-compat/not-found-error-boundary/nested/nested-2/page.tsx
+  //
+  // SKIP: Dev-only file rename test (remove page.js -> 404, re-add -> page)
+  //   Source: index.test.ts#L109-L119
+  //   WHY SKIPPED: Requires runtime file manipulation and HMR verification.
+  //   This tests Vite's HMR + file watcher integration rather than not-found logic per se.
+  //   Not worth porting — vinext's existing HMR tests cover this.
+  //   N/A for compat suite.
+  //
+  // N/A: Build-time tests (file traces, pages manifest, 404.html generation)
+  //   Source: index.test.ts#L40-L56, #L121-L129
+  //   WHY N/A: These test Next.js build output formats (.next/server/pages/404.html, nft.json).
+  //   Vinext has a different build output structure. Not applicable.
+  //
+  // N/A: Edge runtime variant
+  //   Source: index.test.ts#L131-L146
+  //   WHY N/A: Tests re-running with `runtime = 'edge'` patched into layout.
+  //   Vinext handles edge via Cloudflare Workers with separate test projects.
+  //   Not applicable to the shared fixture approach.
+});

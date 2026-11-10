@@ -1,0 +1,576 @@
+/**
+ * CDN cache adapter unit + integration tests.
+ *
+ * Covers the page-level ISR serving-strategy split:
+ *  - DefaultCdnCacheAdapter delegates storage to the data cache and reproduces
+ *    the framework's existing header behavior (byte-for-byte).
+ *  - A custom edge adapter can return null from get (origin renders fresh),
+ *    no-op set, emit split Cache-Control + CDN-Cache-Control headers, skip
+ *    in-process background regeneration, and purge via revalidateTag().
+ *  - isrGet/isrSet route through the active CDN adapter.
+ *  - revalidateTag/revalidatePath/updateTag invalidate the data cache AND ask
+ *    the CDN adapter to purge.
+ */
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import {
+  DefaultCdnCacheAdapter,
+  getCdnCacheAdapter,
+  setCdnCacheAdapter,
+  type CdnCacheAdapter,
+  type CdnCacheableHeaderInput,
+  type CdnResponseHeaders,
+} from "../packages/vinext/src/shims/cdn-cache.js";
+import { registerCdnCacheAdapter } from "../packages/vinext/src/shims/cdn-cache-state.js";
+import {
+  MemoryCacheHandler,
+  registerDataCacheHandler,
+  registerLazyDataCacheHandler,
+  setDataCacheHandler,
+  setCacheHandler,
+  getDataCacheHandler,
+  getCacheHandler,
+  revalidateTag,
+  revalidatePath,
+  updateTag,
+  type CacheHandler,
+} from "../packages/vinext/src/shims/cache.js";
+import {
+  isrGet,
+  isrSet,
+  triggerBackgroundRegeneration,
+  buildPagesCacheValue,
+} from "../packages/vinext/src/server/isr-cache.js";
+import {
+  _drainPendingRevalidations,
+  _runWithCacheState,
+} from "../packages/vinext/src/shims/cache-request-state.js";
+import { registerCdnPurgeRoutes } from "../packages/vinext/src/shims/cdn-purge-routes.js";
+import { setHeadersAccessPhase } from "../packages/vinext/src/shims/headers.js";
+import { runWithExecutionContext } from "../packages/vinext/src/shims/request-context.js";
+
+function resetAdapters(): void {
+  setDataCacheHandler(new MemoryCacheHandler());
+  setCdnCacheAdapter(new DefaultCdnCacheAdapter());
+}
+
+beforeEach(resetAdapters);
+afterEach(resetAdapters);
+
+// ─── Backwards-compatible data cache aliases ─────────────────────────────
+
+describe("data cache handler aliases", () => {
+  it("setCacheHandler is an alias for setDataCacheHandler", () => {
+    const handler = new MemoryCacheHandler();
+    setCacheHandler(handler);
+    expect(getDataCacheHandler()).toBe(handler);
+    expect(getCacheHandler()).toBe(handler);
+  });
+
+  it("setDataCacheHandler is visible through the legacy getter", () => {
+    const handler = new MemoryCacheHandler();
+    setDataCacheHandler(handler);
+    expect(getCacheHandler()).toBe(handler);
+  });
+
+  it("creates a declarative handler once while keeping failed factories retryable", () => {
+    const handlerKey = Symbol.for("vinext.cacheHandler");
+    const configuredKey = Symbol.for("vinext.configuredCacheHandler");
+    const explicitKey = Symbol.for("vinext.explicitCacheHandler");
+    const globals = globalThis as unknown as Record<PropertyKey, unknown>;
+    const previousHandler = globals[handlerKey];
+    const previousConfigured = globals[configuredKey];
+    const previousExplicit = globals[explicitKey];
+    delete globals[handlerKey];
+    delete globals[configuredKey];
+    delete globals[explicitKey];
+
+    try {
+      const failedFactory = vi.fn((): CacheHandler => {
+        throw new Error("missing binding");
+      });
+      expect(() => registerDataCacheHandler(failedFactory)).toThrow("missing binding");
+
+      const first = new MemoryCacheHandler();
+      const duplicateFactory = vi.fn(() => new MemoryCacheHandler());
+      registerDataCacheHandler(() => first);
+      registerDataCacheHandler(duplicateFactory);
+      expect(getDataCacheHandler()).toBe(first);
+      expect(duplicateFactory).not.toHaveBeenCalled();
+
+      const explicit = new MemoryCacheHandler();
+      setDataCacheHandler(explicit);
+      expect(getDataCacheHandler()).toBe(explicit);
+      expect(failedFactory).toHaveBeenCalledOnce();
+    } finally {
+      if (previousHandler === undefined) delete globals[handlerKey];
+      else globals[handlerKey] = previousHandler;
+      if (previousConfigured === undefined) delete globals[configuredKey];
+      else globals[configuredKey] = previousConfigured;
+      if (previousExplicit === undefined) delete globals[explicitKey];
+      else globals[explicitKey] = previousExplicit;
+    }
+  });
+
+  it("does not evaluate a declarative factory after an imperative registration", () => {
+    const explicit = new MemoryCacheHandler();
+    const factory = vi.fn(() => new MemoryCacheHandler());
+    setDataCacheHandler(explicit);
+
+    registerDataCacheHandler(factory);
+
+    expect(factory).not.toHaveBeenCalled();
+    expect(getDataCacheHandler()).toBe(explicit);
+  });
+
+  it("loads a request-stage data adapter only on first cache use", async () => {
+    const handlerKey = Symbol.for("vinext.cacheHandler");
+    const configuredKey = Symbol.for("vinext.configuredCacheHandler");
+    const explicitKey = Symbol.for("vinext.explicitCacheHandler");
+    const lazyKey = Symbol.for("vinext.lazyCacheHandler");
+    const globals = globalThis as unknown as Record<PropertyKey, unknown>;
+    const previous = new Map(
+      [handlerKey, configuredKey, explicitKey, lazyKey].map((key) => [key, globals[key]]),
+    );
+    for (const key of previous.keys()) delete globals[key];
+
+    try {
+      const configured = new MemoryCacheHandler();
+      const load = vi.fn(async () => registerDataCacheHandler(() => configured));
+      registerLazyDataCacheHandler(load);
+      registerLazyDataCacheHandler(vi.fn());
+
+      expect(load).not.toHaveBeenCalled();
+      const proxy = getDataCacheHandler();
+      // The load is shared by every later request, so it keeps the request that
+      // starts it alive until it settles.
+      const creator = { waitUntil: vi.fn() };
+      const joiner = { waitUntil: vi.fn() };
+      await Promise.all([
+        runWithExecutionContext(creator, () => proxy.get("a")),
+        runWithExecutionContext(joiner, () => proxy.get("b")),
+      ]);
+
+      expect(load).toHaveBeenCalledOnce();
+      expect(creator.waitUntil).toHaveBeenCalledOnce();
+      expect(joiner.waitUntil).not.toHaveBeenCalled();
+      expect(getDataCacheHandler()).toBe(configured);
+    } finally {
+      for (const [key, value] of previous) {
+        if (value === undefined) delete globals[key];
+        else globals[key] = value;
+      }
+    }
+  });
+
+  it("preserves an imperative handler installed by a declarative factory", () => {
+    const handlerKey = Symbol.for("vinext.cacheHandler");
+    const configuredKey = Symbol.for("vinext.configuredCacheHandler");
+    const explicitKey = Symbol.for("vinext.explicitCacheHandler");
+    const globals = globalThis as unknown as Record<PropertyKey, unknown>;
+    const previousHandler = globals[handlerKey];
+    const previousConfigured = globals[configuredKey];
+    const previousExplicit = globals[explicitKey];
+    delete globals[handlerKey];
+    delete globals[configuredKey];
+    delete globals[explicitKey];
+
+    try {
+      const explicit = new MemoryCacheHandler();
+      registerDataCacheHandler(() => {
+        setDataCacheHandler(explicit);
+        return new MemoryCacheHandler();
+      });
+      expect(getDataCacheHandler()).toBe(explicit);
+    } finally {
+      if (previousHandler === undefined) delete globals[handlerKey];
+      else globals[handlerKey] = previousHandler;
+      if (previousConfigured === undefined) delete globals[configuredKey];
+      else globals[configuredKey] = previousConfigured;
+      if (previousExplicit === undefined) delete globals[explicitKey];
+      else globals[explicitKey] = previousExplicit;
+    }
+  });
+});
+
+// ─── DefaultCdnCacheAdapter ──────────────────────────────────────────────
+
+describe("DefaultCdnCacheAdapter", () => {
+  it("keeps the first declarative registration while allowing an explicit override", () => {
+    const adapterKey = Symbol.for("vinext.cdnCacheAdapter");
+    const globals = globalThis as unknown as Record<PropertyKey, unknown>;
+    const previous = globals[adapterKey];
+    delete globals[adapterKey];
+
+    try {
+      const first = new DefaultCdnCacheAdapter();
+      const duplicate = new DefaultCdnCacheAdapter();
+      const duplicateFactory = vi.fn(() => duplicate);
+      registerCdnCacheAdapter(() => first);
+      registerCdnCacheAdapter(duplicateFactory);
+      expect(getCdnCacheAdapter()).toBe(first);
+      expect(duplicateFactory).not.toHaveBeenCalled();
+
+      setCdnCacheAdapter(duplicate);
+      expect(getCdnCacheAdapter()).toBe(duplicate);
+    } finally {
+      if (previous === undefined) delete globals[adapterKey];
+      else globals[adapterKey] = previous;
+    }
+  });
+
+  it("does not evaluate declarative factories after an imperative registration", () => {
+    const explicit = new DefaultCdnCacheAdapter();
+    const factory = vi.fn(() => new DefaultCdnCacheAdapter());
+    setCdnCacheAdapter(explicit);
+
+    registerCdnCacheAdapter(factory);
+
+    expect(factory).not.toHaveBeenCalled();
+    expect(getCdnCacheAdapter()).toBe(explicit);
+  });
+
+  it("retries declarative registration after a factory failure", () => {
+    const adapterKey = Symbol.for("vinext.cdnCacheAdapter");
+    const globals = globalThis as unknown as Record<PropertyKey, unknown>;
+    const previous = globals[adapterKey];
+    delete globals[adapterKey];
+
+    try {
+      expect(() =>
+        registerCdnCacheAdapter(() => {
+          throw new Error("missing binding");
+        }),
+      ).toThrow("missing binding");
+
+      const retry = new DefaultCdnCacheAdapter();
+      registerCdnCacheAdapter(() => retry);
+      expect(getCdnCacheAdapter()).toBe(retry);
+    } finally {
+      if (previous === undefined) delete globals[adapterKey];
+      else globals[adapterKey] = previous;
+    }
+  });
+
+  it("owns background revalidation (origin-managed ISR)", () => {
+    expect(new DefaultCdnCacheAdapter().ownsBackgroundRevalidation).toBe(true);
+  });
+
+  it("delegates get/set to the active data cache handler", async () => {
+    const get = vi.fn(async () => null);
+    const set = vi.fn(async () => {});
+    const handler: CacheHandler = { get, set, async revalidateTag() {} };
+    setDataCacheHandler(handler);
+
+    const adapter = new DefaultCdnCacheAdapter();
+    await adapter.set("k", buildPagesCacheValue("<p>x</p>", {}), { tags: ["t"] });
+    await adapter.get("k", { kind: "PAGES" });
+
+    expect(set).toHaveBeenCalledWith("k", expect.objectContaining({ kind: "PAGES" }), {
+      tags: ["t"],
+    });
+    expect(get).toHaveBeenCalledWith("k", { kind: "PAGES" });
+  });
+
+  it("emits a single Cache-Control header for a cacheable policy", () => {
+    const headers = new DefaultCdnCacheAdapter().buildResponseHeaders({
+      cacheControl: "s-maxage=60, stale-while-revalidate",
+    });
+    expect(headers).toEqual({ "Cache-Control": "s-maxage=60, stale-while-revalidate" });
+  });
+
+  it("optionally identifies origin-managed responses for staged warmup", () => {
+    expect(new DefaultCdnCacheAdapter().buildResponseIdentityHeaders()).toEqual({});
+    expect(new DefaultCdnCacheAdapter("build-a").buildResponseIdentityHeaders()).toEqual({
+      "X-Vinext-Build-Id": "build-a",
+    });
+  });
+
+  it("forces no-store while a streamed render's dynamic-ness is unproven", () => {
+    const headers = new DefaultCdnCacheAdapter().buildResponseHeaders({
+      cacheControl: "s-maxage=60, stale-while-revalidate",
+      pendingDynamicCheck: true,
+    });
+    // Matches the legacy NO_STORE_CACHE_CONTROL the finalize path used to stamp.
+    expect(headers).toEqual({ "Cache-Control": "no-store, must-revalidate" });
+  });
+
+  it("revalidateTag() is a no-op (data cache owns store invalidation)", async () => {
+    await expect(new DefaultCdnCacheAdapter().revalidateTag("tag")).resolves.toBeUndefined();
+  });
+});
+
+// ─── Active adapter resolution ───────────────────────────────────────────
+
+describe("getCdnCacheAdapter / setCdnCacheAdapter", () => {
+  it("defaults to a DefaultCdnCacheAdapter", () => {
+    expect(getCdnCacheAdapter()).toBeInstanceOf(DefaultCdnCacheAdapter);
+  });
+
+  it("returns the adapter set via setCdnCacheAdapter", () => {
+    const custom = new DefaultCdnCacheAdapter();
+    setCdnCacheAdapter(custom);
+    expect(getCdnCacheAdapter()).toBe(custom);
+  });
+});
+
+// ─── Edge-managed (Cloudflare-style) adapter ─────────────────────────────
+
+/** Minimal edge adapter: never serves from origin, emits split headers, purges. */
+class EdgeCdnAdapter implements CdnCacheAdapter {
+  readonly ownsBackgroundRevalidation = false;
+  readonly purges: string[] = [];
+  readonly calls: Array<{ tags: string[]; durations?: { expire?: number } }> = [];
+  writes = 0;
+
+  async get(): Promise<null> {
+    return null; // origin renders fresh; the edge serves the cache
+  }
+  async set(): Promise<void> {
+    this.writes++; // intentionally does not persist anything
+  }
+  buildResponseHeaders(input: CdnCacheableHeaderInput): CdnResponseHeaders {
+    if (!input.cacheControl) return { "Cache-Control": "no-store" };
+    return { "Cache-Control": "no-store", "CDN-Cache-Control": input.cacheControl };
+  }
+  async revalidateTag(tags: string | string[], durations?: { expire?: number }): Promise<void> {
+    const tagList = Array.isArray(tags) ? tags : [tags];
+    this.calls.push({ tags: tagList, durations });
+    for (const tag of tagList) this.purges.push(tag);
+  }
+}
+
+describe("edge CDN adapter integration", () => {
+  it("isrGet returns null (origin renders) even after isrSet", async () => {
+    setCdnCacheAdapter(new EdgeCdnAdapter());
+    await isrSet("app:/p:html", buildPagesCacheValue("<p>cached</p>", {}), {
+      cacheControl: { revalidate: 60 },
+    });
+    expect(await isrGet("app:/p:html")).toBeNull();
+  });
+
+  it("isrSet does not write to the data cache when the edge adapter no-ops storage", async () => {
+    const set = vi.fn(async () => {});
+    setDataCacheHandler({
+      async get() {
+        return null;
+      },
+      set,
+      async revalidateTag() {},
+    });
+    const edge = new EdgeCdnAdapter();
+    setCdnCacheAdapter(edge);
+
+    await isrSet("app:/p:html", buildPagesCacheValue("<p>x</p>", {}), {
+      cacheControl: { revalidate: 60 },
+    });
+
+    expect(edge.writes).toBe(1);
+    expect(set).not.toHaveBeenCalled();
+  });
+
+  it("skips in-process background regeneration when the adapter does not own it", async () => {
+    setCdnCacheAdapter(new EdgeCdnAdapter());
+    const renderFn = vi.fn(async () => {});
+    triggerBackgroundRegeneration("regen-edge", renderFn);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(renderFn).not.toHaveBeenCalled();
+  });
+
+  it("still runs background regeneration under the default adapter", async () => {
+    const renderFn = vi.fn(async () => {});
+    triggerBackgroundRegeneration("regen-default-cdn", renderFn);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(renderFn).toHaveBeenCalledOnce();
+  });
+});
+
+// ─── Invalidation propagation ────────────────────────────────────────────
+
+describe("revalidation propagates to both data cache and CDN adapter", () => {
+  function spyAdapters() {
+    const dataRevalidate = vi.fn(
+      async (_tags: string | string[], _durations?: { expire?: number }) => {},
+    );
+    setDataCacheHandler({
+      async get() {
+        return null;
+      },
+      async set() {},
+      revalidateTag: dataRevalidate,
+    });
+    const edge = new EdgeCdnAdapter();
+    setCdnCacheAdapter(edge);
+    return { dataRevalidate, edge };
+  }
+
+  it("revalidateTag invalidates the data cache and purges the CDN", async () => {
+    const { dataRevalidate, edge } = spyAdapters();
+    await settleScheduledRevalidation(() => revalidateTag("posts"));
+    expect(dataRevalidate).toHaveBeenCalledWith("posts", undefined);
+    expect(edge.purges).toEqual(["posts"]);
+  });
+
+  it("revalidatePath invalidates the data cache and purges the CDN", async () => {
+    const { dataRevalidate, edge } = spyAdapters();
+    await settleScheduledRevalidation(() => revalidatePath("/blog"));
+    // Same encoded tag is sent to both layers.
+    expect(dataRevalidate).toHaveBeenCalledTimes(1);
+    const tag = dataRevalidate.mock.calls[0][0];
+    expect(edge.purges).toEqual([tag]);
+  });
+
+  it("revalidatePath skips the CDN purge for a path only force-dynamic routes serve", async () => {
+    const { dataRevalidate, edge } = spyAdapters();
+    registerCdnPurgeRoutes({
+      metadataRoutes: [],
+      routes: [
+        { forceDynamic: true, patternParts: ["dashboard"], routeSegments: ["dashboard"] },
+        { forceDynamic: false, patternParts: ["blog"], routeSegments: ["blog"] },
+      ],
+    });
+    try {
+      await runInPhase("action", async () => {
+        revalidatePath("/dashboard", "layout");
+        revalidatePath("/blog", "layout");
+        await _drainPendingRevalidations();
+      });
+    } finally {
+      delete (globalThis as Record<PropertyKey, unknown>)[Symbol.for("vinext.cdnPurgeRoutes")];
+    }
+    expect(dataRevalidate.mock.calls.map(([tag]) => tag)).toEqual([
+      "_N_T_/dashboard/layout",
+      "_N_T_/blog/layout",
+    ]);
+    expect(edge.calls).toEqual([{ tags: ["_N_T_/blog/layout"], durations: undefined }]);
+  });
+
+  it("updateTag invalidates the data cache and purges the CDN", async () => {
+    const { dataRevalidate, edge } = spyAdapters();
+    // updateTag may only be called from within a Server Action.
+    await runInPhase("action", async () => {
+      updateTag("cart");
+      await _drainPendingRevalidations();
+    });
+    expect(dataRevalidate).toHaveBeenCalledTimes(1);
+    expect(dataRevalidate.mock.calls[0][0]).toBe("cart");
+    expect(edge.purges).toEqual(["cart"]);
+  });
+
+  it("batches a Server Action's CDN purges into one call per profile at the drain", async () => {
+    const { dataRevalidate, edge } = spyAdapters();
+    await runInPhase("action", async () => {
+      revalidatePath("/a", "layout");
+      revalidatePath("/b", "layout");
+      revalidateTag("posts");
+      revalidateTag("posts");
+      revalidateTag("feed", "max");
+      // The data cache is invalidated per call right away, so reads later in
+      // the action see it; only the edge purge waits for the drain.
+      expect(dataRevalidate).toHaveBeenCalledTimes(5);
+      await Promise.resolve();
+      expect(edge.calls).toEqual([]);
+      await _drainPendingRevalidations();
+    });
+    expect(edge.calls).toEqual([
+      { tags: ["_N_T_/a/layout", "_N_T_/b/layout", "posts"], durations: undefined },
+      { tags: ["feed"], durations: { expire: 31536000 } },
+    ]);
+  });
+
+  it("batches CDN purges queued by a Route Handler", async () => {
+    const { edge } = spyAdapters();
+    await runInPhase("route-handler", async () => {
+      revalidateTag("a");
+      revalidateTag("b");
+      await _drainPendingRevalidations();
+    });
+    expect(edge.calls).toEqual([{ tags: ["a", "b"], durations: undefined }]);
+  });
+
+  it("does not fail the drain when the CDN purge fails", async () => {
+    spyAdapters();
+    const failure = new Error("1134: Unable to purge, rate limit reached");
+    setCdnCacheAdapter(
+      Object.assign(new EdgeCdnAdapter(), {
+        async revalidateTag() {
+          throw failure;
+        },
+      }),
+    );
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      await runInPhase("action", async () => {
+        revalidatePath("/dashboard", "layout");
+        await expect(_drainPendingRevalidations()).resolves.toBeUndefined();
+      });
+      expect(consoleError).toHaveBeenCalledWith(
+        expect.stringContaining("[vinext] CDN cache invalidation failed"),
+        failure,
+      );
+    } finally {
+      consoleError.mockRestore();
+    }
+  });
+
+  it("logs a CDN purge failure outside a request boundary instead of rejecting", async () => {
+    spyAdapters();
+    const failure = new Error("purge failed");
+    setCdnCacheAdapter(
+      Object.assign(new EdgeCdnAdapter(), {
+        async revalidateTag() {
+          throw failure;
+        },
+      }),
+    );
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const waitUntil = vi.fn<(promise: Promise<unknown>) => void>();
+    try {
+      void runWithExecutionContext({ waitUntil }, () => revalidateTag("posts"));
+      await expect(waitUntil.mock.calls[0][0]).resolves.toBeUndefined();
+      expect(consoleError).toHaveBeenCalledWith(
+        expect.stringContaining("[vinext] CDN cache invalidation failed"),
+        failure,
+      );
+    } finally {
+      consoleError.mockRestore();
+    }
+  });
+
+  it("skips the CDN purge for a tag whose data-cache invalidation failed", async () => {
+    const failure = new Error("store down");
+    setDataCacheHandler({
+      async get() {
+        return null;
+      },
+      async set() {},
+      async revalidateTag(tags) {
+        if (tags === "broken") throw failure;
+      },
+    });
+    const edge = new EdgeCdnAdapter();
+    setCdnCacheAdapter(edge);
+    await runInPhase("action", async () => {
+      revalidateTag("broken");
+      revalidateTag("ok");
+      await expect(_drainPendingRevalidations()).rejects.toBe(failure);
+    });
+    expect(edge.calls).toEqual([{ tags: ["ok"], durations: undefined }]);
+  });
+});
+
+async function settleScheduledRevalidation(fn: () => void): Promise<void> {
+  const scheduled: Promise<unknown>[] = [];
+  void runWithExecutionContext({ waitUntil: (promise) => scheduled.push(promise) }, fn);
+  await Promise.all(scheduled);
+}
+
+function runInPhase(phase: "action" | "route-handler", fn: () => Promise<void>): Promise<void> {
+  return _runWithCacheState(async () => {
+    const previousPhase = setHeadersAccessPhase(phase);
+    try {
+      await fn();
+    } finally {
+      setHeadersAccessPhase(previousPhase);
+    }
+  });
+}

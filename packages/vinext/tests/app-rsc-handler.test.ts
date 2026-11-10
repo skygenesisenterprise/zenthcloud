@@ -1,0 +1,13732 @@
+import { createServer } from "node:http";
+import type { AddressInfo } from "node:net";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import {
+  computeRscCacheBustingSearchParam,
+  createRscRequestHeaders,
+  createRscRequestUrl,
+  VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM,
+  VINEXT_RSC_VARY_HEADER,
+} from "../packages/vinext/src/server/app-rsc-cache-busting.js";
+import { createAppRscHandler } from "../packages/vinext/src/server/app-rsc-combined-handler.js";
+import { createTrackedAppRouteRequest } from "../packages/vinext/src/server/app-route-handler-runtime.js";
+import { readActionFormDataWithLimit } from "../packages/vinext/src/server/app-server-action-execution.js";
+import { getRequestContext } from "../packages/vinext/src/shims/unified-request-context.js";
+import { cacheForRequest } from "../packages/vinext/src/shims/cache-for-request.js";
+import { captureFrameworkRequestRoute } from "../packages/vinext/src/server/request-tracing.js";
+import { markRouteMissResponse } from "../packages/vinext/src/server/route-miss-response.js";
+import {
+  APP_WORKER_RESPONSE_STAGE_PROTOCOL_VERSION,
+  type AppWorkerResponseStageProps,
+  type DispatchAppWorkerResponseStage,
+} from "../packages/vinext/src/server/app-worker-stages.js";
+import { PAGES_RESPONSE_STAGE_POLICY_OWNER_HEADER } from "../packages/vinext/src/server/worker-stages.js";
+import { VINEXT_CACHE_IDENTITY_ORIGIN } from "../packages/vinext/src/server/multi-stage.js";
+import type { PagesRouteDataKind } from "../packages/vinext/src/server/pages-route-data-kind.js";
+import { createAppRscRouteMatcher } from "../packages/vinext/src/server/app-rsc-route-matching.js";
+import type { AppRscHandlerRoute } from "../packages/vinext/src/server/app-rsc-handler.js";
+import {
+  NEXT_ROUTER_PREFETCH_HEADER,
+  NEXT_ROUTER_SEGMENT_PREFETCH_HEADER,
+  RSC_HEADER,
+  VINEXT_INTERCEPTION_ID_HEADER,
+  VINEXT_MW_CTX_HEADER,
+  VINEXT_PARAMS_HEADER,
+  VINEXT_RENDERED_PATH_AND_SEARCH_HEADER,
+  VINEXT_ROUTE_MISS_HEADER,
+  VINEXT_SPECIAL_ERROR_STATUS_HEADER,
+} from "../packages/vinext/src/server/headers.js";
+import { applyAppMiddleware } from "../packages/vinext/src/server/app-middleware.js";
+import { markLocaleRedirect } from "../packages/vinext/src/server/pages-i18n.js";
+import { mergeMiddlewareResponseHeaders } from "../packages/vinext/src/server/middleware-response-headers.js";
+import { sealForwardedMiddlewareContext } from "../packages/vinext/src/server/forwarded-middleware-context.js";
+import type { NextRequest } from "../packages/vinext/src/shims/server.js";
+import {
+  handleMetadataRouteRequest,
+  isMetadataRouteRequestPath,
+  type MetadataRuntimeRoute,
+} from "../packages/vinext/src/server/metadata-route-response.js";
+import type { MiddlewareModule } from "../packages/vinext/src/server/middleware-runtime.js";
+import { makeThenableParams } from "../packages/vinext/src/shims/thenable-params.js";
+import {
+  getRevalidateSecret,
+  PRERENDER_REVALIDATE_HEADER,
+  PRERENDER_REVALIDATE_ONLY_GENERATED_HEADER,
+} from "../packages/vinext/src/server/isr-cache.js";
+import {
+  cookies as requestCookies,
+  draftMode,
+  getHeadersContext,
+  headers as requestHeaders,
+} from "../packages/vinext/src/shims/headers.js";
+import { readStaticFileSignal } from "../packages/vinext/src/server/static-file-signal.js";
+import { readImageOptimizationSignal } from "../packages/vinext/src/server/image-optimization.js";
+import { _isOnDemandRevalidate } from "../packages/vinext/src/shims/cache-request-state.js";
+import { publicFileRouteKey } from "../packages/vinext/src/utils/public-file-path.js";
+import {
+  runWithExecutionContext,
+  type ExecutionContextLike,
+} from "../packages/vinext/src/shims/request-context.js";
+import {
+  beginRouteCacheability,
+  CACHEABILITY_REQUEST_STATE,
+  type RouteCacheabilityState,
+} from "../packages/vinext/src/shims/cacheability-classification.js";
+import {
+  DefaultCdnCacheAdapter,
+  setCdnCacheAdapter,
+  type CdnCacheAdapter,
+} from "../packages/vinext/src/shims/cdn-cache.js";
+import {
+  markEdgeRouteHandlerLinkHeaders,
+  markFrameworkLinkHeaders,
+  serializeResponseStageLinkProvenance,
+} from "../packages/vinext/src/server/app-response-header-provenance.js";
+import {
+  cacheabilityManifestPageState,
+  cacheabilityManifestRouteKey,
+  projectCacheabilityManifestForRequestStage,
+  type CacheabilityManifest,
+  type CacheabilityManifestRoute,
+  type CacheabilityRepresentation,
+} from "../packages/vinext/src/server/cacheability-manifest.js";
+import { createWorkerCacheabilityAdmissionContext } from "../packages/vinext/src/server/cacheability-request.js";
+import { registerFrameworkTracingIntegration } from "../packages/vinext/src/server/tracer.js";
+import type { ResolvedFrameworkSpanDescriptor } from "../packages/vinext/src/server/framework-tracer.js";
+import { workUnitAsyncStorage } from "../packages/vinext/src/shims/internal/work-unit-async-storage.js";
+import { getServerActionNotFoundMessage } from "../packages/vinext/src/server/server-action-not-found.js";
+
+const capturedFindPageComponentsSpans: ResolvedFrameworkSpanDescriptor[] = [];
+let captureFindPageComponentsSpans = false;
+const capturedNotFoundSpans: Array<{
+  descriptor: ResolvedFrameworkSpanDescriptor;
+  parentType: string | undefined;
+}> = [];
+let captureNotFoundSpans = false;
+let activeCapturedSpan: ResolvedFrameworkSpanDescriptor | undefined;
+registerFrameworkTracingIntegration({
+  id: "app-rsc-handler-find-page-components-test",
+  enterSpan(descriptor, callback) {
+    if (captureFindPageComponentsSpans && descriptor.type === "NextNodeServer.findPageComponents") {
+      capturedFindPageComponentsSpans.push(descriptor);
+    }
+    return callback({ setAttribute() {} });
+  },
+});
+registerFrameworkTracingIntegration({
+  id: "app-rsc-handler-not-found-test",
+  enterSpan(descriptor, callback) {
+    if (!captureNotFoundSpans) return callback({ setAttribute() {} });
+    const parent = activeCapturedSpan;
+    capturedNotFoundSpans.push({ descriptor, parentType: parent?.type });
+    activeCapturedSpan = descriptor;
+    const result = callback({ setAttribute() {} });
+    if (result instanceof Promise) {
+      return result.finally(() => {
+        activeCapturedSpan = parent;
+      }) as typeof result;
+    }
+    activeCapturedSpan = parent;
+    return result;
+  },
+});
+
+type TestRoute = {
+  __loadPage?: unknown;
+  __loadRouteHandler?: unknown;
+  canUseCanonicalLoadingShell?: boolean;
+  forceDynamic?: boolean;
+  isDynamic: boolean;
+  layouts?: readonly unknown[];
+  layoutTreePositions?: readonly number[];
+  params?: readonly string[];
+  page?: { default?: unknown } | null;
+  pattern: string;
+  rootParamNames?: readonly string[];
+  routeHandler?: { GET?: () => Response; runtime?: string } | null;
+  routeSegments: readonly string[];
+  slots?: AppRscHandlerRoute["slots"];
+};
+
+type HandlerOptions = Parameters<typeof createAppRscHandler<TestRoute>>[0];
+type TestHandlerOptions = HandlerOptions & {
+  metadataRoutes?: readonly MetadataRuntimeRoute[];
+  middlewareFilePath?: string | null;
+  isMiddlewareProxy?: boolean;
+  middlewareModule?: MiddlewareModule | null;
+};
+type DispatchMatchedPage = HandlerOptions["dispatchMatchedPage"];
+type DispatchMatchedRouteHandler = HandlerOptions["dispatchMatchedRouteHandler"];
+
+function createPageRoute(overrides: Partial<TestRoute> = {}): TestRoute {
+  return {
+    __loadPage() {},
+    isDynamic: false,
+    page: { default() {} },
+    pattern: "/about",
+    routeSegments: ["about"],
+    ...overrides,
+  };
+}
+
+const TEST_FORWARDED_MW_CTX_KEY = "test-forwarded-mw-ctx-key";
+
+function sealedForwardedContext(context: Record<string, unknown>): string {
+  return sealForwardedMiddlewareContext(TEST_FORWARDED_MW_CTX_KEY, JSON.stringify(context));
+}
+
+function createHandler(overrides: Partial<TestHandlerOptions> = {}) {
+  const route = createPageRoute();
+
+  return createAppRscHandler<TestRoute>({
+    assetPrefix: overrides.assetPrefix,
+    basePath: overrides.basePath ?? "/docs",
+    buildId: overrides.buildId ?? "build-id",
+    cacheabilityRequestProjection: overrides.cacheabilityRequestProjection,
+    clearRequestContext: overrides.clearRequestContext ?? (() => {}),
+    configHeaders: overrides.configHeaders ?? [
+      {
+        source: "/about",
+        headers: [{ key: "x-test-header", value: "applied" }],
+      },
+    ],
+    configRedirects: overrides.configRedirects ?? [],
+    configRewrites: overrides.configRewrites ?? {
+      afterFiles: [],
+      beforeFiles: [],
+      fallback: [],
+    },
+    createPprFallbackShells: overrides.createPprFallbackShells,
+    draftModeSecret: overrides.draftModeSecret ?? "test-draft-secret",
+    devForwardedMiddlewareContextKey:
+      overrides.devForwardedMiddlewareContextKey ?? TEST_FORWARDED_MW_CTX_KEY,
+    dispatchMatchedPage:
+      overrides.dispatchMatchedPage ??
+      (async () => new Response("page", { status: 200, headers: { "x-from-dispatch": "page" } })),
+    dispatchMatchedRouteHandler:
+      overrides.dispatchMatchedRouteHandler ?? (async () => new Response("route", { status: 200 })),
+    ensureRouteLoaded: overrides.ensureRouteLoaded,
+    ensureInstrumentation: overrides.ensureInstrumentation,
+    isDynamicParamsMiss: overrides.isDynamicParamsMiss,
+    handleProgressiveActionRequest:
+      "handleProgressiveActionRequest" in overrides
+        ? overrides.handleProgressiveActionRequest
+        : async () => null,
+    handleMetadataRouteRequest:
+      overrides.handleMetadataRouteRequest ??
+      (overrides.metadataRoutes
+        ? (cleanPathname, routePathname) =>
+            handleMetadataRouteRequest({
+              metadataRoutes: overrides.metadataRoutes!,
+              cleanPathname,
+              makeThenableParams,
+              routePathname,
+            })
+        : undefined),
+    handleServerActionRequest:
+      "handleServerActionRequest" in overrides
+        ? overrides.handleServerActionRequest
+        : async () => null,
+    isMetadataRoutePath:
+      overrides.isMetadataRoutePath ??
+      (overrides.metadataRoutes
+        ? (cleanPathname) => isMetadataRouteRequestPath(overrides.metadataRoutes!, cleanPathname)
+        : undefined),
+    i18nConfig: overrides.i18nConfig ?? null,
+    imageConfig: overrides.imageConfig,
+    isMetadataRoute: overrides.isMetadataRoute,
+    isDev: overrides.isDev ?? true,
+    hasInterceptionId: overrides.hasInterceptionId ?? (() => false),
+    matchInterceptRoute: overrides.matchInterceptRoute,
+    matchRoute:
+      overrides.matchRoute ??
+      ((pathname: string) =>
+        pathname === "/about"
+          ? {
+              params: {},
+              route,
+            }
+          : null),
+    matchRequestRoute: overrides.matchRequestRoute,
+    matchRawRequestRoute: overrides.matchRawRequestRoute,
+    runMiddleware:
+      overrides.runMiddleware ??
+      (overrides.middlewareModule
+        ? (options) =>
+            applyAppMiddleware({
+              basePath: "/docs",
+              ...options,
+              filePath: overrides.middlewareFilePath ?? undefined,
+              i18nConfig: overrides.i18nConfig ?? null,
+              isProxy: overrides.isMiddlewareProxy ?? false,
+              module: overrides.middlewareModule!,
+              skipTrailingSlashRedirect: overrides.skipTrailingSlashRedirect,
+              trailingSlash: overrides.trailingSlash ?? false,
+            })
+        : undefined),
+    publicFiles: overrides.publicFiles ?? new Set<string>(),
+    registerCacheAdapters: () => {},
+    renderNotFound: overrides.renderNotFound ?? (async () => null),
+    renderPagesFallback: overrides.renderPagesFallback,
+    renderResponseStageLocally: overrides.renderResponseStageLocally,
+    rootParamNamesByPattern: overrides.rootParamNamesByPattern,
+    setNavigationContext: overrides.setNavigationContext ?? (() => {}),
+    skipTrailingSlashRedirect: overrides.skipTrailingSlashRedirect,
+    staticParamsMap: overrides.staticParamsMap ?? {},
+    trailingSlash: overrides.trailingSlash ?? false,
+    validateDevRequestOrigin: overrides.validateDevRequestOrigin ?? (() => null),
+  });
+}
+
+function prerenderRouteParamsHeader(payload: unknown): string {
+  return encodeURIComponent(JSON.stringify(payload));
+}
+
+function cacheabilityContext(state: RouteCacheabilityState): ExecutionContextLike {
+  const context: ExecutionContextLike = { waitUntil() {} };
+  Reflect.set(context, CACHEABILITY_REQUEST_STATE, state);
+  return context;
+}
+
+function useSplitPolicyAdapter(): void {
+  setCdnCacheAdapter({
+    buildResponseHeaders: ({ cacheControl }) => ({ "Cache-Control": cacheControl }),
+    ownsBackgroundRevalidation: false,
+    responsePolicy: {
+      isHeader: (name) => name.toLowerCase() === "cdn-cache-control",
+      readCacheControl: (headers) =>
+        headers.get("CDN-Cache-Control") ?? headers.get("Cache-Control"),
+      hasExplicitNonCacheablePolicy: () => false,
+    },
+    async get() {
+      return null;
+    },
+    async revalidateTag() {},
+    async set() {},
+  });
+}
+
+afterEach(() => setCdnCacheAdapter(new DefaultCdnCacheAdapter()));
+
+describe("createAppRscHandler", () => {
+  // Ported from Next.js: test/e2e/invalid-static-asset-404-app
+  // https://github.com/vercel/next.js/tree/canary/test/e2e/invalid-static-asset-404-app
+  it.each(["", "/assets", "https://cdn.example.test/assets"])(
+    "returns static misses before rendering not-found with assetPrefix %s",
+    async (assetPrefix) => {
+      const renderNotFound = vi.fn(async () => {
+        throw new Error("the custom not-found page must not render for an asset miss");
+      });
+      const handler = createHandler({ assetPrefix, renderNotFound });
+      const prefix = assetPrefix ? "/assets" : "";
+      const response = await handler(
+        new Request(`https://example.test${prefix || "/docs"}/_next/static/missing.js`),
+        null,
+      );
+      expect(response.status).toBe(404);
+      expect(response.headers.get("content-type")).toBe("text/plain; charset=utf-8");
+      expect(response.headers.get("cache-control")).toContain("no-store");
+      expect(await response.text()).toBe("Not Found");
+      expect(renderNotFound).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(["beforeFiles", "afterFiles", "fallback"] as const)(
+    "classifies the unmatched destination of %s rewrites",
+    async (phase) => {
+      const handler = createHandler({
+        configRewrites: {
+          beforeFiles: [],
+          afterFiles: [],
+          fallback: [],
+          [phase]: [
+            { source: "/_next/static/to-page", destination: "/missing-page" },
+            { source: "/to-asset", destination: "/_next/static/missing.js" },
+          ],
+        },
+        renderNotFound: async () =>
+          new Response("custom not found", {
+            status: 404,
+            headers: { "content-type": "text/html" },
+          }),
+      });
+      const page = await handler(
+        new Request("https://example.test/docs/_next/static/to-page"),
+        null,
+      );
+      expect(page.headers.get("content-type")).toBe("text/html");
+      expect(await page.text()).toBe("custom not found");
+      const asset = await handler(new Request("https://example.test/docs/to-asset"), null);
+      expect(asset.status).toBe(404);
+      expect(await asset.text()).toBe("Not Found");
+    },
+  );
+
+  // Next.js sends every 404 of a route it couldn't match with its never-cache
+  // policy, even when a next.config rule sets a matching Cache-Control.
+  describe("an unmatched route's 404", () => {
+    const NEVER_CACHE = "private, no-cache, no-store, max-age=0, must-revalidate";
+    const cacheableConfigHeaders = [
+      {
+        source: "/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=3600" }],
+      },
+      {
+        source: "/:path*",
+        basePath: false as const,
+        headers: [{ key: "Cache-Control", value: "public, max-age=3600" }],
+      },
+    ];
+
+    it.each([
+      {
+        name: "rendered not-found page",
+        renderNotFound: async () => new Response("rendered not found", { status: 404 }),
+        url: "https://example.test/docs/missing",
+      },
+      {
+        name: "plain fallback",
+        renderNotFound: async () => null,
+        url: "https://example.test/docs/missing",
+      },
+      {
+        // A basePath: false rewrite lets the request reach routing.
+        name: "unrewritten request outside the basePath",
+        renderNotFound: async () => null,
+        url: "https://example.test/elsewhere",
+      },
+    ])("sends the $name with the never-cache policy", async ({ renderNotFound, url }) => {
+      const handler = createHandler({
+        configHeaders: cacheableConfigHeaders,
+        configRewrites: {
+          beforeFiles: [
+            { source: "/outside", destination: "https://upstream.example/about", basePath: false },
+          ],
+          afterFiles: [],
+          fallback: [],
+        },
+        renderNotFound,
+      });
+
+      const response = await handler(new Request(url), null);
+
+      expect(response.status).toBe(404);
+      expect(response.headers.get("cache-control")).toBe(NEVER_CACHE);
+      await response.text();
+    });
+
+    it.each([
+      { name: "dispatched directly", staged: false },
+      { name: "dispatched through the response stage", staged: true },
+    ])(
+      "sends a route handler's unlisted-param 404 $name like an unmatched route's",
+      async ({ staged }) => {
+        const route = createPageRoute({
+          isDynamic: true,
+          params: ["slug"],
+          pattern: "/:slug",
+          rootParamNames: ["slug"],
+          routeHandler: { GET: () => new Response("route") },
+        });
+        const setNavigationContext = vi.fn();
+        let renderContext: unknown = null;
+        const handler = createHandler({
+          configHeaders: [
+            ...cacheableConfigHeaders,
+            { source: "/:path*", headers: [{ key: "Set-Cookie", value: "config=1" }] },
+          ],
+          async dispatchMatchedRouteHandler({ renderNotFound }) {
+            // Dispatch marks the 404 it rebuilds as a routing-level miss.
+            return markRouteMissResponse(await renderNotFound());
+          },
+          matchRoute: (pathname) =>
+            pathname === "/unlisted" ? { params: { slug: "unlisted" }, route } : null,
+          async renderNotFound() {
+            const { getCurrentRootParams } =
+              await import("../packages/vinext/src/shims/root-params.js");
+            renderContext = {
+              navigationParams: setNavigationContext.mock.lastCall?.[0].params,
+              rootParams: getCurrentRootParams(),
+            };
+            return new Response("rendered not found", { status: 404 });
+          },
+          setNavigationContext,
+        });
+
+        const { result: response, route: tracedRoute } = await captureFrameworkRequestRoute(() =>
+          handler(
+            new Request("https://example.test/docs/unlisted"),
+            null,
+            false,
+            staged
+              ? (stageRequest: Request, props: AppWorkerResponseStageProps) =>
+                  handler.handleResponseStage(stageRequest, null, props)
+              : undefined,
+          ),
+        );
+
+        expect(response.status).toBe(404);
+        expect(response.headers.get("cache-control")).toBe(NEVER_CACHE);
+        expect(response.headers.has(VINEXT_ROUTE_MISS_HEADER)).toBe(false);
+        expect(response.headers.getSetCookie()).toEqual(["config=1"]);
+        // Traced as the unmatched route, not the rejected route handler.
+        expect(tracedRoute).toBe("/404");
+        expect(await response.text()).toBe("rendered not found");
+        expect(renderContext).toEqual({ navigationParams: {}, rootParams: {} });
+      },
+    );
+
+    it.each([
+      { name: "dispatched directly", staged: false },
+      { name: "dispatched through the response stage", staged: true },
+    ])(
+      "applies config headers to a redirect from a route handler's unlisted-param 404 $name",
+      async ({ staged }) => {
+        const route = createPageRoute({
+          isDynamic: true,
+          params: ["slug"],
+          pattern: "/:slug",
+          routeHandler: { GET: () => new Response("route") },
+        });
+        const handler = createHandler({
+          configHeaders: [{ source: "/:path*", headers: [{ key: "X-Config", value: "1" }] }],
+          async dispatchMatchedRouteHandler({ renderNotFound }) {
+            return markRouteMissResponse(await renderNotFound());
+          },
+          matchRoute: (pathname) =>
+            pathname === "/unlisted" ? { params: { slug: "unlisted" }, route } : null,
+          // The root layout redirects while the not-found renders.
+          renderNotFound: async () =>
+            new Response(null, { headers: { Location: "/login" }, status: 307 }),
+        });
+
+        const response = await handler(
+          new Request("https://example.test/docs/unlisted"),
+          null,
+          false,
+          staged
+            ? (stageRequest: Request, props: AppWorkerResponseStageProps) =>
+                handler.handleResponseStage(stageRequest, null, props)
+            : undefined,
+        );
+
+        expect(response.status).toBe(307);
+        // Application code produced the redirect, so config headers apply.
+        expect(response.headers.get("x-config")).toBe("1");
+      },
+    );
+
+    it("sends a staged not-found page with the never-cache policy", async () => {
+      const handler = createHandler({
+        configHeaders: cacheableConfigHeaders,
+        renderNotFound: async () => new Response("styled-not-found", { status: 404 }),
+      });
+
+      const response = await handler(
+        new Request("https://example.test/docs/missing"),
+        null,
+        false,
+        (stageRequest: Request, props: AppWorkerResponseStageProps) =>
+          handler.handleResponseStage(stageRequest, null, props),
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.headers.get("cache-control")).toBe(NEVER_CACHE);
+      expect(await response.text()).toBe("styled-not-found");
+    });
+  });
+
+  it("traces direct App route misses through the internal /404 render", async () => {
+    const handler = createHandler({
+      renderNotFound: async () => new Response("not found", { status: 404 }),
+    });
+    capturedNotFoundSpans.length = 0;
+    captureNotFoundSpans = true;
+    try {
+      const response = await handler(new Request("https://example.test/docs/missing"), null, false);
+      expect(response.status).toBe(404);
+      await response.text();
+    } finally {
+      captureNotFoundSpans = false;
+      activeCapturedSpan = undefined;
+    }
+
+    expect(
+      capturedNotFoundSpans.filter(
+        ({ descriptor }) => descriptor.type === "AppRender.getBodyResult",
+      ),
+    ).toEqual([
+      {
+        descriptor: expect.objectContaining({
+          attributes: expect.objectContaining({ "next.route": "/404" }),
+          name: "render route (app) /404",
+          type: "AppRender.getBodyResult",
+        }),
+        parentType: "BaseServer.handleRequest",
+      },
+    ]);
+  });
+
+  // Ported from Next.js: test/e2e/opentelemetry/instrumentation/opentelemetry.test.ts
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/opentelemetry/instrumentation/opentelemetry.test.ts
+  it("traces App route component resolution before dispatch", async () => {
+    const ensureRouteLoaded = vi.fn();
+    const handler = createHandler({ ensureRouteLoaded });
+    capturedFindPageComponentsSpans.length = 0;
+    captureFindPageComponentsSpans = true;
+    try {
+      const response = await handler(new Request("https://example.test/docs/about"), null, false);
+      expect(response.status).toBe(200);
+    } finally {
+      captureFindPageComponentsSpans = false;
+    }
+
+    expect(ensureRouteLoaded).toHaveBeenCalledOnce();
+    expect(capturedFindPageComponentsSpans).toEqual([
+      expect.objectContaining({
+        attributes: expect.objectContaining({ "next.route": "/about" }),
+        name: "resolve page components",
+        type: "NextNodeServer.findPageComponents",
+      }),
+    ]);
+  });
+
+  it("traces App route component resolution in the split response stage", async () => {
+    const ensureRouteLoaded = vi.fn();
+    const handler = createHandler({ ensureRouteLoaded });
+    capturedFindPageComponentsSpans.length = 0;
+    captureFindPageComponentsSpans = true;
+    try {
+      const response = await handler.handleResponseStage(
+        new Request("https://example.test/docs/about"),
+        null,
+        {
+          kind: "app-page",
+          buildId: "build-id",
+          cacheability: { policyHeaders: null, probeMode: null, resolvedRoutePathname: "/about" },
+          bypassInterceptionContextCache: false,
+          cachePathname: "/about",
+          canUseCanonicalLoadingShell: false,
+          canonicalPathname: "/about",
+          cleanPathname: "/about",
+          draftModeCookie: null,
+          interceptionContext: null,
+          interceptionId: null,
+          isRscRequest: false,
+          matchKind: "resolved",
+          middlewareCookieOverlay: null,
+          mountedSlotsHeader: null,
+          params: {},
+          protocolVersion: APP_WORKER_RESPONSE_STAGE_PROTOCOL_VERSION,
+          requestOrigin: "https://example.test",
+          renderMode: "navigation",
+          resolvedUrl: "/about",
+          routePattern: "/about",
+          routePathname: "/about",
+          scriptNonce: null,
+        },
+      );
+      expect(response.status).toBe(200);
+    } finally {
+      captureFindPageComponentsSpans = false;
+    }
+
+    expect(ensureRouteLoaded).toHaveBeenCalledOnce();
+    expect(capturedFindPageComponentsSpans).toEqual([
+      expect.objectContaining({
+        attributes: expect.objectContaining({ "next.route": "/about" }),
+        name: "resolve page components",
+        type: "NextNodeServer.findPageComponents",
+      }),
+    ]);
+  });
+
+  it("establishes the Cache Components request work unit in the split response stage", async () => {
+    let workUnitType: string | undefined;
+    const handler = createHandler({
+      createPprFallbackShells: () => [],
+      dispatchMatchedPage: async () => {
+        workUnitType = workUnitAsyncStorage.getStore()?.type;
+        return new Response("page");
+      },
+    });
+
+    const response = await handler.handleResponseStage(
+      new Request("https://example.test/docs/about"),
+      null,
+      {
+        kind: "app-page",
+        buildId: "build-id",
+        cacheability: { policyHeaders: null, probeMode: null, resolvedRoutePathname: "/about" },
+        bypassInterceptionContextCache: false,
+        cachePathname: "/about",
+        canUseCanonicalLoadingShell: false,
+        canonicalPathname: "/about",
+        cleanPathname: "/about",
+        draftModeCookie: null,
+        interceptionContext: null,
+        interceptionId: null,
+        isRscRequest: false,
+        matchKind: "resolved",
+        middlewareCookieOverlay: null,
+        mountedSlotsHeader: null,
+        params: {},
+        protocolVersion: APP_WORKER_RESPONSE_STAGE_PROTOCOL_VERSION,
+        requestOrigin: "https://example.test",
+        renderMode: "navigation",
+        resolvedUrl: "/about",
+        routePattern: "/about",
+        routePathname: "/about",
+        scriptNonce: null,
+      },
+    );
+
+    expect(response.status).toBe(200);
+    expect(workUnitType).toBe("request");
+  });
+
+  it.each([
+    {
+      name: "an authorized on-demand revalidation",
+      secret: () => getRevalidateSecret(),
+      expected: true,
+    },
+    { name: "a wrong revalidation secret", secret: () => "wrong-secret", expected: false },
+  ])("marks the split response stage's data caches for $name", async ({ secret, expected }) => {
+    let isOnDemandRevalidate: boolean | undefined;
+    const handler = createHandler({
+      dispatchMatchedPage: async () => {
+        isOnDemandRevalidate = _isOnDemandRevalidate();
+        return new Response("page");
+      },
+    });
+
+    const response = await handler.handleResponseStage(
+      new Request("https://example.test/docs/about", {
+        headers: { [PRERENDER_REVALIDATE_HEADER]: secret() },
+      }),
+      null,
+      {
+        kind: "app-page",
+        buildId: "build-id",
+        cacheability: { policyHeaders: null, probeMode: null, resolvedRoutePathname: "/about" },
+        bypassInterceptionContextCache: false,
+        cachePathname: "/about",
+        canUseCanonicalLoadingShell: false,
+        canonicalPathname: "/about",
+        cleanPathname: "/about",
+        draftModeCookie: null,
+        interceptionContext: null,
+        interceptionId: null,
+        isRscRequest: false,
+        matchKind: "resolved",
+        middlewareCookieOverlay: null,
+        mountedSlotsHeader: null,
+        params: {},
+        protocolVersion: APP_WORKER_RESPONSE_STAGE_PROTOCOL_VERSION,
+        requestOrigin: "https://example.test",
+        renderMode: "navigation",
+        resolvedUrl: "/about",
+        routePattern: "/about",
+        routePathname: "/about",
+        scriptNonce: null,
+      },
+    );
+
+    expect(response.status).toBe(200);
+    expect(isOnDemandRevalidate).toBe(expected);
+  });
+
+  it("carries route-identity cache bypass into split route-handler execution", async () => {
+    const route = createPageRoute({
+      __loadPage: undefined,
+      isDynamic: true,
+      page: null,
+      params: ["slug"],
+      pattern: "/:slug+",
+      routeHandler: { GET: () => new Response("route") },
+      routeSegments: ["[...slug]"],
+    });
+    const dispatchMatchedRouteHandler = vi.fn(async () => new Response("route"));
+    const handler = createHandler({
+      dispatchMatchedRouteHandler,
+      matchRequestRoute: (pathname) =>
+        pathname === "/%61bout" ? { params: { slug: ["about"] }, route } : null,
+    });
+
+    const response = await handler.handleResponseStage(
+      new Request("https://example.test/docs/%61bout"),
+      null,
+      {
+        kind: "app-route-handler",
+        buildId: "build-id",
+        cacheability: { policyHeaders: null, probeMode: null, resolvedRoutePathname: "/about" },
+        bypassInterceptionContextCache: true,
+        cachePathname: "/about",
+        canUseCanonicalLoadingShell: false,
+        canonicalPathname: "/about",
+        cleanPathname: "/about",
+        draftModeCookie: null,
+        interceptionContext: null,
+        interceptionId: null,
+        isRscRequest: false,
+        matchKind: "request",
+        middlewareCookieOverlay: null,
+        mountedSlotsHeader: null,
+        params: { slug: ["about"] },
+        protocolVersion: APP_WORKER_RESPONSE_STAGE_PROTOCOL_VERSION,
+        requestOrigin: "https://example.test",
+        renderMode: "navigation",
+        resolvedUrl: "/about",
+        routePattern: "/:slug+",
+        routePathname: "/%61bout",
+        scriptNonce: null,
+      },
+    );
+
+    expect(response.status).toBe(200);
+    expect(dispatchMatchedRouteHandler).toHaveBeenCalledWith(
+      expect.objectContaining({ bypassInterceptionContextCache: true, cleanPathname: "/about" }),
+    );
+  });
+
+  it("keeps a split route handler's request.signal following the inbound signal after GC", async () => {
+    // Undici's Request follows its input's signal through a WeakRef, so the
+    // response stage's request clones are weak links to the inbound signal.
+    const v8 = await import("node:v8");
+    const vm = await import("node:vm");
+    v8.setFlagsFromString("--expose-gc");
+    const gc = vm.runInNewContext("gc") as () => void;
+
+    const route = createPageRoute({
+      __loadPage: undefined,
+      page: null,
+      routeHandler: { GET: () => new Response("route") },
+      routeSegments: ["about"],
+    });
+    let dispatched = false;
+    let aborted = false;
+    const handler = createHandler({
+      // Builds the handler's request the way dispatchAppRouteHandler does.
+      dispatchMatchedRouteHandler: async ({ request }) => {
+        dispatched = true;
+        const signal = getRequestContext().requestSignal ?? undefined;
+        const tracked = createTrackedAppRouteRequest(request, { signal });
+        tracked.request.signal.addEventListener("abort", () => {
+          aborted = true;
+        });
+        return new Response("route");
+      },
+      matchRequestRoute: (pathname) => (pathname === "/about" ? { params: {}, route } : null),
+    });
+
+    // The platform holds the inbound request (and its signal) for its lifetime.
+    const inbound = new AbortController();
+    const inboundRequest = new Request("https://example.test/about", { signal: inbound.signal });
+    const response = await handler.handleResponseStage(inboundRequest, null, {
+      kind: "app-route-handler",
+      buildId: "build-id",
+      cacheability: { policyHeaders: null, probeMode: null, resolvedRoutePathname: "/about" },
+      bypassInterceptionContextCache: false,
+      cachePathname: "/about",
+      canUseCanonicalLoadingShell: false,
+      canonicalPathname: "/about",
+      cleanPathname: "/about",
+      draftModeCookie: null,
+      interceptionContext: null,
+      interceptionId: null,
+      isRscRequest: false,
+      matchKind: "request",
+      middlewareCookieOverlay: null,
+      mountedSlotsHeader: null,
+      params: {},
+      protocolVersion: APP_WORKER_RESPONSE_STAGE_PROTOCOL_VERSION,
+      requestOrigin: "https://example.test",
+      renderMode: "navigation",
+      resolvedUrl: "/about",
+      routePattern: "/about",
+      routePathname: "/about",
+      scriptNonce: null,
+    });
+    expect(response.status).toBe(200);
+    expect(dispatched).toBe(true);
+    for (let round = 0; round < 3; round += 1) {
+      await new Promise((resolve) => setImmediate(resolve));
+      gc();
+    }
+
+    inbound.abort(new Error("client disconnected"));
+    expect(inboundRequest.signal.aborted).toBe(true);
+    expect(aborted).toBe(true);
+  });
+
+  it("normalizes a direct contextual RSC request before shared response-stage dispatch", async () => {
+    const route = createPageRoute();
+    const matchRoute = (pathname: string) => (pathname === "/about" ? { params: {}, route } : null);
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("rsc")),
+    );
+    const handler = createHandler({ matchRequestRoute: matchRoute, matchRoute });
+    const headers = createRscRequestHeaders({
+      nextUrl: "/source",
+      routerState: { pathAndSearch: "/source", routeId: "route:/source" },
+    });
+    const contextualUrl = await createRscRequestUrl("/docs/about?tab=latest", headers);
+
+    await handler(
+      new Request(new URL(contextualUrl, "https://example.test"), { headers }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    const [request, props, options] = dispatchResponseStage.mock.calls[0]!;
+    const url = new URL(request.url);
+    expect(`${url.pathname}${url.search}`).toBe("/docs/about?tab=latest&_rsc");
+    expect(request.headers.get("next-router-state-tree")).toBeNull();
+    expect(request.headers.get("next-url")).toBeNull();
+    expect(props).toMatchObject({
+      canUseCanonicalLoadingShell: false,
+      kind: "app-page",
+      matchKind: "request",
+    });
+    expect(options).toEqual({ cache: "shared" });
+  });
+
+  it("normalizes only eligible main-tree loading-shell RSC requests", async () => {
+    const route = createPageRoute({ canUseCanonicalLoadingShell: true });
+    const matchRoute = (pathname: string) => (pathname === "/about" ? { params: {}, route } : null);
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("loading")),
+    );
+    const handler = createHandler({ matchRequestRoute: matchRoute, matchRoute });
+    const headers = createRscRequestHeaders({
+      nextUrl: "/source",
+      prefetchRouterState: { pathAndSearch: "/source", routeId: "route:/source" },
+      renderMode: "prefetch-loading-shell",
+    });
+    headers.set(NEXT_ROUTER_SEGMENT_PREFETCH_HEADER, "/__PAGE__");
+    const contextualUrl = await createRscRequestUrl("/docs/about", headers);
+
+    await handler(
+      new Request(new URL(contextualUrl, "https://example.test"), { headers }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    const [request, props] = dispatchResponseStage.mock.calls[0]!;
+    expect(request.headers.get(NEXT_ROUTER_PREFETCH_HEADER)).toBe("1");
+    expect(request.headers.get(NEXT_ROUTER_SEGMENT_PREFETCH_HEADER)).toBe("1");
+    expect(request.headers.get("next-router-state-tree")).toBeNull();
+    expect(request.headers.get("next-url")).toBeNull();
+    expect(new URL(request.url).searchParams.get("_rsc")).not.toBe("");
+    expect(props).toMatchObject({ canUseCanonicalLoadingShell: true, matchKind: "request" });
+  });
+
+  // Next.js answers a Link's segment prefetch of a page whose notFound(),
+  // forbidden() or unauthorized() it stored with a 200, so its router renders
+  // the fallback without loading the document.
+  describe("a stored special error's status", () => {
+    const route = createPageRoute();
+    const matchRoute = (pathname: string) => (pathname === "/about" ? { params: {}, route } : null);
+
+    async function rscRequest(segmentPrefetch: boolean): Promise<Request> {
+      const headers = createRscRequestHeaders({
+        prefetchRouterState: segmentPrefetch
+          ? { pathAndSearch: "/source", routeId: "route:/source" }
+          : undefined,
+      });
+      if (segmentPrefetch) headers.set(NEXT_ROUTER_SEGMENT_PREFETCH_HEADER, "/__PAGE__");
+      const url = await createRscRequestUrl("/docs/about", headers);
+      return new Request(new URL(url, "https://example.test"), { headers });
+    }
+
+    function storedResponse(status: number, marked = true): Response {
+      return new Response("rsc", {
+        status,
+        headers: marked ? { [VINEXT_SPECIAL_ERROR_STATUS_HEADER]: String(status) } : {},
+      });
+    }
+
+    it.each([401, 403, 404])(
+      "is a 200 for a segment prefetch the shared response stage served a stored %s",
+      async (status) => {
+        const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+          storedResponse(status),
+        );
+        const handler = createHandler({ matchRequestRoute: matchRoute, matchRoute });
+
+        const response = await handler(await rscRequest(true), null, false, dispatchResponseStage);
+
+        // The shared stage gives the prefetch the navigation's response.
+        const [request, , options] = dispatchResponseStage.mock.calls[0]!;
+        expect(options.cache).toBe("shared");
+        expect(request.headers.has(NEXT_ROUTER_SEGMENT_PREFETCH_HEADER)).toBe(false);
+        expect(response.status).toBe(200);
+        expect(response.headers.has(VINEXT_SPECIAL_ERROR_STATUS_HEADER)).toBe(false);
+        expect(await response.text()).toBe("rsc");
+      },
+    );
+
+    it("keeps its status for a navigation", async () => {
+      const handler = createHandler({ matchRequestRoute: matchRoute, matchRoute });
+
+      const response = await handler(await rscRequest(false), null, false, async () =>
+        storedResponse(404),
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.headers.has(VINEXT_SPECIAL_ERROR_STATUS_HEADER)).toBe(false);
+    });
+
+    it("is a 200 for a segment prefetch the page's dispatch served", async () => {
+      const handler = createHandler({
+        dispatchMatchedPage: async () => storedResponse(404),
+        matchRequestRoute: matchRoute,
+        matchRoute,
+      });
+
+      const prefetch = await handler(await rscRequest(true), null);
+      expect(prefetch.status).toBe(200);
+      expect(prefetch.headers.has(VINEXT_SPECIAL_ERROR_STATUS_HEADER)).toBe(false);
+
+      const navigation = await handler(await rscRequest(false), null);
+      expect(navigation.status).toBe(404);
+      expect(navigation.headers.has(VINEXT_SPECIAL_ERROR_STATUS_HEADER)).toBe(false);
+    });
+
+    // As in Next.js, only a prefetch carries a segment prefetch.
+    it.each([401, 403, 404])(
+      "keeps a stored %s for a segment header without Next-Router-Prefetch",
+      async (status) => {
+        const headers = createRscRequestHeaders();
+        headers.set(NEXT_ROUTER_SEGMENT_PREFETCH_HEADER, "/__PAGE__");
+        const url = await createRscRequestUrl("/docs/about", headers);
+        const handler = createHandler({ matchRequestRoute: matchRoute, matchRoute });
+
+        const response = await handler(
+          new Request(new URL(url, "https://example.test"), { headers }),
+          null,
+          false,
+          async () => storedResponse(status),
+        );
+
+        expect(response.status).toBe(status);
+        expect(response.headers.has(VINEXT_SPECIAL_ERROR_STATUS_HEADER)).toBe(false);
+      },
+    );
+
+    // As on a fresh render, middleware can't override the page's own status.
+    it("keeps its status behind a middleware status for a navigation", async () => {
+      const handler = createHandler({
+        matchRequestRoute: matchRoute,
+        matchRoute,
+        middlewareModule: {
+          default() {
+            return new Response(null, { headers: { "x-middleware-next": "1" }, status: 202 });
+          },
+        },
+      });
+      const dispatchResponseStage = async () => storedResponse(404);
+
+      const navigation = await handler(await rscRequest(false), null, false, dispatchResponseStage);
+      expect(navigation.status).toBe(404);
+      expect(navigation.headers.has(VINEXT_SPECIAL_ERROR_STATUS_HEADER)).toBe(false);
+
+      const prefetch = await handler(await rscRequest(true), null, false, dispatchResponseStage);
+      expect(prefetch.status).toBe(200);
+    });
+
+    it.each(["middleware", "a config header"])("ignores a marker that %s sets", async (source) => {
+      const marker = { key: VINEXT_SPECIAL_ERROR_STATUS_HEADER, value: "404" };
+      const handler =
+        source === "middleware"
+          ? createHandler({
+              matchRequestRoute: matchRoute,
+              matchRoute,
+              middlewareModule: {
+                default() {
+                  return new Response(null, {
+                    headers: { "x-middleware-next": "1", [marker.key]: marker.value },
+                  });
+                },
+              },
+            })
+          : createHandler({
+              configHeaders: [{ source: "/about", headers: [marker] }],
+              matchRequestRoute: matchRoute,
+              matchRoute,
+            });
+
+      const response = await handler(await rscRequest(true), null, false, async () =>
+        storedResponse(404, false),
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.headers.has(VINEXT_SPECIAL_ERROR_STATUS_HEADER)).toBe(false);
+    });
+
+    it("ignores a marker without a special error's status", async () => {
+      const handler = createHandler({ matchRequestRoute: matchRoute, matchRoute });
+
+      const response = await handler(
+        await rscRequest(true),
+        null,
+        false,
+        async () =>
+          new Response("rsc", {
+            headers: { [VINEXT_SPECIAL_ERROR_STATUS_HEADER]: "1" },
+            status: 404,
+          }),
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.headers.has(VINEXT_SPECIAL_ERROR_STATUS_HEADER)).toBe(false);
+    });
+
+    // A dynamicParams = false miss is a 404 for a segment prefetch in Next.js.
+    it("leaves any other 404 to a segment prefetch alone", async () => {
+      const handler = createHandler({ matchRequestRoute: matchRoute, matchRoute });
+
+      const response = await handler(await rscRequest(true), null, false, async () =>
+        storedResponse(404, false),
+      );
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  it("canonicalizes rewritten RSC requests and keeps mounted-slot ones contextual", async () => {
+    const route = createPageRoute();
+    const matchRoute = (pathname: string) => (pathname === "/about" ? { params: {}, route } : null);
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("rsc")),
+    );
+    const handler = createHandler({
+      configRewrites: {
+        afterFiles: [],
+        beforeFiles: [{ source: "/source", destination: "/about" }],
+        fallback: [],
+      },
+      matchRequestRoute: matchRoute,
+      matchRoute,
+    });
+    const rewrittenHeaders = createRscRequestHeaders({ nextUrl: "/source" });
+    const rewrittenUrl = await createRscRequestUrl("/docs/source", rewrittenHeaders);
+
+    await handler(
+      new Request(new URL(rewrittenUrl, "https://example.test"), { headers: rewrittenHeaders }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    const [rewrittenRequest, rewrittenProps] = dispatchResponseStage.mock.calls[0]!;
+    // The rewrite target is in the props, so the per-navigation selectors are
+    // canonicalized away and every navigation shares one cache entry.
+    expect(rewrittenRequest.headers.get("next-url")).toBeNull();
+    expect(new URL(rewrittenRequest.url).searchParams.get("_rsc")).toBe("");
+    expect(rewrittenProps).toMatchObject({ matchKind: "resolved" });
+
+    dispatchResponseStage.mockClear();
+    const mountedHeaders = createRscRequestHeaders({
+      mountedSlotsHeader: "slot:modal:/",
+      nextUrl: "/source",
+    });
+    const mountedUrl = await createRscRequestUrl("/docs/about", mountedHeaders);
+    await handler(
+      new Request(new URL(mountedUrl, "https://example.test"), { headers: mountedHeaders }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    const [mountedRequest] = dispatchResponseStage.mock.calls[0]!;
+    expect(mountedRequest.headers.get("next-url")).toBe("/source");
+    expect(new URL(mountedRequest.url).searchParams.get("_rsc")).not.toBe("");
+  });
+
+  // The shell renders the page with an empty query, as Next.js's static
+  // prefetch of a page segment never varies on search params, so it shares
+  // the query-free page's navigation entry (issue #4496).
+  it("dispatches a search-param shell prefetch as its page's canonical navigation", async () => {
+    const route = createPageRoute();
+    const matchRoute = (pathname: string) => (pathname === "/about" ? { params: {}, route } : null);
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("rsc")),
+    );
+    const handler = createHandler({ matchRequestRoute: matchRoute, matchRoute });
+    const shellRequest = async (headersInit: Parameters<typeof createRscRequestHeaders>[0]) => {
+      const headers = createRscRequestHeaders({
+        nextUrl: "/",
+        prefetchRouterState: { pathAndSearch: "/", routeId: "route:/" },
+        renderMode: "prefetch-dynamic-shell",
+        ...headersInit,
+      });
+      headers.set("Next-Router-Segment-Prefetch", "1");
+      const url = await createRscRequestUrl("/docs/about?tab=1", headers);
+      return new Request(new URL(url, "https://example.test"), { headers });
+    };
+
+    await handler(await shellRequest({}), null, false, dispatchResponseStage);
+
+    const [shell, shellProps] = dispatchResponseStage.mock.calls[0]!;
+    expect([...new URL(shell.url).searchParams]).toEqual([["_rsc", ""]]);
+    for (const name of [
+      "next-router-prefetch",
+      "next-router-segment-prefetch",
+      "next-router-state-tree",
+      "next-url",
+      "x-vinext-rsc-render-mode",
+      "x-vinext-rsc-state-fingerprint",
+    ]) {
+      expect(shell.headers.get(name)).toBeNull();
+    }
+    expect(shellProps).toMatchObject({ renderMode: "navigation", resolvedUrl: "/about" });
+
+    // Interception and mounted-slot payloads stay contextual.
+    for (const contextual of [
+      { mountedSlotsHeader: "slot:modal:/" },
+      { interceptionContext: "/feed" },
+    ]) {
+      dispatchResponseStage.mockClear();
+      await handler(await shellRequest(contextual), null, false, dispatchResponseStage);
+
+      const [request, props] = dispatchResponseStage.mock.calls[0]!;
+      expect(new URL(request.url).searchParams.get("tab")).toBe("1");
+      expect(request.headers.get("x-vinext-rsc-render-mode")).toBe("prefetch-dynamic-shell");
+      expect(props).toMatchObject({ renderMode: "prefetch-dynamic-shell" });
+    }
+  });
+
+  it("marks build-time hybrid Pages renders whose URL a rewrite changed", async () => {
+    const handler = createHandler({
+      configRewrites: {
+        afterFiles: [],
+        beforeFiles: [
+          {
+            source: "/account",
+            missing: [{ type: "cookie", key: "session" }],
+            destination: "/login",
+          },
+        ],
+        fallback: [],
+      },
+      matchRequestRoute: () => null,
+      matchRoute: () => null,
+      renderPagesFallback: async () => new Response("page"),
+    });
+    const marker = async (pathname: string) =>
+      (await handler(new Request(`https://example.test/docs${pathname}`), null)).headers.get(
+        "x-vinext-prerender-rewritten",
+      );
+
+    try {
+      expect(await marker("/account")).toBeNull();
+      vi.stubEnv("VINEXT_PRERENDER", "1");
+      expect(await marker("/account")).toBe("1");
+      expect(await marker("/about")).toBe("0");
+      // The URL parser encodes these characters; that alone is no rewrite.
+      expect(await marker("/blog/café")).toBe("0");
+      expect(await marker("/blog/a b")).toBe("0");
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  describe("shared cache identity", () => {
+    function useQueryFreeIdentityAdapter(
+      overrides: Partial<
+        Pick<CdnCacheAdapter, "requiresCompletedResponseAdmission" | "responseStageCacheIdentity">
+      > = {},
+    ): void {
+      setCdnCacheAdapter({
+        buildResponseHeaders: ({ cacheControl }) => ({ "Cache-Control": cacheControl }),
+        ownsBackgroundRevalidation: false,
+        requiresCompletedResponseAdmission: true,
+        responseStageCacheIdentity: "query-free",
+        async get() {
+          return null;
+        },
+        async revalidateTag() {},
+        async set() {},
+        ...overrides,
+      });
+    }
+
+    function pathAndSearch(url: string): string {
+      const parsed = new URL(url);
+      return `${parsed.pathname}${parsed.search}`;
+    }
+
+    it("strips the user query from shared HTML identities while dispatching the real query", async () => {
+      useQueryFreeIdentityAdapter();
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("page"),
+      );
+      const handler = createHandler({ configHeaders: [] });
+
+      for (const method of ["GET", "HEAD"]) {
+        dispatchResponseStage.mockClear();
+        await handler(
+          new Request("https://example.test/docs/about?tab=latest&utm_source=x", { method }),
+          null,
+          false,
+          dispatchResponseStage,
+        );
+
+        const [request, props, options] = dispatchResponseStage.mock.calls[0]!;
+        expect(pathAndSearch(request.url)).toBe("/docs/about?tab=latest&utm_source=x");
+        expect(props).toMatchObject({
+          kind: "app-page",
+          resolvedUrl: "/about?tab=latest&utm_source=x",
+        });
+        expect(options.cache).toBe("shared");
+        expect(options.cacheIdentity?.request.url).toBe(
+          `${VINEXT_CACHE_IDENTITY_ORIGIN}/docs/about`,
+        );
+        expect(options.cacheIdentity?.request.method).toBe("GET");
+        expect(options.cacheIdentity?.queryFree).toBe(true);
+        expect(options.cacheIdentity?.props).toEqual({
+          ...props,
+          requestOrigin: VINEXT_CACHE_IDENTITY_ORIGIN,
+          resolvedUrl: "/about",
+        });
+      }
+    });
+
+    it("drops _rsc from HTML identities, where it selects no representation", async () => {
+      useQueryFreeIdentityAdapter();
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("page"),
+      );
+      const handler = createHandler({ configHeaders: [] });
+
+      await handler(
+        new Request(`https://example.test/docs/about?_rsc=${crypto.randomUUID()}&tab=latest`),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+
+      const [request, props, options] = dispatchResponseStage.mock.calls[0]!;
+      expect(props).toMatchObject({ isRscRequest: false, kind: "app-page" });
+      expect(new URL(request.url).searchParams.has("_rsc")).toBe(true);
+      expect(options.cacheIdentity?.request.url).toBe(`${VINEXT_CACHE_IDENTITY_ORIGIN}/docs/about`);
+    });
+
+    it("drops RSC selector headers from HTML identities, which never read them", async () => {
+      useQueryFreeIdentityAdapter();
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("page"),
+      );
+      const handler = createHandler({ configHeaders: [] });
+      const rscSelectors = {
+        "Next-Router-Prefetch": "1",
+        "Next-Router-Segment-Prefetch": "/__PAGE__",
+        "Next-Router-State-Tree": crypto.randomUUID(),
+        "Next-Url": `/${crypto.randomUUID()}`,
+        RSC: "0",
+        "X-Vinext-Interception-Context": "/feed",
+        "X-Vinext-Mounted-Slots": "!!!",
+        "X-Vinext-Rsc-Render-Mode": "prefetch-loading-shell",
+        "X-Vinext-Rsc-State-Fingerprint": crypto.randomUUID(),
+      };
+
+      await handler(
+        new Request("https://example.test/docs/about", {
+          headers: { ...rscSelectors, Accept: "text/html", "X-Custom": "kept" },
+        }),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+
+      const [request, props, options] = dispatchResponseStage.mock.calls[0]!;
+      expect(props).toMatchObject({
+        interceptionContext: null,
+        isRscRequest: false,
+        mountedSlotsHeader: null,
+        renderMode: "navigation",
+      });
+      const identityHeaders = options.cacheIdentity!.request.headers;
+      for (const name of Object.keys(rscSelectors)) {
+        expect(request.headers.has(name)).toBe(true);
+        expect(identityHeaders.has(name)).toBe(false);
+      }
+      expect(identityHeaders.get("Accept")).toBe("text/html");
+      expect(identityHeaders.get("X-Custom")).toBe("kept");
+    });
+
+    it("keeps only the validated _rsc value in contextual RSC identities", async () => {
+      useQueryFreeIdentityAdapter();
+      const route = createPageRoute();
+      const matchRoute = (pathname: string) =>
+        pathname === "/about" ? { params: {}, route } : null;
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("rsc"),
+      );
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: {
+          afterFiles: [],
+          beforeFiles: [{ source: "/source", destination: "/about" }],
+          fallback: [],
+        },
+        matchRequestRoute: matchRoute,
+        matchRoute,
+      });
+      const headers = createRscRequestHeaders({ nextUrl: "/source" });
+      const rscUrl = await createRscRequestUrl("/docs/source?tab=latest", headers);
+      const hash = new URL(rscUrl, "https://example.test").searchParams.get("_rsc");
+      expect(hash).toBeTruthy();
+
+      await handler(
+        new Request(new URL(`${rscUrl}&_rsc=ignored&%5Frsc=encoded`, "https://example.test"), {
+          headers,
+        }),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+
+      const [request, props, options] = dispatchResponseStage.mock.calls[0]!;
+      // Rewritten RSC requests are canonicalized like direct ones, so the
+      // per-navigation hash and the user's `_rsc` pairs leave the identity.
+      expect(props).toMatchObject({ isRscRequest: true, matchKind: "resolved" });
+      expect(new URL(request.url).searchParams.getAll("_rsc")).toEqual([""]);
+      expect(pathAndSearch(options.cacheIdentity!.request.url)).toBe("/docs/source?_rsc");
+    });
+
+    it("keeps _rsc and the render mode in shared RSC identities", async () => {
+      useQueryFreeIdentityAdapter();
+      const route = createPageRoute({ canUseCanonicalLoadingShell: true });
+      const matchRoute = (pathname: string) =>
+        pathname === "/about" ? { params: {}, route } : null;
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("rsc"),
+      );
+      const handler = createHandler({
+        configHeaders: [],
+        matchRequestRoute: matchRoute,
+        matchRoute,
+      });
+
+      const navigationHeaders = createRscRequestHeaders({
+        nextUrl: "/source",
+        routerState: { pathAndSearch: "/source", routeId: "route:/source" },
+      });
+      await handler(
+        new Request(
+          new URL(
+            await createRscRequestUrl("/docs/about?tab=latest", navigationHeaders),
+            "https://example.test",
+          ),
+          { headers: navigationHeaders },
+        ),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+      let [request, props, options] = dispatchResponseStage.mock.calls[0]!;
+      expect(pathAndSearch(request.url)).toBe("/docs/about?tab=latest&_rsc");
+      expect(props).toMatchObject({ renderMode: "navigation", resolvedUrl: "/about?tab=latest" });
+      expect(pathAndSearch(options.cacheIdentity!.request.url)).toBe("/docs/about?_rsc");
+      expect(options.cacheIdentity!.request.headers.get(RSC_HEADER)).toBe("1");
+      expect(options.cacheIdentity!.props).toEqual({
+        ...props,
+        requestOrigin: VINEXT_CACHE_IDENTITY_ORIGIN,
+        resolvedUrl: "/about",
+      });
+
+      dispatchResponseStage.mockClear();
+      const shellHeaders = createRscRequestHeaders({
+        prefetchRouterState: { pathAndSearch: "/source", routeId: "route:/source" },
+        renderMode: "prefetch-loading-shell",
+      });
+      await handler(
+        new Request(
+          new URL(
+            await createRscRequestUrl("/docs/about?tab=latest", shellHeaders),
+            "https://example.test",
+          ),
+          { headers: shellHeaders },
+        ),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+      [request, props, options] = dispatchResponseStage.mock.calls[0]!;
+      const shellHash = new URL(request.url).searchParams.get("_rsc");
+      expect(shellHash).toBeTruthy();
+      expect(new URL(request.url).searchParams.get("tab")).toBe("latest");
+      expect(props).toMatchObject({ renderMode: "prefetch-loading-shell" });
+      expect(pathAndSearch(options.cacheIdentity!.request.url)).toBe(
+        `/docs/about?_rsc=${shellHash}`,
+      );
+      expect(options.cacheIdentity!.request.headers.get("x-vinext-rsc-render-mode")).toBe(
+        "prefetch-loading-shell",
+      );
+      expect(options.cacheIdentity!.props).toEqual({
+        ...props,
+        requestOrigin: VINEXT_CACHE_IDENTITY_ORIGIN,
+        resolvedUrl: "/about",
+      });
+    });
+
+    it("is absent unless the adapter declares it behind completed-response admission", async () => {
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("page"),
+      );
+      const handler = createHandler({ configHeaders: [] });
+      const request = () => new Request("https://example.test/docs/about?tab=latest");
+
+      await handler(request(), null, false, dispatchResponseStage);
+      useQueryFreeIdentityAdapter({ requiresCompletedResponseAdmission: false });
+      await handler(request(), null, false, dispatchResponseStage);
+
+      expect(dispatchResponseStage.mock.calls.map((call) => call[2])).toEqual([
+        { cache: "shared" },
+        { cache: "shared" },
+      ]);
+    });
+
+    it("is absent for bypassed, probe and non-GET dispatches", async () => {
+      useQueryFreeIdentityAdapter();
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("page"),
+      );
+      const handler = createHandler({ configHeaders: [] });
+
+      await handler(
+        new Request("https://example.test/docs/about?tab=latest", {
+          headers: { Cookie: "__prerender_bypass=test-draft-secret" },
+        }),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+      await handler(
+        new Request("https://example.test/docs/about?tab=latest"),
+        null,
+        false,
+        dispatchResponseStage,
+        "probe",
+      );
+      await handler(
+        new Request("https://example.test/docs/about?tab=latest", { method: "POST" }),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+
+      expect(dispatchResponseStage.mock.calls.map((call) => call[2])).toEqual([
+        { cache: "bypass" },
+        { cache: "bypass" },
+        { cache: "bypass" },
+      ]);
+    });
+
+    it("is absent when a next.config public cache policy applies", async () => {
+      useQueryFreeIdentityAdapter();
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("page"),
+      );
+      const handler = createHandler({
+        configHeaders: [
+          { source: "/about", headers: [{ key: "Cache-Control", value: "public, s-maxage=60" }] },
+        ],
+      });
+
+      await handler(
+        new Request("https://example.test/docs/about?tab=latest"),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+
+      const [request, props, options] = dispatchResponseStage.mock.calls[0]!;
+      expect(props.cacheability.policyHeaders).toEqual([["Cache-Control", "public, s-maxage=60"]]);
+      // The policy is cached per URL, so the identity keeps the query and
+      // drops only the host.
+      expect(options.cacheIdentity?.request.url).toBe(
+        `${VINEXT_CACHE_IDENTITY_ORIGIN}/docs/about?tab=latest`,
+      );
+      expect(options.cacheIdentity?.queryFree).toBeUndefined();
+      expect(options.cacheIdentity?.props).toEqual({
+        ...props,
+        requestOrigin: VINEXT_CACHE_IDENTITY_ORIGIN,
+      });
+      expect(new URL(request.url).origin).toBe("https://example.test");
+    });
+
+    it("keeps the query and contextual selectors in mounted-slot and interception identities", async () => {
+      useQueryFreeIdentityAdapter();
+      const pageRoute = createPageRoute();
+      const sourceRoute = createPageRoute({ pattern: "/feed", routeSegments: ["feed"] });
+      const matchRoute = (pathname: string) => {
+        if (pathname === "/about") return { params: {}, route: pageRoute };
+        if (pathname === "/feed") return { params: {}, route: sourceRoute };
+        return null;
+      };
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("payload"),
+      );
+      const handler = createHandler({
+        configHeaders: [],
+        matchInterceptRoute: (pathname, sourcePathname) =>
+          pathname === "/photo" && sourcePathname === "/feed"
+            ? { params: {}, route: sourceRoute }
+            : null,
+        matchRequestRoute: matchRoute,
+        matchRoute,
+      });
+
+      const mountedHeaders = createRscRequestHeaders({ mountedSlotsHeader: "slot:modal:/" });
+      await handler(
+        new Request(
+          new URL(
+            await createRscRequestUrl("/docs/about?tab=latest", mountedHeaders),
+            "https://example.test",
+          ),
+          { headers: mountedHeaders },
+        ),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+      const interceptionHeaders = createRscRequestHeaders({ interceptionContext: "/feed" });
+      await handler(
+        new Request(
+          new URL(
+            await createRscRequestUrl("/docs/photo?tab=latest", interceptionHeaders),
+            "https://example.test",
+          ),
+          { headers: interceptionHeaders },
+        ),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+
+      for (const [request, props, options] of dispatchResponseStage.mock.calls) {
+        expect(options.cache).toBe("shared");
+        expect(options.cacheIdentity?.request.url).toBe(
+          `${VINEXT_CACHE_IDENTITY_ORIGIN}${pathAndSearch(request.url)}`,
+        );
+        expect([...options.cacheIdentity!.request.headers]).toEqual([...request.headers]);
+        expect(options.cacheIdentity?.queryFree).toBeUndefined();
+        expect(options.cacheIdentity?.props).toEqual({
+          ...props,
+          requestOrigin: VINEXT_CACHE_IDENTITY_ORIGIN,
+        });
+      }
+      expect(
+        dispatchResponseStage.mock.calls.map(([, props]) => [
+          props.kind,
+          "matchKind" in props ? props.matchKind : null,
+        ]),
+      ).toEqual([
+        ["app-page", "request"],
+        ["app-page", "interception"],
+      ]);
+    });
+
+    // Next.js keys a route handler by its pathname. Nothing the query or an
+    // RSC selector names reaches a handler or a metadata route, and a handler
+    // that reads the request is dynamic, so neither belongs in the identity.
+    it("keeps only the method, path and route props in route-handler and metadata identities", async () => {
+      useQueryFreeIdentityAdapter();
+      const handlerRoute = createPageRoute({
+        __loadPage: undefined,
+        __loadRouteHandler() {},
+        page: null,
+        pattern: "/route",
+        routeHandler: { GET: () => new Response("get") },
+        routeSegments: ["route"],
+      });
+      const matchRoute = (pathname: string) =>
+        pathname === "/route" ? { params: {}, route: handlerRoute } : null;
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("payload"),
+      );
+      const handler = createHandler({
+        configHeaders: [],
+        isMetadataRoute: (pathname) => pathname === "/robots.txt",
+        matchRequestRoute: matchRoute,
+        matchRoute,
+      });
+      const selectorNames = VINEXT_RSC_VARY_HEADER.split(",").map((name) => name.trim());
+      const rscHeaders = createRscRequestHeaders({
+        mountedSlotsHeader: "slot:modal:/",
+        nextUrl: `/${crypto.randomUUID()}`,
+        routerState: { pathAndSearch: `/${crypto.randomUUID()}`, routeId: "route:/source" },
+      });
+      rscHeaders.set("Accept", "application/json");
+
+      for (const pathname of ["/docs/route", "/docs/robots.txt"]) {
+        const variants: Array<[string, HeadersInit]> = [
+          [pathname, { Accept: "application/json" }],
+          [`${pathname}?tab=latest`, { Accept: "application/json" }],
+          [
+            `${pathname}?junk=${crypto.randomUUID()}`,
+            {
+              Accept: "application/json",
+              "Next-Router-State-Tree": crypto.randomUUID(),
+              "Next-Url": `/${crypto.randomUUID()}`,
+              "X-Vinext-Mounted-Slots": "slot:modal:/",
+            },
+          ],
+          [await createRscRequestUrl(`${pathname}?tab=latest`, rscHeaders), rscHeaders],
+        ];
+        const identities = [];
+        for (const [requestPath, headers] of variants) {
+          dispatchResponseStage.mockClear();
+          await handler(
+            new Request(`https://example.test${requestPath}`, { headers }),
+            null,
+            false,
+            dispatchResponseStage,
+          );
+          const [request, props, options] = dispatchResponseStage.mock.calls[0]!;
+          expect(pathAndSearch(request.url)).toBe(requestPath);
+          expect(props.kind).toBe(
+            pathname === "/docs/route" ? "app-route-handler" : "app-metadata",
+          );
+          expect(options.cache).toBe("shared");
+          expect(options.cacheIdentity?.request.url).toBe(
+            `${VINEXT_CACHE_IDENTITY_ORIGIN}${pathname}`,
+          );
+          expect(options.cacheIdentity?.queryFree).toBe(true);
+          const identityHeaders = options.cacheIdentity!.request.headers;
+          for (const name of selectorNames) expect(identityHeaders.has(name)).toBe(false);
+          expect(identityHeaders.get("Accept")).toBe("application/json");
+          identities.push({
+            dispatched: props,
+            method: options.cacheIdentity!.request.method,
+            props: options.cacheIdentity!.props,
+            url: options.cacheIdentity!.request.url,
+          });
+        }
+        // The RSC request is dispatched as one; its identity is the plain one.
+        expect(identities[3]!.dispatched).toMatchObject({
+          isRscRequest: true,
+          mountedSlotsHeader: "slot:modal:/",
+        });
+        expect(identities[0]!.props).toEqual({
+          ...identities[0]!.dispatched,
+          requestOrigin: VINEXT_CACHE_IDENTITY_ORIGIN,
+        });
+        for (const identity of identities.slice(1)) {
+          expect({ ...identity, dispatched: null }).toEqual({
+            ...identities[0],
+            dispatched: null,
+          });
+        }
+      }
+    });
+
+    // Next.js keys its response cache by pathname, so every host an app
+    // serves shares one entry.
+    it("names one origin for every host, whatever the dispatch kind", async () => {
+      useQueryFreeIdentityAdapter();
+      const pageRoute = createPageRoute();
+      const handlerRoute = createPageRoute({
+        __loadPage: undefined,
+        __loadRouteHandler() {},
+        page: null,
+        pattern: "/route",
+        routeHandler: { GET: () => new Response("get") },
+        routeSegments: ["route"],
+      });
+      const matchRoute = (pathname: string) => {
+        if (pathname === "/about") return { params: {}, route: pageRoute };
+        if (pathname === "/route") return { params: {}, route: handlerRoute };
+        return null;
+      };
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("payload"),
+      );
+      const handler = createHandler({
+        configHeaders: [],
+        matchRequestRoute: matchRoute,
+        matchRoute,
+      });
+
+      const identities = [];
+      for (const pathname of ["/docs/about?tab=latest", "/docs/route?tab=latest"]) {
+        const perHost = [];
+        for (const origin of ["https://tenant-a.example", "http://tenant-b.example:8080"]) {
+          dispatchResponseStage.mockClear();
+          await handler(new Request(`${origin}${pathname}`), null, false, dispatchResponseStage);
+          const [request, props, options] = dispatchResponseStage.mock.calls[0]!;
+          expect(new URL(request.url).origin).toBe(origin);
+          expect(props.requestOrigin).toBe(origin);
+          perHost.push({
+            method: options.cacheIdentity!.request.method,
+            props: options.cacheIdentity!.props,
+            url: options.cacheIdentity!.request.url,
+          });
+        }
+        expect(perHost[0]).toEqual(perHost[1]);
+        identities.push(perHost[0]);
+      }
+      expect(identities.map(({ url }) => url)).toEqual([
+        `${VINEXT_CACHE_IDENTITY_ORIGIN}/docs/about`,
+        `${VINEXT_CACHE_IDENTITY_ORIGIN}/docs/route`,
+      ]);
+    });
+
+    // Workers Cache keys the dispatched path and query, so its identity only
+    // names one origin, and the dispatch keeps the query for the render.
+    it("keeps the query and selector headers in a host-free page identity", async () => {
+      useQueryFreeIdentityAdapter({ responseStageCacheIdentity: "host-free" });
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("page"),
+      );
+      const handler = createHandler({ configHeaders: [] });
+
+      const identities = [];
+      for (const origin of ["https://tenant-a.example", "http://tenant-b.example:8080"]) {
+        dispatchResponseStage.mockClear();
+        await handler(
+          new Request(`${origin}/docs/about?tab=latest`, { headers: { "Next-Url": "/feed" } }),
+          null,
+          false,
+          dispatchResponseStage,
+        );
+        const [request, props, options] = dispatchResponseStage.mock.calls[0]!;
+        expect(request.url).toBe(`${origin}/docs/about?tab=latest`);
+        expect(props).toMatchObject({ requestOrigin: origin, resolvedUrl: "/about?tab=latest" });
+        expect(options.cacheIdentity!.props).toEqual({
+          ...props,
+          requestOrigin: VINEXT_CACHE_IDENTITY_ORIGIN,
+        });
+        expect(options.cacheIdentity!.request.headers.get("Next-Url")).toBe("/feed");
+        identities.push({
+          method: options.cacheIdentity!.request.method,
+          props: options.cacheIdentity!.props,
+          url: options.cacheIdentity!.request.url,
+        });
+      }
+      expect(identities[0]).toEqual(identities[1]);
+      expect(identities[0]!.url).toBe(`${VINEXT_CACHE_IDENTITY_ORIGIN}/docs/about?tab=latest`);
+    });
+
+    // Next.js keys a static Pages page by its path, while vinext's Pages ISR
+    // key keeps a configured i18n domain.
+    it("names one origin for every host of a static hybrid Pages page", async () => {
+      useQueryFreeIdentityAdapter();
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("payload"),
+      );
+      let dataKind: PagesRouteDataKind = "static";
+      let runsInitialProps = false;
+      const handler = createHandler({
+        configHeaders: [],
+        i18nConfig: {
+          defaultLocale: "en",
+          domains: [{ defaultLocale: "fr", domain: "example.fr", http: true }],
+          locales: ["en", "fr"],
+        },
+        matchRequestRoute: () => null,
+        matchRoute: () => null,
+        renderPagesFallback: async (options) =>
+          options.dispatchPagesResponseStage?.(
+            options.request,
+            "page",
+            dataKind,
+            false,
+            runsInitialProps,
+          ) ?? null,
+      });
+      const dispatch = async (url: string) => {
+        dispatchResponseStage.mockClear();
+        await handler(new Request(url), null, false, dispatchResponseStage);
+        const [request, props, options] = dispatchResponseStage.mock.calls[0]!;
+        expect(request.url).toBe(url);
+        expect(props).toMatchObject({ requestOrigin: new URL(url).origin, requestUrl: url });
+        return { props, options };
+      };
+
+      for (const kind of ["static", "none"] as const) {
+        dataKind = kind;
+        const identities = [];
+        for (const url of [
+          "https://tenant-a.example/docs/pages?tab=latest",
+          "http://tenant-b.example:8080/docs/pages?tab=latest",
+        ]) {
+          const { props, options } = await dispatch(url);
+          expect(props).toMatchObject({ kind: "hybrid-pages", sharedAcrossHosts: true });
+          expect(options.cacheIdentity!.regenerateFromDispatch).toBe(true);
+          identities.push({
+            props: options.cacheIdentity!.props,
+            url: options.cacheIdentity!.request.url,
+          });
+        }
+        expect(identities[0]).toEqual(identities[1]);
+        expect(identities[0]).toMatchObject({
+          props: {
+            requestOrigin: VINEXT_CACHE_IDENTITY_ORIGIN,
+            requestUrl: `${VINEXT_CACHE_IDENTITY_ORIGIN}/docs/pages?tab=latest`,
+            sharedAcrossHosts: true,
+          },
+          url: `${VINEXT_CACHE_IDENTITY_ORIGIN}/docs/pages?tab=latest`,
+        });
+
+        const { options } = await dispatch("https://example.fr:8443/docs/pages");
+        expect(options.cacheIdentity!.request.url).toBe("http://example.fr/docs/pages");
+        expect(options.cacheIdentity!.props).toMatchObject({
+          requestOrigin: "http://example.fr",
+          requestUrl: "http://example.fr/docs/pages",
+        });
+      }
+
+      // A getServerSideProps page, or one whose getInitialProps runs, renders
+      // per request and keeps the host in its key.
+      for (const [kind, initialProps] of [
+        ["server", false],
+        ["none", true],
+      ] as const) {
+        dataKind = kind;
+        runsInitialProps = initialProps;
+        const { props, options } = await dispatch("https://tenant-a.example/docs/pages");
+        expect(props).toMatchObject({ sharedAcrossHosts: false });
+        expect(options).toEqual({ cache: "shared" });
+      }
+    });
+  });
+
+  describe("Workers Cache query-free dispatch", () => {
+    const aboutRoute: CacheabilityManifestRoute = {
+      kind: "app-page",
+      pattern: "/about",
+      state: "runtime-check",
+      staticPaths: { html: ["/about"], "rsc-full": ["/about"], "rsc-loading-shell": ["/about"] },
+    };
+    const productsRoute: CacheabilityManifestRoute = {
+      kind: "app-page",
+      pattern: "/products/:id",
+      pathPrefix: "/products/",
+      runtimePaths: ["dynamic"],
+      state: "runtime-check",
+      staticPaths: { html: ["static"] },
+    };
+
+    function manifest(...routes: CacheabilityManifestRoute[]): CacheabilityManifest {
+      return {
+        buildId: "build-id",
+        routes: Object.fromEntries(
+          routes.map((route) => [cacheabilityManifestRouteKey(route.kind, route.pattern), route]),
+        ),
+        version: 1,
+      };
+    }
+
+    function projection(...routes: CacheabilityManifestRoute[]): string {
+      return JSON.stringify(manifest(...routes));
+    }
+
+    function pathAndSearch(url: string): string {
+      const parsed = new URL(url);
+      return `${parsed.pathname}${parsed.search}`;
+    }
+
+    function createProductsHandler(overrides: Partial<TestHandlerOptions> = {}) {
+      const about = createPageRoute({ canUseCanonicalLoadingShell: true });
+      const products = createPageRoute({
+        isDynamic: true,
+        params: ["id"],
+        pattern: "/products/:id",
+        routeSegments: ["products", "[id]"],
+      });
+      const matchRoute = (
+        pathname: string,
+      ): { params: Record<string, string>; route: TestRoute } | null => {
+        if (pathname === "/about") return { params: {}, route: about };
+        if (pathname.startsWith("/products/")) {
+          return { params: { id: pathname.slice("/products/".length) }, route: products };
+        }
+        return null;
+      };
+      return createHandler({
+        configHeaders: [],
+        configRewrites: {
+          afterFiles: [],
+          beforeFiles: [{ source: "/promo", destination: "/products/static" }],
+          fallback: [],
+        },
+        matchRequestRoute: matchRoute,
+        matchRoute,
+        ...overrides,
+      });
+    }
+
+    async function navigationRequest(pathAndQuery: string): Promise<Request> {
+      const headers = createRscRequestHeaders({
+        routerState: { pathAndSearch: "/source", routeId: "route:/source" },
+      });
+      return new Request(
+        new URL(await createRscRequestUrl(pathAndQuery, headers), "https://example.test"),
+        { headers },
+      );
+    }
+
+    async function loadingShellRequest(pathAndQuery: string): Promise<Request> {
+      const headers = createRscRequestHeaders({
+        prefetchRouterState: { pathAndSearch: "/source", routeId: "route:/source" },
+        renderMode: "prefetch-loading-shell",
+      });
+      return new Request(
+        new URL(await createRscRequestUrl(pathAndQuery, headers), "https://example.test"),
+        { headers },
+      );
+    }
+
+    it("drops the user query from shared dispatches of static-candidate App page paths", async () => {
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("page"),
+      );
+      const handler = createProductsHandler({
+        cacheabilityRequestProjection: projection(aboutRoute),
+      });
+
+      for (const init of [
+        { headers: { Accept: "text/html" } },
+        { headers: { Accept: "text/html" }, method: "HEAD" },
+        // A curl-style request has no text/html Accept. Admission maps it to
+        // html once the route resolves to an App page, and so does the strip.
+        {},
+      ]) {
+        dispatchResponseStage.mockClear();
+        await handler(
+          new Request("https://example.test/docs/about?tab=latest&utm_source=x", init),
+          null,
+          false,
+          dispatchResponseStage,
+        );
+
+        const [request, props, options] = dispatchResponseStage.mock.calls[0]!;
+        expect(request.url).toBe("https://example.test/docs/about");
+        expect(request.method).toBe("GET");
+        expect(props).toMatchObject({
+          cacheability: { resolvedRoutePathname: "/about" },
+          kind: "app-page",
+          resolvedUrl: "/about",
+        });
+        expect(options).toEqual({ cache: "shared" });
+      }
+    });
+
+    it("builds the canonical RSC and loading-shell URLs from the query-free dispatch", async () => {
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("rsc"),
+      );
+      const handler = createProductsHandler({
+        cacheabilityRequestProjection: projection(aboutRoute),
+      });
+
+      const navigation = await handler(
+        await navigationRequest("/docs/about?tab=latest"),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+      let [request, props] = dispatchResponseStage.mock.calls[0]!;
+      expect(pathAndSearch(request.url)).toBe("/docs/about?_rsc");
+      expect(props).toMatchObject({ renderMode: "navigation", resolvedUrl: "/about" });
+      // The request stage still describes the routed request, query included.
+      expect(navigation.headers.get(VINEXT_RENDERED_PATH_AND_SEARCH_HEADER)).toBe(
+        encodeURIComponent("/about?tab=latest"),
+      );
+
+      dispatchResponseStage.mockClear();
+      await handler(
+        await loadingShellRequest("/docs/about?tab=latest"),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+      [request, props] = dispatchResponseStage.mock.calls[0]!;
+      const shellUrl = new URL(request.url);
+      expect([...shellUrl.searchParams.keys()]).toEqual([VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM]);
+      expect(shellUrl.searchParams.get(VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM)).toBe(
+        await computeRscCacheBustingSearchParam(request.headers),
+      );
+      expect(props).toMatchObject({ renderMode: "prefetch-loading-shell", resolvedUrl: "/about" });
+    });
+
+    it("judges a rewritten request by its resolved route pathname", async () => {
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("page"),
+      );
+      const handler = createProductsHandler({
+        cacheabilityRequestProjection: projection(productsRoute),
+      });
+
+      for (const path of ["/docs/promo", "/docs/products/static", "/docs/products/dynamic"]) {
+        await handler(
+          new Request(`https://example.test${path}?tab=latest`, {
+            headers: { Accept: "text/html" },
+          }),
+          null,
+          false,
+          dispatchResponseStage,
+        );
+      }
+
+      expect(
+        dispatchResponseStage.mock.calls.map(([request, props]) => [
+          pathAndSearch(request.url),
+          "resolvedUrl" in props ? props.resolvedUrl : null,
+        ]),
+      ).toEqual([
+        ["/docs/promo", "/products/static"],
+        ["/docs/products/static", "/products/static"],
+        ["/docs/products/dynamic?tab=latest", "/products/dynamic?tab=latest"],
+      ]);
+    });
+
+    it("keeps the query where the projection gives no static-candidate state", async () => {
+      const handlerRoute = createPageRoute({
+        __loadPage: undefined,
+        __loadRouteHandler() {},
+        page: null,
+        pattern: "/route",
+        routeHandler: { GET: () => new Response("get") },
+        routeSegments: ["route"],
+      });
+      const fallbackAbout = createPageRoute({ canUseCanonicalLoadingShell: true });
+      const matchRoute = (pathname: string) => {
+        if (pathname === "/about") return { params: {}, route: fallbackAbout };
+        if (pathname === "/route") return { params: {}, route: handlerRoute };
+        return null;
+      };
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("payload"),
+      );
+      const htmlOnly = createProductsHandler({
+        cacheabilityRequestProjection: projection({
+          ...aboutRoute,
+          staticPaths: { html: ["/about"] },
+        }),
+      });
+      // A fallback-only record answers static-candidate for any representation.
+      const fallbackOnly = createHandler({
+        cacheabilityRequestProjection: projection(
+          { kind: "app-page", pattern: "/about", state: "static-candidate" },
+          { kind: "app-page", pattern: "/route", state: "static-candidate" },
+        ),
+        configHeaders: [],
+        matchRequestRoute: matchRoute,
+        matchRoute,
+      });
+
+      // Only the HTML version of the path is certified.
+      await htmlOnly(
+        await navigationRequest("/docs/about?tab=latest"),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+      // A mounted-slot request has no representation, so admission refuses it.
+      const mountedHeaders = createRscRequestHeaders({ mountedSlotsHeader: "slot:modal:/" });
+      await fallbackOnly(
+        new Request(
+          new URL(
+            await createRscRequestUrl("/docs/about?tab=latest", mountedHeaders),
+            "https://example.test",
+          ),
+          { headers: mountedHeaders },
+        ),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+      // Route handlers read the query without tracking it.
+      await fallbackOnly(
+        new Request("https://example.test/docs/route?tab=latest"),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+      // The route has no record in the projection.
+      await createProductsHandler({ cacheabilityRequestProjection: projection(productsRoute) })(
+        new Request("https://example.test/docs/about?tab=latest", {
+          headers: { Accept: "text/html" },
+        }),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+
+      expect(
+        dispatchResponseStage.mock.calls.map(([request]) =>
+          new URL(request.url).searchParams.get("tab"),
+        ),
+      ).toEqual(["latest", "latest", "latest", "latest"]);
+    });
+
+    it("keeps the query of a Pages data URL that a root catch-all App page matches", async () => {
+      // app/[...path]/page.tsx with generateStaticParams returning [] gets a
+      // fallback-only record, which answers static-candidate for any
+      // representation. A pages-data request isn't an App page representation.
+      const catchAll = createPageRoute({
+        isDynamic: true,
+        params: ["path"],
+        pattern: "/:path+",
+        routeSegments: ["[...path]"],
+      });
+      const matchRoute = (pathname: string) => ({
+        params: { path: pathname.slice(1).split("/") },
+        route: catchAll,
+      });
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("page"),
+      );
+      const handler = createHandler({
+        cacheabilityRequestProjection: projection({
+          kind: "app-page",
+          pattern: "/:path+",
+          state: "static-candidate",
+        }),
+        configHeaders: [],
+        matchRequestRoute: matchRoute,
+        matchRoute,
+      });
+
+      for (const headers of [{}, { Accept: "application/json" }] as Record<string, string>[]) {
+        await handler(
+          new Request("https://example.test/docs/_next/data/build-id/foo.json?q=1", { headers }),
+          null,
+          false,
+          dispatchResponseStage,
+        );
+      }
+      // The same route's HTML is stripped.
+      await handler(
+        new Request("https://example.test/docs/foo?q=1", { headers: { Accept: "text/html" } }),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+
+      expect(
+        dispatchResponseStage.mock.calls.map(([request]) => pathAndSearch(request.url)),
+      ).toEqual([
+        "/docs/_next/data/build-id/foo.json?q=1",
+        "/docs/_next/data/build-id/foo.json?q=1",
+        "/docs/foo",
+      ]);
+    });
+
+    it("keeps the full URL under a next.config policy, for bypassed dispatches and without a projection", async () => {
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("page"),
+      );
+      const html = (headers: Record<string, string> = {}) =>
+        new Request("https://example.test/docs/about?tab=latest", {
+          headers: { Accept: "text/html", ...headers },
+        });
+
+      await createProductsHandler({
+        cacheabilityRequestProjection: projection(aboutRoute),
+        configHeaders: [
+          { source: "/about", headers: [{ key: "Cache-Control", value: "public, s-maxage=60" }] },
+        ],
+      })(html(), null, false, dispatchResponseStage);
+      const handler = createProductsHandler({
+        cacheabilityRequestProjection: projection(aboutRoute),
+      });
+      await handler(
+        html({ Cookie: "__prerender_bypass=test-draft-secret" }),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+      // A request carrying a CSP nonce renders per request.
+      await handler(
+        html({ "Content-Security-Policy": "script-src 'nonce-request-nonce'" }),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+      await handler(html(), null, false, dispatchResponseStage, "probe");
+      await createProductsHandler()(html(), null, false, dispatchResponseStage);
+      await createProductsHandler({
+        buildId: "other-build",
+        cacheabilityRequestProjection: projection(aboutRoute),
+      })(html(), null, false, dispatchResponseStage);
+
+      expect(
+        dispatchResponseStage.mock.calls.map(([request, props, options]) => [
+          pathAndSearch(request.url),
+          "resolvedUrl" in props ? props.resolvedUrl : null,
+          options.cache,
+        ]),
+      ).toEqual([
+        ["/docs/about?tab=latest", "/about?tab=latest", "shared"],
+        ["/docs/about?tab=latest", "/about?tab=latest", "bypass"],
+        ["/docs/about?tab=latest", "/about?tab=latest", "bypass"],
+        ["/docs/about?tab=latest", "/about?tab=latest", "bypass"],
+        ["/docs/about?tab=latest", "/about?tab=latest", "shared"],
+        ["/docs/about?tab=latest", "/about?tab=latest", "shared"],
+      ]);
+    });
+
+    it("strips exactly the dispatches completed-response admission gives static-candidate", async () => {
+      const full = manifest(
+        { ...aboutRoute, staticPaths: { html: ["/about"], "rsc-full": ["/about"] } },
+        productsRoute,
+        { kind: "app-route", pattern: "/about", state: "static-candidate" },
+      );
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+        async () => new Response("payload"),
+      );
+      const handler = createProductsHandler({
+        cacheabilityRequestProjection: JSON.stringify(
+          projectCacheabilityManifestForRequestStage(full),
+        ),
+      });
+      const html = (path: string) =>
+        new Request(`https://example.test${path}?tab=latest`, {
+          headers: { Accept: "text/html" },
+        });
+      const requests: Array<[string, Request]> = [
+        ["html", html("/docs/about")],
+        ["curl", new Request("https://example.test/docs/about?tab=latest")],
+        ["rsc", await navigationRequest("/docs/about?tab=latest")],
+        ["loading shell", await loadingShellRequest("/docs/about?tab=latest")],
+        ["listed static", html("/docs/products/static")],
+        ["rewritten", html("/docs/promo")],
+        ["listed static rsc", await navigationRequest("/docs/products/static?tab=latest")],
+        ["listed dynamic", new Request("https://example.test/docs/products/dynamic?tab=latest")],
+        ["unlisted", html("/docs/products/unlisted")],
+      ];
+
+      const results: Array<[string, boolean, string | null]> = [];
+      for (const [label, request] of requests) {
+        dispatchResponseStage.mockClear();
+        await handler(request, null, false, dispatchResponseStage);
+        const [dispatched, props] = dispatchResponseStage.mock.calls[0]!;
+        if (props.kind !== "app-page") throw new Error(`${label} did not dispatch a page`);
+        const admission = Reflect.get(
+          createWorkerCacheabilityAdmissionContext(
+            { waitUntil() {} },
+            dispatched,
+            JSON.stringify(full),
+            "build-id",
+            true,
+            undefined,
+            props.cacheability.resolvedRoutePathname,
+            props.cacheability.representation,
+          ),
+          CACHEABILITY_REQUEST_STATE,
+        ).admission as NonNullable<RouteCacheabilityState["admission"]>;
+        const admissionState =
+          admission.policy === "manifest" && admission.routePathname
+            ? cacheabilityManifestPageState(
+                admission.manifest as CacheabilityManifest,
+                { kind: "app-page", pattern: props.routePattern },
+                admission.representation as CacheabilityRepresentation,
+                admission.routePathname,
+              )
+            : null;
+        const stripped = !new URL(dispatched.url).searchParams.has("tab");
+        expect(stripped, label).toBe(admissionState === "static-candidate");
+        results.push([label, stripped, admissionState]);
+      }
+      expect(results).toEqual([
+        ["html", true, "static-candidate"],
+        ["curl", true, "static-candidate"],
+        ["rsc", true, "static-candidate"],
+        ["loading shell", false, "runtime-check"],
+        ["listed static", true, "static-candidate"],
+        ["rewritten", true, "static-candidate"],
+        ["listed static rsc", false, "runtime-check"],
+        ["listed dynamic", false, "runtime-check"],
+        ["unlisted", false, null],
+      ]);
+    });
+  });
+
+  it("dispatches a matched GET through the App response stage and composes request-stage headers", async () => {
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async (_request, props) => {
+      expect(props).toMatchObject({
+        kind: "app-page",
+        buildId: "build-id",
+        bypassInterceptionContextCache: false,
+        interceptionId: null,
+        protocolVersion: APP_WORKER_RESPONSE_STAGE_PROTOCOL_VERSION,
+        requestOrigin: "https://example.test",
+        routePattern: "/about",
+        routePathname: "/about",
+      });
+      return new Response("response-stage", { headers: { "x-response-stage": "yes" } });
+    });
+    const handler = createHandler();
+
+    const response = await handler(
+      new Request("https://example.test/docs/about"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "shared" });
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-test-header")).toBe("applied");
+    expect(response.headers.get("x-response-stage")).toBe("yes");
+    expect(await response.text()).toBe("response-stage");
+  });
+
+  it.each(["no-cache", "no-store", "max-age=0, no-cache"])(
+    "keeps production App responses shareable with request Cache-Control %s",
+    async (cacheControl) => {
+      // Next.js only uses a browser no-cache request to bypass server caches in dev.
+      // https://github.com/vercel/next.js/blob/canary/packages/next/src/server/app-render/app-render.tsx
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+        Promise.resolve(new Response("response-stage")),
+      );
+      const handler = createHandler();
+
+      const response = await handler(
+        new Request("https://example.test/docs/about", {
+          headers: { "Cache-Control": cacheControl },
+        }),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+
+      expect(response.status).toBe(200);
+      expect(dispatchResponseStage).toHaveBeenCalledOnce();
+      expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "shared" });
+    },
+  );
+
+  it("preserves staged config Link ordering before framework preloads", async () => {
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () => {
+      const response = new Response("response-stage", {
+        headers: { Link: '</framework.woff2>; rel="preload"; as="font"' },
+      });
+      markFrameworkLinkHeaders(response.headers, response.headers.get("link"));
+      return serializeResponseStageLinkProvenance(response);
+    });
+    const handler = createHandler({
+      configHeaders: [
+        {
+          source: "/about",
+          headers: [{ key: "Link", value: '</config>; rel="describedby"' }],
+        },
+      ],
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(response.headers.get("link")).toBe(
+      '</config>; rel="describedby", </framework.woff2>; rel="preload"; as="font"',
+    );
+    expect(response.headers.has("x-vinext-app-stage-post-config-link")).toBe(false);
+  });
+
+  it("preserves staged middleware Link ordering before Edge handler links", async () => {
+    const route = createPageRoute({
+      __loadPage: undefined,
+      __loadRouteHandler() {},
+      page: null,
+      pattern: "/route",
+      routeHandler: { GET: () => new Response("get"), runtime: "edge" },
+      routeSegments: ["route"],
+    });
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () => {
+      const response = new Response("response-stage", {
+        headers: { Link: '</edge-route>; rel="alternate"' },
+      });
+      markEdgeRouteHandlerLinkHeaders(response.headers, response.headers.get("link"));
+      return serializeResponseStageLinkProvenance(response);
+    });
+    const handler = createHandler({
+      configHeaders: [
+        {
+          source: "/route",
+          headers: [{ key: "Link", value: '</config>; rel="describedby"' }],
+        },
+      ],
+      matchRoute: (pathname) => (pathname === "/route" ? { params: {}, route } : null),
+      middlewareModule: {
+        default() {
+          return new Response(null, {
+            headers: {
+              Link: '</middleware>; rel="preload"',
+              "x-middleware-next": "1",
+            },
+          });
+        },
+      },
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/route"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(response.headers.get("link")).toBe(
+      '</middleware>; rel="preload", </edge-route>; rel="alternate"',
+    );
+    expect(response.headers.has("x-vinext-app-stage-post-config-link")).toBe(false);
+  });
+
+  it("shares the method-invariant App page representation for HEAD and strips its body", async () => {
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("page-body", { headers: { "x-generation": "one" } })),
+    );
+    const handler = createHandler({ configHeaders: [] });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about", { method: "HEAD" }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage.mock.calls[0]?.[0].method).toBe("GET");
+    expect(dispatchResponseStage.mock.calls[0]?.[1].kind).toBe("app-page");
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "shared" });
+    expect(response.headers.get("x-generation")).toBe("one");
+    expect(response.body).toBeNull();
+  });
+
+  it("preserves HEAD for App route handlers and strips their response body", async () => {
+    const route = createPageRoute({
+      __loadPage: undefined,
+      __loadRouteHandler() {},
+      page: null,
+      pattern: "/route",
+      routeHandler: { GET: () => new Response("get") },
+      routeSegments: ["route"],
+    });
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("head-handler-body", { headers: { "x-handler": "head" } })),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      matchRoute: (pathname) => (pathname === "/route" ? { params: {}, route } : null),
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/route", { method: "HEAD" }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage.mock.calls[0]?.[0].method).toBe("HEAD");
+    expect(dispatchResponseStage.mock.calls[0]?.[1].kind).toBe("app-route-handler");
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "shared" });
+    expect(response.headers.get("x-handler")).toBe("head");
+    expect(response.body).toBeNull();
+  });
+
+  it("bypasses the shared response stage for valid draft mode requests", async () => {
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("draft")),
+    );
+    const handler = createHandler({ configHeaders: [] });
+
+    await handler(
+      new Request("https://example.test/docs/about", {
+        headers: { Cookie: "__prerender_bypass=test-draft-secret" },
+      }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "bypass" });
+  });
+
+  it("does not treat a forged App bypass cookie as valid draft mode", async () => {
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("app")),
+    );
+    const handler = createHandler({ configHeaders: [] });
+
+    await handler(
+      new Request("https://example.test/docs/about", {
+        headers: { Cookie: "__prerender_bypass=forged" },
+      }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "shared" });
+  });
+
+  it("bypasses the shared response stage for middleware draft transitions", async () => {
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("draft")),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      middlewareModule: {
+        async default() {
+          (await draftMode()).enable();
+          return new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+
+    await handler(
+      new Request("https://example.test/docs/about"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "bypass" });
+  });
+
+  // Ported from Next.js: test/e2e/app-dir/app-middleware/app-middleware.test.ts
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/app-middleware/app-middleware.test.ts
+  it("preserves middleware draft transitions on staged metadata responses", async () => {
+    const responseHandler = createHandler({
+      handleMetadataRouteRequest: async () =>
+        new Response("User-agent: *", {
+          headers: { "Cache-Control": "public, max-age=3600" },
+        }),
+    });
+    const requestHandler = createHandler({
+      configHeaders: [],
+      isMetadataRoute: (pathname) => pathname === "/robots.txt",
+      middlewareModule: {
+        async default() {
+          (await draftMode()).enable();
+          return new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+      (stageRequest: Request, props: AppWorkerResponseStageProps) =>
+        responseHandler.handleResponseStage(stageRequest, null, props),
+    );
+
+    const response = await requestHandler(
+      new Request("https://example.test/docs/robots.txt"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "bypass" });
+    expect(response.headers.get("set-cookie")).toContain("__prerender_bypass=test-draft-secret");
+    expect(response.headers.get("cache-control")).toContain("no-store");
+    expect(response.headers.get("cdn-cache-control")).toBeNull();
+    expect(response.headers.get("cloudflare-cdn-cache-control")).toBeNull();
+  });
+
+  it("transports authenticated probe intent outside the shared cache", async () => {
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("probe")),
+    );
+    const handler = createHandler({ configHeaders: [] });
+
+    await handler(
+      new Request("https://example.test/docs/about"),
+      null,
+      false,
+      dispatchResponseStage,
+      "probe",
+    );
+
+    expect(dispatchResponseStage.mock.calls[0]?.[1].cacheability).toMatchObject({
+      policyHeaders: null,
+      probeMode: "probe",
+      resolvedRoutePathname: "/about",
+    });
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "bypass" });
+  });
+
+  it("transports matched positive config cache policy in stage identity", async () => {
+    useSplitPolicyAdapter();
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(
+        new Response("stage", {
+          headers: { "Cache-Control": "public, max-age=0, must-revalidate" },
+        }),
+      ),
+    );
+    const handler = createHandler({
+      configHeaders: [
+        {
+          source: "/about",
+          headers: [
+            { key: "Cache-Control", value: "public, s-maxage=60" },
+            { key: "Vary", value: "x-visitor" },
+          ],
+        },
+        {
+          source: "/about",
+          has: [{ type: "cookie", key: "preview", value: "1" }],
+          headers: [{ key: "CDN-Cache-Control", value: "public, s-maxage=120" }],
+        },
+      ],
+    });
+
+    const state: RouteCacheabilityState = {
+      captureDeadlineAt: Date.now() + 1_000,
+      mode: "admit",
+    };
+    const response = await runWithExecutionContext(cacheabilityContext(state), () =>
+      handler(
+        new Request("https://example.test/docs/about", {
+          headers: { Cookie: "preview=1" },
+        }),
+        null,
+        false,
+        dispatchResponseStage,
+      ),
+    );
+
+    expect(dispatchResponseStage.mock.calls[0]?.[1].cacheability.policyHeaders).toEqual([
+      ["Cache-Control", "public, s-maxage=60"],
+      ["CDN-Cache-Control", "public, s-maxage=120"],
+    ]);
+    expect(response.headers.get("Vary")).toContain("x-visitor");
+    expect(response.headers.get("Cache-Control")).toBe("public, max-age=0, must-revalidate");
+    expect(state.forcedDynamicReason).toBeUndefined();
+  });
+
+  it("bypasses the shared response stage for a statically known force-dynamic route", async () => {
+    const route = createPageRoute({ forceDynamic: true });
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("dynamic stage")),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      matchRequestRoute: () => ({ params: {}, route }),
+      matchRoute: () => ({ params: {}, route }),
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    await expect(response.text()).resolves.toBe("dynamic stage");
+    expect(dispatchResponseStage.mock.calls[0]?.[1]).toMatchObject({ forceDynamic: true });
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "bypass" });
+  });
+
+  it("keeps a force-dynamic route shared when next.config supplies a public cache policy", async () => {
+    const route = createPageRoute({ forceDynamic: true });
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("configured stage")),
+    );
+    const handler = createHandler({
+      configHeaders: [
+        {
+          source: "/about",
+          headers: [{ key: "Cache-Control", value: "s-maxage=60" }],
+        },
+      ],
+      matchRequestRoute: () => ({ params: {}, route }),
+      matchRoute: () => ({ params: {}, route }),
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    await expect(response.text()).resolves.toBe("configured stage");
+    expect(dispatchResponseStage.mock.calls[0]?.[1].cacheability.policyHeaders).toEqual([
+      ["Cache-Control", "s-maxage=60"],
+    ]);
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "shared" });
+  });
+
+  it("transports matched config cache policy to a hybrid Pages response stage", async () => {
+    useSplitPolicyAdapter();
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("pages-stage")),
+    );
+    const handler = createHandler({
+      configHeaders: [
+        {
+          source: "/pages",
+          headers: [
+            { key: "Cache-Control", value: "public, s-maxage=36" },
+            { key: "Vary", value: "x-visitor" },
+          ],
+        },
+        {
+          source: "/pages",
+          has: [{ type: "cookie", key: "preview", value: "1" }],
+          headers: [
+            { key: "CDN-Cache-Control", value: "public, s-maxage=120" },
+            { key: "x-config-variant", value: "preview" },
+          ],
+        },
+      ],
+      matchRequestRoute: () => null,
+      matchRoute: () => null,
+      renderPagesFallback: async (options) =>
+        options.dispatchPagesResponseStage?.(options.request, "page") ?? null,
+    });
+
+    await handler(
+      new Request("https://example.test/docs/pages", {
+        headers: { Cookie: "preview=1" },
+      }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+    expect(dispatchResponseStage.mock.calls[0]?.[1]).toMatchObject({
+      kind: "hybrid-pages",
+      cacheability: {
+        policyHeaders: [
+          ["Cache-Control", "public, s-maxage=36"],
+          ["CDN-Cache-Control", "public, s-maxage=120"],
+        ],
+      },
+      preHandlerHeaders: [
+        ["cache-control", "public, s-maxage=36"],
+        ["cdn-cache-control", "public, s-maxage=120"],
+        ["vary", "x-visitor"],
+        ["x-config-variant", "preview"],
+      ],
+    });
+  });
+
+  it("composes hybrid Pages middleware cookies once across the response stage", async () => {
+    // Next.js exposes middleware headers to Pages data functions, then emits
+    // them once on the final response. Exercise both halves of the staged
+    // bridge so the transported snapshot cannot be replayed by the gateway.
+    // https://github.com/vercel/next.js/blob/canary/test/e2e/middleware-custom-matchers/app/pages/index.js
+    let responseStageHandler: ReturnType<typeof createHandler>;
+    const renderPagesFallback: NonNullable<HandlerOptions["renderPagesFallback"]> = async (
+      options,
+    ) => {
+      if (options.dispatchPagesResponseStage) {
+        return options.dispatchPagesResponseStage(options.request, "page", "server");
+      }
+
+      expect(options.initialResponseHeaders?.get("Content-Length")).toBeNull();
+      const headers = new Headers(options.initialResponseHeaders);
+      headers.append("Set-Cookie", "middleware=one; Path=/");
+      headers.append("Set-Cookie", "handler=two; Path=/");
+      headers.set("Content-Length", "4");
+      return new Response("page", { headers });
+    };
+    const options = {
+      configHeaders: [],
+      matchRequestRoute: () => null,
+      matchRoute: () => null,
+      middlewareModule: {
+        default() {
+          const headers = new Headers({
+            "Content-Length": "999",
+            "x-middleware-next": "1",
+          });
+          headers.append("Set-Cookie", "middleware=one; Path=/");
+          return new Response(null, { headers });
+        },
+      },
+      renderPagesFallback,
+    } satisfies Partial<TestHandlerOptions>;
+    responseStageHandler = createHandler(options);
+    const requestStageHandler = createHandler(options);
+    const dispatchResponseStage: DispatchAppWorkerResponseStage = (request, props, stageOptions) =>
+      responseStageHandler.handleResponseStage(request, null, props, stageOptions);
+
+    const response = await requestStageHandler(
+      new Request("https://example.test/docs/pages"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(response.headers.getSetCookie()).toEqual([
+      "middleware=one; Path=/",
+      "handler=two; Path=/",
+    ]);
+    expect(response.headers.get("Content-Length")).toBe("4");
+    await expect(response.text()).resolves.toBe("page");
+  });
+
+  // Next.js renders Pages Router routes without a work store, but runs
+  // middleware with one.
+  // https://github.com/vercel/next.js/blob/canary/packages/next/src/server/web/adapter.ts
+  it.each(["single-stage", "response-stage"] as const)(
+    "runs the hybrid Pages fallback outside the work store scope (%s)",
+    async (mode) => {
+      const { isInsideWorkStoreScope } =
+        await import("../packages/vinext/src/shims/internal/work-store-scope.js");
+      const scopes: Record<string, boolean> = {};
+      let responseStageHandler: ReturnType<typeof createHandler>;
+      const options = {
+        configHeaders: [],
+        matchRequestRoute: () => null,
+        matchRoute: () => null,
+        middlewareModule: {
+          default() {
+            scopes.middleware = isInsideWorkStoreScope();
+            return new Response(null, { headers: { "x-middleware-next": "1" } });
+          },
+        },
+        renderPagesFallback: async (fallbackOptions) => {
+          if (fallbackOptions.dispatchPagesResponseStage) {
+            return fallbackOptions.dispatchPagesResponseStage(
+              fallbackOptions.request,
+              "page",
+              "server",
+            );
+          }
+          scopes.pages = isInsideWorkStoreScope();
+          return new Response("page");
+        },
+      } satisfies Partial<TestHandlerOptions>;
+      responseStageHandler = createHandler(options);
+      const requestStageHandler = createHandler(options);
+      const dispatchResponseStage: DispatchAppWorkerResponseStage = (
+        request,
+        props,
+        stageOptions,
+      ) => responseStageHandler.handleResponseStage(request, null, props, stageOptions);
+
+      const response = await requestStageHandler(
+        new Request("https://example.test/docs/pages"),
+        null,
+        false,
+        mode === "response-stage" ? dispatchResponseStage : undefined,
+      );
+
+      await expect(response.text()).resolves.toBe("page");
+      expect(scopes).toEqual({ middleware: true, pages: false });
+    },
+  );
+
+  it.each(["page", "api"] as const)(
+    "does not turn hybrid Pages %s next.config Content-Length into response framing",
+    async (resourceKind) => {
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+        Promise.resolve(new Response("stage")),
+      );
+      const handler = createHandler({
+        configHeaders: [
+          {
+            source: resourceKind === "api" ? "/api/hybrid" : "/pages",
+            headers: [{ key: "Content-Length", value: "999" }],
+          },
+        ],
+        matchRequestRoute: () => null,
+        matchRoute: () => null,
+        renderPagesFallback: async (options) =>
+          options.dispatchPagesResponseStage?.(options.request, resourceKind) ?? null,
+      });
+
+      const response = await handler(
+        new Request(`https://example.test/docs/${resourceKind === "api" ? "api/hybrid" : "pages"}`),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+
+      expect(response.headers.get("Content-Length")).toBeNull();
+    },
+  );
+
+  it("keeps hybrid static Pages renders with request-aware Documents outside the shared stage", async () => {
+    // Next.js supplies req/res to custom _document.getInitialProps for GSP/ISR
+    // pages, so their HTML can remain request-specific despite static data.
+    // https://github.com/vercel/next.js/blob/canary/packages/next/src/server/render.tsx
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("pages-stage")),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      matchRequestRoute: () => null,
+      matchRoute: () => null,
+      renderPagesFallback: async (options) =>
+        options.dispatchPagesResponseStage?.(options.request, "page", "static", true) ?? null,
+    });
+
+    await handler(
+      new Request("https://example.test/docs/pages"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+    expect(dispatchResponseStage.mock.calls[0]?.[1]).toMatchObject({
+      kind: "hybrid-pages",
+      preHandlerHeaders: [],
+    });
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "bypass" });
+  });
+
+  it.each(["__prerender_bypass", "__next_preview_data"])(
+    "keeps hybrid Pages requests carrying the %s preview cookie outside the shared stage",
+    async (cookieName) => {
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+        Promise.resolve(new Response("pages-stage")),
+      );
+      const handler = createHandler({
+        configHeaders: [],
+        matchRequestRoute: () => null,
+        matchRoute: () => null,
+        renderPagesFallback: async (options) =>
+          options.dispatchPagesResponseStage?.(options.request, "page", "static") ?? null,
+      });
+
+      await handler(
+        new Request("https://example.test/docs/pages", {
+          headers: { Cookie: `${cookieName}=stale-or-invalid` },
+        }),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+
+      expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "bypass" });
+    },
+  );
+
+  it("retains shared Pages storage policy when outer config makes the browser response private", async () => {
+    const adapter: CdnCacheAdapter = {
+      ownsBackgroundRevalidation: false,
+      responsePolicy: {
+        isHeader: (name) => name.toLowerCase() === "cdn-cache-control",
+        readCacheControl: (headers) =>
+          headers.get("CDN-Cache-Control") ?? headers.get("Cache-Control"),
+        hasExplicitNonCacheablePolicy: () => false,
+      },
+      async get() {
+        return null;
+      },
+      async set() {},
+      buildResponseHeaders({ cacheControl }) {
+        return {
+          "Cache-Control": cacheControl,
+          "CDN-Cache-Control": null,
+          "Cache-Tag": null,
+        };
+      },
+      async revalidateTag() {},
+    };
+    setCdnCacheAdapter(adapter);
+    try {
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+        Promise.resolve(
+          new Response("pages-stage", {
+            headers: {
+              "Cache-Control": "public, max-age=0, must-revalidate",
+              "CDN-Cache-Control": "public, max-age=60",
+              "Cache-Tag": "pages",
+            },
+          }),
+        ),
+      );
+      const handler = createHandler({
+        configHeaders: [
+          {
+            source: "/pages",
+            headers: [{ key: "Cache-Control", value: "private, no-store" }],
+          },
+        ],
+        matchRequestRoute: () => null,
+        matchRoute: () => null,
+        renderPagesFallback: async (options) =>
+          options.dispatchPagesResponseStage?.(options.request, "page") ?? null,
+      });
+
+      const response = await handler(
+        new Request("https://example.test/docs/pages"),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+
+      expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "shared" });
+      expect(response.headers.get("cache-control")).toBe("private, no-store");
+      expect(response.headers.get("cdn-cache-control")).toBe("public, max-age=60");
+      expect(response.headers.get("cache-tag")).toBe("pages");
+    } finally {
+      setCdnCacheAdapter(new DefaultCdnCacheAdapter());
+    }
+  });
+
+  it("lets hybrid getServerSideProps override an earlier private config policy", async () => {
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(
+        new Response("pages-stage", {
+          headers: { "Cache-Control": "public, s-maxage=30" },
+        }),
+      ),
+    );
+    const handler = createHandler({
+      configHeaders: [
+        {
+          source: "/pages",
+          headers: [{ key: "Cache-Control", value: "private, no-store" }],
+        },
+      ],
+      matchRequestRoute: () => null,
+      matchRoute: () => null,
+      renderPagesFallback: async (options) =>
+        options.dispatchPagesResponseStage?.(options.request, "page", "server") ?? null,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/pages"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(response.headers.get("Cache-Control")).toBe("public, s-maxage=30");
+  });
+
+  it.each([
+    ["private, no-store", "public, s-maxage=30"],
+    ["public, s-maxage=60", "private, no-store"],
+  ])(
+    "lets hybrid getInitialProps replace config policy %s with %s",
+    async (configPolicy, renderedPolicy) => {
+      // Ported from Next.js routing order: custom-route headers run before
+      // Pages rendering and getInitialProps can replace them on the response.
+      // https://github.com/vercel/next.js/blob/canary/packages/next/src/server/lib/router-server.ts
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+        Promise.resolve(
+          new Response("pages-stage", {
+            headers: {
+              "Cache-Control": renderedPolicy,
+              [PAGES_RESPONSE_STAGE_POLICY_OWNER_HEADER]: "request-time",
+            },
+          }),
+        ),
+      );
+      const handler = createHandler({
+        configHeaders: [
+          {
+            source: "/pages",
+            headers: [{ key: "Cache-Control", value: configPolicy }],
+          },
+        ],
+        matchRequestRoute: () => null,
+        matchRoute: () => null,
+        renderPagesFallback: async (options) =>
+          options.dispatchPagesResponseStage?.(options.request, "page", "none") ?? null,
+      });
+
+      const response = await handler(
+        new Request("https://example.test/docs/pages"),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+
+      expect(response.headers.get("Cache-Control")).toBe(renderedPolicy);
+      expect(response.headers.has(PAGES_RESPONSE_STAGE_POLICY_OWNER_HEADER)).toBe(false);
+    },
+  );
+
+  it("bypasses the staged cache for an unverified interception context", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+      async () =>
+        new Response("response-stage", { headers: { "Cache-Control": "public, max-age=3600" } }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      matchInterceptRoute: () => null,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+    });
+    const headers = createRscRequestHeaders({ interceptionContext: "/attacker-selected" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+
+    const response = await handler(
+      new Request(`https://example.test${rscUrl}`, { headers }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+    expect(dispatchResponseStage.mock.calls[0]?.[1]).toMatchObject({
+      bypassInterceptionContextCache: true,
+      interceptionContext: "/attacker-selected",
+      interceptionId: null,
+    });
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "bypass" });
+    expect(response.headers.get("cache-control")).toBe(
+      "private, no-cache, no-store, max-age=0, must-revalidate",
+    );
+  });
+
+  it("dispatches authenticated hybrid Pages revalidation outside the shared cache", async () => {
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+      async () => new Response(null),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      matchRequestRoute: () => null,
+      matchRoute: () => null,
+      renderPagesFallback: async (options) =>
+        options.dispatchPagesResponseStage?.(options.request, "page") ?? null,
+    });
+
+    await handler(
+      new Request("https://example.test/docs/pages", {
+        headers: {
+          [PRERENDER_REVALIDATE_HEADER]: getRevalidateSecret(),
+          [PRERENDER_REVALIDATE_ONLY_GENERATED_HEADER]: "1",
+        },
+        method: "HEAD",
+      }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+    expect(dispatchResponseStage.mock.calls[0]?.[0].method).toBe("HEAD");
+    expect(
+      dispatchResponseStage.mock.calls[0]?.[0].headers.get(
+        PRERENDER_REVALIDATE_ONLY_GENERATED_HEADER,
+      ),
+    ).toBe("1");
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "bypass" });
+  });
+
+  it("dispatches authenticated hybrid Pages probes outside the shared cache", async () => {
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("probe")),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      matchRequestRoute: () => null,
+      matchRoute: () => null,
+      renderPagesFallback: async (options) =>
+        options.dispatchPagesResponseStage?.(options.request, "page") ?? null,
+    });
+
+    await handler(
+      new Request("https://example.test/docs/pages"),
+      null,
+      false,
+      dispatchResponseStage,
+      "probe",
+    );
+
+    expect(dispatchResponseStage.mock.calls[0]?.[1]).toMatchObject({
+      kind: "hybrid-pages",
+      cacheability: { probeMode: "probe" },
+    });
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "bypass" });
+  });
+
+  // A probe renders as the shared dispatch, whose entry every host shares.
+  it("marks a hybrid Pages probe shared across hosts as the shared dispatch would be", async () => {
+    setCdnCacheAdapter({
+      buildResponseHeaders: ({ cacheControl }) => ({ "Cache-Control": cacheControl }),
+      ownsBackgroundRevalidation: false,
+      requiresCompletedResponseAdmission: true,
+      responseStageCacheIdentity: "host-free",
+      async get() {
+        return null;
+      },
+      async revalidateTag() {},
+      async set() {},
+    });
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("probe")),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      matchRequestRoute: () => null,
+      matchRoute: () => null,
+      renderPagesFallback: async (options) =>
+        options.dispatchPagesResponseStage?.(options.request, "page", "none") ?? null,
+    });
+
+    await handler(
+      new Request("https://example.test/docs/pages"),
+      null,
+      false,
+      dispatchResponseStage,
+      "probe",
+    );
+
+    expect(dispatchResponseStage.mock.calls[0]?.[1]).toMatchObject({
+      kind: "hybrid-pages",
+      cacheability: { probeMode: "probe" },
+      sharedAcrossHosts: true,
+    });
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "bypass" });
+  });
+
+  it("carries hybrid Pages data and API identity in response-stage props", async () => {
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+      async () => new Response("stage"),
+    );
+    const dataHandler = createHandler({
+      configHeaders: [],
+      matchRequestRoute: () => null,
+      matchRoute: () => null,
+      renderPagesFallback: async (options) =>
+        options.dispatchPagesResponseStage?.(options.pagesDataRequest ?? options.request, "page") ??
+        null,
+    });
+
+    await dataHandler(
+      new Request("https://example.test/docs/_next/data/build-id/pages.json"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage.mock.calls[0]?.[1]).toMatchObject({ isDataRequest: true });
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "shared" });
+
+    dispatchResponseStage.mockClear();
+    const apiHandler = createHandler({
+      configHeaders: [],
+      matchRequestRoute: () => null,
+      matchRoute: () => null,
+      renderPagesFallback: async (options) =>
+        options.dispatchPagesResponseStage?.(options.request, "api") ?? null,
+    });
+    await apiHandler(
+      new Request("https://example.test/docs/api/pages"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+    expect(dispatchResponseStage.mock.calls[0]?.[1]).toMatchObject({ resourceKind: "api" });
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "shared" });
+  });
+
+  // Next.js re-adds the root's trailing slash after splicing in the default
+  // locale only when the raw request pathname ended in `/`. Without
+  // middleware a `/_next/data` index request is matched raw, so the
+  // locale-prefixed root rule must not apply to it even though the handler
+  // rewrites it to `/` before header matching.
+  // https://github.com/vercel/next.js/blob/v16.2.7/packages/next/src/server/lib/router-utils/resolve-routes.ts
+  it("restores the locale root trailing slash for header matching only from the raw URL", async () => {
+    const { applyLocaleToRoutes } =
+      await import("../packages/vinext/src/config/config-matchers.js");
+    const i18nConfig = { locales: ["en", "fr"], defaultLocale: "en" };
+    const handler = createHandler({
+      configHeaders: applyLocaleToRoutes(
+        [{ source: "/", headers: [{ key: "x-locale-root", value: "1" }] }],
+        i18nConfig,
+        "header",
+        { trailingSlash: true },
+      ),
+      basePath: "",
+      i18nConfig,
+      trailingSlash: true,
+      matchRequestRoute: () => null,
+      matchRoute: () => null,
+      renderPagesFallback: async () => new Response("page"),
+    });
+
+    const root = await handler(new Request("https://example.test/"), null);
+    expect(root.headers.get("x-locale-root")).toBe("1");
+
+    const data = await handler(
+      new Request("https://example.test/_next/data/build-id/index.json"),
+      null,
+    );
+    expect(await data.text()).toBe("page");
+    expect(data.headers.get("x-locale-root")).toBeNull();
+  });
+
+  // Ported from Next.js cross-router res.revalidate() coverage:
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/app-static/pages/api/revalidate.js
+  it("dispatches authenticated App route revalidation outside the shared cache", async () => {
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+      async () => new Response(null),
+    );
+    const handler = createHandler({ configHeaders: [] });
+
+    await handler(
+      new Request("https://example.test/docs/about", {
+        headers: {
+          [PRERENDER_REVALIDATE_HEADER]: getRevalidateSecret(),
+          [PRERENDER_REVALIDATE_ONLY_GENERATED_HEADER]: "1",
+        },
+        method: "HEAD",
+      }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+    expect(dispatchResponseStage.mock.calls[0]?.[0].method).toBe("HEAD");
+    expect(
+      dispatchResponseStage.mock.calls[0]?.[0].headers.get(
+        PRERENDER_REVALIDATE_ONLY_GENERATED_HEADER,
+      ),
+    ).toBe("1");
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "bypass" });
+  });
+
+  it("composes routed params and rendered URL above a shared RSC cache hit", async () => {
+    const route = createPageRoute({
+      isDynamic: true,
+      params: ["slug"],
+      pattern: "/items/:slug",
+      routeSegments: ["items", "[slug]"],
+    });
+    const handler = createHandler({
+      configHeaders: [],
+      matchRoute: (pathname) =>
+        pathname === "/items/one" ? { params: { slug: "one" }, route } : null,
+    });
+    const headers = createRscRequestHeaders();
+    const url = await createRscRequestUrl("/docs/items/one?tab=current", headers);
+
+    const response = await handler(
+      new Request(`https://example.test${url}`, { headers }),
+      null,
+      false,
+      async () =>
+        new Response("cached-rsc", {
+          headers: { "X-Vinext-Cache": "HIT" },
+        }),
+    );
+
+    expect(JSON.parse(decodeURIComponent(response.headers.get(VINEXT_PARAMS_HEADER)!))).toEqual({
+      slug: "one",
+    });
+    expect(decodeURIComponent(response.headers.get(VINEXT_RENDERED_PATH_AND_SEARCH_HEADER)!)).toBe(
+      "/items/one?tab=current",
+    );
+  });
+
+  it("composes a route's slot params above a shared RSC cache hit", async () => {
+    // A single-stage render merges the params of the route's active slot
+    // patterns into useParams(). The request stage never loads slot modules,
+    // so the generated route marks the slot's lazy loader with `true`.
+    const route = createPageRoute({
+      isDynamic: true,
+      params: ["teamID"],
+      pattern: "/:teamID/sub/folder",
+      routeSegments: ["[teamID]", "sub", "folder"],
+      slots: {
+        "slot@app/[teamID]/@slot": {
+          __loadPage: true,
+          name: "slot",
+          page: null,
+          routeSegments: ["[...catchAll]"],
+          slotParamNames: ["teamID", "catchAll"],
+          slotPatternParts: [":teamID", ":catchAll+"],
+        },
+      },
+    });
+    const handler = createHandler({
+      configHeaders: [],
+      matchRoute: (pathname) =>
+        pathname === "/vercel/sub/folder" ? { params: { teamID: "vercel" }, route } : null,
+    });
+    const headers = createRscRequestHeaders();
+    const url = await createRscRequestUrl("/docs/vercel/sub/folder", headers);
+
+    const response = await handler(
+      new Request(`https://example.test${url}`, { headers }),
+      null,
+      false,
+      async () => new Response("cached-rsc", { headers: { "X-Vinext-Cache": "HIT" } }),
+    );
+
+    expect(JSON.parse(decodeURIComponent(response.headers.get(VINEXT_PARAMS_HEADER)!))).toEqual({
+      catchAll: ["sub", "folder"],
+      teamID: "vercel",
+    });
+  });
+
+  it("keeps an intercepted response's params above the response stage", async () => {
+    const sourceRoute = createPageRoute({
+      isDynamic: true,
+      params: ["tab"],
+      pattern: "/feed/:tab",
+      routeSegments: ["feed", "[tab]"],
+    });
+    const handler = createHandler({
+      configHeaders: [],
+      matchInterceptRoute: (pathname, sourcePathname) =>
+        pathname === "/photos/1" && sourcePathname === "/feed/recent"
+          ? { interceptionSourceIsConcrete: true, params: { tab: "recent" }, route: sourceRoute }
+          : null,
+      matchRoute: () => null,
+    });
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed/recent" });
+    const url = await createRscRequestUrl("/docs/photos/1", headers);
+    const dispatch = (responseHeaders: Record<string, string>) =>
+      handler(
+        new Request(`https://example.test${url}`, { headers }),
+        null,
+        false,
+        async () => new Response("intercepted-rsc", { headers: responseHeaders }),
+      );
+    const readParams = (response: Response) =>
+      JSON.parse(decodeURIComponent(response.headers.get(VINEXT_PARAMS_HEADER)!));
+
+    // The source match lacks the target's params, which the render resolved.
+    const rendered = await dispatch({
+      [VINEXT_PARAMS_HEADER]: encodeURIComponent(JSON.stringify({ id: "1", tab: "recent" })),
+    });
+    expect(readParams(rendered)).toEqual({ id: "1", tab: "recent" });
+    // A response without them still gets the routed params.
+    expect(readParams(await dispatch({}))).toEqual({ tab: "recent" });
+  });
+
+  it("preserves the raw Cookie header when middleware does not change cookies", async () => {
+    const rawCookie = "encoded=hello%20world; spaced=value";
+    const dispatchResponseStage = vi.fn(async (stageRequest: Request) => {
+      expect(stageRequest.headers.get("cookie")).toBe(rawCookie);
+      return new Response("response-stage");
+    });
+    const handler = createHandler();
+
+    await handler(
+      new Request("https://example.test/docs/about", {
+        headers: { Cookie: rawCookie },
+      }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+  });
+
+  it("normalizes the root route identity before response-stage dispatch", async () => {
+    const rootRoute = createPageRoute({ pattern: "/", routeSegments: [] });
+    const dispatchResponseStage = vi.fn(
+      async (_request: Request, _props: AppWorkerResponseStageProps) => new Response("root-stage"),
+    );
+    const handler = createHandler({
+      matchRequestRoute: (pathname) =>
+        pathname === "/" || pathname === "" ? { params: {}, route: rootRoute } : null,
+      matchRoute: (pathname) =>
+        pathname === "/" || pathname === "" ? { params: {}, route: rootRoute } : null,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+    expect(dispatchResponseStage.mock.calls[0]?.[1]).toMatchObject({
+      kind: "app-page",
+      routePathname: "/",
+    });
+    expect(await response.text()).toBe("root-stage");
+  });
+
+  it("bypasses shared caches when raw routing diverges from the normalized cache path", async () => {
+    const catchAllRoute = createPageRoute({
+      isDynamic: true,
+      params: ["slug"],
+      pattern: "/:slug+",
+      routeSegments: ["[...slug]"],
+    });
+    const staticRoute = createPageRoute();
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(
+        new Response("encoded catch-all", {
+          headers: { "Cache-Control": "public, s-maxage=3600" },
+        }),
+      ),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      matchRequestRoute: (pathname) =>
+        pathname === "/%61bout" ? { params: { slug: ["about"] }, route: catchAllRoute } : null,
+      matchRoute: (pathname) => (pathname === "/about" ? { params: {}, route: staticRoute } : null),
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/%61bout"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+    expect(dispatchResponseStage.mock.calls[0]?.[1]).toMatchObject({
+      bypassInterceptionContextCache: true,
+      cleanPathname: "/about",
+      routePattern: "/:slug+",
+    });
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "bypass" });
+    expect(response.headers.get("Cache-Control")).toContain("no-store");
+  });
+
+  it("bypasses shared caches when route-handler raw and normalized paths share params", async () => {
+    const route = createPageRoute({
+      __loadPage: undefined,
+      __loadRouteHandler() {},
+      isDynamic: true,
+      page: null,
+      params: ["slug"],
+      pattern: "/:slug+",
+      routeHandler: { GET: () => new Response("route") },
+      routeSegments: ["[...slug]"],
+    });
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("encoded route")),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      matchRequestRoute: (pathname) =>
+        pathname === "/%61bout" ? { params: { slug: ["about"] }, route } : null,
+      matchRoute: (pathname) =>
+        pathname === "/about" ? { params: { slug: ["about"] }, route } : null,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/%61bout"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+    expect(dispatchResponseStage.mock.calls[0]?.[1]).toMatchObject({
+      bypassInterceptionContextCache: true,
+      cleanPathname: "/about",
+      routePattern: "/:slug+",
+    });
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "bypass" });
+    expect(response.headers.get("Cache-Control")).toContain("no-store");
+  });
+
+  it("keeps equivalent encoded App Page params on the shared cache path", async () => {
+    const route = createPageRoute({
+      isDynamic: true,
+      params: ["slug"],
+      pattern: "/:slug+",
+      routeSegments: ["[...slug]"],
+    });
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(
+        new Response("encoded page", {
+          headers: { "Cache-Control": "public, s-maxage=3600" },
+        }),
+      ),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      matchRequestRoute: (pathname) =>
+        pathname === "/%61bout" ? { params: { slug: ["about"] }, route } : null,
+      matchRoute: (pathname) =>
+        pathname === "/about" ? { params: { slug: ["about"] }, route } : null,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/%61bout"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+    expect(dispatchResponseStage.mock.calls[0]?.[1]).toMatchObject({
+      bypassInterceptionContextCache: false,
+      cleanPathname: "/about",
+      routePattern: "/:slug+",
+    });
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "shared" });
+    expect(response.headers.get("Cache-Control")).toBe("public, s-maxage=3600");
+  });
+
+  it("uses a source-specific cache identity when a rewrite changes the request pathname", async () => {
+    const route = createPageRoute();
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(
+        new Response("rewritten route", {
+          headers: { "Cache-Control": "public, s-maxage=3600" },
+        }),
+      ),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [{ source: "/alias", destination: "/about" }],
+        afterFiles: [],
+        fallback: [],
+      },
+      matchRequestRoute: () => null,
+      matchRoute: (pathname) => (pathname === "/about" ? { params: {}, route } : null),
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/alias"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+    expect(dispatchResponseStage.mock.calls[0]?.[1]).toMatchObject({
+      bypassInterceptionContextCache: false,
+      cachePathname: "/alias?__vinext_rewrite=%2Fabout",
+      canonicalPathname: "/alias",
+      cleanPathname: "/about",
+    });
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "shared" });
+    expect(response.headers.get("Cache-Control")).toBe("public, s-maxage=3600");
+  });
+
+  it("normalizes a contextual RSC request reached through a rewrite before shared dispatch", async () => {
+    const route = createPageRoute();
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("rsc")),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [{ source: "/alias", destination: "/about" }],
+        afterFiles: [],
+        fallback: [],
+      },
+      matchRequestRoute: () => null,
+      matchRoute: (pathname) => (pathname === "/about" ? { params: {}, route } : null),
+    });
+    const headers = createRscRequestHeaders({
+      nextUrl: "/source",
+      routerState: { pathAndSearch: "/source", routeId: "route:/source" },
+    });
+    const contextualUrl = await createRscRequestUrl("/docs/alias", headers);
+
+    await handler(
+      new Request(new URL(contextualUrl, "https://example.test"), { headers }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    const [request, props] = dispatchResponseStage.mock.calls[0]!;
+    expect(props).toMatchObject({ kind: "app-page", matchKind: "resolved" });
+    // Without canonicalization the per-navigation state tree and `_rsc` hash
+    // reach the cache key, so every prefetch and reload misses.
+    expect(request.headers.get("next-router-state-tree")).toBeNull();
+    expect(request.headers.get("next-url")).toBeNull();
+  });
+
+  it.each([
+    ["Cache-Control", "private, no-store"],
+    ["CDN-Cache-Control", "no-cache"],
+    ["Cloudflare-CDN-Cache-Control", "private"],
+  ])("keeps staged App rendering reusable beneath config %s: %s", async (name, value) => {
+    const dispatchMatchedPage = vi.fn(async () => new Response("local-page"));
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("shared-stage")),
+    );
+    const handler = createHandler({
+      configHeaders: [{ source: "/about", headers: [{ key: name, value }] }],
+      dispatchMatchedPage,
+    });
+
+    const state: RouteCacheabilityState = {
+      captureDeadlineAt: Date.now() + 1_000,
+      mode: "admit",
+    };
+    const response = await runWithExecutionContext(cacheabilityContext(state), () =>
+      handler(new Request("https://example.test/docs/about"), null, false, dispatchResponseStage),
+    );
+
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+    expect(state.finalResponseVetoReason).toBeUndefined();
+    expect(response.headers.get(name)).toBe(value);
+    expect(await response.text()).toBe("shared-stage");
+  });
+
+  it("keeps staged App rendering reusable beneath request-dependent middleware Vary", async () => {
+    const dispatchMatchedPage = vi.fn(async () => new Response("local-page"));
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("shared-stage")),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      middlewareModule: {
+        default() {
+          return new Response(null, {
+            headers: { "x-middleware-next": "1", Vary: "Cookie" },
+          });
+        },
+      },
+    });
+
+    const state: RouteCacheabilityState = {
+      captureDeadlineAt: Date.now() + 1_000,
+      mode: "admit",
+    };
+    const response = await runWithExecutionContext(cacheabilityContext(state), () =>
+      handler(new Request("https://example.test/docs/about"), null, false, dispatchResponseStage),
+    );
+
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+    expect(dispatchResponseStage.mock.calls[0]?.[1].cacheability.policyHeaders).toBeNull();
+    expect(state.forcedDynamicReason).toBeUndefined();
+    expect(response.headers.get("Vary")).toContain("Cookie");
+    expect(await response.text()).toBe("shared-stage");
+  });
+
+  it("bypasses shared App rendering when middleware changes downstream request headers", async () => {
+    // Ported from Next.js:
+    // test/e2e/middleware-request-header-overrides/test/index.test.ts
+    // https://github.com/vercel/next.js/blob/canary/test/e2e/middleware-request-header-overrides/test/index.test.ts
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async (request) =>
+      Response.json({ visitor: request.headers.get("x-visitor") }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      middlewareModule: {
+        default(request: NextRequest) {
+          const headers = new Headers(request.headers);
+          headers.set("x-visitor", request.headers.get("x-original-visitor") ?? "anonymous");
+          return new Response(null, {
+            headers: {
+              "x-middleware-next": "1",
+              "x-middleware-override-headers": [...headers.keys()].join(","),
+              ...Object.fromEntries(
+                [...headers].map(([name, value]) => [`x-middleware-request-${name}`, value]),
+              ),
+            },
+          });
+        },
+      },
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about", {
+        headers: { "x-original-visitor": "visitor-a" },
+      }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "bypass" });
+    await expect(response.json()).resolves.toEqual({ visitor: "visitor-a" });
+  });
+
+  it("dispatches middleware cookie overlays with cache bypass and preserves raw headers", async () => {
+    const dispatchMatchedPage = vi.fn(async () => {
+      expect((await requestCookies()).get("session")?.value).toBe("middleware-value");
+      expect((await requestHeaders()).get("cookie")).toBe("session=original");
+      return new Response("cookie-render");
+    });
+    const responseHandler = createHandler({ dispatchMatchedPage });
+    const renderResponseStageLocally = vi.fn((stageRequest, props) =>
+      responseHandler.handleResponseStage(stageRequest, null, props),
+    );
+    const requestHandler = createHandler({
+      configHeaders: [],
+      middlewareModule: {
+        default() {
+          return new Response(null, {
+            headers: {
+              "x-middleware-next": "1",
+              "x-middleware-set-cookie": "session=middleware-value; Path=/",
+            },
+          });
+        },
+      },
+      renderResponseStageLocally,
+    });
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>((stageRequest, props) =>
+      responseHandler.handleResponseStage(stageRequest, null, props),
+    );
+
+    const response = await requestHandler(
+      new Request("https://example.test/docs/about", {
+        headers: { Cookie: "session=original" },
+      }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "bypass" });
+    expect(renderResponseStageLocally).not.toHaveBeenCalled();
+    expect(dispatchMatchedPage).toHaveBeenCalledOnce();
+    expect(await response.text()).toBe("cookie-render");
+  });
+
+  it("carries a middleware CSP nonce into a bypassed response-stage render", async () => {
+    const dispatchMatchedPage = vi.fn(async (options) => {
+      expect(options.scriptNonce).toBe("stage-nonce");
+      return new Response("nonce-render");
+    });
+    const responseHandler = createHandler({ dispatchMatchedPage });
+    const renderResponseStageLocally = vi.fn((stageRequest, props) =>
+      responseHandler.handleResponseStage(stageRequest, null, props),
+    );
+    const requestHandler = createHandler({
+      configHeaders: [],
+      middlewareModule: {
+        default() {
+          return new Response(null, {
+            headers: {
+              "content-security-policy": "script-src 'nonce-stage-nonce'",
+              "x-middleware-next": "1",
+            },
+          });
+        },
+      },
+      renderResponseStageLocally,
+    });
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>((stageRequest, props) =>
+      responseHandler.handleResponseStage(stageRequest, null, props),
+    );
+
+    const response = await requestHandler(
+      new Request("https://example.test/docs/about"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+    expect(dispatchResponseStage.mock.calls[0]?.[2]).toEqual({ cache: "bypass" });
+    expect(renderResponseStageLocally).not.toHaveBeenCalled();
+    expect(dispatchMatchedPage).toHaveBeenCalledOnce();
+    expect(await response.text()).toBe("nonce-render");
+  });
+
+  it("routes hybrid Pages by the raw request pathname until a rewrite replaces it", async () => {
+    // Next.js reads the Pages locale and static segments from the raw pathname
+    // and decodes dynamic captures once, so `/%66r/...` must not reach the
+    // Pages router as the decoded `fr` locale that middleware never matched.
+    const pathnames: Array<string | undefined> = [];
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+      Promise.resolve(new Response("page")),
+    );
+    const handler = createHandler({
+      configRewrites: {
+        afterFiles: [],
+        beforeFiles: [{ source: "/legacy", destination: "/blog/a%2561" }],
+        fallback: [],
+      },
+      matchRequestRoute: () => null,
+      matchRoute: () => null,
+      renderPagesFallback: async (options) => {
+        pathnames.push(options.pathname);
+        return options.dispatchPagesResponseStage?.(options.request, "page") ?? null;
+      },
+    });
+
+    for (const pathname of ["/docs/%66r/a%2561?q=1", "/docs/legacy?q=1"]) {
+      await handler(
+        new Request(new URL(pathname, "https://example.test")),
+        null,
+        false,
+        dispatchResponseStage,
+      );
+    }
+
+    expect(pathnames).toEqual(["/%66r/a%2561?q=1", "/blog/a%2561?q=1"]);
+    expect(dispatchResponseStage.mock.calls.map(([, props]) => props)).toMatchObject([
+      { kind: "hybrid-pages", resolvedUrl: "/%66r/a%2561?q=1" },
+      { kind: "hybrid-pages", resolvedUrl: "/blog/a%2561?q=1" },
+    ]);
+  });
+
+  it("serializes hybrid Pages rewrite destinations in every rewrite phase", async () => {
+    // Next.js parses every rewrite destination as a URL, so a literal `é` reaches
+    // the Pages router as `%C3%A9` whichever phase rewrote to it.
+    const pathnames: Array<string | undefined> = [];
+    const handler = createHandler({
+      configRewrites: {
+        afterFiles: [{ source: "/after", destination: "/café" }],
+        beforeFiles: [{ source: "/before", destination: "/café" }],
+        fallback: [{ source: "/fallback", destination: "/café" }],
+      },
+      matchRequestRoute: () => null,
+      matchRoute: () => null,
+      renderPagesFallback: async (options) => {
+        pathnames.push(options.pathname);
+        return options.pathname?.startsWith("/caf") ? new Response("page") : null;
+      },
+    });
+
+    for (const pathname of ["/before", "/after", "/fallback"]) {
+      const response = await handler(
+        new Request(new URL(`/docs${pathname}`, "https://example.test")),
+        null,
+      );
+      expect(await response.text(), pathname).toBe("page");
+    }
+
+    expect(pathnames.filter((pathname) => pathname?.startsWith("/caf"))).toEqual([
+      "/caf%C3%A9",
+      "/caf%C3%A9",
+      "/caf%C3%A9",
+    ]);
+  });
+
+  it("keeps a substituted dot-segment capture verbatim in every rewrite phase", async () => {
+    // Next.js only URL-parses the destination template, so a captured `..`
+    // must not resolve into a Pages route the middleware matcher never saw.
+    const pathnames: Array<string | undefined> = [];
+    const capture = (source: string) => ({
+      source,
+      has: [{ type: "query" as const, key: "n", value: "(?<n>.*)" }],
+      destination: "/blog/:n",
+    });
+    const handler = createHandler({
+      configRewrites: {
+        afterFiles: [capture("/after")],
+        beforeFiles: [capture("/before")],
+        fallback: [capture("/fallback")],
+      },
+      matchRequestRoute: () => null,
+      matchRoute: () => null,
+      renderPagesFallback: async (options) => {
+        pathnames.push(options.pathname);
+        return null;
+      },
+    });
+
+    for (const pathname of ["/before", "/after", "/fallback"]) {
+      await handler(
+        new Request(new URL(`/docs${pathname}?n=..%2Fabout`, "https://example.test")),
+        null,
+      );
+    }
+
+    expect(pathnames.filter((pathname) => pathname?.startsWith("/about"))).toEqual([]);
+    expect(
+      pathnames.filter((pathname) => pathname?.startsWith("/blog/../about")).length,
+    ).toBeGreaterThanOrEqual(3);
+  });
+
+  it("does not report URL-parser encoding as a hybrid Pages data rewrite", async () => {
+    const handler = createHandler({
+      configHeaders: [],
+      matchRequestRoute: () => null,
+      matchRoute: () => null,
+      renderPagesFallback: async () => new Response("pages-data"),
+    });
+
+    for (const page of ["blog/caf%C3%A9", "blog/a%20b"]) {
+      const response = await handler(
+        new Request(`https://example.test/docs/_next/data/build-id/${page}.json`),
+        null,
+      );
+      expect(await response.text(), page).toBe("pages-data");
+      expect(response.headers.get("x-nextjs-rewrite"), page).toBeNull();
+    }
+  });
+
+  it("restores hybrid Pages pre-handler headers inside the response stage", async () => {
+    // Next.js exposes middleware response headers through `res.getHeader()` in
+    // getServerSideProps. Keep the same response snapshot across the App to
+    // Pages stage boundary.
+    // https://github.com/vercel/next.js/blob/canary/test/e2e/middleware-custom-matchers/app/pages/index.js
+    const renderPagesFallback = vi.fn(async (options) => {
+      expect(options.initialResponseHeaders?.get("x-config-variant")).toBe("preview");
+      expect(options.initialResponseHeaders?.get("x-from-middleware")).toBe("present");
+      return new Response("pages");
+    });
+    const handler = createHandler({
+      matchRequestRoute: () => null,
+      matchRoute: () => null,
+      renderPagesFallback,
+    });
+
+    const response = await handler.handleResponseStage(
+      new Request("https://example.test/docs/pages"),
+      null,
+      {
+        allowRscDocumentFallback: false,
+        appRouteMatch: null,
+        buildId: "build-id",
+        cacheability: { policyHeaders: null, probeMode: null, resolvedRoutePathname: "/pages" },
+        canonicalPathname: "/pages",
+        cleanPathname: "/pages",
+        draftModeCookie: null,
+        isDataRequest: false,
+        isRscRequest: false,
+        kind: "hybrid-pages",
+        matchKind: "static",
+        middlewareCookieOverlay: null,
+        preHandlerHeaders: [
+          ["x-config-variant", "preview"],
+          ["x-from-middleware", "present"],
+        ],
+        protocolVersion: APP_WORKER_RESPONSE_STAGE_PROTOCOL_VERSION,
+        requestOrigin: "https://example.test",
+        requestUrl: "https://example.test/docs/pages",
+        resolvedUrl: "/pages",
+        resourceKind: "page",
+        scriptNonce: null,
+        sharedAcrossHosts: false,
+      },
+      { cache: "shared" },
+    );
+
+    expect(response.status).toBe(200);
+    expect(renderPagesFallback).toHaveBeenCalledOnce();
+  });
+
+  it("rejects stale and rematched App response-stage envelopes", async () => {
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const handler = createHandler({ dispatchMatchedPage });
+    const request = new Request("https://example.test/docs/about");
+    const props: AppWorkerResponseStageProps = {
+      kind: "app-page" as const,
+      buildId: "stale-build",
+      cacheability: { policyHeaders: null, probeMode: null, resolvedRoutePathname: "/about" },
+      bypassInterceptionContextCache: false,
+      cachePathname: "/about",
+      canUseCanonicalLoadingShell: false,
+      canonicalPathname: "/about",
+      cleanPathname: "/about",
+      draftModeCookie: null,
+      interceptionContext: null,
+      interceptionId: null,
+      isRscRequest: false,
+      matchKind: "resolved" as const,
+      middlewareCookieOverlay: null,
+      mountedSlotsHeader: null,
+      params: {},
+      protocolVersion: APP_WORKER_RESPONSE_STAGE_PROTOCOL_VERSION,
+      requestOrigin: "https://example.test",
+      renderMode: "navigation" as const,
+      resolvedUrl: "/about",
+      routePattern: "/about",
+      routePathname: "/about",
+      scriptNonce: null,
+    };
+
+    const staleResponse = await handler.handleResponseStage(request, null, props);
+    expect(staleResponse.status).toBe(409);
+
+    const invalidRouteResponse = await handler.handleResponseStage(request, null, {
+      ...props,
+      buildId: "build-id",
+      routePattern: "/other",
+    });
+    expect(invalidRouteResponse.status).toBe(400);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("keeps trusted response-stage classification when middleware overrides live headers", async () => {
+    const dispatchMatchedPage = vi.fn(async (options) => {
+      expect(options.isRscRequest).toBe(true);
+      expect(options.request.headers.get(RSC_HEADER)).toBe("0");
+      return new Response("classified");
+    });
+    const handler = createHandler({ dispatchMatchedPage });
+    const response = await handler.handleResponseStage(
+      new Request("https://example.test/docs/about", { headers: { [RSC_HEADER]: "0" } }),
+      null,
+      {
+        kind: "app-page",
+        buildId: "build-id",
+        cacheability: { policyHeaders: null, probeMode: null, resolvedRoutePathname: "/about" },
+        bypassInterceptionContextCache: false,
+        cachePathname: "/about",
+        canUseCanonicalLoadingShell: false,
+        canonicalPathname: "/about",
+        cleanPathname: "/about",
+        draftModeCookie: null,
+        interceptionContext: null,
+        interceptionId: null,
+        isRscRequest: true,
+        matchKind: "resolved",
+        middlewareCookieOverlay: null,
+        mountedSlotsHeader: null,
+        params: {},
+        protocolVersion: APP_WORKER_RESPONSE_STAGE_PROTOCOL_VERSION,
+        requestOrigin: "https://example.test",
+        renderMode: "navigation",
+        resolvedUrl: "/about",
+        routePattern: "/about",
+        routePathname: "/about",
+        scriptNonce: null,
+      },
+      { cache: "shared" },
+    );
+
+    expect(response.status).toBe(200);
+    expect(dispatchMatchedPage).toHaveBeenCalledOnce();
+  });
+
+  it("renders staged App not-found responses without rerunning middleware", async () => {
+    const middleware = vi.fn(
+      () =>
+        new Response(null, {
+          headers: {
+            "x-middleware-next": "1",
+            "x-response-header": "visitor-specific",
+          },
+        }),
+    );
+    const renderNotFound = vi.fn(async () => new Response("styled-not-found", { status: 404 }));
+    const setNavigationContext = vi.fn();
+    const handler = createHandler({
+      configHeaders: [],
+      middlewareModule: { default: middleware },
+      renderNotFound,
+      setNavigationContext,
+    });
+    const dispatchResponseStage = vi.fn(
+      (stageRequest: Request, props: AppWorkerResponseStageProps) =>
+        handler.handleResponseStage(stageRequest, null, props),
+    );
+
+    const response = await handler(
+      new Request("https://example.test/docs/missing?from=rewrite"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+    expect(dispatchResponseStage.mock.calls[0]?.[1]).toMatchObject({
+      kind: "app-not-found",
+      canonicalPathname: "/missing",
+      cleanPathname: "/missing",
+    });
+    expect(middleware).toHaveBeenCalledOnce();
+    expect(renderNotFound).toHaveBeenCalledOnce();
+    expect(setNavigationContext).toHaveBeenLastCalledWith({
+      pathname: "/missing",
+      searchParams: new URLSearchParams("from=rewrite"),
+      params: {},
+    });
+    expect(response.status).toBe(404);
+    expect(response.headers.get("x-response-header")).toBe("visitor-specific");
+    expect(await response.text()).toBe("styled-not-found");
+  });
+
+  it("renders metadata reached by a rewrite in the response stage", async () => {
+    const metadataHandler = vi.fn(
+      async () =>
+        new Response("User-agent: *\nDisallow: /private", {
+          headers: { "content-type": "text/plain" },
+        }),
+    );
+    const responseHandler = createHandler({ handleMetadataRouteRequest: metadataHandler });
+    const requestLocalMetadataHandler = vi.fn(async () => new Response("wrong-local-handler"));
+    const requestHandler = createHandler({
+      configRewrites: {
+        beforeFiles: [],
+        afterFiles: [{ source: "/robots-alias", destination: "/robots.txt" }],
+        fallback: [],
+      },
+      handleMetadataRouteRequest: requestLocalMetadataHandler,
+      isMetadataRoute: (pathname) => pathname === "/robots.txt",
+    });
+    const dispatchResponseStage = vi.fn(
+      (stageRequest: Request, props: AppWorkerResponseStageProps) =>
+        responseHandler.handleResponseStage(stageRequest, null, props),
+    );
+
+    const response = await requestHandler(
+      new Request("https://example.test/docs/robots-alias"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage.mock.calls[0]?.[1]).toMatchObject({
+      kind: "app-metadata",
+      canonicalPathname: "/robots-alias",
+      cleanPathname: "/robots.txt",
+      routePathname: "/robots.txt",
+    });
+    expect(metadataHandler).toHaveBeenCalledWith("/robots.txt", "/robots.txt");
+    expect(requestLocalMetadataHandler).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("text/plain");
+    expect(await response.text()).toContain("Disallow: /private");
+  });
+
+  it("preserves encoded metadata route identity in the response stage", async () => {
+    const metadataHandler = vi.fn(async () => new Response("metadata"));
+    const responseHandler = createHandler({ handleMetadataRouteRequest: metadataHandler });
+    const requestHandler = createHandler({ isMetadataRoute: () => true });
+    const dispatchResponseStage = vi.fn(
+      (stageRequest: Request, props: AppWorkerResponseStageProps) =>
+        responseHandler.handleResponseStage(stageRequest, null, props),
+    );
+
+    const response = await requestHandler(
+      new Request("https://example.test/docs/posts/public%2520post/opengraph-image"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage.mock.calls[0]?.[1]).toMatchObject({
+      kind: "app-metadata",
+      cleanPathname: "/posts/public%20post/opengraph-image",
+      routePathname: "/posts/public%2520post/opengraph-image",
+    });
+    expect(metadataHandler).toHaveBeenCalledWith(
+      "/posts/public%20post/opengraph-image",
+      "/posts/public%2520post/opengraph-image",
+    );
+    expect(response.status).toBe(200);
+  });
+
+  it("continues to an App page when staged metadata overclassification has no match", async () => {
+    const pageRoute = createPageRoute({
+      pattern: "/icon/:id",
+      routeSegments: ["icon", "[id]"],
+    });
+    const dispatchMatchedPage = vi.fn(async () => new Response("icon-page"));
+    const responseHandler = createHandler({
+      dispatchMatchedPage,
+      handleMetadataRouteRequest: async () => null,
+      matchRoute: (pathname) =>
+        pathname === "/icon/foo" ? { params: { id: "foo" }, route: pageRoute } : null,
+      matchRequestRoute: (pathname) =>
+        pathname === "/icon/foo" ? { params: { id: "foo" }, route: pageRoute } : null,
+    });
+    const requestHandler = createHandler({
+      isMetadataRoute: (pathname) => pathname.startsWith("/icon/"),
+      matchRoute: (pathname) =>
+        pathname === "/icon/foo" ? { params: { id: "foo" }, route: pageRoute } : null,
+      matchRequestRoute: (pathname) =>
+        pathname === "/icon/foo" ? { params: { id: "foo" }, route: pageRoute } : null,
+    });
+    const dispatchResponseStage = vi.fn(
+      (stageRequest: Request, props: AppWorkerResponseStageProps) =>
+        responseHandler.handleResponseStage(stageRequest, null, props),
+    );
+
+    const response = await requestHandler(
+      new Request("https://example.test/docs/icon/foo"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage.mock.calls.map((call) => call[1].kind)).toEqual([
+      "app-metadata",
+      "app-page",
+    ]);
+    expect(dispatchMatchedPage).toHaveBeenCalledOnce();
+    expect(await response.text()).toBe("icon-page");
+  });
+
+  // Next.js rejects an internal `basePath: false` rewrite when it loads the
+  // config. At runtime, its destination is outside the basePath, so like
+  // Next.js' resolve-routes it resolves no route or file.
+  it("does not resolve basePath: false rewrites to internal destinations", async () => {
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [{ source: "/outside", destination: "/about", basePath: false }],
+        afterFiles: [],
+        fallback: [],
+      },
+      dispatchMatchedPage,
+    });
+
+    const response = await handler(new Request("https://example.test/outside"), null);
+
+    expect(response.status).toBe(404);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("does not let identity basePath: false rewrites claim App routes", async () => {
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [{ source: "/about", destination: "/about", basePath: false }],
+        afterFiles: [],
+        fallback: [],
+      },
+      dispatchMatchedPage,
+    });
+
+    const response = await handler(new Request("https://example.test/about"), null);
+
+    expect(response.status).toBe(404);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    {
+      condition: { type: "cookie" as const, key: "tenant" },
+      expectedReason: "next.config rewrite depends on request headers, cookies, or hostnames",
+      expectedStatus: 200,
+      requestUrl: "https://example.test/docs/account",
+      requestHeaders: { Cookie: "tenant=alice" },
+    },
+    {
+      condition: { type: "cookie" as const, key: "tenant" },
+      expectedReason: "next.config rewrite depends on request headers, cookies, or hostnames",
+      expectedStatus: 404,
+      requestUrl: "https://example.test/docs/account",
+      requestHeaders: undefined,
+    },
+    {
+      condition: { type: "host" as const, key: "host", value: "example\\.test" },
+      expectedReason: "next.config rewrite depends on request headers, cookies, or hostnames",
+      expectedStatus: 200,
+      requestUrl: "https://example.test/docs/account",
+      requestHeaders: undefined,
+    },
+    {
+      condition: { type: "query" as const, key: "tenant" },
+      expectedReason: undefined,
+      expectedStatus: 200,
+      requestUrl: "https://example.test/docs/account?tenant=alice",
+      requestHeaders: undefined,
+    },
+  ])(
+    "keeps $condition.type-conditioned rewrite cacheability aligned with the public key",
+    async ({ condition, expectedReason, expectedStatus, requestHeaders, requestUrl }) => {
+      // Cookie-conditioned rewrites are exercised by Next.js here:
+      // test/e2e/custom-routes/custom-routes.test.ts
+      // https://github.com/vercel/next.js/blob/canary/test/e2e/custom-routes/custom-routes.test.ts
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: {
+          beforeFiles: [
+            {
+              source: "/account",
+              destination: "/about",
+              has: [condition],
+            },
+          ],
+          afterFiles: [],
+          fallback: [],
+        },
+      });
+      const state: RouteCacheabilityState = {
+        captureDeadlineAt: Date.now() + 1_000,
+        mode: "admit",
+      };
+      const context = {
+        [CACHEABILITY_REQUEST_STATE]: state,
+        waitUntil() {},
+      };
+
+      const response = await runWithExecutionContext(context, () =>
+        handler(new Request(requestUrl, { headers: requestHeaders }), null),
+      );
+
+      expect(response.status).toBe(expectedStatus);
+      if (expectedStatus === 200) expect(await response.text()).toBe("page");
+      expect(state.forcedDynamicReason).toBe(expectedReason);
+    },
+  );
+
+  it.each(["afterFiles", "fallback"] as const)(
+    "does not let out-of-basePath %s rewrites reach Pages routes",
+    async (phase) => {
+      const renderPagesFallback = vi.fn(async () => new Response("pages", { status: 200 }));
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: {
+          beforeFiles: [],
+          afterFiles:
+            phase === "afterFiles"
+              ? [{ source: "/outside", destination: "/pages", basePath: false }]
+              : [],
+          fallback:
+            phase === "fallback"
+              ? [{ source: "/outside", destination: "/pages", basePath: false }]
+              : [],
+        },
+        matchRoute: () => null,
+        renderPagesFallback,
+      });
+
+      const response = await handler(new Request("https://example.test/outside"), null);
+
+      expect(response.status).toBe(404);
+      expect(renderPagesFallback).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    {
+      condition: { type: "cookie" as const, key: "tenant" },
+      expectedReason: "next.config headers depend on request headers, cookies, or hostnames",
+      expectedHeader: "alice",
+      requestUrl: "https://example.test/docs/about",
+      requestHeaders: { Cookie: "tenant=alice" },
+    },
+    {
+      condition: { type: "cookie" as const, key: "tenant" },
+      expectedReason: "next.config headers depend on request headers, cookies, or hostnames",
+      expectedHeader: null,
+      requestUrl: "https://example.test/docs/about",
+      requestHeaders: undefined,
+    },
+    {
+      condition: { type: "host" as const, key: "host", value: "example\\.test" },
+      expectedReason: "next.config headers depend on request headers, cookies, or hostnames",
+      expectedHeader: "alice",
+      requestUrl: "https://example.test/docs/about",
+      requestHeaders: undefined,
+    },
+    {
+      condition: { type: "query" as const, key: "tenant" },
+      expectedReason: undefined,
+      expectedHeader: "alice",
+      requestUrl: "https://example.test/docs/about?tenant=alice",
+      requestHeaders: undefined,
+    },
+  ])(
+    "keeps $condition.type-conditioned config header cacheability aligned with the public key",
+    async ({ condition, expectedHeader, expectedReason, requestHeaders, requestUrl }) => {
+      const handler = createHandler({
+        configHeaders: [
+          {
+            source: "/about",
+            has: [condition],
+            headers: [{ key: "X-Tenant", value: "alice" }],
+          },
+        ],
+      });
+      const state: RouteCacheabilityState = {
+        captureDeadlineAt: Date.now() + 1_000,
+        mode: "admit",
+      };
+      const context = {
+        [CACHEABILITY_REQUEST_STATE]: state,
+        waitUntil() {},
+      };
+
+      const response = await runWithExecutionContext(context, () =>
+        handler(new Request(requestUrl, { headers: requestHeaders }), null),
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("X-Tenant")).toBe(expectedHeader);
+      expect(state.forcedDynamicReason).toBe(expectedReason);
+    },
+  );
+
+  it("keeps a condition-miss redirect pathname private", async () => {
+    const handler = createHandler({
+      configRedirects: [
+        {
+          source: "/about",
+          destination: "/account",
+          permanent: false,
+          has: [{ type: "cookie", key: "tenant" }],
+        },
+      ],
+    });
+    const state: RouteCacheabilityState = {
+      captureDeadlineAt: Date.now() + 1_000,
+      mode: "admit",
+    };
+    const context = {
+      [CACHEABILITY_REQUEST_STATE]: state,
+      waitUntil() {},
+    };
+
+    const response = await runWithExecutionContext(context, () =>
+      handler(new Request("https://example.test/docs/about"), null),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe("page");
+    expect(state.forcedDynamicReason).toBe(
+      "next.config redirect depends on request headers, cookies, or hostnames",
+    );
+  });
+
+  it("passes source config headers into Server Action execution", async () => {
+    let sourceConfigHeader: string | null | undefined;
+    const handleServerActionRequest: NonNullable<
+      HandlerOptions["handleServerActionRequest"]
+    > = async (options) => {
+      sourceConfigHeader = options.sourceConfigHeaders?.get("x-test-header");
+      return new Response("action");
+    };
+    const handler = createHandler({ handleServerActionRequest });
+
+    await handler(
+      new Request("https://example.test/docs/about", {
+        method: "POST",
+        headers: { "next-action": "action-id", "content-type": "text/plain" },
+      }),
+      null,
+    );
+
+    expect(sourceConfigHeader).toBe("applied");
+  });
+
+  // Next.js stages next.config headers before middleware, whose own Set-Cookie
+  // replaces a config one.
+  it.each([
+    { middlewareCookie: false, cookies: ["config-cookie=1; Path=/"] },
+    { middlewareCookie: true, cookies: [] },
+  ])(
+    "drops a config Set-Cookie from Server Action source headers when middleware sets cookies: $middlewareCookie",
+    async ({ middlewareCookie, cookies }) => {
+      let sourceConfigCookies: string[] | undefined;
+      const handler = createHandler({
+        configHeaders: [
+          { source: "/about", headers: [{ key: "Set-Cookie", value: "config-cookie=1; Path=/" }] },
+        ],
+        handleServerActionRequest: async (options) => {
+          sourceConfigCookies = options.sourceConfigHeaders?.getSetCookie();
+          return new Response("action");
+        },
+        middlewareModule: {
+          async default() {
+            const headers = new Headers({ "x-middleware-next": "1" });
+            if (middlewareCookie) headers.append("Set-Cookie", "middleware-cookie=1; Path=/");
+            return new Response(null, { headers });
+          },
+        },
+      });
+
+      await handler(
+        new Request("https://example.test/docs/about", {
+          method: "POST",
+          headers: { "next-action": "action-id", "content-type": "text/plain" },
+        }),
+        null,
+      );
+
+      expect(sourceConfigCookies).toEqual(cookies);
+    },
+  );
+
+  // Next.js proxies a next.config external rewrite without the headers it
+  // staged, and sets the upstream's headers over a middleware rewrite's,
+  // keeping middleware's cookies ahead of the upstream's.
+  it.each([
+    { rewrite: "beforeFiles", configHeader: null, middlewareHeader: null },
+    { rewrite: "afterFiles", configHeader: null, middlewareHeader: null },
+    { rewrite: "fallback", configHeader: null, middlewareHeader: null },
+    { rewrite: "middleware", configHeader: "1", middlewareHeader: "1" },
+  ])(
+    "applies staged headers to a $rewrite external rewrite like Next.js",
+    async ({ rewrite, ...expected }) => {
+      const upstream = createServer((_req, res) => {
+        res.setHeader("Set-Cookie", ["upstream-cookie=1"]);
+        res.setHeader("Cache-Control", "public, max-age=60");
+        res.end("upstream");
+      });
+      await new Promise<void>((resolve) => upstream.listen(0, "127.0.0.1", resolve));
+      const destination = `http://127.0.0.1:${(upstream.address() as AddressInfo).port}/proxy`;
+      const configRewrite = [{ source: "/outside", destination }];
+
+      try {
+        const handler = createHandler({
+          configHeaders: [
+            {
+              source: "/outside",
+              headers: [
+                { key: "Set-Cookie", value: "config-cookie=1" },
+                { key: "x-config-header", value: "1" },
+              ],
+            },
+          ],
+          configRewrites: {
+            beforeFiles: rewrite === "beforeFiles" ? configRewrite : [],
+            afterFiles: rewrite === "afterFiles" ? configRewrite : [],
+            fallback: rewrite === "fallback" ? configRewrite : [],
+          },
+          middlewareModule: {
+            default() {
+              const headers = new Headers({
+                "cache-control": "private, max-age=7",
+                "x-mw-response-header": "1",
+              });
+              headers.append("set-cookie", "middleware-cookie=1");
+              if (rewrite === "middleware") headers.set("x-middleware-rewrite", destination);
+              else headers.set("x-middleware-next", "1");
+              return new Response(null, { headers });
+            },
+          },
+          matchRoute: () => null,
+        });
+
+        const response = await handler(new Request("https://example.test/docs/outside"), null);
+
+        expect(await response.text()).toBe("upstream");
+        expect({
+          cacheControl: response.headers.get("cache-control"),
+          cookies: response.headers.getSetCookie(),
+          configHeader: response.headers.get("x-config-header"),
+          middlewareHeader: response.headers.get("x-mw-response-header"),
+        }).toEqual({
+          cacheControl: "public, max-age=60",
+          cookies: ["middleware-cookie=1", "upstream-cookie=1"],
+          ...expected,
+        });
+      } finally {
+        upstream.closeAllConnections();
+        await new Promise<void>((resolve) => upstream.close(() => resolve()));
+      }
+    },
+  );
+
+  it.each(["afterFiles", "fallback"] as const)(
+    "does not let out-of-basePath POST requests through %s rewrites reach App route handlers",
+    async (phase) => {
+      const route = createPageRoute({
+        __loadPage: undefined,
+        __loadRouteHandler() {},
+        page: null,
+        pattern: "/api",
+        routeHandler: { GET: () => new Response("route") },
+        routeSegments: ["api"],
+      });
+      const dispatchMatchedRouteHandler = vi.fn(async () => new Response("route", { status: 200 }));
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: {
+          beforeFiles: [],
+          afterFiles:
+            phase === "afterFiles"
+              ? [{ source: "/outside", destination: "/api", basePath: false }]
+              : [],
+          fallback:
+            phase === "fallback"
+              ? [{ source: "/outside", destination: "/api", basePath: false }]
+              : [],
+        },
+        dispatchMatchedRouteHandler,
+        matchRoute: (pathname) => (pathname === "/api" ? { params: {}, route } : null),
+      });
+
+      const response = await handler(
+        new Request("https://example.test/outside", { method: "POST" }),
+        null,
+      );
+
+      expect(response.status).toBe(404);
+      expect(dispatchMatchedRouteHandler).not.toHaveBeenCalled();
+    },
+  );
+
+  describe("encoded request answered by a static page", () => {
+    // Next.js 16.2.7 serves `/%61bout` beside `/[slug]` from the prerendered
+    // `/about`, but draft mode and server actions skip that cache and render
+    // the raw-matched `/[slug]`.
+    const staticRoute = createPageRoute();
+    const dynamicRoute = createPageRoute({
+      isDynamic: true,
+      params: ["slug"],
+      pattern: "/:slug",
+      rootParamNames: ["slug"],
+    });
+    const encodedRouteOptions = (overrides: Partial<TestHandlerOptions> = {}) => ({
+      matchRoute: (pathname: string) =>
+        pathname === "/about" ? { params: {}, route: staticRoute } : null,
+      matchRequestRoute: (pathname: string) =>
+        pathname === "/%61bout" ? { params: {}, route: staticRoute } : null,
+      matchRawRequestRoute: (pathname: string) =>
+        pathname === "/%61bout" ? { params: { slug: "%61bout" }, route: dynamicRoute } : null,
+      ...overrides,
+    });
+
+    it("renders the static page", async () => {
+      const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+      const handler = createHandler(encodedRouteOptions({ dispatchMatchedPage }));
+
+      await handler(new Request("https://example.test/docs/%61bout"), null);
+
+      expect(dispatchMatchedPage).toHaveBeenCalledWith(
+        expect.objectContaining({ route: staticRoute }),
+      );
+    });
+
+    it("renders the raw-matched page in draft mode", async () => {
+      const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+      const handler = createHandler(encodedRouteOptions({ dispatchMatchedPage }));
+
+      await handler(
+        new Request("https://example.test/docs/%61bout", {
+          headers: { Cookie: "__prerender_bypass=test-draft-secret" },
+        }),
+        null,
+      );
+
+      expect(dispatchMatchedPage).toHaveBeenCalledWith(
+        expect.objectContaining({ params: { slug: "%61bout" }, route: dynamicRoute }),
+      );
+    });
+
+    it("transports the raw match through the split response stage in draft mode", async () => {
+      const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+      const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(async () =>
+        Promise.resolve(new Response("stage")),
+      );
+      const handler = createHandler(encodedRouteOptions({ dispatchMatchedPage }));
+      const request = new Request("https://example.test/docs/%61bout", {
+        headers: { Cookie: "__prerender_bypass=test-draft-secret" },
+      });
+
+      await handler(request, null, false, dispatchResponseStage);
+      const [stageRequest, props] = dispatchResponseStage.mock.calls[0]!;
+      expect(props).toMatchObject({ matchKind: "raw-request", routePattern: "/:slug" });
+
+      const response = await handler.handleResponseStage(stageRequest, null, props);
+      expect(response.status).toBe(200);
+      expect(dispatchMatchedPage).toHaveBeenCalledWith(
+        expect.objectContaining({ params: { slug: "%61bout" }, route: dynamicRoute }),
+      );
+    });
+
+    it("runs a server action against the raw-matched page", async () => {
+      let observedRootParams: unknown = null;
+      const handleServerActionRequest = vi.fn(async () => {
+        const { getCurrentRootParams } =
+          await import("../packages/vinext/src/shims/root-params.js");
+        observedRootParams = getCurrentRootParams();
+        return new Response("action");
+      });
+      const handler = createHandler(encodedRouteOptions({ handleServerActionRequest }));
+
+      await handler(
+        new Request("https://example.test/docs/%61bout", {
+          method: "POST",
+          headers: { "next-action": "action-id", "content-type": "text/plain" },
+        }),
+        null,
+      );
+
+      expect(handleServerActionRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          routeMatch: { params: { slug: "%61bout" }, route: dynamicRoute },
+        }),
+      );
+      expect(observedRootParams).toEqual({ slug: "%61bout" });
+    });
+  });
+
+  it.each(["afterFiles", "fallback"] as const)(
+    "does not let out-of-basePath Server Actions through %s rewrites",
+    async (phase) => {
+      const handleServerActionRequest = vi.fn(async () => new Response("action"));
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: {
+          beforeFiles: [],
+          afterFiles:
+            phase === "afterFiles"
+              ? [{ source: "/outside", destination: "/about", basePath: false }]
+              : [],
+          fallback:
+            phase === "fallback"
+              ? [{ source: "/outside", destination: "/about", basePath: false }]
+              : [],
+        },
+        handleServerActionRequest,
+      });
+
+      const response = await handler(
+        new Request("https://example.test/outside", {
+          method: "POST",
+          headers: { "next-action": "action-id", "content-type": "text/plain" },
+        }),
+        null,
+      );
+
+      expect(response.status).toBe(404);
+      expect(handleServerActionRequest).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(["afterFiles", "fallback"] as const)(
+    "does not let out-of-basePath progressive Server Actions through %s rewrites",
+    async (phase) => {
+      const handleProgressiveActionRequest = vi.fn(async () => new Response("progressive-action"));
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: {
+          beforeFiles: [],
+          afterFiles:
+            phase === "afterFiles"
+              ? [{ source: "/outside", destination: "/about", basePath: false }]
+              : [],
+          fallback:
+            phase === "fallback"
+              ? [{ source: "/outside", destination: "/about", basePath: false }]
+              : [],
+        },
+        handleProgressiveActionRequest,
+      });
+
+      const response = await handler(
+        new Request("https://example.test/outside", {
+          method: "POST",
+          headers: { "content-type": "multipart/form-data; boundary=vinext" },
+        }),
+        null,
+      );
+
+      expect(response.status).toBe(404);
+      expect(handleProgressiveActionRequest).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(["afterFiles", "fallback"] as const)(
+    "checks public files after a %s rewrite",
+    async (phase) => {
+      const handleProgressiveActionRequest = vi.fn(async () => new Response("progressive-action"));
+      const rewrite = { source: "/alias", destination: "/logo.svg" };
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: {
+          beforeFiles: [],
+          afterFiles: phase === "afterFiles" ? [rewrite] : [],
+          fallback: phase === "fallback" ? [rewrite] : [],
+        },
+        handleProgressiveActionRequest,
+        publicFiles: new Set(["/logo.svg"]),
+      });
+
+      const getResponse = await handler(new Request("https://example.test/docs/alias"), null);
+      const postResponse = await handler(
+        new Request("https://example.test/docs/alias", {
+          method: "POST",
+          headers: { "content-type": "multipart/form-data; boundary=vinext" },
+        }),
+        null,
+      );
+
+      expect(readStaticFileSignal(getResponse)).toBe("%2Flogo.svg");
+      expect(postResponse.status).toBe(405);
+      expect(postResponse.headers.get("allow")).toBe("GET, HEAD");
+      expect(handleProgressiveActionRequest).not.toHaveBeenCalled();
+    },
+  );
+
+  it("lets a Pages route claim a progressive POST before fallback rewrites", async () => {
+    const handleProgressiveActionRequest = vi.fn(async () => new Response("progressive-action"));
+    const renderPagesFallback = vi.fn<NonNullable<HandlerOptions["renderPagesFallback"]>>(
+      async (options) =>
+        (options.pathname ?? options.url.pathname) === "/api/upload"
+          ? new Response("pages-api")
+          : null,
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [],
+        afterFiles: [{ source: "/alias", destination: "/api/upload" }],
+        fallback: [{ source: "/api/upload", destination: "/about" }],
+      },
+      handleProgressiveActionRequest,
+      renderPagesFallback,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/alias", {
+        method: "POST",
+        headers: { "content-type": "multipart/form-data; boundary=vinext" },
+      }),
+      null,
+    );
+
+    expect(await response.text()).toBe("pages-api");
+    expect(handleProgressiveActionRequest).not.toHaveBeenCalled();
+  });
+
+  it.each(["afterFiles", "fallback"] as const)(
+    "does not validate out-of-basePath RSC requests that %s rewrites keep outside basePath",
+    async (phase) => {
+      const headers = createRscRequestHeaders({ mountedSlotsHeader: "slot:modal:/" });
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: {
+          beforeFiles: [],
+          afterFiles:
+            phase === "afterFiles"
+              ? [{ source: "/outside", destination: "/about", basePath: false }]
+              : [],
+          fallback:
+            phase === "fallback"
+              ? [{ source: "/outside", destination: "/about", basePath: false }]
+              : [],
+        },
+      });
+
+      const response = await handler(
+        new Request("https://example.test/outside?tab=latest", { headers }),
+        null,
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.headers.get("location")).toBeNull();
+    },
+  );
+
+  it("validates out-of-basePath RSC requests middleware rewrites into basePath", async () => {
+    const headers = createRscRequestHeaders({ mountedSlotsHeader: "slot:modal:/" });
+    const expectedHash = await computeRscCacheBustingSearchParam(headers);
+    const handler = createHandler({
+      configHeaders: [],
+      middlewareModule: {
+        default: (request: Request) =>
+          new Response(null, {
+            headers: { "x-middleware-rewrite": new URL("/docs/about", request.url).toString() },
+          }),
+      },
+    });
+
+    const response = await handler(
+      new Request("https://example.test/outside?tab=latest", { headers }),
+      null,
+    );
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe(`/outside?tab=latest&_rsc=${expectedHash}`);
+  });
+
+  it("does not expose App routes directly outside basePath", async () => {
+    const renderNotFound = vi.fn(async () => new Response("rendered not found", { status: 404 }));
+    const handler = createHandler({ configHeaders: [], renderNotFound });
+
+    const response = await handler(new Request("https://example.test/about"), null);
+
+    expect(response.status).toBe(404);
+    expect(renderNotFound).not.toHaveBeenCalled();
+  });
+
+  it("does not redirect invalid RSC requests that remain outside basePath", async () => {
+    const headers = createRscRequestHeaders({ mountedSlotsHeader: "slot:modal:/" });
+    const handler = createHandler({ configHeaders: [] });
+
+    const response = await handler(
+      new Request("https://example.test/about?tab=latest", { headers }),
+      null,
+    );
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("location")).toBeNull();
+  });
+
+  it("preserves middleware response headers on unclaimed out-of-basePath 404s", async () => {
+    const middleware = vi.fn(
+      () =>
+        new Response(null, {
+          headers: {
+            "x-middleware-next": "1",
+            "x-response-header": "preserved",
+          },
+        }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      middlewareModule: { default: middleware },
+    });
+
+    const response = await handler(new Request("https://example.test/outside"), null);
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("x-response-header")).toBe("preserved");
+  });
+
+  it("preserves middleware response headers on route-tree prefetches", async () => {
+    const middleware = vi.fn(
+      () =>
+        new Response(null, {
+          headers: {
+            "x-middleware-next": "1",
+            "x-response-header": "preserved",
+          },
+        }),
+    );
+    const clearRequestContext = vi.fn();
+    const handler = createHandler({
+      clearRequestContext,
+      configHeaders: [],
+      middlewareModule: { default: middleware },
+    });
+
+    const headers = createRscRequestHeaders();
+    headers.set(NEXT_ROUTER_PREFETCH_HEADER, "1");
+    headers.set(NEXT_ROUTER_SEGMENT_PREFETCH_HEADER, "/_tree");
+    const rscUrl = await createRscRequestUrl("/docs/about", headers);
+
+    const response = await handler(
+      new Request(`https://example.test${rscUrl}`, {
+        headers,
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-nextjs-postponed")).toBe("2");
+    expect(response.headers.get("x-response-header")).toBe("preserved");
+    expect(clearRequestContext).toHaveBeenCalledOnce();
+  });
+
+  // Next.js rejects a dynamicParams = false miss while routing, so it serves
+  // /_not-found with the never-cache 404 policy.
+  describe("a dynamicParams = false miss", () => {
+    const route = createPageRoute({
+      isDynamic: true,
+      params: ["slug"],
+      pattern: "/products/:slug",
+      routeSegments: ["products", "[slug]"],
+    });
+    const matchRoute = (pathname: string) => {
+      const slug = /^\/products\/([^/]+)$/.exec(pathname)?.[1];
+      return slug ? { params: { slug }, route } : null;
+    };
+    const configHeaders = [
+      {
+        source: "/products/:slug",
+        headers: [{ key: "Cache-Control", value: "public, s-maxage=3600" }],
+      },
+    ];
+
+    // A fallback rewrite could claim a rejected URL, so the tree's check runs.
+    const unclaimedFallbackRewrites = {
+      afterFiles: [],
+      beforeFiles: [],
+      fallback: [{ source: "/elsewhere/:slug", destination: "/products/:slug" }],
+    };
+
+    it("answers a route-tree prefetch from the route alone without fallback rewrites", async () => {
+      const isDynamicParamsMiss = vi.fn(async () => true);
+      const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+      const handler = createHandler({
+        configHeaders: [],
+        dispatchMatchedPage,
+        isDynamicParamsMiss,
+        matchRoute,
+      });
+      const headers = createRscRequestHeaders();
+      headers.set(NEXT_ROUTER_PREFETCH_HEADER, "1");
+      headers.set(NEXT_ROUTER_SEGMENT_PREFETCH_HEADER, "/_tree");
+      const url = await createRscRequestUrl("/docs/products/rejected", headers);
+
+      const tree = await handler(new Request(`https://example.test${url}`, { headers }), null);
+
+      // The tree names the route's segments, not the param or anything the
+      // route renders for it. The prefetch of the content gets the 404.
+      expect(tree.status).toBe(200);
+      const body = await tree.text();
+      expect(body).toContain('"tree"');
+      expect(body).not.toContain("rejected");
+      expect(isDynamicParamsMiss).not.toHaveBeenCalled();
+      expect(dispatchMatchedPage).not.toHaveBeenCalled();
+    });
+
+    it("answers a route-tree prefetch that no fallback rewrite claims with the unmatched route's 404", async () => {
+      const isDynamicParamsMiss = vi.fn(
+        async (_route: TestRoute, params: Record<string, unknown>) => params.slug !== "allowed",
+      );
+      const renderNotFound = vi.fn(async () => new Response("not found", { status: 404 }));
+      const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+      const handler = createHandler({
+        configHeaders,
+        configRewrites: unclaimedFallbackRewrites,
+        dispatchMatchedPage,
+        isDynamicParamsMiss,
+        matchRoute,
+        renderNotFound,
+      });
+
+      async function treeRequest(pathname: string): Promise<Request> {
+        const headers = createRscRequestHeaders();
+        headers.set(NEXT_ROUTER_PREFETCH_HEADER, "1");
+        headers.set(NEXT_ROUTER_SEGMENT_PREFETCH_HEADER, "/_tree");
+        const url = await createRscRequestUrl(pathname, headers);
+        return new Request(`https://example.test${url}`, { headers });
+      }
+
+      const rejectedRequest = await treeRequest("/docs/products/rejected");
+      const { result: rejected, route: tracedRoute } = await captureFrameworkRequestRoute(() =>
+        handler(rejectedRequest, null),
+      );
+      expect(rejected.status).toBe(404);
+      // Traced as the unmatched route, not the rejected dynamic route.
+      expect(tracedRoute).toBe("/404");
+      expect(rejected.headers.get("cache-control")).toBe(
+        "private, no-cache, no-store, max-age=0, must-revalidate",
+      );
+      expect(renderNotFound).toHaveBeenCalledWith(expect.objectContaining({ route: null }));
+      expect(isDynamicParamsMiss).toHaveBeenCalledWith(route, { slug: "rejected" });
+
+      const allowed = await handler(await treeRequest("/docs/products/allowed"), null);
+      expect(allowed.status).toBe(200);
+      expect(await allowed.text()).toContain('"tree"');
+      expect(renderNotFound).toHaveBeenCalledOnce();
+      expect(dispatchMatchedPage).not.toHaveBeenCalled();
+    });
+
+    it("keeps a rejected route-tree prefetch's generator cacheForRequest values out of its 404", async () => {
+      const readRequestData = vi.fn(() => ({}));
+      const cachedRequestData = cacheForRequest(readRequestData);
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: unclaimedFallbackRewrites,
+        async isDynamicParamsMiss() {
+          cachedRequestData();
+          return true;
+        },
+        matchRoute,
+        async renderNotFound() {
+          cachedRequestData();
+          return new Response("not found", { status: 404 });
+        },
+      });
+      const headers = createRscRequestHeaders();
+      headers.set(NEXT_ROUTER_PREFETCH_HEADER, "1");
+      headers.set(NEXT_ROUTER_SEGMENT_PREFETCH_HEADER, "/_tree");
+      const url = await createRscRequestUrl("/docs/products/rejected", headers);
+
+      const tree = await handler(new Request(`https://example.test${url}`, { headers }), null);
+
+      expect(tree.status).toBe(404);
+      expect(readRequestData).toHaveBeenCalledTimes(2);
+    });
+
+    it("answers a route-tree prefetch when middleware enables draft mode, as Next.js does", async () => {
+      const isDynamicParamsMiss = vi.fn(async () => true);
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: unclaimedFallbackRewrites,
+        isDynamicParamsMiss,
+        matchRoute,
+        middlewareModule: {
+          async default() {
+            (await draftMode()).enable();
+            return new Response(null, { headers: { "x-middleware-next": "1" } });
+          },
+        },
+      });
+
+      const headers = createRscRequestHeaders();
+      headers.set(NEXT_ROUTER_PREFETCH_HEADER, "1");
+      headers.set(NEXT_ROUTER_SEGMENT_PREFETCH_HEADER, "/_tree");
+      const url = await createRscRequestUrl("/docs/products/rejected", headers);
+      const tree = await handler(new Request(`https://example.test${url}`, { headers }), null);
+      expect(tree.status).toBe(200);
+      expect(isDynamicParamsMiss).not.toHaveBeenCalled();
+    });
+
+    it("hides the rejected match's root params from a route-tree prefetch's not-found", async () => {
+      const localizedRoute = createPageRoute({
+        isDynamic: true,
+        params: ["lang", "slug"],
+        pattern: "/:lang/products/:slug",
+        rootParamNames: ["lang"],
+        routeSegments: ["[lang]", "products", "[slug]"],
+      });
+      const localizedMatch = (pathname: string) => {
+        const match = /^\/([^/]+)\/products\/([^/]+)$/.exec(pathname);
+        return match ? { params: { lang: match[1], slug: match[2] }, route: localizedRoute } : null;
+      };
+      let notFoundLang: unknown = "not rendered";
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: unclaimedFallbackRewrites,
+        isDynamicParamsMiss: async () => true,
+        matchRequestRoute: localizedMatch,
+        matchRoute: localizedMatch,
+        async renderNotFound() {
+          const { getRootParam } = await import("../packages/vinext/src/shims/root-params.js");
+          notFoundLang = await getRootParam("lang");
+          return new Response("not found", { status: 404 });
+        },
+      });
+      const headers = createRscRequestHeaders();
+      headers.set(NEXT_ROUTER_PREFETCH_HEADER, "1");
+      headers.set(NEXT_ROUTER_SEGMENT_PREFETCH_HEADER, "/_tree");
+      const url = await createRscRequestUrl("/docs/fr/products/rejected", headers);
+
+      const response = await handler(new Request(`https://example.test${url}`, { headers }), null);
+
+      expect(response.status).toBe(404);
+      expect(notFoundLang).toBeUndefined();
+    });
+
+    describe("with fallback rewrites", () => {
+      const localizedRoute = createPageRoute({
+        isDynamic: true,
+        params: ["lang", "slug"],
+        pattern: "/:lang/products/:slug",
+        rootParamNames: ["lang"],
+        routeSegments: ["[lang]", "products", "[slug]"],
+      });
+      const fallbackRoute = createPageRoute({
+        isDynamic: true,
+        params: ["slug"],
+        pattern: "/fallback/:slug",
+        routeSegments: ["fallback", "[slug]"],
+      });
+      const apiRoute = createPageRoute({
+        __loadPage: undefined,
+        isDynamic: true,
+        page: undefined,
+        params: ["slug"],
+        pattern: "/api/:slug",
+        routeHandler: { GET: () => new Response("route") },
+        routeSegments: ["api", "[slug]"],
+      });
+      const matchFallbackRoutes = (
+        pathname: string,
+      ): { params: Record<string, string>; route: TestRoute } | null => {
+        const localized = /^\/([^/]+)\/products\/([^/]+)$/.exec(pathname);
+        if (localized) {
+          return { params: { lang: localized[1], slug: localized[2] }, route: localizedRoute };
+        }
+        const fallback = /^\/fallback\/([^/]+)$/.exec(pathname)?.[1];
+        if (fallback) return { params: { slug: fallback }, route: fallbackRoute };
+        const api = /^\/api\/([^/]+)$/.exec(pathname)?.[1];
+        return api ? { params: { slug: api }, route: apiRoute } : null;
+      };
+      const configRewrites = {
+        afterFiles: [],
+        beforeFiles: [],
+        fallback: [
+          { source: "/:lang/products/:slug", destination: "/fallback/:slug" },
+          { source: "/api/:slug", destination: "/fallback/:slug" },
+        ],
+      };
+      // A dispatch's miss: a bare 404 when routing resumes, else the marked one.
+      const rejectedMiss = (resume: (() => boolean) | undefined) =>
+        resume?.()
+          ? new Response(null, { status: 404 })
+          : markRouteMissResponse(new Response(null, { status: 404 }));
+
+      it("answers a route-tree prefetch with the tree of the fallback rewrite that claims the URL", async () => {
+        const isDynamicParamsMiss = vi.fn(
+          async (missRoute: TestRoute) => missRoute === localizedRoute,
+        );
+        const dispatchMatchedPage = vi.fn<DispatchMatchedPage>(async () => new Response("page"));
+        const handler = createHandler({
+          configHeaders: [],
+          configRewrites,
+          dispatchMatchedPage,
+          isDynamicParamsMiss,
+          matchRequestRoute: matchFallbackRoutes,
+          matchRoute: matchFallbackRoutes,
+        });
+        const headers = createRscRequestHeaders();
+        headers.set(NEXT_ROUTER_PREFETCH_HEADER, "1");
+        headers.set(NEXT_ROUTER_SEGMENT_PREFETCH_HEADER, "/_tree");
+        const url = await createRscRequestUrl("/docs/fr/products/rejected", headers);
+
+        const tree = await handler(new Request(`https://example.test${url}`, { headers }), null);
+
+        expect(tree.status).toBe(200);
+        const body = await tree.text();
+        expect(body).toContain('"fallback"');
+        expect(body).not.toContain('"products"');
+        expect(isDynamicParamsMiss).toHaveBeenCalledTimes(2);
+        expect(dispatchMatchedPage).not.toHaveBeenCalled();
+      });
+
+      it("resumes routing after the dispatch rejects the params", async () => {
+        let fallbackRender: unknown = "not rendered";
+        let navigationParams: unknown;
+        const cacheability: RouteCacheabilityState = {
+          captureDeadlineAt: Date.now() + 10_000,
+          mode: "admit",
+        };
+        const dispatchMatchedPage = vi.fn<DispatchMatchedPage>(async (options) => {
+          if (options.route === localizedRoute) {
+            beginRouteCacheability("app-page", localizedRoute.pattern);
+            expect(options.resumeRoutingAfterMiss?.()).toBe(true);
+            return new Response(null, { status: 404 });
+          }
+          const { getRootParam } = await import("../packages/vinext/src/shims/root-params.js");
+          fallbackRender = {
+            cacheabilityRoute: cacheability.route,
+            lang: await getRootParam("lang"),
+            navigationParams,
+          };
+          return new Response(`fallback ${String(options.params.slug)}`);
+        });
+        const handler = createHandler({
+          configHeaders: [],
+          configRewrites,
+          dispatchMatchedPage,
+          matchRequestRoute: matchFallbackRoutes,
+          matchRoute: matchFallbackRoutes,
+          setNavigationContext(context) {
+            navigationParams = context.params;
+          },
+        });
+
+        const { result: response, route: tracedRoute } = await captureFrameworkRequestRoute(() =>
+          handler(
+            new Request("https://example.test/docs/fr/products/rejected"),
+            cacheabilityContext(cacheability),
+          ),
+        );
+
+        expect(await response.text()).toBe("fallback rejected");
+        expect(dispatchMatchedPage).toHaveBeenCalledTimes(2);
+        // Traced and rendered as the fallback rewrite's route, with nothing of
+        // the rejected match.
+        expect(tracedRoute).toBe("/fallback/[slug]");
+        expect(fallbackRender).toEqual({
+          cacheabilityRoute: undefined,
+          lang: undefined,
+          navigationParams: { slug: "rejected" },
+        });
+      });
+
+      it("renders an unclaimed route handler miss without the rejected params", async () => {
+        let navigationParams: unknown;
+        let notFoundNavigationParams: unknown = "not rendered";
+        const handler = createHandler({
+          configHeaders: [],
+          configRewrites: {
+            afterFiles: [],
+            beforeFiles: [],
+            fallback: [{ source: "/:lang/products/:slug", destination: "/fallback/:slug" }],
+          },
+          dispatchMatchedRouteHandler: async (options) =>
+            rejectedMiss(options.resumeRoutingAfterMiss),
+          matchRequestRoute: matchFallbackRoutes,
+          matchRoute: matchFallbackRoutes,
+          async renderNotFound() {
+            notFoundNavigationParams = navigationParams;
+            return new Response("not found", { status: 404 });
+          },
+          setNavigationContext(context) {
+            navigationParams = context.params;
+          },
+        });
+
+        const response = await handler(new Request("https://example.test/docs/api/rejected"), null);
+
+        expect(response.status).toBe(404);
+        expect(notFoundNavigationParams).toEqual({});
+      });
+
+      it("resumes routing after a route handler rejects the params", async () => {
+        const dispatchMatchedRouteHandler = vi.fn<DispatchMatchedRouteHandler>(async (options) => {
+          expect(options.resumeRoutingAfterMiss?.()).toBe(true);
+          return new Response(null, { status: 404 });
+        });
+        const handler = createHandler({
+          configHeaders: [],
+          configRewrites,
+          dispatchMatchedPage: async (options) =>
+            new Response(`fallback ${String(options.params.slug)}`),
+          dispatchMatchedRouteHandler,
+          matchRequestRoute: matchFallbackRoutes,
+          matchRoute: matchFallbackRoutes,
+        });
+
+        const response = await handler(new Request("https://example.test/docs/api/rejected"), null);
+
+        expect(await response.text()).toBe("fallback rejected");
+        expect(dispatchMatchedRouteHandler).toHaveBeenCalledOnce();
+      });
+
+      it("resumes routing at each later fallback rewrite", async () => {
+        const resumed: unknown[] = [];
+        const dispatchMatchedPage = vi.fn<DispatchMatchedPage>(async (options) => {
+          const resume = options.resumeRoutingAfterMiss;
+          return rejectedMiss(() => {
+            const isResumed = resume?.() ?? false;
+            resumed.push(isResumed);
+            return isResumed;
+          });
+        });
+        const handler = createHandler({
+          configHeaders: [],
+          configRewrites,
+          dispatchMatchedPage,
+          matchRequestRoute: matchFallbackRoutes,
+          matchRoute: matchFallbackRoutes,
+        });
+
+        const response = await handler(
+          new Request("https://example.test/docs/fr/products/rejected"),
+          null,
+        );
+
+        // The second fallback rewrite doesn't claim the first one's
+        // destination, so the URL gets the unmatched route's 404.
+        expect(response.status).toBe(404);
+        expect(response.headers.has(VINEXT_ROUTE_MISS_HEADER)).toBe(false);
+        expect(resumed).toEqual([true, true]);
+      });
+
+      it("resumes routing after the fallback rewrite that reached the rejected route", async () => {
+        const dispatchMatchedRouteHandler = vi.fn<DispatchMatchedRouteHandler>(
+          async () => new Response("route"),
+        );
+        const resumed: unknown[] = [];
+        const handler = createHandler({
+          configHeaders: [],
+          configRewrites: {
+            afterFiles: [],
+            beforeFiles: [],
+            fallback: [
+              { source: "/fallback/:slug", destination: "/api/:slug" },
+              { source: "/start/:slug", destination: "/fallback/:slug" },
+            ],
+          },
+          dispatchMatchedPage: async (options) =>
+            rejectedMiss(() => {
+              const isResumed = options.resumeRoutingAfterMiss?.() ?? false;
+              resumed.push(isResumed);
+              return isResumed;
+            }),
+          dispatchMatchedRouteHandler,
+          matchRequestRoute: matchFallbackRoutes,
+          matchRoute: matchFallbackRoutes,
+        });
+
+        const response = await handler(
+          new Request("https://example.test/docs/start/rejected"),
+          null,
+        );
+
+        // An earlier fallback rewrite never reaches the rejected route's URL.
+        expect(response.status).toBe(404);
+        expect(resumed).toEqual([false]);
+        expect(dispatchMatchedRouteHandler).not.toHaveBeenCalled();
+      });
+
+      it("doesn't route a resumed request back to the rejected route", async () => {
+        const dispatchMatchedPage = vi.fn<DispatchMatchedPage>(async (options) =>
+          options.params.slug === "listed"
+            ? new Response("fallback listed")
+            : rejectedMiss(options.resumeRoutingAfterMiss),
+        );
+        const handler = createHandler({
+          configHeaders: [],
+          configRewrites: {
+            afterFiles: [],
+            beforeFiles: [],
+            fallback: [
+              { source: "/start/:slug", destination: "/fallback/:slug" },
+              { source: "/fallback/:slug", destination: "/fallback/listed" },
+            ],
+          },
+          dispatchMatchedPage,
+          matchRequestRoute: matchFallbackRoutes,
+          matchRoute: matchFallbackRoutes,
+        });
+
+        const response = await handler(
+          new Request("https://example.test/docs/start/rejected"),
+          null,
+        );
+
+        // Next.js skips the route it already tried, even for listed params.
+        expect(response.status).toBe(404);
+        expect(dispatchMatchedPage).toHaveBeenCalledOnce();
+      });
+
+      it("drops the rejected route's cache bypass when routing resumes", async () => {
+        const dispatchMatchedRouteHandler = vi.fn<DispatchMatchedRouteHandler>(async (options) => {
+          expect(options.bypassInterceptionContextCache).toBe(true);
+          expect(options.resumeRoutingAfterMiss?.()).toBe(true);
+          return new Response(null, { status: 404 });
+        });
+        const dispatchMatchedPage = vi.fn<DispatchMatchedPage>(
+          async (options) =>
+            new Response(`fallback ${String(options.params.slug)}`, {
+              headers: { "Cache-Control": "public, s-maxage=60" },
+            }),
+        );
+        const handler = createHandler({
+          configHeaders: [],
+          configRewrites,
+          dispatchMatchedPage,
+          dispatchMatchedRouteHandler,
+          matchRequestRoute: matchFallbackRoutes,
+          matchRoute: matchFallbackRoutes,
+        });
+
+        // A route handler sees the raw spelling, so its match bypasses the cache.
+        const response = await handler(
+          new Request("https://example.test/docs/api/rej%65cted"),
+          null,
+        );
+
+        expect(await response.text()).toBe("fallback rej%65cted");
+        expect(dispatchMatchedRouteHandler).toHaveBeenCalledOnce();
+        expect(dispatchMatchedPage).toHaveBeenCalledWith(
+          expect.objectContaining({ bypassInterceptionContextCache: false }),
+        );
+        expect(response.headers.get("Cache-Control")).toBe("public, s-maxage=60");
+      });
+
+      it("doesn't resume routing for an intercepted route", async () => {
+        const dispatchMatchedPage = vi.fn<DispatchMatchedPage>(async (options) => {
+          expect(options.resumeRoutingAfterMiss).toBeUndefined();
+          return rejectedMiss(options.resumeRoutingAfterMiss);
+        });
+        const renderPagesFallback = vi.fn(async () => new Response("pages"));
+        const handler = createHandler({
+          configHeaders: [],
+          configRewrites: {
+            afterFiles: [],
+            beforeFiles: [],
+            fallback: [{ source: "/en/intercepted", destination: "/pages-only" }],
+          },
+          dispatchMatchedPage,
+          matchInterceptRoute(pathname, sourcePathname) {
+            if (pathname !== "/en/intercepted" || sourcePathname !== "/en/products/recent") {
+              return null;
+            }
+            return {
+              interceptionSourceIsConcrete: true,
+              params: { lang: "en", slug: "recent" },
+              route: localizedRoute,
+            };
+          },
+          matchRoute: () => null,
+          renderPagesFallback,
+        });
+
+        const headers = createRscRequestHeaders({ interceptionContext: "/en/products/recent" });
+        const rscUrl = await createRscRequestUrl("/docs/en/intercepted", headers);
+        const response = await handler(
+          new Request(`https://example.test${rscUrl}`, { headers }),
+          null,
+        );
+
+        expect(response.status).toBe(404);
+        expect(dispatchMatchedPage).toHaveBeenCalledOnce();
+        expect(renderPagesFallback).not.toHaveBeenCalled();
+      });
+
+      it("doesn't resume routing for a page an action rendered", async () => {
+        const dispatchMatchedPage = vi.fn<DispatchMatchedPage>(async (options) => {
+          expect(options.resumeRoutingAfterMiss).toBeUndefined();
+          return rejectedMiss(options.resumeRoutingAfterMiss);
+        });
+        const handler = createHandler({
+          configHeaders: [],
+          configRewrites,
+          dispatchMatchedPage,
+          matchRequestRoute: matchFallbackRoutes,
+          matchRoute: matchFallbackRoutes,
+        });
+
+        const response = await handler(
+          new Request("https://example.test/docs/fr/products/rejected", {
+            method: "POST",
+            headers: { "next-action": "action-id", "content-type": "text/plain" },
+          }),
+          null,
+        );
+
+        expect(response.status).toBe(404);
+        expect(dispatchMatchedPage).toHaveBeenCalledOnce();
+      });
+    });
+
+    it("doesn't resume routing without fallback rewrites", async () => {
+      let resumed: unknown;
+      const dispatchMatchedPage = vi.fn<DispatchMatchedPage>(async (options) => {
+        resumed = options.resumeRoutingAfterMiss?.();
+        return markRouteMissResponse(new Response(null, { status: 404 }));
+      });
+      const handler = createHandler({ configHeaders: [], dispatchMatchedPage, matchRoute });
+
+      const response = await handler(
+        new Request("https://example.test/docs/products/rejected"),
+        null,
+      );
+
+      expect(response.status).toBe(404);
+      expect(resumed).toBe(false);
+      expect(dispatchMatchedPage).toHaveBeenCalledOnce();
+    });
+
+    it("keeps the never-cache policy of the page render's not-found over config headers", async () => {
+      const handler = createHandler({
+        configHeaders,
+        dispatchMatchedPage: async () =>
+          new Response("not found", {
+            status: 404,
+            headers: { [VINEXT_ROUTE_MISS_HEADER]: "1" },
+          }),
+        matchRoute,
+      });
+
+      const { result: response, route: tracedRoute } = await captureFrameworkRequestRoute(() =>
+        handler(new Request("https://example.test/docs/products/rejected"), null),
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.headers.get("cache-control")).toBe(
+        "private, no-cache, no-store, max-age=0, must-revalidate",
+      );
+      expect(response.headers.has(VINEXT_ROUTE_MISS_HEADER)).toBe(false);
+      // Traced as the unmatched route, not the rejected dynamic route.
+      expect(tracedRoute).toBe("/404");
+    });
+
+    it("puts config Link headers before an immutable not-found's own", async () => {
+      const handler = createHandler({
+        configHeaders: [
+          {
+            source: "/products/:slug",
+            headers: [{ key: "Link", value: '</config>; rel="describedby"' }],
+          },
+        ],
+        dispatchMatchedPage: async () => {
+          const response = new Response("not found", {
+            status: 404,
+            headers: {
+              Link: '</not-found.css>; rel="preload"; as="style"',
+              [VINEXT_ROUTE_MISS_HEADER]: "1",
+            },
+          });
+          markFrameworkLinkHeaders(response.headers, response.headers.get("link"));
+          response.headers.delete = () => {
+            throw new TypeError("immutable");
+          };
+          return response;
+        },
+        matchRoute,
+      });
+
+      const response = await handler(
+        new Request("https://example.test/docs/products/rejected"),
+        null,
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.headers.has(VINEXT_ROUTE_MISS_HEADER)).toBe(false);
+      expect(response.headers.get("link")).toBe(
+        '</config>; rel="describedby", </not-found.css>; rel="preload"; as="style"',
+      );
+    });
+
+    it("applies config headers once to a staged page render's not-found", async () => {
+      const handler = createHandler({
+        configHeaders: [
+          {
+            source: "/products/:slug",
+            headers: [...configHeaders[0].headers, { key: "Set-Cookie", value: "config=1" }],
+          },
+        ],
+        dispatchMatchedPage: async () =>
+          new Response("not found", {
+            status: 404,
+            headers: { [VINEXT_ROUTE_MISS_HEADER]: "1" },
+          }),
+        matchRoute,
+      });
+
+      const { result: response, route: tracedRoute } = await captureFrameworkRequestRoute(() =>
+        handler(
+          new Request("https://example.test/docs/products/rejected"),
+          null,
+          false,
+          (stageRequest: Request, props: AppWorkerResponseStageProps) =>
+            handler.handleResponseStage(stageRequest, null, props),
+        ),
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.headers.get("cache-control")).toBe(
+        "private, no-cache, no-store, max-age=0, must-revalidate",
+      );
+      expect(response.headers.getSetCookie()).toEqual(["config=1"]);
+      expect(tracedRoute).toBe("/404");
+    });
+
+    it("sends a staged RSC not-found without the rejected params", async () => {
+      const handler = createHandler({
+        configHeaders: [],
+        dispatchMatchedPage: async () =>
+          new Response("not found", {
+            status: 404,
+            headers: { [VINEXT_ROUTE_MISS_HEADER]: "1" },
+          }),
+        matchRoute,
+      });
+      const headers = createRscRequestHeaders();
+      const url = await createRscRequestUrl("/docs/products/rejected", headers);
+
+      const response = await handler(
+        new Request(`https://example.test${url}`, { headers }),
+        null,
+        false,
+        (stageRequest: Request, props: AppWorkerResponseStageProps) =>
+          handler.handleResponseStage(stageRequest, null, props),
+      );
+
+      expect(response.status).toBe(404);
+      // The client reads this header into useParams().
+      expect(response.headers.has(VINEXT_PARAMS_HEADER)).toBe(false);
+      expect(response.headers.has(VINEXT_ROUTE_MISS_HEADER)).toBe(false);
+    });
+
+    it.each(["middleware", "a config header"])("ignores a marker that %s sets", async (source) => {
+      const marker = { key: VINEXT_ROUTE_MISS_HEADER, value: "1" };
+      const handler = createHandler({
+        configHeaders:
+          source === "middleware"
+            ? configHeaders
+            : [{ source: "/products/:slug", headers: [...configHeaders[0].headers, marker] }],
+        // Like the page render, carry middleware's response headers.
+        async dispatchMatchedPage({ middlewareContext }) {
+          const headers = new Headers();
+          mergeMiddlewareResponseHeaders(headers, middlewareContext.headers);
+          return new Response("page", { headers });
+        },
+        matchRoute,
+        middlewareModule:
+          source === "middleware"
+            ? {
+                default() {
+                  return new Response(null, {
+                    headers: { "x-middleware-next": "1", [marker.key]: marker.value },
+                  });
+                },
+              }
+            : null,
+      });
+
+      const response = await handler(
+        new Request("https://example.test/docs/products/allowed"),
+        null,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("cache-control")).toBe("public, s-maxage=3600");
+      expect(response.headers.has(VINEXT_ROUTE_MISS_HEADER)).toBe(false);
+    });
+  });
+
+  it("returns route-tree prefetches for layout-only App Router matches", async () => {
+    const layoutOnlyRoute = createPageRoute({
+      layouts: [{ default() {} }],
+      layoutTreePositions: [0],
+      page: null,
+      pattern: "/parallel-only",
+      routeHandler: null,
+      routeSegments: ["parallel-only"],
+      slots: {
+        sidebar: {
+          name: "sidebar",
+          default: { default() {} },
+          page: null,
+          routeSegments: null,
+        },
+      },
+    });
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchRoute: (pathname: string) =>
+        pathname === "/parallel-only"
+          ? {
+              params: {},
+              route: layoutOnlyRoute,
+            }
+          : null,
+    });
+
+    const headers = createRscRequestHeaders();
+    headers.set(NEXT_ROUTER_PREFETCH_HEADER, "1");
+    headers.set(NEXT_ROUTER_SEGMENT_PREFETCH_HEADER, "/_tree");
+    const rscUrl = await createRscRequestUrl("/docs/parallel-only", headers);
+
+    const response = await handler(
+      new Request(`https://example.test${rscUrl}`, {
+        headers,
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-nextjs-postponed")).toBe("2");
+    expect(await response.text()).toContain('"tree"');
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("does not dispatch server actions directly outside basePath", async () => {
+    const handleServerActionRequest = vi.fn(async () => new Response("action"));
+    const handler = createHandler({ configHeaders: [], handleServerActionRequest });
+
+    const response = await handler(
+      new Request("https://example.test/about", {
+        method: "POST",
+        headers: { "next-action": "action-id", "content-type": "text/plain" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(404);
+    expect(handleServerActionRequest).not.toHaveBeenCalled();
+  });
+
+  it("passes out-of-basePath state to App middleware", async () => {
+    let capturedMiddlewareRequest: NextRequest | null = null;
+    const middleware = vi.fn((request: NextRequest) => {
+      capturedMiddlewareRequest = request;
+      return new Response(null, { headers: { "x-middleware-next": "1" } });
+    });
+    const handler = createHandler({ configHeaders: [], middlewareModule: { default: middleware } });
+
+    await handler(new Request("https://example.test/outside"), null);
+
+    expect(middleware).toHaveBeenCalledOnce();
+    const middlewareRequest = capturedMiddlewareRequest as NextRequest | null;
+    expect(middlewareRequest).not.toBeNull();
+    expect(middlewareRequest!.nextUrl.basePath).toBe("");
+    expect(middlewareRequest!.nextUrl.pathname).toBe("/outside");
+  });
+
+  it("dispatches Server Action redirect targets through the complete App pipeline", async () => {
+    const seenPathnames: string[] = [];
+    const middleware = vi.fn((request: NextRequest) => {
+      const { pathname } = new URL(request.url);
+      seenPathnames.push(pathname);
+      return pathname === "/docs/protected"
+        ? new Response("unauthorized", { status: 401 })
+        : new Response(null, { headers: { "x-middleware-next": "1" } });
+    });
+    let dispatchRedirectTargetRequest: ((request: Request) => Promise<Response>) | undefined;
+    const dispatchResponseStage = vi.fn(async () => new Response("target response stage"));
+    const handler = createHandler({
+      configHeaders: [],
+      handleServerActionRequest: async (options) => {
+        dispatchRedirectTargetRequest = options.dispatchRedirectTargetRequest;
+        return new Response("action");
+      },
+      middlewareModule: { default: middleware },
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about", {
+        method: "POST",
+        headers: { "next-action": "action-id", "content-type": "text/plain" },
+      }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(response.status).toBe(200);
+    expect(seenPathnames).toEqual(["/docs/about"]);
+
+    expect(dispatchRedirectTargetRequest).toBeDefined();
+    const targetResponse = await dispatchRedirectTargetRequest!(
+      new Request("https://example.test/docs/protected"),
+    );
+    expect(targetResponse.status).toBe(401);
+    expect(await targetResponse.text()).toBe("unauthorized");
+    expect(seenPathnames).toEqual(["/docs/about", "/docs/protected"]);
+
+    const renderedTargetResponse = await dispatchRedirectTargetRequest!(
+      new Request("https://example.test/docs/about"),
+    );
+    expect(await renderedTargetResponse.text()).toBe("target response stage");
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+    expect(seenPathnames).toEqual(["/docs/about", "/docs/protected", "/docs/about"]);
+  });
+
+  it.each([
+    "url=%2Fimg.jpg&w=640junk&q=75",
+    "url=%2Fimg.jpg&w=640&q=75&extra=1",
+    "url=%2Fimg.jpg&w=640&w=640&q=75",
+  ])("rejects malformed pure App Router dev image parameters: %s", async (query) => {
+    const handler = createHandler();
+    const response = await handler(
+      new Request(`https://example.test/docs/_next/image?${query}`),
+      null,
+    );
+    expect(response.status).toBe(400);
+  });
+
+  it("uses configured image widths and qualities in pure App Router dev", async () => {
+    const handler = createHandler({
+      imageConfig: { deviceSizes: [320], imageSizes: [16], qualities: [60] },
+    });
+    const allowed = await handler(
+      new Request("https://example.test/docs/_next/image?url=%2Fimg.jpg&w=320&q=60"),
+      null,
+    );
+    expect(allowed.status).toBe(302);
+    expect(allowed.headers.get("location")).toBe("https://example.test/img.jpg");
+
+    const defaultOnly = await handler(
+      new Request("https://example.test/docs/_next/image?url=%2Fimg.jpg&w=640&q=75"),
+      null,
+    );
+    expect(defaultOnly.status).toBe(400);
+  });
+
+  it("sends config headers with the App Router image, below middleware's", async () => {
+    // Hosts replace the redirect carrier with the image, so config headers
+    // reach it only through the signal.
+    const handler = createHandler({
+      configHeaders: [
+        {
+          source: "/:path*",
+          headers: [
+            { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
+            { key: "x-shared", value: "config" },
+          ],
+        },
+      ],
+      middlewareModule: {
+        default: () =>
+          new Response(null, { headers: { "x-middleware-next": "1", "x-shared": "middleware" } }),
+      },
+    });
+    const response = await handler(
+      new Request("https://example.test/docs/_next/image?url=%2Fimg.jpg&w=640&q=75"),
+      null,
+    );
+    expect(response.status).toBe(302);
+    const signal = readImageOptimizationSignal(response);
+    expect(signal?.middlewareHeaders.get("cross-origin-resource-policy")).toBe("same-origin");
+    expect(signal?.middlewareHeaders.get("x-shared")).toBe("middleware");
+  });
+
+  it.each([
+    {
+      name: "a middleware rewrite into basePath",
+      requestPath: "/docs/photo",
+      overrides: {
+        middlewareModule: {
+          default: (request: Request) =>
+            new Response(null, {
+              headers: {
+                "x-middleware-rewrite": new URL(
+                  "/docs/_next/image?url=%2Fimg.jpg&w=640&q=75",
+                  request.url,
+                ).toString(),
+              },
+            }),
+        },
+      },
+      served: true,
+    },
+    {
+      name: "a middleware rewrite outside basePath",
+      requestPath: "/docs/photo",
+      overrides: {
+        middlewareModule: {
+          default: (request: Request) =>
+            new Response(null, {
+              headers: {
+                "x-middleware-rewrite": new URL(
+                  "/_next/image?url=%2Fimg.jpg&w=640&q=75",
+                  request.url,
+                ).toString(),
+              },
+            }),
+        },
+      },
+      served: false,
+    },
+    {
+      name: "a default config rewrite",
+      requestPath: "/docs/photo",
+      overrides: {
+        configRewrites: {
+          beforeFiles: [
+            { source: "/photo", destination: "/_next/image?url=%2Fimg.jpg&w=640&q=75" },
+          ],
+          afterFiles: [],
+          fallback: [],
+        },
+      },
+      served: true,
+    },
+    {
+      name: "a basePath: false config rewrite",
+      requestPath: "/photo",
+      overrides: {
+        configRewrites: {
+          beforeFiles: [
+            {
+              source: "/photo",
+              destination: "/_next/image?url=%2Fimg.jpg&w=640&q=75",
+              basePath: false as const,
+            },
+          ],
+          afterFiles: [],
+          fallback: [],
+        },
+      },
+      served: false,
+    },
+    {
+      name: "a default config rewrite after a middleware rewrite outside basePath",
+      requestPath: "/docs/photo",
+      overrides: {
+        middlewareModule: {
+          default: (request: Request) =>
+            new Response(null, {
+              headers: { "x-middleware-rewrite": new URL("/outside", request.url).toString() },
+            }),
+        },
+        configRewrites: {
+          beforeFiles: [
+            { source: "/outside", destination: "/_next/image?url=%2Fimg.jpg&w=640&q=75" },
+          ],
+          afterFiles: [],
+          fallback: [],
+        },
+      },
+      served: false,
+    },
+    {
+      name: "a default config rewrite after a middleware rewrite into basePath",
+      requestPath: "/photo",
+      overrides: {
+        middlewareModule: {
+          default: (request: Request) =>
+            new Response(null, {
+              headers: { "x-middleware-rewrite": new URL("/docs/legacy", request.url).toString() },
+            }),
+        },
+        configRewrites: {
+          beforeFiles: [
+            { source: "/legacy", destination: "/_next/image?url=%2Fimg.jpg&w=640&q=75" },
+          ],
+          afterFiles: [],
+          fallback: [],
+        },
+      },
+      served: true,
+    },
+    {
+      name: "an afterFiles config rewrite",
+      requestPath: "/docs/photo",
+      overrides: {
+        configRewrites: {
+          beforeFiles: [],
+          afterFiles: [{ source: "/photo", destination: "/_next/image?url=%2Fimg.jpg&w=640&q=75" }],
+          fallback: [],
+        },
+      },
+      served: true,
+    },
+    {
+      name: "a fallback config rewrite",
+      requestPath: "/docs/photo",
+      overrides: {
+        configRewrites: {
+          beforeFiles: [],
+          afterFiles: [],
+          fallback: [{ source: "/photo", destination: "/_next/image?url=%2Fimg.jpg&w=640&q=75" }],
+        },
+      },
+      served: true,
+    },
+  ])(
+    "serves the App Router image endpoint only when $name keeps the basePath",
+    async ({ requestPath, overrides, served }) => {
+      // Next.js filesystem lookups return nothing for a path without the
+      // basePath, so a rewrite target must carry it to reach the endpoint.
+      const handler = createHandler({ configHeaders: [], ...overrides });
+      const response = await handler(new Request(`https://example.test${requestPath}`), null);
+      if (served) {
+        expect(response.status).toBe(302);
+        expect(response.headers.get("location")).toBe("https://example.test/img.jpg");
+      } else {
+        expect(response.status).toBe(404);
+      }
+    },
+  );
+
+  it.each([
+    { rewriteHadBasePath: true, served: true },
+    { rewriteHadBasePath: false, served: false },
+  ])(
+    "serves the App Router image endpoint for a forwarded middleware rewrite only when it kept the basePath ($rewriteHadBasePath)",
+    async ({ rewriteHadBasePath, served }) => {
+      // Hybrid app+pages dev runs middleware in the Pages pipeline and forwards
+      // the basePath-stripped rewrite, so the basePath state travels with it.
+      const handler = createHandler({
+        configHeaders: [],
+        middlewareModule: { default: () => new Response(null) },
+      });
+      const response = await handler(
+        new Request("https://example.test/docs/photo", {
+          headers: {
+            [VINEXT_MW_CTX_HEADER]: sealedForwardedContext({
+              r: "/_next/image?url=%2Fimg.jpg&w=640&q=75",
+              b: rewriteHadBasePath,
+            }),
+          },
+        }),
+        null,
+      );
+      if (served) {
+        expect(response.status).toBe(302);
+        expect(response.headers.get("location")).toBe("https://example.test/img.jpg");
+      } else {
+        expect(response.status).toBe(404);
+      }
+    },
+  );
+
+  it("dispatches an RSC interception target with all dynamic descendant source params", async () => {
+    const sourceRoute = createPageRoute({
+      isDynamic: true,
+      params: ["locale", "tab"],
+      pattern: "/:locale/example/:tab",
+      rootParamNames: ["locale"],
+      routeSegments: ["[locale]", "example", "[tab]"],
+    });
+    const dispatchMatchedPage = vi.fn(async () => new Response("intercepted", { status: 200 }));
+    const renderPagesFallback = vi.fn(async () => new Response("pages", { status: 200 }));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute(pathname, sourcePathname) {
+        if (pathname !== "/en/intercepted" || sourcePathname !== "/en/example/recent") {
+          return null;
+        }
+        return {
+          interceptionSourceIsConcrete: true,
+          route: sourceRoute,
+          params: { locale: "en", tab: "recent" },
+        };
+      },
+      matchRoute: () => null,
+      renderPagesFallback,
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/en/example/recent" });
+    const rscUrl = await createRscRequestUrl("/docs/en/intercepted", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe("intercepted");
+    expect(renderPagesFallback).not.toHaveBeenCalled();
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cleanPathname: "/en/intercepted",
+        interceptionContext: "/en/example/recent",
+        params: { locale: "en", tab: "recent" },
+        route: sourceRoute,
+      }),
+    );
+  });
+
+  // Next.js renders the full page rather than an intercepted tree on hard refresh:
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/dynamic-interception-route-revalidate/dynamic-interception-route-revalidate.test.ts
+  it("ignores client-supplied interception context on HTML page dispatch", async () => {
+    const dispatchMatchedPage = vi.fn(async () => new Response("page", { status: 200 }));
+    const handler = createHandler({ configHeaders: [], dispatchMatchedPage });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about", {
+        headers: { "X-Vinext-Interception-Context": "/feed" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({ interceptionContext: null, isRscRequest: false }),
+    );
+  });
+
+  it("ignores client-supplied interception context on HTML response-stage dispatch", async () => {
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+      async () => new Response("page"),
+    );
+    const handler = createHandler({ configHeaders: [] });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about", {
+        headers: { "X-Vinext-Interception-Context": "/feed" },
+      }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(response.status).toBe(200);
+    expect(dispatchResponseStage.mock.calls[0]?.[1]).toMatchObject({
+      interceptionContext: null,
+      isRscRequest: false,
+      kind: "app-page",
+    });
+  });
+
+  // Interception renders the source route's tree, so that route must clear the
+  // same middleware boundary a direct request to it would. Next.js never renders
+  // the source for this request (its rewrite targets the intercepting route and
+  // the client keeps its own segments), so there is no upstream behaviour to
+  // mirror here; the boundary exists because vinext renders the extra route.
+  it("denies an interception source route that middleware rejects", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/feed/secret" });
+    const dispatchMatchedPage = vi.fn(async () => new Response("secret"));
+    const middlewarePaths: string[] = [];
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed/secret" ? { route: sourceRoute, params: {} } : null,
+      matchRoute: (pathname: string) => {
+        if (pathname === "/photos/1") return { params: {}, route: targetRoute };
+        if (pathname === "/feed/secret") return { params: {}, route: sourceRoute };
+        return null;
+      },
+      async runMiddleware({ cleanPathname }) {
+        middlewarePaths.push(cleanPathname);
+        return cleanPathname.startsWith("/feed/secret")
+          ? { kind: "response", matched: true, response: new Response("denied", { status: 401 }) }
+          : { kind: "continue", cleanPathname, matched: true, rewritten: false, search: null };
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed/secret" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(401);
+    await expect(response.text()).resolves.toBe("denied");
+    expect(middlewarePaths).toEqual(["/photos/1", "/feed/secret"]);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  // Next.js matches static segments against the raw path, so a direct request
+  // to `/%66eed/secret` reaches only a route whose first segment is dynamic, and
+  // middleware sees that raw pathname. The source pass must resolve the claimed
+  // source and run middleware exactly as that direct request does.
+  it("authorizes an encoded interception source as a direct request to it", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const intercepts = (sourceMatchPattern: string) => ({
+      modal: {
+        intercepts: [
+          {
+            sourceMatchPattern,
+            targetPattern: "/photos/:id",
+            interceptLayouts: [],
+            page: { default() {} },
+            params: ["id"],
+          },
+        ],
+      },
+    });
+    const matcherRoutes = [
+      {
+        params: [],
+        pattern: "/feed/secret",
+        patternParts: ["feed", "secret"],
+        slots: intercepts("/feed/secret"),
+      },
+      {
+        params: ["section"],
+        pattern: "/:section/secret",
+        patternParts: [":section", "secret"],
+        slots: intercepts("/:section/secret"),
+      },
+    ];
+    const matcher = createAppRscRouteMatcher(matcherRoutes);
+    const handlerRoutes = new Map<string, TestRoute>([
+      ["/feed/secret", createPageRoute({ pattern: "/feed/secret" })],
+      [
+        "/:section/secret",
+        createPageRoute({
+          isDynamic: true,
+          params: ["section"],
+          pattern: "/:section/secret",
+          routeSegments: ["[section]", "secret"],
+        }),
+      ],
+    ]);
+    const toHandlerMatch = (
+      result: { route: { pattern: string }; params: Record<string, string | string[]> } | null,
+    ) =>
+      result ? { params: result.params, route: handlerRoutes.get(result.route.pattern)! } : null;
+    const matchInterceptRoute = vi.fn(
+      (pathname: string, sourcePathname: string, interceptionId?: string | null) => {
+        const intercept = matcher.findIntercept(pathname, sourcePathname, interceptionId);
+        if (!intercept) return null;
+        return {
+          interceptionSourceIsConcrete: intercept.sourceRouteIsConcrete,
+          params: intercept.sourceMatchedParams,
+          route: handlerRoutes.get(matcherRoutes[intercept.sourceRouteIndex].pattern)!,
+        };
+      },
+    );
+    const dispatchMatchedPage = vi.fn(async () => new Response("secret"));
+    const middlewarePaths: string[] = [];
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute,
+      matchRequestRoute: (pathname: string) =>
+        pathname === "/photos/1"
+          ? { params: {}, route: targetRoute }
+          : toHandlerMatch(matcher.matchRequestRoute(pathname)),
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1"
+          ? { params: {}, route: targetRoute }
+          : toHandlerMatch(matcher.matchRoute(pathname)),
+      middlewareModule: {
+        config: { matcher: "/feed/:path*" },
+        default(request: NextRequest) {
+          middlewarePaths.push(request.nextUrl.pathname);
+          return new Response("denied", { status: 401 });
+        },
+      },
+    });
+
+    const direct = await handler(new Request("https://example.test/docs/%66eed/secret"), null);
+    const headers = createRscRequestHeaders({ interceptionContext: "/%66eed/secret" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const intercepted = await handler(
+      new Request(`https://example.test${rscUrl}`, { headers }),
+      null,
+    );
+
+    expect(matchInterceptRoute).toHaveReturnedWith(
+      expect.objectContaining({ route: handlerRoutes.get("/:section/secret") }),
+    );
+    expect(direct.status).toBe(401);
+    expect(intercepted.status).toBe(401);
+    expect(middlewarePaths).toEqual(["/%66eed/secret", "/%66eed/secret"]);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  // A direct request to `/docs/docs/secret` carries the source's leading
+  // `docs` segment past basePath; the source pass must not mistake it for one.
+  it("keeps a basePath-shaped source segment visible to middleware", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/docs/secret" });
+    const dispatchMatchedPage = vi.fn(async () => new Response("secret"));
+    const middlewarePaths: string[] = [];
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/docs/secret"
+          ? { interceptionSourceIsConcrete: true, route: sourceRoute, params: {} }
+          : null,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+      middlewareModule: {
+        config: { matcher: "/docs/:path*" },
+        default(request: NextRequest) {
+          middlewarePaths.push(request.nextUrl.pathname);
+          return new Response("denied", { status: 401 });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/docs/secret" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(401);
+    expect(middlewarePaths).toEqual(["/docs/secret"]);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { label: "removes", source: "/feed/secret/", trailingSlash: false, seen: "/feed/secret" },
+    { label: "adds", source: "/feed/secret", trailingSlash: true, seen: "/feed/secret/" },
+  ])(
+    "$label a trailing slash before source middleware, as a direct request's redirect does",
+    async ({ source, trailingSlash, seen }) => {
+      const targetRoute = createPageRoute({
+        pattern: "/photos/1",
+        routeSegments: ["photos", "1"],
+      });
+      const sourceRoute = createPageRoute({ pattern: "/feed/secret" });
+      const middlewarePaths: string[] = [];
+      const handler = createHandler({
+        configHeaders: [],
+        matchInterceptRoute: (_pathname, sourcePathname) =>
+          sourcePathname === source
+            ? { interceptionSourceIsConcrete: true, route: sourceRoute, params: {} }
+            : null,
+        matchRoute: (pathname: string) =>
+          pathname === "/photos/1" || pathname === "/photos/1/"
+            ? { params: {}, route: targetRoute }
+            : null,
+        middlewareModule: {
+          default(request: NextRequest) {
+            if (request.nextUrl.pathname.startsWith("/feed")) {
+              middlewarePaths.push(request.nextUrl.pathname);
+            }
+          },
+        },
+        trailingSlash,
+      });
+
+      const headers = createRscRequestHeaders({ interceptionContext: source });
+      const rscUrl = await createRscRequestUrl(
+        trailingSlash ? "/docs/photos/1/" : "/docs/photos/1",
+        headers,
+      );
+      const response = await handler(
+        new Request(`https://example.test${rscUrl}`, { headers }),
+        null,
+      );
+
+      expect(response.status).toBe(200);
+      expect(middlewarePaths).toEqual([seen]);
+    },
+  );
+
+  it.each([
+    { source: "/feed/secret/", trailingSlash: false },
+    { source: "/feed/secret", trailingSlash: true },
+  ])(
+    "keeps the interception source $source as named under skipTrailingSlashRedirect (trailingSlash: $trailingSlash)",
+    async ({ source, trailingSlash }) => {
+      const targetRoute = createPageRoute({
+        pattern: "/photos/1",
+        routeSegments: ["photos", "1"],
+      });
+      const sourceRoute = createPageRoute({ pattern: "/feed/secret" });
+      const middlewarePaths: string[] = [];
+      const handler = createHandler({
+        configHeaders: [],
+        matchInterceptRoute: (_pathname, sourcePathname) =>
+          sourcePathname === source
+            ? { interceptionSourceIsConcrete: true, route: sourceRoute, params: {} }
+            : null,
+        matchRoute: (pathname: string) =>
+          pathname === "/photos/1" || pathname === "/photos/1/"
+            ? { params: {}, route: targetRoute }
+            : null,
+        middlewareModule: {
+          default(request: NextRequest) {
+            if (request.nextUrl.pathname.startsWith("/feed")) {
+              middlewarePaths.push(request.nextUrl.pathname);
+            }
+          },
+        },
+        skipTrailingSlashRedirect: true,
+        trailingSlash,
+      });
+
+      const headers = createRscRequestHeaders({ interceptionContext: source });
+      const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+      const response = await handler(
+        new Request(`https://example.test${rscUrl}`, { headers }),
+        null,
+      );
+
+      // A direct request to the source is not redirected, so middleware
+      // authorizes the same spelling.
+      expect(response.status).toBe(200);
+      expect(middlewarePaths).toEqual([source]);
+    },
+  );
+
+  it("does not intercept from a source that config redirects", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/feed/secret" });
+    const dispatchMatchedPage = vi.fn(async () => new Response("secret"));
+    const handler = createHandler({
+      configHeaders: [],
+      configRedirects: [{ source: "/feed/secret", destination: "/login", permanent: false }],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed/secret"
+          ? { interceptionSourceIsConcrete: true, route: sourceRoute, params: {} }
+          : null,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed/secret" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("location")).toBeNull();
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { label: "the route it re-resolves to", destination: "/feed", status: 200 },
+    { label: "another route", destination: "/admin", status: 404 },
+  ])(
+    "intercepts from a beforeFiles-rewritten source only at $label",
+    async ({ destination, status }) => {
+      const targetRoute = createPageRoute({
+        pattern: "/photos/1",
+        routeSegments: ["photos", "1"],
+      });
+      const rootRoute = createPageRoute({ pattern: "/", routeSegments: [] });
+      const feedRoute = createPageRoute({ pattern: "/feed", routeSegments: ["feed"] });
+      const adminRoute = createPageRoute({ pattern: "/admin", routeSegments: ["admin"] });
+      const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: {
+          beforeFiles: [{ source: "/old-feed", destination }],
+          afterFiles: [],
+          fallback: [],
+        },
+        dispatchMatchedPage,
+        // A root slot accepts any source; `/old-feed` itself has no route.
+        matchInterceptRoute: (_pathname, sourcePathname) =>
+          sourcePathname === "/feed"
+            ? { interceptionSourceIsConcrete: true, route: feedRoute, params: {} }
+            : { interceptionSourceIsConcrete: false, route: rootRoute, params: {} },
+        matchRoute: (pathname: string) => {
+          if (pathname === "/photos/1") return { params: {}, route: targetRoute };
+          if (pathname === "/feed") return { params: {}, route: feedRoute };
+          if (pathname === "/admin") return { params: {}, route: adminRoute };
+          return null;
+        },
+      });
+
+      const headers = createRscRequestHeaders({ interceptionContext: "/old-feed" });
+      const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+      const response = await handler(
+        new Request(`https://example.test${rscUrl}`, { headers }),
+        null,
+      );
+
+      expect(response.status).toBe(status);
+      if (status === 200) {
+        expect(dispatchMatchedPage).toHaveBeenCalledWith(
+          expect.objectContaining({
+            bypassInterceptionContextCache: false,
+            interceptionContext: "/feed",
+          }),
+        );
+      } else {
+        expect(dispatchMatchedPage).not.toHaveBeenCalled();
+      }
+    },
+  );
+
+  // A direct request to a dynamic route takes afterFiles rules before the route
+  // is accepted, so a rule that rewrites the source away refuses it as a source
+  // too. A static route is final before afterFiles, so the rule never applies.
+  it.each([
+    { label: "a dynamic source", isDynamic: true, status: 404 },
+    { label: "a static source", isDynamic: false, status: 200 },
+  ])("applies afterFiles rewrites to $label", async ({ isDynamic, status }) => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({
+      isDynamic,
+      pattern: "/members/7",
+      routeSegments: ["members", "7"],
+    });
+    const loginRoute = createPageRoute({ pattern: "/login", routeSegments: ["login"] });
+    const dispatchMatchedPage = vi.fn(async () => new Response("member"));
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [],
+        afterFiles: [{ source: "/members/:id", destination: "/login" }],
+        fallback: [],
+      },
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/members/7"
+          ? { interceptionSourceIsConcrete: true, route: sourceRoute, params: {} }
+          : null,
+      matchRoute: (pathname: string) => {
+        if (pathname === "/photos/1") return { params: {}, route: targetRoute };
+        if (pathname === "/members/7") return { params: {}, route: sourceRoute };
+        if (pathname === "/login") return { params: {}, route: loginRoute };
+        return null;
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/members/7" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(status);
+    if (status === 200) {
+      expect(dispatchMatchedPage).toHaveBeenCalledWith(
+        expect.objectContaining({ interceptionContext: "/members/7" }),
+      );
+    } else {
+      expect(dispatchMatchedPage).not.toHaveBeenCalled();
+    }
+  });
+
+  // A direct request rebuilds its rewrite context after middleware, so a
+  // `Host` that middleware adds selects host-conditioned beforeFiles rules.
+  it("applies source beforeFiles rules to a host that source middleware adds", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/feed/secret" });
+    const deniedRoute = createPageRoute({ pattern: "/denied", routeSegments: ["denied"] });
+    const dispatchMatchedPage = vi.fn(async () => new Response("secret"));
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [
+          {
+            source: "/feed/secret",
+            destination: "/denied",
+            has: [{ type: "host", key: "host", value: "other\\.test" }],
+          },
+        ],
+        afterFiles: [],
+        fallback: [],
+      },
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed/secret"
+          ? { interceptionSourceIsConcrete: true, route: sourceRoute, params: {} }
+          : null,
+      matchRoute: (pathname: string) => {
+        if (pathname === "/photos/1") return { params: {}, route: targetRoute };
+        if (pathname === "/feed/secret") return { params: {}, route: sourceRoute };
+        if (pathname === "/denied") return { params: {}, route: deniedRoute };
+        return null;
+      },
+      middlewareModule: {
+        default(request: NextRequest) {
+          if (request.nextUrl.pathname !== "/feed/secret") {
+            return new Response(null, { headers: { "x-middleware-next": "1" } });
+          }
+          const headers = new Headers(request.headers);
+          headers.set("host", "other.test");
+          return new Response(null, {
+            headers: {
+              "x-middleware-next": "1",
+              "x-middleware-override-headers": [...headers.keys()].join(","),
+              ...Object.fromEntries(
+                [...headers].map(([name, value]) => [`x-middleware-request-${name}`, value]),
+              ),
+            },
+          });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed/secret" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(404);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("authorizes a source on the target's route with different params", async () => {
+    const feedRoute = createPageRoute({
+      isDynamic: true,
+      params: ["slug"],
+      pattern: "/feed/:slug",
+      routeSegments: ["feed", "[slug]"],
+    });
+    const dispatchMatchedPage = vi.fn(async () => new Response("secret"));
+    const middlewarePaths: string[] = [];
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed/secret"
+          ? { interceptionSourceIsConcrete: true, route: feedRoute, params: { slug: "secret" } }
+          : null,
+      matchRoute: (pathname: string) =>
+        pathname.startsWith("/feed/")
+          ? { params: { slug: pathname.slice("/feed/".length) }, route: feedRoute }
+          : null,
+      async runMiddleware({ cleanPathname }) {
+        middlewarePaths.push(cleanPathname);
+        return cleanPathname === "/feed/secret"
+          ? { kind: "response", matched: true, response: new Response("denied", { status: 401 }) }
+          : { kind: "continue", cleanPathname, matched: true, rewritten: false, search: null };
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed/secret" });
+    const rscUrl = await createRscRequestUrl("/docs/feed/public", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(401);
+    expect(middlewarePaths).toEqual(["/feed/public", "/feed/secret"]);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    "/feed/..",
+    "/feed/%2e%2e",
+    "/feed/./secret",
+    "/feed//secret",
+    "/feed/secret/../../../x",
+    "/feed/..\\secret",
+    "/feed\\..\\secret",
+    "/feed\\secret",
+    "/feed/%09../secret",
+    "/feed/%0a../secret",
+    "/feed/%0d../secret",
+    "/feed/%252e%252e/secret",
+    // A request URL can never carry these unescaped, so raw matching must not.
+    "/feed/café",
+    "/feed/{secret}",
+  ])("rejects non-canonical interception source %s before route matching", async (source) => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({
+      isDynamic: true,
+      params: ["path"],
+      pattern: "/feed/:path*",
+      routeSegments: ["feed", "[[...path]]"],
+    });
+    const matcher = createAppRscRouteMatcher([
+      {
+        params: ["path"],
+        pattern: "/feed/:path*",
+        patternParts: ["feed", ":path*"],
+        slots: {
+          modal: {
+            intercepts: [
+              {
+                sourceMatchPattern: "/feed",
+                targetPattern: "/photos/:id",
+                interceptLayouts: [],
+                page: { default() {} },
+                params: ["id"],
+              },
+            ],
+          },
+        },
+      },
+    ]);
+    const matchInterceptRoute = vi.fn((pathname: string, sourcePathname: string) => {
+      const intercept = matcher.findIntercept(pathname, sourcePathname);
+      return intercept ? { route: sourceRoute, params: intercept.sourceMatchedParams } : null;
+    });
+    const runMiddleware = vi.fn(async ({ cleanPathname }: { cleanPathname: string }) => ({
+      kind: "continue" as const,
+      cleanPathname,
+      rewritten: false,
+      search: null,
+    }));
+    const dispatchMatchedPage = vi.fn(async () => new Response("secret"));
+    const handler = createHandler({
+      configHeaders: [
+        {
+          source: "/photos/:path*",
+          headers: [{ key: "Cache-Control", value: "public, max-age=3600" }],
+        },
+      ],
+      dispatchMatchedPage,
+      matchInterceptRoute,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+      runMiddleware,
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: source });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get("cache-control")).toBe(
+      "private, no-cache, no-store, max-age=0, must-revalidate",
+    );
+    expect(runMiddleware).not.toHaveBeenCalled();
+    expect(matchInterceptRoute).not.toHaveBeenCalled();
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("rejects non-canonical interception sources before config redirects", async () => {
+    const handler = createHandler({
+      configHeaders: [],
+      configRedirects: [{ source: "/photos/:id", destination: "/viewer/:id", permanent: false }],
+    });
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed/.." });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get("location")).toBeNull();
+    expect(response.headers.get("cache-control")).toBe(
+      "private, no-cache, no-store, max-age=0, must-revalidate",
+    );
+  });
+
+  it("rejects interception sources containing a raw query delimiter", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const matchInterceptRoute = vi.fn(() => ({ route: createPageRoute(), params: {} }));
+    const dispatchMatchedPage = vi.fn(async () => new Response("secret"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/admin?bypass" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(400);
+    expect(matchInterceptRoute).not.toHaveBeenCalled();
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("rejects malformed encoded interception sources before middleware", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/feed/secret" });
+    const dispatchMatchedPage = vi.fn(async () => new Response("secret"));
+    const middlewarePaths: string[] = [];
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed/%" ? { route: sourceRoute, params: {} } : null,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+      middlewareModule: {
+        default(request: NextRequest) {
+          middlewarePaths.push(request.nextUrl.pathname);
+          return new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed/%" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(400);
+    expect(middlewarePaths).toEqual([]);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("passes the raw interception source to the one-decode route matcher", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const matchInterceptRoute = vi.fn(() => null);
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/%2561dmin" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    expect(matchInterceptRoute).toHaveBeenCalledWith("/photos/1", "/%2561dmin", null);
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({ interceptionContext: "/%2561dmin" }),
+    );
+  });
+
+  it("bypasses shared caches for an unverified canonical interception context", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const matchInterceptRoute = vi.fn(() => null);
+    const dispatchMatchedPage = vi.fn(
+      async () =>
+        new Response("page", {
+          headers: { "Cache-Control": "public, max-age=3600" },
+        }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+    });
+    const headers = createRscRequestHeaders({ interceptionContext: "/attacker-selected" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe(
+      "private, no-cache, no-store, max-age=0, must-revalidate",
+    );
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({ bypassInterceptionContextCache: true }),
+    );
+  });
+
+  it("marks early redirects for unverified canonical interception contexts no-store", async () => {
+    const handler = createHandler({
+      configHeaders: [
+        {
+          source: "/photos/:path*",
+          headers: [{ key: "Cache-Control", value: "public, max-age=3600" }],
+        },
+      ],
+      configRedirects: [{ source: "/photos/:id", destination: "/viewer/:id", permanent: false }],
+    });
+    const headers = createRscRequestHeaders({ interceptionContext: "/attacker-selected" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toContain("/docs/viewer/1");
+    expect(response.headers.get("cache-control")).toBe(
+      "private, no-cache, no-store, max-age=0, must-revalidate",
+    );
+  });
+
+  it("bypasses shared caches when interception-context normalization drops a raw value", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const dispatchMatchedPage = vi.fn(
+      async () =>
+        new Response("page", {
+          headers: { "Cache-Control": "public, max-age=3600" },
+        }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+    });
+    const headers = createRscRequestHeaders({ interceptionContext: "not-a-path" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe(
+      "private, no-cache, no-store, max-age=0, must-revalidate",
+    );
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bypassInterceptionContextCache: true,
+        interceptionContext: null,
+      }),
+    );
+  });
+
+  it("keeps verified canonical interception contexts cacheable", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/feed", routeSegments: ["feed"] });
+    const dispatchMatchedPage = vi.fn(
+      async () =>
+        new Response("page", {
+          headers: { "Cache-Control": "public, max-age=3600" },
+        }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed" ? { route: sourceRoute, params: {} } : null,
+      matchRoute: (pathname: string) => {
+        if (pathname === "/photos/1") return { params: {}, route: targetRoute };
+        if (pathname === "/feed") return { params: {}, route: sourceRoute };
+        return null;
+      },
+    });
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("public, max-age=3600");
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({ bypassInterceptionContextCache: false }),
+    );
+  });
+
+  it.each([
+    {
+      expectedBypass: false,
+      expectedCacheControl: "public, max-age=3600",
+      label: "canonical target",
+      targetPathname: "/photos/1",
+    },
+    {
+      expectedBypass: true,
+      expectedCacheControl: "no-store",
+      label: "normalized target alias",
+      targetPathname: "/%70hotos/1",
+    },
+  ])(
+    "applies the expected cache policy to a verified interception-only $label",
+    async ({ expectedBypass, expectedCacheControl, targetPathname }) => {
+      const sourceRoute = createPageRoute({ pattern: "/feed", routeSegments: ["feed"] });
+      const dispatchMatchedPage = vi.fn(
+        async () =>
+          new Response("page", {
+            headers: { "Cache-Control": "public, max-age=3600" },
+          }),
+      );
+      const handler = createHandler({
+        configHeaders: [],
+        dispatchMatchedPage,
+        matchInterceptRoute: (_pathname, sourcePathname) =>
+          sourcePathname === "/feed"
+            ? { interceptionSourceIsConcrete: true, route: sourceRoute, params: {} }
+            : null,
+        matchRequestRoute: () => null,
+        matchRoute: (pathname) =>
+          pathname === "/feed" ? { params: {}, route: sourceRoute } : null,
+      });
+      const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+      const rscUrl = await createRscRequestUrl(`/docs${targetPathname}`, headers);
+
+      const response = await handler(
+        new Request(`https://example.test${rscUrl}`, { headers }),
+        null,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("cache-control")).toContain(expectedCacheControl);
+      expect(dispatchMatchedPage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          bypassInterceptionContextCache: expectedBypass,
+          route: sourceRoute,
+        }),
+      );
+    },
+  );
+
+  // A direct request to a nonexistent descendant renders no source tree, so
+  // neither does interception: the target renders as a direct request.
+  it("does not intercept from a nonexistent interception descendant", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/feed", routeSegments: ["feed"] });
+    const matcher = createAppRscRouteMatcher([
+      {
+        params: [],
+        pattern: "/feed",
+        patternParts: ["feed"],
+        slots: {
+          modal: {
+            intercepts: [
+              {
+                sourceMatchPattern: "/feed",
+                targetPattern: "/photos/:id",
+                interceptLayouts: [],
+                page: { default() {} },
+                params: ["id"],
+              },
+            ],
+          },
+        },
+      },
+    ]);
+    const dispatchMatchedPage = vi.fn(
+      async () =>
+        new Response("page", {
+          headers: { "Cache-Control": "public, max-age=3600" },
+        }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute(pathname, sourcePathname) {
+        const intercept = matcher.findIntercept(pathname, sourcePathname);
+        return intercept
+          ? {
+              interceptionSourceIsConcrete: intercept.sourceRouteIsConcrete,
+              route: sourceRoute,
+              params: intercept.sourceMatchedParams,
+            }
+          : null;
+      },
+      matchRoute(pathname) {
+        if (pathname === "/photos/1") return { params: {}, route: targetRoute };
+        if (pathname === "/feed") return { params: {}, route: sourceRoute };
+        return null;
+      },
+    });
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed/attacker-selected" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe(
+      "private, no-cache, no-store, max-age=0, must-revalidate",
+    );
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bypassInterceptionContextCache: true,
+        interceptionContext: null,
+        route: targetRoute,
+      }),
+    );
+  });
+
+  it("rejects unverified interception ids before page dispatch or shared caching", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const matchInterceptRoute = vi.fn(() => null);
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const handler = createHandler({
+      configHeaders: [
+        {
+          source: "/photos/:path*",
+          headers: [
+            { key: "Cache-Control", value: "public, max-age=3600" },
+            { key: "X-Security-Test", value: "preserved" },
+          ],
+        },
+      ],
+      dispatchMatchedPage,
+      hasInterceptionId: () => false,
+      matchInterceptRoute,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+    });
+
+    const headers = createRscRequestHeaders({
+      interceptionContext: "/feed",
+      interceptionId: "interception:attacker-selected",
+    });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get("cache-control")).toBe(
+      "private, no-cache, no-store, max-age=0, must-revalidate",
+    );
+    expect(response.headers.get("x-security-test")).toBe("preserved");
+    expect(matchInterceptRoute).not.toHaveBeenCalled();
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("canonicalizes selector hashes before permanent config redirects", async () => {
+    const interceptionId = "interception:slot:modal:/feed:/feed->/photos/:id";
+    const handler = createHandler({
+      configHeaders: [],
+      configRedirects: [
+        {
+          source: "/photos/:id",
+          destination: "/viewer/:id",
+          permanent: true,
+        },
+      ],
+      hasInterceptionId: (requestedId) => requestedId === interceptionId,
+    });
+    const headers = createRscRequestHeaders({
+      interceptionContext: "/feed",
+      interceptionId,
+    });
+    const currentHash = await computeRscCacheBustingSearchParam(headers);
+    // Hash produced before X-Vinext-Interception-Id became a positional input.
+    const previousHash = "xut9sI3k0WVES6tW";
+
+    const response = await handler(
+      new Request(`https://example.test/docs/photos/1?_rsc=${previousHash}`, { headers }),
+      null,
+    );
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe(`/docs/photos/1?_rsc=${currentHash}`);
+  });
+
+  it("rejects unknown interception ids before middleware can respond", async () => {
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const matchInterceptRoute = vi.fn(() => null);
+    const handler = createHandler({
+      configHeaders: [
+        {
+          source: "/photos/:path*",
+          headers: [{ key: "Cache-Control", value: "public, max-age=3600" }],
+        },
+      ],
+      dispatchMatchedPage,
+      hasInterceptionId: () => false,
+      matchInterceptRoute,
+      async runMiddleware() {
+        return {
+          kind: "response",
+          response: new Response("middleware", {
+            headers: { "Cache-Control": "public, max-age=3600" },
+          }),
+        };
+      },
+    });
+
+    const headers = createRscRequestHeaders({
+      interceptionContext: "/feed",
+      interceptionId: "interception:attacker-selected",
+    });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get("cache-control")).toBe(
+      "private, no-cache, no-store, max-age=0, must-revalidate",
+    );
+    expect(matchInterceptRoute).not.toHaveBeenCalled();
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("does not cache middleware responses when graph ownership is not target-specific", async () => {
+    const interceptionId = "interception:slot:modal:/feed:/feed->/photos/:id";
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      hasInterceptionId: (requestedId) => requestedId === interceptionId,
+      async runMiddleware() {
+        return {
+          kind: "response",
+          response: new Response("middleware", {
+            status: 400,
+            headers: { "Cache-Control": "public, max-age=3600" },
+          }),
+        };
+      },
+    });
+
+    const headers = createRscRequestHeaders({
+      interceptionContext: "/feed",
+      interceptionId,
+    });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(400);
+    expect(await response.text()).toBe("middleware");
+    expect(response.headers.get("cache-control")).toBe(
+      "private, no-cache, no-store, max-age=0, must-revalidate",
+    );
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("preserves cacheable middleware responses after exact interception proof", async () => {
+    const interceptionId = "interception:slot:modal:/feed:/feed->/photos/:id";
+    const sourceRoute = createPageRoute({ pattern: "/feed", routeSegments: ["feed"] });
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      hasInterceptionId: (requestedId) => requestedId === interceptionId,
+      matchInterceptRoute: (_pathname, sourcePathname, requestedId) =>
+        sourcePathname === "/feed" && requestedId === interceptionId
+          ? { interceptionSourceIsConcrete: true, route: sourceRoute, params: {} }
+          : null,
+      async runMiddleware() {
+        return {
+          kind: "response",
+          response: new Response("middleware", {
+            status: 400,
+            headers: { "Cache-Control": "public, max-age=3600" },
+          }),
+        };
+      },
+    });
+
+    const headers = createRscRequestHeaders({
+      interceptionContext: "/feed",
+      interceptionId,
+    });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(400);
+    expect(await response.text()).toBe("middleware");
+    expect(response.headers.get("cache-control")).toBe("public, max-age=3600");
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("forces malformed interception contexts paired with an id to no-store", async () => {
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      hasInterceptionId: () => true,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1"
+          ? {
+              params: {},
+              route: createPageRoute({
+                pattern: "/photos/1",
+                routeSegments: ["photos", "1"],
+              }),
+            }
+          : null,
+    });
+    const headers = createRscRequestHeaders({
+      interceptionContext: "/feed/%GG",
+      interceptionId: "interception:slot:modal:/feed:/feed->/photos/:id",
+    });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get("cache-control")).toContain("no-store");
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("rejects interception ids without a source context", async () => {
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const matchInterceptRoute = vi.fn(() => null);
+    const handler = createHandler({
+      dispatchMatchedPage,
+      hasInterceptionId: () => true,
+      matchInterceptRoute,
+    });
+    const headers = createRscRequestHeaders({
+      interceptionId: "interception:slot:modal:/feed:/feed->/photos/:id",
+    });
+    const rscUrl = await createRscRequestUrl("/docs/about", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get("cache-control")).toContain("no-store");
+    expect(matchInterceptRoute).not.toHaveBeenCalled();
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it.each(["POST", "PUT"])(
+    "rejects interception ids on %s requests before action or route dispatch",
+    async (method) => {
+      const interceptionId = "interception:slot:modal:/feed:/feed->/photos/:id";
+      const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+      const dispatchMatchedRouteHandler = vi.fn(async () => new Response("route"));
+      const handleServerActionRequest = vi.fn(async () => new Response("action"));
+      const handler = createHandler({
+        configHeaders: [],
+        dispatchMatchedPage,
+        dispatchMatchedRouteHandler,
+        handleServerActionRequest,
+        hasInterceptionId: (requestedId) => requestedId === interceptionId,
+      });
+      const headers = createRscRequestHeaders({
+        interceptionContext: "/feed",
+        interceptionId,
+      });
+      const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+
+      const response = await handler(
+        new Request(`https://example.test${rscUrl}`, { headers, method }),
+        null,
+      );
+
+      expect(response.status).toBe(400);
+      expect(response.headers.get("cache-control")).toBe(
+        "private, no-cache, no-store, max-age=0, must-revalidate",
+      );
+      expect(handleServerActionRequest).not.toHaveBeenCalled();
+      expect(dispatchMatchedRouteHandler).not.toHaveBeenCalled();
+      expect(dispatchMatchedPage).not.toHaveBeenCalled();
+    },
+  );
+
+  it("allows an exact graph-owned interception id", async () => {
+    const sourceRoute = createPageRoute({ pattern: "/feed", routeSegments: ["feed"] });
+    const interceptionId = "interception:slot:modal:/feed:/feed->/photos/:id";
+    const dispatchMatchedPage = vi.fn(async () => new Response("intercepted"));
+    const matchInterceptRoute = vi.fn(
+      (_pathname: string, _sourcePathname: string, requestedId?: string | null) =>
+        requestedId === interceptionId
+          ? { interceptionSourceIsConcrete: true, route: sourceRoute, params: {} }
+          : null,
+    );
+    const handler = createHandler({
+      configHeaders: [
+        {
+          source: "/photos/:path*",
+          headers: [{ key: "Cache-Control", value: "public, max-age=3600" }],
+        },
+      ],
+      dispatchMatchedPage,
+      hasInterceptionId: (requestedId) => requestedId === interceptionId,
+      matchInterceptRoute,
+      matchRoute: () => null,
+    });
+    const headers = createRscRequestHeaders({
+      interceptionContext: "/feed",
+      interceptionId,
+    });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe("intercepted");
+    expect(response.headers.get("cache-control")).toBe("public, max-age=3600");
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({ interceptionContext: "/feed", interceptionId }),
+    );
+  });
+
+  it("keeps raw-encoded dynamic source params in concrete interception proof", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({
+      isDynamic: true,
+      params: ["slug"],
+      pattern: "/feed/:slug",
+      routeSegments: ["feed", "[slug]"],
+    });
+    const matcher = createAppRscRouteMatcher([
+      {
+        params: ["slug"],
+        pattern: "/feed/:slug",
+        patternParts: ["feed", ":slug"],
+        slots: {
+          modal: {
+            id: "slot:modal:/feed/:slug",
+            intercepts: [
+              {
+                sourceMatchPattern: "/feed/:slug",
+                targetPattern: "/photos/:id",
+                interceptLayouts: [],
+                page: { default() {} },
+                params: ["id"],
+              },
+            ],
+          },
+        },
+      },
+    ]);
+    const sourceContext = "/feed/%2561";
+    const initialIntercept = matcher.findIntercept("/photos/1", sourceContext);
+    expect(initialIntercept).toMatchObject({
+      sourceMatchedParams: { slug: "%2561" },
+      sourceRouteIsConcrete: true,
+    });
+    const interceptionId = initialIntercept!.interceptionId;
+    expect(interceptionId).not.toBeNull();
+    const dispatchMatchedPage = vi.fn(
+      async () =>
+        new Response("page", {
+          headers: { "Cache-Control": "public, max-age=3600" },
+        }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      hasInterceptionId: (requestedId) => matcher.hasInterceptionId(requestedId),
+      matchInterceptRoute(pathname, sourcePathname, requestedId) {
+        const intercept = matcher.findIntercept(pathname, sourcePathname, requestedId);
+        return intercept
+          ? {
+              interceptionSourceIsConcrete: intercept.sourceRouteIsConcrete,
+              route: sourceRoute,
+              params: intercept.sourceMatchedParams,
+            }
+          : null;
+      },
+      matchRoute: (pathname) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+    });
+    const headers = createRscRequestHeaders({
+      interceptionContext: sourceContext,
+      interceptionId,
+    });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("public, max-age=3600");
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bypassInterceptionContextCache: false,
+        interceptionId,
+      }),
+    );
+  });
+
+  it("marks malformed interception ids non-cacheable", async () => {
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const handler = createHandler({ dispatchMatchedPage });
+    const headers = createRscRequestHeaders();
+    headers.set(VINEXT_INTERCEPTION_ID_HEADER, "attacker-selected");
+    const response = await handler(
+      new Request("https://example.test/docs/about?_rsc=invalid", { headers }),
+      null,
+    );
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get("cache-control")).toContain("no-store");
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("passes the raw interception source to Server Action dispatch", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const handleServerActionRequest = vi.fn(async () => new Response("action"));
+    const handler = createHandler({
+      configHeaders: [],
+      handleServerActionRequest,
+      matchInterceptRoute: () => null,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/%2561dmin" });
+    headers.set("content-type", "text/plain");
+    headers.set("next-action", "interception-action");
+    const response = await handler(
+      new Request("https://example.test/docs/photos/1", {
+        body: "action-body",
+        headers,
+        method: "POST",
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    expect(handleServerActionRequest).toHaveBeenCalledWith(
+      expect.objectContaining({ interceptionContext: "/%2561dmin" }),
+    );
+  });
+
+  it("authorizes the interception source with the target's resolved query", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/feed" });
+    const middlewareRequests: Array<[string, string]> = [];
+    const dispatchMatchedPage = vi.fn(
+      async ({ searchParams }: { searchParams: URLSearchParams }) =>
+        new Response(searchParams.get("view") ?? "missing"),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed" ? { route: sourceRoute, params: {} } : null,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+      async runMiddleware({ cleanPathname, request }) {
+        middlewareRequests.push([cleanPathname, new URL(request.url).search]);
+        return {
+          kind: "continue",
+          cleanPathname,
+          rewritten: cleanPathname === "/photos/1",
+          search: cleanPathname === "/photos/1" ? "?view=private" : null,
+        };
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1?view=public", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    await expect(response.text()).resolves.toBe("private");
+    expect(middlewareRequests).toEqual([
+      ["/photos/1", "?view=public"],
+      ["/feed", "?view=private"],
+    ]);
+  });
+
+  it("tests a default-locale root interception source with its restored slash", async () => {
+    // A direct request for `/` is tested as `/en/`, so a slash-ending matcher
+    // runs middleware for it. The source must match the same.
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/", routeSegments: [] });
+    const dispatchMatchedPage = vi.fn(async () => new Response("source"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      i18nConfig: { defaultLocale: "en", locales: ["en", "fr"] },
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/" ? { route: sourceRoute, params: {} } : null,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1/" ? { params: {}, route: targetRoute } : null,
+      middlewareModule: {
+        config: { matcher: [{ locale: false, source: "/en/" }] },
+        default: () => new Response("denied", { status: 401 }),
+      },
+      trailingSlash: true,
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1/", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(401);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("releases a streamed body when source middleware ends the request", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/feed", routeSegments: ["feed"] });
+    const handleServerActionRequest = vi.fn(async () => new Response("action"));
+    let resolveCancelled!: () => void;
+    const cancelled = new Promise<void>((resolve) => {
+      resolveCancelled = resolve;
+    });
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode("upload"));
+      },
+      cancel() {
+        resolveCancelled();
+      },
+    });
+    const handler = createHandler({
+      configHeaders: [],
+      handleServerActionRequest,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed/" ? { route: sourceRoute, params: {} } : null,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1/" ? { params: {}, route: targetRoute } : null,
+      middlewareModule: {
+        config: { matcher: ["/feed/"] },
+        default: () => new Response("denied", { status: 401 }),
+      },
+      trailingSlash: true,
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed/" });
+    headers.set("content-type", "text/plain");
+    headers.set("next-action", "interception-action");
+    const init: RequestInit = { body, headers, method: "POST" };
+    Object.defineProperty(init, "duplex", { value: "half" });
+    const response = await handler(new Request("https://example.test/docs/photos/1/", init), null);
+
+    expect(response.status).toBe(401);
+    expect(handleServerActionRequest).not.toHaveBeenCalled();
+    await expect(
+      Promise.race([
+        cancelled.then(() => true),
+        new Promise<false>((resolve) => setTimeout(() => resolve(false), 500)),
+      ]),
+    ).resolves.toBe(true);
+  });
+
+  it("authorizes an intercepted Server Action source with the resolved query", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/feed" });
+    const middlewareRequests: Array<[string, string]> = [];
+    const handleServerActionRequest = vi.fn(
+      async ({ searchParams }: { searchParams: URLSearchParams }) =>
+        new Response(searchParams.get("view") ?? "missing"),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      handleServerActionRequest,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed" ? { route: sourceRoute, params: {} } : null,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+      async runMiddleware({ cleanPathname, request }) {
+        middlewareRequests.push([cleanPathname, new URL(request.url).search]);
+        return {
+          kind: "continue",
+          cleanPathname,
+          rewritten: cleanPathname === "/photos/1",
+          search: cleanPathname === "/photos/1" ? "?view=private" : null,
+        };
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+    headers.set("content-type", "text/plain");
+    headers.set("next-action", "interception-action");
+    const response = await handler(
+      new Request("https://example.test/docs/photos/1?view=public", {
+        body: "action-body",
+        headers,
+        method: "POST",
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.text()).resolves.toBe("private");
+    expect(middlewareRequests).toEqual([
+      ["/photos/1", "?view=public"],
+      ["/feed", "?view=private"],
+    ]);
+  });
+
+  it("does not pass an unauthorized interception source to a non-RSC Server Action", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/feed/secret" });
+    const middlewarePaths: string[] = [];
+    const handleServerActionRequest = vi.fn(async () => new Response("action"));
+    const handler = createHandler({
+      configHeaders: [],
+      handleServerActionRequest,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed/secret" ? { route: sourceRoute, params: {} } : null,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+      middlewareModule: {
+        default(request: NextRequest) {
+          middlewarePaths.push(request.nextUrl.pathname);
+          if (request.nextUrl.pathname.startsWith("/feed")) {
+            return new Response("denied", { status: 401 });
+          }
+          return undefined;
+        },
+      },
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/photos/1", {
+        body: "[]",
+        headers: {
+          "content-type": "text/plain",
+          "next-action": "interception-action",
+          "x-vinext-interception-context": "/feed/secret",
+        },
+        method: "POST",
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    expect(middlewarePaths).toEqual(["/photos/1"]);
+    expect(handleServerActionRequest).toHaveBeenCalledWith(
+      expect.objectContaining({ interceptionContext: null, isRscRequest: false }),
+    );
+  });
+
+  it("does not replay a forwarded target middleware result for the interception source", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/feed/secret" });
+    const dispatchMatchedPage = vi.fn(async () => new Response("secret"));
+    const middlewarePaths: string[] = [];
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed/secret" ? { route: sourceRoute, params: {} } : null,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+      middlewareModule: {
+        default(request: NextRequest) {
+          middlewarePaths.push(request.nextUrl.pathname);
+          return new Response("denied", { status: 401 });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed/secret" });
+    headers.set(VINEXT_MW_CTX_HEADER, sealedForwardedContext({ h: [["x-mw-target", "1"]] }));
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(401);
+    expect(middlewarePaths).toEqual(["/feed/secret"]);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  // Next.js implements interception as a generated rewrite whose destination is
+  // the intercepting route, so middleware rewriting the source away never
+  // renders the source tree. Vinext renders that tree directly and must fail
+  // closed when its authorization pass changes the source route.
+  // Ref: Next.js test/e2e/app-dir/interception-middleware-rewrite/
+  // https://github.com/vercel/next.js/tree/canary/test/e2e/app-dir/interception-middleware-rewrite
+  it("does not render an interception source that middleware rewrites away", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/feed/secret" });
+    const dispatchMatchedPage = vi.fn(async () => new Response("secret"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed/secret" ? { route: sourceRoute, params: {} } : null,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+      middlewareModule: {
+        default(request: NextRequest) {
+          return request.nextUrl.pathname === "/feed/secret"
+            ? new Response(null, {
+                headers: {
+                  "x-middleware-rewrite": "https://example.test/docs/login",
+                },
+              })
+            : new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed/secret" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(404);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("forwards RSC cache-busting params when source middleware rewrites externally", async () => {
+    // Combines the Next.js interception + middleware and middleware RSC
+    // external-rewrite contracts for vinext's additional source authorization pass:
+    // https://github.com/vercel/next.js/tree/canary/test/e2e/app-dir/interception-middleware-rewrite
+    // https://github.com/vercel/next.js/tree/canary/test/e2e/app-dir/middleware-rsc-external-rewrite
+    const receivedUrls: string[] = [];
+    const server = createServer((req, res) => {
+      receivedUrls.push(req.url ?? "");
+      res.writeHead(200, { "content-type": "text/plain" });
+      res.end("upstream");
+    });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const address = server.address() as AddressInfo;
+    const upstreamUrl = `http://127.0.0.1:${address.port}/proxy`;
+
+    try {
+      const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+      const sourceRoute = createPageRoute({ pattern: "/feed" });
+      const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+      const rscUrl = await createRscRequestUrl("/docs/photos/1?tab=latest", headers);
+      const handler = createHandler({
+        configHeaders: [],
+        matchInterceptRoute: (_pathname, sourcePathname) =>
+          sourcePathname === "/feed" ? { route: sourceRoute, params: {} } : null,
+        matchRoute: (pathname: string) =>
+          pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+        middlewareModule: {
+          default(request: NextRequest) {
+            return request.nextUrl.pathname === "/feed"
+              ? new Response(null, { headers: { "x-middleware-rewrite": upstreamUrl } })
+              : new Response(null, { headers: { "x-middleware-next": "1" } });
+          },
+        },
+      });
+
+      const response = await handler(
+        new Request(`https://example.test${rscUrl}`, { headers }),
+        null,
+      );
+
+      expect(response.status).toBe(200);
+      expect(receivedUrls).toHaveLength(1);
+      const forwardedUrl = new URL(`http://vinext.local${receivedUrls[0]}`);
+      expect(forwardedUrl.searchParams.has(VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM)).toBe(true);
+      expect(forwardedUrl.searchParams.get("tab")).toBe("latest");
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+  });
+
+  it("does not promote an interception-only source that middleware rewrites away", async () => {
+    const sourceRoute = createPageRoute({ pattern: "/feed/secret" });
+    const dispatchMatchedPage = vi.fn(async () => new Response("secret"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed/secret" ? { route: sourceRoute, params: {} } : null,
+      matchRoute: () => null,
+      middlewareModule: {
+        default(request: NextRequest) {
+          return request.nextUrl.pathname === "/feed/secret"
+            ? new Response(null, {
+                headers: {
+                  "x-middleware-rewrite": "https://example.test/docs/login",
+                },
+              })
+            : new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed/secret" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(404);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("does not render an interception source when middleware rewrites only its query", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/feed" });
+    const dispatchMatchedPage = vi.fn(async () => new Response("secret"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed" ? { route: sourceRoute, params: {} } : null,
+      matchRoute(pathname: string) {
+        if (pathname === "/photos/1") return { params: {}, route: targetRoute };
+        if (pathname === "/feed") return { params: {}, route: sourceRoute };
+        return null;
+      },
+      middlewareModule: {
+        default(request: NextRequest) {
+          return request.nextUrl.pathname === "/feed"
+            ? new Response(null, {
+                headers: {
+                  "x-middleware-rewrite": "https://example.test/docs/feed?view=login",
+                },
+              })
+            : new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1?view=secret", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(404);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("allows an identity rewrite that keeps the authorized source request unchanged", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/feed" });
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed" ? { route: sourceRoute, params: {} } : null,
+      matchRoute(pathname: string) {
+        if (pathname === "/photos/1") return { params: {}, route: targetRoute };
+        if (pathname === "/feed") return { params: {}, route: sourceRoute };
+        return null;
+      },
+      middlewareModule: {
+        default(request: NextRequest) {
+          return request.nextUrl.pathname === "/feed"
+            ? new Response(null, {
+                headers: {
+                  "x-middleware-rewrite": "https://example.test/docs/feed?tab=comments",
+                },
+              })
+            : new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1?tab=comments", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    expect(dispatchMatchedPage).toHaveBeenCalledOnce();
+  });
+
+  it("allows a source rewrite that resolves to the selected route and params", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({
+      pattern: "/:locale/feed",
+      routeSegments: ["[locale]", "feed"],
+    });
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed" ? { route: sourceRoute, params: { locale: "en" } } : null,
+      matchRoute(pathname: string) {
+        if (pathname === "/photos/1") {
+          return { params: {} as Record<string, string | string[]>, route: targetRoute };
+        }
+        if (pathname === "/en/feed") {
+          return {
+            params: { locale: "en" } as Record<string, string | string[]>,
+            route: sourceRoute,
+          };
+        }
+        return null;
+      },
+      middlewareModule: {
+        default(request: NextRequest) {
+          return request.nextUrl.pathname === "/feed"
+            ? new Response(null, {
+                headers: { "x-middleware-rewrite": "https://example.test/docs/en/feed" },
+              })
+            : new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    expect(dispatchMatchedPage).toHaveBeenCalledOnce();
+  });
+
+  // With an unprefixed default locale, the client sends the public source
+  // pathname `/feed`, which the route matcher also resolves to `/[locale]`
+  // itself (locale "feed"). The source middleware rewrites it to `/en/feed`,
+  // the route the source actually renders, so the interception is resolved
+  // again from that rewritten source instead of failing closed.
+  // Extends Next.js: test/e2e/app-dir/interception-dynamic-segment-middleware/
+  it("re-resolves the interception source from a locale rewrite of a nested source", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const localeRootRoute = createPageRoute({ pattern: "/:locale", routeSegments: ["[locale]"] });
+    const feedRoute = createPageRoute({
+      pattern: "/:locale/feed",
+      routeSegments: ["[locale]", "feed"],
+    });
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const interceptSources: (string | null | undefined)[] = [];
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) => {
+        interceptSources.push(sourcePathname);
+        if (sourcePathname === "/feed") {
+          return { route: localeRootRoute, params: { locale: "feed" } };
+        }
+        if (sourcePathname === "/en/feed") {
+          return { route: feedRoute, params: { locale: "en" } };
+        }
+        return null;
+      },
+      matchRoute(pathname: string) {
+        if (pathname === "/photos/1") {
+          return { params: {} as Record<string, string | string[]>, route: targetRoute };
+        }
+        if (pathname === "/en/feed") {
+          return {
+            params: { locale: "en" } as Record<string, string | string[]>,
+            route: feedRoute,
+          };
+        }
+        return null;
+      },
+      middlewareModule: {
+        default(request: NextRequest) {
+          return request.nextUrl.pathname === "/feed"
+            ? new Response(null, {
+                headers: { "x-middleware-rewrite": "https://example.test/docs/en/feed" },
+              })
+            : new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    expect(dispatchMatchedPage).toHaveBeenCalledOnce();
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({ interceptionContext: "/en/feed" }),
+    );
+    expect(interceptSources).toContain("/en/feed");
+  });
+
+  // A sibling intercept opened from a deeper source renders the intercepting
+  // route itself, but the deeper source is what a source rewrite reaches, so
+  // it is the source the handler authorizes.
+  it("authorizes a deeper sibling intercept source while dispatching its owner", async () => {
+    const ownerRoute = createPageRoute({ pattern: "/shots", routeSegments: ["shots"] });
+    const deeperRoute = createPageRoute({
+      isDynamic: true,
+      params: ["id"],
+      pattern: "/shots/:id",
+      routeSegments: ["shots", "[id]"],
+    });
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) => {
+        const id = { "/shots/1": "1", "/shots/one": "one" }[sourcePathname];
+        return id === undefined
+          ? null
+          : {
+              authorizationParams: { id },
+              authorizationRoute: deeperRoute,
+              interceptionSourceIsConcrete: true,
+              params: {},
+              route: ownerRoute,
+            };
+      },
+      matchRoute(pathname: string) {
+        const id = { "/shots/1": "1", "/shots/one": "one" }[pathname];
+        return id === undefined
+          ? null
+          : { params: { id } as Record<string, string | string[]>, route: deeperRoute };
+      },
+      middlewareModule: {
+        default(request: NextRequest) {
+          return request.nextUrl.pathname === "/shots/1"
+            ? new Response(null, {
+                headers: { "x-middleware-rewrite": "https://example.test/docs/shots/one" },
+              })
+            : new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/shots/1" });
+    const rscUrl = await createRscRequestUrl("/docs/preview/2", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({ interceptionContext: "/shots/one", route: ownerRoute }),
+    );
+  });
+
+  // The source is authorized under the basePath the target resolved to, so a
+  // target middleware rewrites into the basePath keeps its source there too.
+  it("authorizes the interception source of a target middleware rewrites into basePath", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const localeRootRoute = createPageRoute({ pattern: "/:locale", routeSegments: ["[locale]"] });
+    const feedRoute = createPageRoute({
+      pattern: "/:locale/feed",
+      routeSegments: ["[locale]", "feed"],
+    });
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) => {
+        if (sourcePathname === "/feed") {
+          return { route: localeRootRoute, params: { locale: "feed" } };
+        }
+        if (sourcePathname === "/en/feed") {
+          return { route: feedRoute, params: { locale: "en" } };
+        }
+        return null;
+      },
+      matchRoute(pathname: string) {
+        if (pathname === "/photos/1") {
+          return { params: {} as Record<string, string | string[]>, route: targetRoute };
+        }
+        if (pathname === "/en/feed") {
+          return {
+            params: { locale: "en" } as Record<string, string | string[]>,
+            route: feedRoute,
+          };
+        }
+        return null;
+      },
+      middlewareModule: {
+        default(request: NextRequest) {
+          const pathname = new URL(request.url).pathname;
+          if (pathname === "/photos/1") {
+            return new Response(null, {
+              headers: { "x-middleware-rewrite": "https://example.test/docs/photos/1" },
+            });
+          }
+          return pathname === "/docs/feed"
+            ? new Response(null, {
+                headers: { "x-middleware-rewrite": "https://example.test/docs/en/feed" },
+              })
+            : new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+    const rscUrl = await createRscRequestUrl("/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({ interceptionContext: "/en/feed" }),
+    );
+  });
+
+  // Next.js resolves no route for a pathname outside the basePath, so a source
+  // rewritten there cannot authorize the interception.
+  it("does not render an interception source that middleware rewrites outside basePath", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const feedRoute = createPageRoute({
+      pattern: "/:locale/feed",
+      routeSegments: ["[locale]", "feed"],
+    });
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed" || sourcePathname === "/en/feed"
+          ? { route: feedRoute, params: { locale: "en" } }
+          : null,
+      matchRoute(pathname: string) {
+        if (pathname === "/photos/1") {
+          return { params: {} as Record<string, string | string[]>, route: targetRoute };
+        }
+        if (pathname === "/en/feed") {
+          return {
+            params: { locale: "en" } as Record<string, string | string[]>,
+            route: feedRoute,
+          };
+        }
+        return null;
+      },
+      middlewareModule: {
+        default(request: NextRequest) {
+          return request.nextUrl.pathname === "/feed"
+            ? new Response(null, {
+                headers: { "x-middleware-rewrite": "https://example.test/en/feed" },
+              })
+            : new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(404);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("hands a Server Action the interception source its locale rewrite reaches", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const localeRootRoute = createPageRoute({ pattern: "/:locale", routeSegments: ["[locale]"] });
+    const feedRoute = createPageRoute({
+      pattern: "/:locale/feed",
+      routeSegments: ["[locale]", "feed"],
+    });
+    const handleServerActionRequest = vi.fn(async () => new Response("action"));
+    const handler = createHandler({
+      configHeaders: [],
+      handleServerActionRequest,
+      matchInterceptRoute: (_pathname, sourcePathname) => {
+        if (sourcePathname === "/feed") {
+          return { route: localeRootRoute, params: { locale: "feed" } };
+        }
+        if (sourcePathname === "/en/feed") {
+          return { route: feedRoute, params: { locale: "en" } };
+        }
+        return null;
+      },
+      matchRoute(pathname: string) {
+        if (pathname === "/photos/1") {
+          return { params: {} as Record<string, string | string[]>, route: targetRoute };
+        }
+        if (pathname === "/en/feed") {
+          return {
+            params: { locale: "en" } as Record<string, string | string[]>,
+            route: feedRoute,
+          };
+        }
+        return null;
+      },
+      middlewareModule: {
+        default(request: NextRequest) {
+          return request.nextUrl.pathname === "/feed"
+            ? new Response(null, {
+                headers: { "x-middleware-rewrite": "https://example.test/docs/en/feed" },
+              })
+            : new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+    headers.set("next-action", "interception-action");
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(
+      new Request(`https://example.test${rscUrl}`, { headers, method: "POST" }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.text()).resolves.toBe("action");
+    expect(handleServerActionRequest).toHaveBeenCalledWith(
+      expect.objectContaining({ actionId: "interception-action", interceptionContext: "/en/feed" }),
+    );
+  });
+
+  it("re-resolves a rewritten interception source with a __proto__ param", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const localeRootRoute = createPageRoute({ pattern: "/:locale", routeSegments: ["[locale]"] });
+    const protoRoute = createPageRoute({
+      pattern: "/:locale/:__proto__",
+      routeSegments: ["[locale]", "[__proto__]"],
+    });
+    // JSON.parse defines `__proto__` as an own key, like the matcher's
+    // null-prototype param records.
+    const protoParams = (): Record<string, string | string[]> =>
+      JSON.parse('{"locale":"en","__proto__":"x"}');
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) => {
+        if (sourcePathname === "/x") {
+          return { route: localeRootRoute, params: { locale: "x" } };
+        }
+        if (sourcePathname === "/en/x") {
+          return { route: protoRoute, params: protoParams() };
+        }
+        return null;
+      },
+      matchRoute(pathname: string) {
+        if (pathname === "/photos/1") {
+          return { params: {} as Record<string, string | string[]>, route: targetRoute };
+        }
+        if (pathname === "/en/x") return { params: protoParams(), route: protoRoute };
+        return null;
+      },
+      middlewareModule: {
+        default(request: NextRequest) {
+          return request.nextUrl.pathname === "/x"
+            ? new Response(null, {
+                headers: { "x-middleware-rewrite": "https://example.test/docs/en/x" },
+              })
+            : new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/x" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    expect(dispatchMatchedPage).toHaveBeenCalledOnce();
+  });
+
+  it("still fails closed when a source rewrite reaches a route outside the interception", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const localeRootRoute = createPageRoute({ pattern: "/:locale", routeSegments: ["[locale]"] });
+    const loginRoute = createPageRoute({ pattern: "/login", routeSegments: ["login"] });
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      // Only the raw source is an interception source; `/login` is not.
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed" ? { route: localeRootRoute, params: { locale: "feed" } } : null,
+      matchRoute(pathname: string) {
+        if (pathname === "/photos/1") return { params: {}, route: targetRoute };
+        if (pathname === "/login") return { params: {}, route: loginRoute };
+        return null;
+      },
+      middlewareModule: {
+        default(request: NextRequest) {
+          return request.nextUrl.pathname === "/feed"
+            ? new Response(null, {
+                headers: { "x-middleware-rewrite": "https://example.test/docs/login" },
+              })
+            : new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(404);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  // The re-resolved source becomes the context the client sends back, so a
+  // rewrite the inbound header contract would reject (non-canonical, or over
+  // the length cap) keeps the raw match, which the exact rewrite check rejects.
+  it.each([
+    ["a non-canonical", "/en//feed"],
+    ["an over-length", `/en/feed/${"a".repeat(1024)}`],
+  ])("does not re-resolve the interception source from %s rewrite", async (_label, rewritten) => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const localeRootRoute = createPageRoute({ pattern: "/:locale", routeSegments: ["[locale]"] });
+    const feedRoute = createPageRoute({
+      pattern: "/:locale/feed",
+      routeSegments: ["[locale]", "feed"],
+    });
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const interceptSources: (string | null | undefined)[] = [];
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) => {
+        interceptSources.push(sourcePathname);
+        if (sourcePathname === "/feed") {
+          return { route: localeRootRoute, params: { locale: "feed" } };
+        }
+        if (sourcePathname === rewritten) {
+          return { route: feedRoute, params: { locale: "en" } };
+        }
+        return null;
+      },
+      matchRoute(pathname: string) {
+        if (pathname === "/photos/1") {
+          return { params: {} as Record<string, string | string[]>, route: targetRoute };
+        }
+        if (pathname === rewritten) {
+          return {
+            params: { locale: "en" } as Record<string, string | string[]>,
+            route: feedRoute,
+          };
+        }
+        return null;
+      },
+      middlewareModule: {
+        default(request: NextRequest) {
+          return request.nextUrl.pathname === "/feed"
+            ? new Response(null, {
+                headers: { "x-middleware-rewrite": `https://example.test/docs${rewritten}` },
+              })
+            : new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(404);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+    expect(interceptSources).not.toContain(rewritten);
+  });
+
+  it.each([
+    {
+      kind: "request headers",
+      sourceResponseHeaders: new Headers({
+        "x-middleware-next": "1",
+        "x-middleware-override-headers": "x-source-only",
+        "x-middleware-request-x-source-only": "source",
+      }),
+    },
+    {
+      kind: "cookies set by middleware",
+      sourceResponseHeaders: new Headers({
+        "x-middleware-next": "1",
+        "x-middleware-set-cookie": "source-session=1; Path=/",
+      }),
+    },
+  ])("fails closed when source authorization changes $kind", async ({ sourceResponseHeaders }) => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/feed" });
+    const dispatchMatchedPage = vi.fn(async () => new Response("secret"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed" ? { route: sourceRoute, params: {} } : null,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+      middlewareModule: {
+        default(request: NextRequest) {
+          if (request.nextUrl.pathname !== "/feed") {
+            return new Response(null, { headers: { "x-middleware-next": "1" } });
+          }
+          return new Response(null, { headers: sourceResponseHeaders });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(404);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("invalidates a primed headers snapshot when source middleware adds a header", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/feed" });
+    const dispatchMatchedPage = vi.fn(async () => {
+      const currentHeaders = await requestHeaders();
+      return new Response(currentHeaders.get("x-source") ?? "missing");
+    });
+    const dispatchResponseStage = vi.fn<DispatchAppWorkerResponseStage>(
+      async (_request, _props, options) => {
+        expect(options).toEqual({ cache: "bypass" });
+        return dispatchMatchedPage();
+      },
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed" ? { route: sourceRoute, params: {} } : null,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+      async runMiddleware({ cleanPathname }) {
+        if (cleanPathname === "/photos/1") {
+          await requestHeaders();
+        } else {
+          getHeadersContext()?.headers.set("x-source", "added");
+        }
+        return { kind: "continue", cleanPathname, matched: true, rewritten: false, search: null };
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    const response = await handler(
+      new Request(`https://example.test${rscUrl}`, { headers }),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.text()).resolves.toBe("added");
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+  });
+
+  it("preserves the Server Action body after authorizing an interception source", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/feed" });
+    const middlewarePaths: string[] = [];
+    const handleServerActionRequest = vi.fn(
+      async ({ request }: { request: Request }) => new Response(await request.text()),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      handleServerActionRequest,
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed" ? { route: sourceRoute, params: {} } : null,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+      middlewareModule: {
+        async default(request: NextRequest) {
+          middlewarePaths.push(request.nextUrl.pathname);
+          if (request.nextUrl.pathname === "/feed") {
+            expect(await request.text()).toBe("action-body");
+          }
+          return new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+    headers.set("content-type", "text/plain");
+    headers.set("next-action", "interception-action");
+    const response = await handler(
+      new Request("https://example.test/docs/photos/1", {
+        body: "action-body",
+        headers,
+        method: "POST",
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.text()).resolves.toBe("action-body");
+    expect(middlewarePaths).toEqual(["/photos/1", "/feed"]);
+    expect(handleServerActionRequest).toHaveBeenCalledOnce();
+  });
+
+  it("does not await cancellation of a streaming Server Action body branch", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const sourceRoute = createPageRoute({ pattern: "/feed" });
+    let resolveBodyCancelled!: () => void;
+    const bodyCancelled = new Promise<void>((resolve) => {
+      resolveBodyCancelled = resolve;
+    });
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode("action-body"));
+      },
+      cancel() {
+        resolveBodyCancelled();
+      },
+    });
+    const handler = createHandler({
+      configHeaders: [],
+      handleServerActionRequest: async ({ request }: { request: Request }) => {
+        void request.body?.cancel().catch(() => {});
+        return new Response("dispatched");
+      },
+      matchInterceptRoute: (_pathname, sourcePathname) =>
+        sourcePathname === "/feed" ? { route: sourceRoute, params: {} } : null,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+      middlewareModule: {
+        default: () => new Response(null, { headers: { "x-middleware-next": "1" } }),
+      },
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+    headers.set("content-type", "text/plain");
+    headers.set("next-action", "interception-action");
+    const requestInit: RequestInit = { body, headers, method: "POST" };
+    Object.defineProperty(requestInit, "duplex", { value: "half" });
+    const responsePromise = handler(
+      new Request("https://example.test/docs/photos/1", requestInit),
+      null,
+    );
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    const responseBeforeBodyClose = await Promise.race([
+      responsePromise,
+      new Promise<null>((resolve) => {
+        timeout = setTimeout(() => resolve(null), 500);
+      }),
+    ]);
+    if (timeout) clearTimeout(timeout);
+    const response = responseBeforeBodyClose ?? (await responsePromise);
+
+    expect(responseBeforeBodyClose).not.toBeNull();
+    expect(response.status).toBe(200);
+    await expect(response.text()).resolves.toBe("dispatched");
+    await expect(
+      Promise.race([
+        bodyCancelled.then(() => true),
+        new Promise<false>((resolve) => setTimeout(() => resolve(false), 500)),
+      ]),
+    ).resolves.toBe(true);
+  });
+
+  it("does not re-run middleware when no interception context is supplied", async () => {
+    const targetRoute = createPageRoute({ pattern: "/photos/1", routeSegments: ["photos", "1"] });
+    const middlewarePaths: string[] = [];
+    const handler = createHandler({
+      configHeaders: [],
+      matchInterceptRoute: () => null,
+      matchRoute: (pathname: string) =>
+        pathname === "/photos/1" ? { params: {}, route: targetRoute } : null,
+      async runMiddleware({ cleanPathname }) {
+        middlewarePaths.push(cleanPathname);
+        return { kind: "continue", cleanPathname, matched: true, rewritten: false, search: null };
+      },
+    });
+
+    const headers = createRscRequestHeaders({});
+    const rscUrl = await createRscRequestUrl("/docs/photos/1", headers);
+    await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(middlewarePaths).toEqual(["/photos/1"]);
+  });
+
+  it("does not promote a Route Handler slot owner for interception-only RSC targets", async () => {
+    // A `route.ts` record can retain parallel slots discovered beside it. A
+    // client-controlled interception context may gate the modal rewrite, but
+    // Next.js never dispatches the owning handler as its source route.
+    // https://github.com/vercel/next.js/blob/canary/packages/next/src/lib/generate-interception-routes-rewrites.ts
+    const matcher = createAppRscRouteMatcher([
+      {
+        pattern: "/feed",
+        patternParts: ["feed"],
+        __loadRouteHandler: async () => ({}),
+        slots: {
+          modal: {
+            intercepts: [
+              {
+                sourceMatchPattern: "/feed",
+                targetPattern: "/feed/hidden",
+                interceptLayouts: ["layout"],
+                page: "modal-page",
+                params: [],
+              },
+            ],
+          },
+        },
+      },
+    ]);
+    const handlerOwner = createPageRoute({
+      __loadPage: undefined,
+      __loadRouteHandler() {},
+      page: null,
+      pattern: "/feed",
+      routeHandler: { GET: () => new Response("secret handler") },
+      routeSegments: ["feed"],
+    });
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const dispatchMatchedRouteHandler = vi.fn(async () => new Response("secret handler"));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      dispatchMatchedRouteHandler,
+      matchInterceptRoute(pathname, sourcePathname) {
+        const intercept = matcher.findIntercept(pathname, sourcePathname);
+        return intercept ? { route: handlerOwner, params: {} } : null;
+      },
+      matchRoute: (pathname) => (pathname === "/feed" ? { route: handlerOwner, params: {} } : null),
+    });
+
+    // Direct requests still reach the Route Handler.
+    const directResponse = await handler(new Request("https://example.test/docs/feed"), null);
+    expect(await directResponse.text()).toBe("secret handler");
+    expect(dispatchMatchedRouteHandler).toHaveBeenCalledOnce();
+    dispatchMatchedRouteHandler.mockClear();
+
+    // The same handler must not be promoted for a forged interception-only
+    // target whose middleware/routing path was `/feed/hidden`.
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+    const rscUrl = await createRscRequestUrl("/docs/feed/hidden", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(404);
+    expect(dispatchMatchedRouteHandler).not.toHaveBeenCalled();
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("uses the request pathname consistently for encoded interception targets", async () => {
+    const sourceRoute = createPageRoute({
+      isDynamic: true,
+      params: ["slug"],
+      pattern: "/feed/:slug",
+      routeSegments: ["feed", "[slug]"],
+    });
+    const dispatchMatchedPage = vi.fn(async () => new Response("intercepted", { status: 200 }));
+    const matchInterceptRoute = vi.fn((pathname: string, sourcePathname: string) => {
+      if (pathname !== "/photos/%5Fhidden" || sourcePathname !== "/feed/a%252Fb") return null;
+      return {
+        interceptionSourceIsConcrete: true,
+        route: sourceRoute,
+        params: { slug: "a%252Fb" },
+      };
+    });
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute,
+      matchRoute: () => null,
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/feed/a%252Fb" });
+    const rscUrl = await createRscRequestUrl("/docs/photos/%5Fhidden", headers);
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    expect(matchInterceptRoute).toHaveBeenCalledWith("/photos/%5Fhidden", "/feed/a%252Fb", null);
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        interceptionPathname: "/photos/%5Fhidden",
+        params: { slug: "a%252Fb" },
+        route: sourceRoute,
+      }),
+    );
+  });
+
+  it("promotes an interception-only target before server-action dispatch", async () => {
+    const sourceRoute = createPageRoute({
+      isDynamic: true,
+      params: ["locale", "tab"],
+      pattern: "/:locale/example/:tab",
+      rootParamNames: ["locale"],
+      routeSegments: ["[locale]", "example", "[tab]"],
+    });
+    const promotedMatch = {
+      interceptionSourceIsConcrete: true,
+      route: sourceRoute,
+      params: { locale: "en", tab: "recent" },
+    };
+    const handleServerActionRequest = vi.fn(
+      async () => new Response("intercepted-action", { status: 200 }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      handleServerActionRequest,
+      matchInterceptRoute(pathname, sourcePathname) {
+        if (pathname !== "/en/intercepted" || sourcePathname !== "/en/example/recent") {
+          return null;
+        }
+        return promotedMatch;
+      },
+      matchRoute: () => null,
+    });
+
+    const headers = createRscRequestHeaders({ interceptionContext: "/en/example/recent" });
+    headers.set("next-action", "interception-action");
+    const rscUrl = await createRscRequestUrl("/docs/en/intercepted", headers);
+    const response = await handler(
+      new Request(`https://example.test${rscUrl}`, {
+        headers,
+        method: "POST",
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.text()).resolves.toBe("intercepted-action");
+    expect(handleServerActionRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actionId: "interception-action",
+        cleanPathname: "/en/intercepted",
+        interceptionContext: "/en/example/recent",
+        routeMatch: promotedMatch,
+      }),
+    );
+  });
+
+  it("keeps interception-only targets unavailable to direct document requests", async () => {
+    const matchInterceptRoute = vi.fn(() => ({ route: createPageRoute(), params: {} }));
+    const dispatchMatchedPage = vi.fn(async () => new Response("intercepted", { status: 200 }));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchInterceptRoute,
+      matchRoute: () => null,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/en/intercepted", {
+        headers: { "x-vinext-interception-context": "/en/example" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(404);
+    expect(matchInterceptRoute).not.toHaveBeenCalled();
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("allows independent Next.js blur width and quality exceptions in pure App Router dev", async () => {
+    // The blur quality exception (q=70) is only observable when `qualities` is
+    // configured — with an unset allowlist any quality 1-100 is permitted, so
+    // pin it to [75] to exercise the dev-only exception itself.
+    const handler = createHandler({ imageConfig: { qualities: [75] } });
+    for (const query of ["url=%2Fimg.jpg&w=8&q=75", "url=%2Fimg.jpg&w=640&q=70"]) {
+      const response = await handler(
+        new Request(`https://example.test/docs/_next/image?${query}`),
+        null,
+      );
+      expect(response.status).toBe(302);
+    }
+  });
+
+  it("rejects Next.js blur width and quality exceptions in production", async () => {
+    const handler = createHandler({ isDev: false, imageConfig: { qualities: [75] } });
+    for (const query of ["url=%2Fimg.jpg&w=8&q=75", "url=%2Fimg.jpg&w=640&q=70"]) {
+      const response = await handler(
+        new Request(`https://example.test/docs/_next/image?${query}`),
+        null,
+      );
+      expect(response.status).toBe(400);
+    }
+  });
+
+  it("allows any quality 1-100 in production when images.qualities is unset", async () => {
+    // Deliberately generous (Next.js 14/15 behaviour, not Next.js 16's [75]
+    // default): an unset `qualities` accepts any 1-100, so q=70 is a normal
+    // quality even in production.
+    const handler = createHandler({ isDev: false });
+    const response = await handler(
+      new Request("https://example.test/docs/_next/image?url=%2Fimg.jpg&w=640&q=70"),
+      null,
+    );
+    expect(response.status).toBe(302);
+  });
+
+  it("wraps dispatch responses with request-scoped finalization", async () => {
+    const dispatchMatchedPage = vi.fn(async () => new Response("page", { status: 200 }));
+    const handler = createHandler({ dispatchMatchedPage });
+
+    const response = await handler(new Request("https://example.test/docs/about"), null);
+
+    expect(dispatchMatchedPage).toHaveBeenCalledTimes(1);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-test-header")).toBe("applied");
+    expect(response.headers.get("vary")).toBe(VINEXT_RSC_VARY_HEADER);
+  });
+
+  it("keeps middleware cache headers above staged config and renderer headers", async () => {
+    const dispatchResponseStage = vi.fn(
+      async () =>
+        new Response("staged-page", {
+          headers: { "Cache-Control": "public, s-maxage=120" },
+        }),
+    );
+    const handler = createHandler({
+      configHeaders: [
+        {
+          source: "/about",
+          headers: [{ key: "Cache-Control", value: "public, s-maxage=60" }],
+        },
+      ],
+      middlewareModule: {
+        default() {
+          return new Response(null, {
+            headers: {
+              "Cache-Control": "private, no-store",
+              "x-middleware-next": "1",
+            },
+          });
+        },
+      },
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about"),
+      null,
+      false,
+      dispatchResponseStage,
+    );
+
+    expect(dispatchResponseStage).toHaveBeenCalledOnce();
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store");
+    await expect(response.text()).resolves.toBe("staged-page");
+  });
+
+  // Next.js also serves JSON at data URLs with trailingSlash enabled:
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/middleware-trailing-slash/test/index.test.ts
+  describe.each(["", "/docs"])("Pages data canonicalization (basePath=%s)", (basePath) => {
+    it.each([
+      { trailingSlash: false, page: "index" },
+      { trailingSlash: false, page: "legacy-static" },
+      { trailingSlash: false, page: "legacy-data/one" },
+      { trailingSlash: true, page: "index" },
+      { trailingSlash: true, page: "legacy-static" },
+      { trailingSlash: true, page: "legacy-data/one" },
+    ])(
+      "serves $page data without a document redirect (trailingSlash=$trailingSlash)",
+      async ({ trailingSlash, page }) => {
+        const renderPagesFallback = vi.fn(
+          async ({ pagesDataRequest }: { pagesDataRequest?: Request | null }) =>
+            Response.json({ url: pagesDataRequest?.url }),
+        );
+        const handler = createHandler({
+          basePath,
+          trailingSlash,
+          configHeaders: [],
+          matchRequestRoute: () => null,
+          matchRoute: () => null,
+          renderPagesFallback,
+        });
+
+        const response = await handler(
+          new Request(`https://example.test${basePath}/_next/data/build-id/${page}.json?q=kept`),
+          null,
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.headers.has("location")).toBe(false);
+        const data = await response.json();
+        expect(new URL(data.url).search).toBe("?q=kept");
+        expect(renderPagesFallback).toHaveBeenCalledTimes(1);
+        expect(renderPagesFallback).toHaveBeenCalledWith(
+          expect.objectContaining({ isDataRequest: true }),
+        );
+      },
+    );
+
+    it.each([false, true])(
+      "still canonicalizes documents with a forged data header (trailingSlash=%s)",
+      async (trailingSlash) => {
+        const handler = createHandler({ basePath, trailingSlash, configHeaders: [] });
+        const pathname = `/about${trailingSlash ? "" : "/"}`;
+        const response = await handler(
+          new Request(`https://example.test${basePath}${pathname}?q=kept`, {
+            headers: { "x-nextjs-data": "1" },
+          }),
+          null,
+        );
+
+        expect(response.status).toBe(308);
+        expect(response.headers.get("location")).toBe(
+          `${basePath}/about${trailingSlash ? "/" : ""}?q=kept`,
+        );
+      },
+    );
+  });
+
+  it("does not trailing-slash redirect RSC requests built from already-canonical trailingSlash paths", async () => {
+    const headers = createRscRequestHeaders();
+    const requestPath = await createRscRequestUrl("/about/", headers);
+    const dispatchMatchedPage = vi.fn(async () => new Response("page", { status: 200 }));
+    const route = createPageRoute({ pattern: "/about/", routeSegments: ["about"] });
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchRoute(pathname: string) {
+        return pathname === "/about/" ? { params: {}, route } : null;
+      },
+      trailingSlash: true,
+    });
+
+    const response = await handler(
+      new Request(`https://example.test/docs${requestPath}`, { headers }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.has("location")).toBe(false);
+    expect(dispatchMatchedPage).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not trailing-slash redirect extensionless metadata image routes", async () => {
+    const handler = createHandler({
+      configHeaders: [],
+      metadataRoutes: [
+        {
+          type: "icon",
+          isDynamic: true,
+          filePath: "/tmp/app/icon.tsx",
+          routePrefix: "",
+          routeSegments: [],
+          servedUrl: "/icon",
+          contentType: "image/png",
+          module: {
+            default: async () =>
+              new Response("icon bytes", { headers: { "content-type": "image/png" } }),
+          },
+        },
+      ],
+      trailingSlash: true,
+    });
+
+    const response = await handler(new Request("https://example.test/docs/icon"), null);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("location")).toBeNull();
+    expect(await response.text()).toBe("icon bytes");
+  });
+
+  describe.each([true, false])("multipart Route Handlers (isDev=%s)", (isDev) => {
+    it.each(["text", "file"] as const)(
+      "receives a complete %s payload larger than the Server Actions body limit",
+      async (kind) => {
+        const maxActionBodySize = 1024 * 1024;
+        const payload = "x".repeat(maxActionBodySize + 1);
+        const formData = new FormData();
+        if (kind === "text") {
+          formData.set("message", payload);
+        } else {
+          formData.set("image", new Blob([payload], { type: "image/bmp" }), "image.bmp");
+        }
+        const request = new Request("https://example.test/docs/upload", {
+          method: "POST",
+          body: formData,
+        });
+        expect(request.headers.has("content-length")).toBe(false);
+
+        const route = createPageRoute({
+          __loadPage: undefined,
+          __loadRouteHandler() {},
+          page: null,
+          pattern: "/upload",
+          routeHandler: { GET: () => new Response("route") },
+          routeSegments: ["upload"],
+        });
+        const handleProgressiveActionRequest = vi.fn<
+          NonNullable<HandlerOptions["handleProgressiveActionRequest"]>
+        >(async ({ request }) => {
+          try {
+            await readActionFormDataWithLimit(request.clone(), maxActionBodySize);
+            return null;
+          } catch (error) {
+            if (!(error instanceof Error) || error.message !== "Request body too large") {
+              throw error;
+            }
+            return new Response("Payload Too Large", { status: 413 });
+          }
+        });
+        const dispatchMatchedRouteHandler = vi.fn<DispatchMatchedRouteHandler>(
+          async ({ request }) => {
+            expect(request.bodyUsed).toBe(false);
+            const body = await request.formData();
+            if (kind === "text") {
+              expect(body.get("message")).toBe(payload);
+            } else {
+              const image = body.get("image");
+              expect(image).toBeInstanceOf(File);
+              if (!(image instanceof File)) throw new Error("Expected uploaded file");
+              expect(image.name).toBe("image.bmp");
+              expect(image.type).toBe("image/bmp");
+              expect(image.size).toBe(payload.length);
+              expect(await image.text()).toBe(payload);
+            }
+            return new Response("uploaded", { status: 200 });
+          },
+        );
+        const handler = createHandler({
+          configHeaders: [],
+          isDev,
+          handleProgressiveActionRequest,
+          dispatchMatchedRouteHandler,
+          matchRoute: (pathname) => (pathname === "/upload" ? { route, params: {} } : null),
+        });
+
+        const response = await handler(request, null);
+
+        expect(response.status).toBe(200);
+        expect(await response.text()).toBe("uploaded");
+        expect(dispatchMatchedRouteHandler).toHaveBeenCalledOnce();
+        expect(handleProgressiveActionRequest).not.toHaveBeenCalled();
+      },
+    );
+  });
+
+  it("runs progressive actions for a page that an afterFiles rewrite reaches from a dynamic route handler", async () => {
+    const dynamicRouteHandler = createPageRoute({
+      __loadPage: undefined,
+      __loadRouteHandler() {},
+      isDynamic: true,
+      page: null,
+      pattern: "/api/:slug",
+      routeHandler: { GET: () => new Response("route") },
+      routeSegments: ["api", "[slug]"],
+    });
+    const aboutPage = createPageRoute();
+    const emptyParams: Record<string, string | string[]> = {};
+    const handleProgressiveActionRequest = vi.fn<
+      NonNullable<HandlerOptions["handleProgressiveActionRequest"]>
+    >(async () => null);
+    const dispatchMatchedRouteHandler = vi.fn<DispatchMatchedRouteHandler>(
+      async () => new Response("route", { status: 200 }),
+    );
+    const dispatchMatchedPage = vi.fn(
+      async ({ route }: { route: TestRoute }) =>
+        new Response(`page:${route.pattern}`, { status: 200 }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        afterFiles: [{ source: "/api/legacy-form", destination: "/about" }],
+        beforeFiles: [],
+        fallback: [],
+      },
+      dispatchMatchedPage,
+      dispatchMatchedRouteHandler,
+      handleProgressiveActionRequest,
+      matchRoute: (pathname) => {
+        if (pathname === "/about") return { params: emptyParams, route: aboutPage };
+        if (pathname.startsWith("/api/")) {
+          return { params: { slug: pathname.slice("/api/".length) }, route: dynamicRouteHandler };
+        }
+        return null;
+      },
+    });
+    const body = new FormData();
+    body.set("message", "hello");
+
+    const response = await handler(
+      new Request("https://example.test/docs/api/legacy-form", { method: "POST", body }),
+      null,
+    );
+
+    expect(await response.text()).toBe("page:/about");
+    expect(handleProgressiveActionRequest).toHaveBeenCalledOnce();
+    expect(handleProgressiveActionRequest).toHaveBeenCalledWith(
+      expect.objectContaining({ routeMatch: { params: emptyParams, route: aboutPage } }),
+    );
+    expect(dispatchMatchedRouteHandler).not.toHaveBeenCalled();
+  });
+
+  describe("progressive actions after late routing", () => {
+    const routeHandler = createPageRoute({
+      __loadPage: undefined,
+      __loadRouteHandler() {},
+      page: null,
+      pattern: "/upload",
+      routeHandler: { GET: () => new Response("route") },
+      routeSegments: ["upload"],
+    });
+    const aboutPage = createPageRoute();
+    const dynamicPage = createPageRoute({
+      isDynamic: true,
+      pattern: "/:slug",
+      routeSegments: ["[slug]"],
+    });
+    const emptyParams: Record<string, string | string[]> = {};
+    const multipartPost = (pathname: string) => {
+      const body = new FormData();
+      body.set("message", "hello");
+      return new Request(`https://example.test/docs${pathname}`, { method: "POST", body });
+    };
+    const createProgressiveHandler = (overrides: Partial<TestHandlerOptions>) => {
+      const handleProgressiveActionRequest = vi.fn<
+        NonNullable<HandlerOptions["handleProgressiveActionRequest"]>
+      >(async () => null);
+      const dispatchMatchedRouteHandler = vi.fn<DispatchMatchedRouteHandler>(
+        async () => new Response("route", { status: 200 }),
+      );
+      const dispatchMatchedPage = vi.fn(
+        async ({ route }: { route: TestRoute }) =>
+          new Response(`page:${route.pattern}`, { status: 200 }),
+      );
+      const handler = createHandler({
+        configHeaders: [],
+        dispatchMatchedPage,
+        dispatchMatchedRouteHandler,
+        handleProgressiveActionRequest,
+        ...overrides,
+      });
+      return {
+        dispatchMatchedPage,
+        dispatchMatchedRouteHandler,
+        handleProgressiveActionRequest,
+        handler,
+      };
+    };
+
+    it.each(["afterFiles", "fallback"] as const)(
+      "skips them for a route handler reached through %s rewrites",
+      async (phase) => {
+        const { dispatchMatchedRouteHandler, handleProgressiveActionRequest, handler } =
+          createProgressiveHandler({
+            configRewrites: {
+              afterFiles: [],
+              beforeFiles: [],
+              fallback: [],
+              [phase]: [{ source: "/upload-alias", destination: "/upload" }],
+            },
+            matchRoute: (pathname) =>
+              pathname === "/upload" ? { params: emptyParams, route: routeHandler } : null,
+          });
+
+        const response = await handler(multipartPost("/upload-alias"), null);
+
+        expect(await response.text()).toBe("route");
+        expect(dispatchMatchedRouteHandler).toHaveBeenCalledOnce();
+        expect(handleProgressiveActionRequest).not.toHaveBeenCalled();
+      },
+    );
+
+    it("skips them for an unrewritten dynamic route handler", async () => {
+      const dynamicRouteHandler = createPageRoute({
+        __loadPage: undefined,
+        __loadRouteHandler() {},
+        isDynamic: true,
+        page: null,
+        pattern: "/api/:slug",
+        routeHandler: { GET: () => new Response("route") },
+        routeSegments: ["api", "[slug]"],
+      });
+      const dispatchMatchedRouteHandler = vi.fn<DispatchMatchedRouteHandler>(
+        async ({ request }) => {
+          const message = (await request.formData()).get("message");
+          return new Response(typeof message === "string" ? message : null);
+        },
+      );
+      const { handleProgressiveActionRequest, handler } = createProgressiveHandler({
+        dispatchMatchedRouteHandler,
+        matchRoute: (pathname) =>
+          pathname.startsWith("/api/")
+            ? { params: { slug: pathname.slice("/api/".length) }, route: dynamicRouteHandler }
+            : null,
+      });
+
+      const response = await handler(multipartPost("/api/upload"), null);
+
+      expect(await response.text()).toBe("hello");
+      expect(dispatchMatchedRouteHandler).toHaveBeenCalledOnce();
+      expect(handleProgressiveActionRequest).not.toHaveBeenCalled();
+    });
+
+    it.each(["afterFiles", "fallback"] as const)(
+      "skips them for a %s external rewrite",
+      async (phase) => {
+        const receivedBodies: string[] = [];
+        const server = createServer((req, res) => {
+          let body = "";
+          req.setEncoding("utf8");
+          req.on("data", (chunk: string) => (body += chunk));
+          req.on("end", () => {
+            receivedBodies.push(body);
+            res.writeHead(200, { "content-type": "text/plain" });
+            res.end("upstream");
+          });
+        });
+        await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+        const address = server.address() as AddressInfo;
+
+        try {
+          const { handleProgressiveActionRequest, handler } = createProgressiveHandler({
+            configRewrites: {
+              afterFiles: [],
+              beforeFiles: [],
+              fallback: [],
+              [phase]: [
+                {
+                  source: "/proxy-upload",
+                  destination: `http://127.0.0.1:${address.port}/upload`,
+                },
+              ],
+            },
+            matchRoute: () => null,
+          });
+
+          const response = await handler(multipartPost("/proxy-upload"), null);
+
+          expect(await response.text()).toBe("upstream");
+          expect(receivedBodies).toHaveLength(1);
+          expect(receivedBodies[0]).toContain('name="message"');
+          expect(receivedBodies[0]).toContain("hello");
+          expect(handleProgressiveActionRequest).not.toHaveBeenCalled();
+        } finally {
+          await new Promise<void>((resolve) => server.close(() => resolve()));
+        }
+      },
+    );
+
+    it("skips them when an afterFiles rewrite moves a dynamic page match to a route handler", async () => {
+      const { dispatchMatchedRouteHandler, handleProgressiveActionRequest, handler } =
+        createProgressiveHandler({
+          configRewrites: {
+            afterFiles: [{ source: "/upload-alias", destination: "/upload" }],
+            beforeFiles: [],
+            fallback: [],
+          },
+          matchRoute: (pathname) => {
+            if (pathname === "/upload") return { params: emptyParams, route: routeHandler };
+            return { params: { slug: pathname.slice(1) }, route: dynamicPage };
+          },
+        });
+
+      const response = await handler(multipartPost("/upload-alias"), null);
+
+      expect(await response.text()).toBe("route");
+      expect(dispatchMatchedRouteHandler).toHaveBeenCalledOnce();
+      expect(handleProgressiveActionRequest).not.toHaveBeenCalled();
+    });
+
+    it("skips them for a Pages route", async () => {
+      const { handleProgressiveActionRequest, handler } = createProgressiveHandler({
+        matchRoute: () => null,
+        renderPagesFallback: async () => new Response("pages", { status: 200 }),
+      });
+
+      const response = await handler(multipartPost("/pages-upload"), null);
+
+      expect(await response.text()).toBe("pages");
+      expect(handleProgressiveActionRequest).not.toHaveBeenCalled();
+    });
+
+    it("runs them against the page an afterFiles rewrite reaches", async () => {
+      const { dispatchMatchedPage, handleProgressiveActionRequest, handler } =
+        createProgressiveHandler({
+          configRewrites: {
+            afterFiles: [{ source: "/about-alias", destination: "/about" }],
+            beforeFiles: [],
+            fallback: [],
+          },
+          matchRoute: (pathname) =>
+            pathname === "/about" ? { params: emptyParams, route: aboutPage } : null,
+        });
+
+      const response = await handler(multipartPost("/about-alias"), null);
+
+      expect(await response.text()).toBe("page:/about");
+      expect(dispatchMatchedPage).toHaveBeenCalledOnce();
+      expect(handleProgressiveActionRequest).toHaveBeenCalledOnce();
+      expect(handleProgressiveActionRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          cleanPathname: "/about",
+          routeMatch: { params: emptyParams, route: aboutPage },
+        }),
+      );
+    });
+
+    it("skips them when a Pages route outranks a dynamic page match", async () => {
+      const { dispatchMatchedPage, handleProgressiveActionRequest, handler } =
+        createProgressiveHandler({
+          matchRoute: (pathname) => ({ params: { slug: pathname.slice(1) }, route: dynamicPage }),
+          renderPagesFallback: async () => new Response("pages", { status: 200 }),
+        });
+
+      const response = await handler(multipartPost("/contact"), null);
+
+      expect(await response.text()).toBe("pages");
+      expect(dispatchMatchedPage).not.toHaveBeenCalled();
+      expect(handleProgressiveActionRequest).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ["/blog/[slug]", false],
+      ["/blog/[slug]/", true],
+    ])(
+      "runs them on the literal path %s of a dynamic page and renders that page",
+      async (pathname, trailingSlash) => {
+        const blogPage = createPageRoute({
+          isDynamic: true,
+          params: ["slug"],
+          pattern: "/blog/:slug",
+          routeSegments: ["blog", "[slug]"],
+        });
+        const renderPagesFallback = vi.fn(async () => new Response("pages"));
+        const { dispatchMatchedRouteHandler, handleProgressiveActionRequest, handler } =
+          createProgressiveHandler({
+            configRewrites: {
+              afterFiles: [{ source: "/blog/:slug", destination: "/upload" }],
+              beforeFiles: [],
+              fallback: [],
+            },
+            matchRoute: (routePathname) => {
+              if (routePathname === "/upload") return { params: emptyParams, route: routeHandler };
+              return routePathname.startsWith("/blog/")
+                ? {
+                    params: { slug: routePathname.slice("/blog/".length).replace(/\/$/, "") },
+                    route: blogPage,
+                  }
+                : null;
+            },
+            renderPagesFallback,
+            trailingSlash,
+          });
+
+        const response = await handler(multipartPost(pathname), null);
+
+        expect(await response.text()).toBe("page:/blog/:slug");
+        expect(handleProgressiveActionRequest).toHaveBeenCalledWith(
+          expect.objectContaining({ routeMatch: { params: { slug: "[slug]" }, route: blogPage } }),
+        );
+        expect(dispatchMatchedRouteHandler).not.toHaveBeenCalled();
+        expect(renderPagesFallback).not.toHaveBeenCalled();
+      },
+    );
+
+    it("runs them with an empty action header on the page an afterFiles rewrite reaches", async () => {
+      const { handleProgressiveActionRequest, handler } = createProgressiveHandler({
+        configRewrites: {
+          afterFiles: [{ source: "/:slug", destination: "/about" }],
+          beforeFiles: [],
+          fallback: [],
+        },
+        matchRoute: (pathname) =>
+          pathname === "/about"
+            ? { params: emptyParams, route: aboutPage }
+            : { params: { slug: pathname.slice(1) }, route: dynamicPage },
+      });
+      const request = multipartPost("/hello");
+      request.headers.set("next-action", "");
+
+      const response = await handler(request, null);
+
+      expect(await response.text()).toBe(`page:${aboutPage.pattern}`);
+      expect(handleProgressiveActionRequest).toHaveBeenCalledWith(
+        expect.objectContaining({ routeMatch: { params: emptyParams, route: aboutPage } }),
+      );
+    });
+
+    it("runs them with the root params of the page an afterFiles rewrite reaches", async () => {
+      const localizedPage = createPageRoute({
+        isDynamic: true,
+        params: ["lang"],
+        pattern: "/:lang/contact",
+        rootParamNames: ["lang"],
+        routeSegments: ["[lang]", "contact"],
+      });
+      let observedRootParams: unknown = null;
+      const handleProgressiveActionRequest = vi.fn<
+        NonNullable<HandlerOptions["handleProgressiveActionRequest"]>
+      >(async () => {
+        const { getCurrentRootParams } =
+          await import("../packages/vinext/src/shims/root-params.js");
+        observedRootParams = getCurrentRootParams();
+        return null;
+      });
+      const { handler } = createProgressiveHandler({
+        configRewrites: {
+          afterFiles: [{ source: "/contact-alias", destination: "/en/contact" }],
+          beforeFiles: [],
+          fallback: [],
+        },
+        handleProgressiveActionRequest,
+        matchRoute: (pathname) =>
+          pathname === "/en/contact" ? { params: { lang: "en" }, route: localizedPage } : null,
+      });
+
+      await handler(multipartPost("/contact-alias"), null);
+
+      expect(handleProgressiveActionRequest).toHaveBeenCalledOnce();
+      expect(observedRootParams).toEqual({ lang: "en" });
+    });
+
+    it.each(["afterFiles", "fallback"] as const)(
+      "renders a failed action on the page that %s rewrites reach",
+      async (phase) => {
+        const actionError = new Error("action failed");
+        const rewrite = { source: "/about-alias", destination: "/about" };
+        const handleProgressiveActionRequest = vi.fn<
+          NonNullable<TestHandlerOptions["handleProgressiveActionRequest"]>
+        >(async () => ({
+          actionError,
+          actionFailed: true,
+          draftCookie: null,
+          formState: null,
+          kind: "form-state",
+          pendingCookies: [],
+          revalidationKind: 0,
+        }));
+        const { dispatchMatchedPage, handler } = createProgressiveHandler({
+          configRewrites: {
+            afterFiles: phase === "afterFiles" ? [rewrite] : [],
+            beforeFiles: [],
+            fallback: phase === "fallback" ? [rewrite] : [],
+          },
+          handleProgressiveActionRequest,
+          matchRoute: (pathname) =>
+            pathname === "/about" ? { params: emptyParams, route: aboutPage } : null,
+        });
+
+        await handler(multipartPost("/about-alias"), null);
+
+        expect(handleProgressiveActionRequest).toHaveBeenCalledWith(
+          expect.objectContaining({
+            cleanPathname: "/about",
+            routeMatch: { params: emptyParams, route: aboutPage },
+          }),
+        );
+        expect(dispatchMatchedPage).toHaveBeenCalledWith(
+          expect.objectContaining({
+            actionError,
+            actionFailed: true,
+            formState: null,
+            isProgressiveActionRender: true,
+            middlewareContext: expect.objectContaining({ status: 500 }),
+          }),
+        );
+      },
+    );
+
+    it("still runs them for an unmatched route", async () => {
+      const { handleProgressiveActionRequest, handler } = createProgressiveHandler({
+        matchRoute: () => null,
+      });
+
+      const response = await handler(multipartPost("/missing"), null);
+
+      expect(response.status).toBe(404);
+      expect(handleProgressiveActionRequest).toHaveBeenCalledOnce();
+      expect(handleProgressiveActionRequest).toHaveBeenCalledWith(
+        expect.objectContaining({ routeMatch: null }),
+      );
+    });
+  });
+
+  describe("server actions after late routing", () => {
+    const routeHandler = createPageRoute({
+      __loadPage: undefined,
+      __loadRouteHandler() {},
+      page: null,
+      pattern: "/upload",
+      routeHandler: { GET: () => new Response("route") },
+      routeSegments: ["upload"],
+    });
+    const aboutPage = createPageRoute();
+    const dynamicPage = createPageRoute({
+      isDynamic: true,
+      pattern: "/:slug",
+      routeSegments: ["[slug]"],
+    });
+    const emptyParams: Record<string, string | string[]> = {};
+    const actionPost = (pathname: string, origin = "https://example.test") =>
+      new Request(`${origin}/docs${pathname}`, {
+        method: "POST",
+        headers: { "content-type": "text/plain;charset=UTF-8", "next-action": "action-id" },
+        body: "[]",
+      });
+    const createActionHandler = (overrides: Partial<TestHandlerOptions>) => {
+      const handleServerActionRequest = vi.fn<
+        NonNullable<HandlerOptions["handleServerActionRequest"]>
+      >(async ({ routeMatch }) => new Response(`action:${routeMatch?.route.pattern ?? "none"}`));
+      const dispatchMatchedRouteHandler = vi.fn<DispatchMatchedRouteHandler>(
+        async ({ request }) => new Response(`route:${await request.text()}`, { status: 200 }),
+      );
+      const handler = createHandler({
+        configHeaders: [],
+        dispatchMatchedRouteHandler,
+        handleServerActionRequest,
+        ...overrides,
+      });
+      return { dispatchMatchedRouteHandler, handleServerActionRequest, handler };
+    };
+
+    it("leaves them to a statically matched route handler", async () => {
+      const { dispatchMatchedRouteHandler, handleServerActionRequest, handler } =
+        createActionHandler({
+          matchRoute: (pathname) =>
+            pathname === "/upload" ? { params: emptyParams, route: routeHandler } : null,
+        });
+
+      const response = await handler(actionPost("/upload"), null);
+
+      expect(await response.text()).toBe("route:[]");
+      expect(dispatchMatchedRouteHandler).toHaveBeenCalledOnce();
+      expect(handleServerActionRequest).not.toHaveBeenCalled();
+    });
+
+    it("leaves them to a route handler in a build without server actions", async () => {
+      const { handler } = createActionHandler({
+        handleServerActionRequest: undefined,
+        matchRoute: (pathname) =>
+          pathname === "/upload" ? { params: emptyParams, route: routeHandler } : null,
+      });
+
+      const response = await handler(actionPost("/upload"), null);
+
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe("route:[]");
+    });
+
+    it("leaves them to an unrewritten dynamic route handler", async () => {
+      const dynamicRouteHandler = createPageRoute({
+        __loadPage: undefined,
+        __loadRouteHandler() {},
+        isDynamic: true,
+        page: null,
+        pattern: "/api/:slug",
+        routeHandler: { GET: () => new Response("route") },
+        routeSegments: ["api", "[slug]"],
+      });
+      const { dispatchMatchedRouteHandler, handleServerActionRequest, handler } =
+        createActionHandler({
+          matchRoute: (pathname) =>
+            pathname.startsWith("/api/")
+              ? { params: { slug: pathname.slice("/api/".length) }, route: dynamicRouteHandler }
+              : null,
+        });
+
+      const response = await handler(actionPost("/api/upload"), null);
+
+      expect(await response.text()).toBe("route:[]");
+      expect(dispatchMatchedRouteHandler).toHaveBeenCalledOnce();
+      expect(handleServerActionRequest).not.toHaveBeenCalled();
+    });
+
+    it.each(["afterFiles", "fallback"] as const)(
+      "leaves them to a route handler that %s rewrites reach",
+      async (phase) => {
+        const { dispatchMatchedRouteHandler, handleServerActionRequest, handler } =
+          createActionHandler({
+            configRewrites: {
+              afterFiles: [],
+              beforeFiles: [],
+              fallback: [],
+              [phase]: [{ source: "/upload-alias", destination: "/upload" }],
+            },
+            matchRoute: (pathname) =>
+              pathname === "/upload" ? { params: emptyParams, route: routeHandler } : null,
+          });
+
+        const response = await handler(actionPost("/upload-alias"), null);
+
+        expect(await response.text()).toBe("route:[]");
+        expect(dispatchMatchedRouteHandler).toHaveBeenCalledOnce();
+        expect(handleServerActionRequest).not.toHaveBeenCalled();
+      },
+    );
+
+    it.each(["afterFiles", "fallback"] as const)(
+      "proxies them through %s external rewrites",
+      async (phase) => {
+        const received: { action: string | undefined; body: string }[] = [];
+        const server = createServer((req, res) => {
+          let body = "";
+          req.setEncoding("utf8");
+          req.on("data", (chunk: string) => (body += chunk));
+          req.on("end", () => {
+            received.push({ action: req.headers["next-action"] as string | undefined, body });
+            res.writeHead(200, { "content-type": "text/plain" });
+            res.end("upstream");
+          });
+        });
+        await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+        const address = server.address() as AddressInfo;
+
+        try {
+          const { handleServerActionRequest, handler } = createActionHandler({
+            configRewrites: {
+              afterFiles: [],
+              beforeFiles: [],
+              fallback: [],
+              [phase]: [
+                { source: "/proxy", destination: `http://127.0.0.1:${address.port}/upload` },
+              ],
+            },
+            matchRoute: () => null,
+          });
+
+          const response = await handler(actionPost("/proxy"), null);
+
+          expect(await response.text()).toBe("upstream");
+          expect(received).toEqual([{ action: "action-id", body: "[]" }]);
+          expect(handleServerActionRequest).not.toHaveBeenCalled();
+        } finally {
+          await new Promise<void>((resolve) => server.close(() => resolve()));
+        }
+      },
+    );
+
+    it("leaves them to a Pages route", async () => {
+      const { handleServerActionRequest, handler } = createActionHandler({
+        matchRoute: () => null,
+        renderPagesFallback: async ({ request }) => new Response(`pages:${await request.text()}`),
+      });
+
+      const response = await handler(actionPost("/legacy"), null);
+
+      expect(await response.text()).toBe("pages:[]");
+      expect(handleServerActionRequest).not.toHaveBeenCalled();
+    });
+
+    it("leaves them to a Pages route that outranks a dynamic page match", async () => {
+      const { handleServerActionRequest, handler } = createActionHandler({
+        matchRoute: (pathname) => ({ params: { slug: pathname.slice(1) }, route: dynamicPage }),
+        renderPagesFallback: async () => new Response("pages"),
+      });
+
+      const response = await handler(actionPost("/legacy"), null);
+
+      expect(await response.text()).toBe("pages");
+      expect(handleServerActionRequest).not.toHaveBeenCalled();
+    });
+
+    it("runs them against the page an afterFiles rewrite moves a dynamic match to", async () => {
+      const { handleServerActionRequest, handler } = createActionHandler({
+        configRewrites: {
+          afterFiles: [{ source: "/about-alias", destination: "/about" }],
+          beforeFiles: [],
+          fallback: [],
+        },
+        matchRoute: (pathname) =>
+          pathname === "/about"
+            ? { params: emptyParams, route: aboutPage }
+            : { params: { slug: pathname.slice(1) }, route: dynamicPage },
+      });
+
+      const response = await handler(actionPost("/about-alias"), null);
+
+      expect(await response.text()).toBe("action:/about");
+      expect(handleServerActionRequest).toHaveBeenCalledOnce();
+      expect(handleServerActionRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          cleanPathname: "/about",
+          routeMatch: { params: emptyParams, route: aboutPage },
+          routePathname: "/about",
+        }),
+      );
+    });
+
+    it.each(["afterFiles", "fallback"] as const)(
+      "runs them against the page that %s rewrites reach from an unmatched path",
+      async (phase) => {
+        const { handleServerActionRequest, handler } = createActionHandler({
+          configRewrites: {
+            afterFiles: [],
+            beforeFiles: [],
+            fallback: [],
+            [phase]: [{ source: "/about-alias", destination: "/about" }],
+          },
+          matchRoute: (pathname) =>
+            pathname === "/about" ? { params: emptyParams, route: aboutPage } : null,
+        });
+
+        const response = await handler(actionPost("/about-alias"), null);
+
+        expect(await response.text()).toBe("action:/about");
+        expect(handleServerActionRequest).toHaveBeenCalledWith(
+          expect.objectContaining({
+            cleanPathname: "/about",
+            routeMatch: { params: emptyParams, route: aboutPage },
+          }),
+        );
+      },
+    );
+
+    it("runs actions on the literal path of a dynamic owner before afterFiles rewrites", async () => {
+      const blogPage = createPageRoute({
+        isDynamic: true,
+        params: ["slug"],
+        pattern: "/blog/:slug",
+        routeSegments: ["blog", "[slug]"],
+      });
+      const { handler } = createActionHandler({
+        configRewrites: {
+          afterFiles: [{ source: "/blog/:slug", destination: "/about" }],
+          beforeFiles: [],
+          fallback: [],
+        },
+        matchRoute: (pathname) => {
+          if (pathname === "/about") return { params: emptyParams, route: aboutPage };
+          return pathname.startsWith("/blog/")
+            ? { params: { slug: pathname.slice("/blog/".length) }, route: blogPage }
+            : null;
+        },
+      });
+
+      const forwarded = await handler(actionPost("/blog/[slug]"), null);
+      const rewritten = await handler(actionPost("/blog/hello"), null);
+
+      expect(await forwarded.text()).toBe("action:/blog/:slug");
+      expect(await rewritten.text()).toBe("action:/about");
+    });
+
+    it("runs actions on the literal path of a dynamic owner before Pages routes", async () => {
+      const blogPage = createPageRoute({
+        isDynamic: true,
+        params: ["slug"],
+        pattern: "/blog/:slug",
+        routeSegments: ["blog", "[slug]"],
+      });
+      const renderPagesFallback = vi.fn(async () => new Response("pages"));
+      const { handler } = createActionHandler({
+        matchRoute: (pathname) =>
+          pathname.startsWith("/blog/")
+            ? { params: { slug: pathname.slice("/blog/".length) }, route: blogPage }
+            : null,
+        renderPagesFallback,
+      });
+
+      const forwarded = await handler(actionPost("/blog/[slug]"), null);
+      const direct = await handler(actionPost("/blog/hello"), null);
+
+      expect(await forwarded.text()).toBe("action:/blog/:slug");
+      expect(await direct.text()).toBe("pages");
+    });
+
+    it("runs actions on an encoded literal path of a dynamic owner", async () => {
+      const cafePage = createPageRoute({
+        isDynamic: true,
+        params: ["id"],
+        pattern: "/café/:id",
+        routeSegments: ["café", "[id]"],
+      });
+      const { handler } = createActionHandler({
+        configRewrites: {
+          afterFiles: [{ source: "/:segment/:id", destination: "/about" }],
+          beforeFiles: [],
+          fallback: [],
+        },
+        matchRoute: (pathname) => {
+          if (pathname === "/about") return { params: emptyParams, route: aboutPage };
+          return pathname.startsWith("/café/")
+            ? { params: { id: pathname.slice("/café/".length) }, route: cafePage }
+            : null;
+        },
+      });
+
+      // Forwarding builds the owner URL from its pattern, so the path arrives encoded.
+      const response = await handler(actionPost("/caf%C3%A9/[id]"), null);
+
+      expect(await response.text()).toBe("action:/café/:id");
+    });
+
+    it("runs actions on a literal owner path that a beforeFiles rewrite reaches", async () => {
+      const blogPage = createPageRoute({
+        isDynamic: true,
+        params: ["slug"],
+        pattern: "/blog/:slug",
+        routeSegments: ["blog", "[slug]"],
+      });
+      const { handler } = createActionHandler({
+        configRewrites: {
+          afterFiles: [{ source: "/blog/:slug", destination: "/about" }],
+          beforeFiles: [{ source: "/owner", destination: "/blog/[slug]" }],
+          fallback: [],
+        },
+        matchRoute: (pathname) => {
+          if (pathname === "/about") return { params: emptyParams, route: aboutPage };
+          return pathname.startsWith("/blog/")
+            ? { params: { slug: pathname.slice("/blog/".length) }, route: blogPage }
+            : null;
+        },
+      });
+
+      const response = await handler(actionPost("/owner"), null);
+
+      expect(await response.text()).toBe("action:/blog/:slug");
+    });
+
+    // Next.js serves any App file's literal path from its filesystem check,
+    // Route Handlers included. vinext doesn't for any method yet, so a crafted
+    // POST to a dynamic handler's literal path keeps the normal late routing,
+    // and the action never skips its checks on the page it reaches.
+    it("keeps late routing for the literal path of a dynamic route handler", async () => {
+      const dynamicRouteHandler = createPageRoute({
+        __loadPage: undefined,
+        __loadRouteHandler() {},
+        isDynamic: true,
+        page: null,
+        pattern: "/api/:slug",
+        routeHandler: { GET: () => new Response("route") },
+        routeSegments: ["api", "[slug]"],
+      });
+      const { dispatchMatchedRouteHandler, handler } = createActionHandler({
+        configRewrites: {
+          afterFiles: [{ source: "/api/:slug", destination: "/about" }],
+          beforeFiles: [],
+          fallback: [],
+        },
+        matchRoute: (pathname) => {
+          if (pathname === "/about") return { params: emptyParams, route: aboutPage };
+          return pathname.startsWith("/api/")
+            ? { params: { slug: pathname.slice("/api/".length) }, route: dynamicRouteHandler }
+            : null;
+        },
+      });
+
+      const response = await handler(actionPost("/api/[slug]"), null);
+
+      expect(await response.text()).toBe("action:/about");
+      expect(dispatchMatchedRouteHandler).not.toHaveBeenCalled();
+    });
+
+    it("runs them with the root params of the page an afterFiles rewrite reaches", async () => {
+      const localizedPage = createPageRoute({
+        isDynamic: true,
+        params: ["lang"],
+        pattern: "/:lang/contact",
+        rootParamNames: ["lang"],
+        routeSegments: ["[lang]", "contact"],
+      });
+      let observedRootParams: unknown = null;
+      const { handler } = createActionHandler({
+        configRewrites: {
+          afterFiles: [{ source: "/contact-alias", destination: "/en/contact" }],
+          beforeFiles: [],
+          fallback: [],
+        },
+        handleServerActionRequest: async () => {
+          const { getCurrentRootParams } =
+            await import("../packages/vinext/src/shims/root-params.js");
+          observedRootParams = getCurrentRootParams();
+          return new Response("action");
+        },
+        matchRoute: (pathname) =>
+          pathname === "/en/contact" ? { params: { lang: "en" }, route: localizedPage } : null,
+      });
+
+      await handler(actionPost("/contact-alias"), null);
+
+      expect(observedRootParams).toEqual({ lang: "en" });
+    });
+
+    it("answers a page match in a build without server actions with action-not-found", async () => {
+      const { handler } = createActionHandler({
+        configRewrites: {
+          afterFiles: [{ source: "/about-alias", destination: "/about" }],
+          beforeFiles: [],
+          fallback: [],
+        },
+        handleServerActionRequest: undefined,
+        matchRoute: (pathname) =>
+          pathname === "/about" ? { params: emptyParams, route: aboutPage } : null,
+      });
+
+      const response = await handler(actionPost("/about-alias"), null);
+
+      expect(response.status).toBe(404);
+      expect(response.headers.get("x-nextjs-action-not-found")).toBe("1");
+    });
+
+    it("still runs them for an unmatched route", async () => {
+      const { handleServerActionRequest, handler } = createActionHandler({
+        matchRoute: () => null,
+      });
+
+      const response = await handler(actionPost("/missing"), null);
+
+      expect(await response.text()).toBe("action:none");
+      expect(handleServerActionRequest).toHaveBeenCalledWith(
+        expect.objectContaining({ routeMatch: null }),
+      );
+    });
+
+    it("lets a Pages route claim an action before fallback rewrites", async () => {
+      const { handleServerActionRequest, handler } = createActionHandler({
+        configRewrites: {
+          beforeFiles: [],
+          afterFiles: [{ source: "/alias", destination: "/api/upload" }],
+          fallback: [{ source: "/api/upload", destination: "/about" }],
+        },
+        renderPagesFallback: async (options) =>
+          (options.pathname ?? options.url.pathname) === "/api/upload"
+            ? new Response("pages-api")
+            : null,
+      });
+
+      const response = await handler(
+        new Request("https://example.test/docs/alias", {
+          method: "POST",
+          headers: { "content-type": "text/plain;charset=UTF-8", "next-action": "action-id" },
+          body: "[]",
+        }),
+        null,
+      );
+
+      expect(await response.text()).toBe("pages-api");
+      expect(handleServerActionRequest).not.toHaveBeenCalled();
+    });
+  });
+
+  it("marks progressive action page renders even when decoded form state is null", async () => {
+    const dispatchMatchedPage = vi.fn(async () => new Response("page", { status: 200 }));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      async handleProgressiveActionRequest() {
+        return {
+          kind: "form-state",
+          formState: null,
+          pendingCookies: [],
+          draftCookie: null,
+          revalidationKind: 0,
+        };
+      },
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about", {
+        method: "POST",
+        headers: { "content-type": "multipart/form-data; boundary=vinext" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        formState: null,
+        isProgressiveActionRender: true,
+      }),
+    );
+  });
+
+  it("returns HTTP 500 for progressive actions that fail to find a Server Action", async () => {
+    const dispatchMatchedPage = vi.fn(async ({ middlewareContext }) =>
+      Promise.resolve(new Response("error page", { status: middlewareContext.status ?? 200 })),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      async handleProgressiveActionRequest() {
+        return {
+          kind: "form-state",
+          formState: null,
+          actionError: new Error(getServerActionNotFoundMessage(null)),
+          actionFailed: true,
+          pendingCookies: [],
+          draftCookie: null,
+          revalidationKind: 0,
+        };
+      },
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about", {
+        method: "POST",
+        headers: { "content-type": "multipart/form-data; boundary=vinext" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(500);
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actionFailed: true,
+        middlewareContext: expect.objectContaining({ status: 500 }),
+      }),
+    );
+  });
+
+  it("preserves progressive action HTTP fallback status handling", async () => {
+    const dispatchMatchedPage = vi.fn(async ({ middlewareContext }) =>
+      Promise.resolve(new Response("not found", { status: middlewareContext.status ?? 404 })),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      async handleProgressiveActionRequest() {
+        return {
+          kind: "form-state",
+          formState: null,
+          actionError: { digest: "NEXT_NOT_FOUND" },
+          actionFailed: true,
+          pendingCookies: [],
+          draftCookie: null,
+          revalidationKind: 0,
+        };
+      },
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about", {
+        method: "POST",
+        headers: { "content-type": "multipart/form-data; boundary=vinext" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(404);
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        middlewareContext: expect.objectContaining({ status: null }),
+      }),
+    );
+  });
+
+  it("normalizes progressive forbidden fallbacks to Next.js not-found rendering", async () => {
+    const dispatchMatchedPage = vi.fn(async ({ actionError, middlewareContext }) =>
+      Promise.resolve(
+        new Response(JSON.stringify(actionError), { status: middlewareContext.status ?? 404 }),
+      ),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      async handleProgressiveActionRequest() {
+        return {
+          kind: "form-state",
+          formState: null,
+          actionError: { digest: "NEXT_HTTP_ERROR_FALLBACK;403" },
+          actionFailed: true,
+          pendingCookies: [],
+          draftCookie: null,
+          revalidationKind: 0,
+        };
+      },
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about", {
+        method: "POST",
+        headers: { "content-type": "multipart/form-data; boundary=vinext" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ digest: "NEXT_NOT_FOUND" });
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actionError: { digest: "NEXT_NOT_FOUND" },
+        middlewareContext: expect.objectContaining({ status: null }),
+      }),
+    );
+  });
+
+  // Regression for issue #1483 — `cookies().set(...)` / `cookies().delete(...)`
+  // and `draftMode().enable()` invoked inside a no-JS server action must flow
+  // through to the page rerender response. Before the fix, those Set-Cookie
+  // headers (plus the x-action-revalidated marker) were dropped on the floor
+  // because the handler returned the dispatcher's response untouched.
+  it("propagates cookies, draft cookie, and revalidation marker from a progressive action to the page response (#1483)", async () => {
+    const dispatchMatchedPage = vi.fn(
+      async () =>
+        new Response("page", {
+          status: 200,
+          headers: { "content-type": "text/html; charset=utf-8" },
+        }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      async handleProgressiveActionRequest() {
+        return {
+          kind: "form-state",
+          formState: null,
+          pendingCookies: ["session=abc; Path=/", "theme=dark; Path=/"],
+          draftCookie: "__prerender_bypass=secret; Path=/",
+          revalidationKind: 1,
+        };
+      },
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about", {
+        method: "POST",
+        headers: { "content-type": "multipart/form-data; boundary=vinext" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.getSetCookie()).toEqual([
+      "session=abc; Path=/",
+      "theme=dark; Path=/",
+      "__prerender_bypass=secret; Path=/",
+    ]);
+    expect(response.headers.get("x-action-revalidated")).toBe("1");
+  });
+
+  // When an action did not mutate cookies and did not request a revalidation,
+  // the page response should NOT carry an x-action-revalidated marker — that
+  // header tells the client router cache to invalidate, and emitting it
+  // spuriously would force unnecessary refetches.
+  it("does not add x-action-revalidated when a progressive action made no mutations (#1483)", async () => {
+    const dispatchMatchedPage = vi.fn(
+      async () =>
+        new Response("page", {
+          status: 200,
+          headers: { "content-type": "text/html; charset=utf-8" },
+        }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      async handleProgressiveActionRequest() {
+        return {
+          kind: "form-state",
+          formState: null,
+          pendingCookies: [],
+          draftCookie: null,
+          revalidationKind: 0,
+        };
+      },
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about", {
+        method: "POST",
+        headers: { "content-type": "multipart/form-data; boundary=vinext" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.getSetCookie()).toEqual([]);
+    expect(response.headers.has("x-action-revalidated")).toBe(false);
+  });
+
+  it("uses encoded prerender route params for rendering while retaining decoded params for static validation", async () => {
+    const previousPrerender = process.env.VINEXT_PRERENDER;
+    process.env.VINEXT_PRERENDER = "1";
+    const dispatchMatchedPage = vi.fn(async () => new Response("page", { status: 200 }));
+    const prerenderRoute = createPageRoute({
+      isDynamic: true,
+      pattern: "/prerender-encoding/:id",
+      routeSegments: ["prerender-encoding", "[id]"],
+    });
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchRoute(pathname: string) {
+        return pathname === "/prerender-encoding/sticks & stones"
+          ? {
+              params: { id: "sticks & stones" },
+              route: prerenderRoute,
+            }
+          : null;
+      },
+    });
+
+    try {
+      const response = await handler(
+        new Request("https://example.test/docs/prerender-encoding/sticks%20%26%20stones", {
+          headers: {
+            "x-vinext-prerender-secret": "test-secret",
+            "x-vinext-prerender-route-params": prerenderRouteParamsHeader({
+              routePattern: "/prerender-encoding/:id",
+              params: { id: "sticks%20%26%20stones" },
+            }),
+          },
+        }),
+        null,
+      );
+
+      expect(response.status).toBe(200);
+      expect(dispatchMatchedPage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          params: { id: "sticks%20%26%20stones" },
+          staticParamsValidationParams: { id: "sticks & stones" },
+        }),
+      );
+    } finally {
+      if (previousPrerender === undefined) {
+        delete process.env.VINEXT_PRERENDER;
+      } else {
+        process.env.VINEXT_PRERENDER = previousPrerender;
+      }
+    }
+  });
+
+  it("ignores encoded prerender route params from a different rewritten route pattern", async () => {
+    const previousPrerender = process.env.VINEXT_PRERENDER;
+    process.env.VINEXT_PRERENDER = "1";
+    const dispatchMatchedPage = vi.fn(async () => new Response("page", { status: 200 }));
+    const productRoute = createPageRoute({
+      isDynamic: true,
+      pattern: "/product/:id",
+      routeSegments: ["product", "[id]"],
+    });
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [{ source: "/source/:slug", destination: "/product/:slug" }],
+        afterFiles: [],
+        fallback: [],
+      },
+      dispatchMatchedPage,
+      matchRoute(pathname: string) {
+        return pathname === "/product/sticks%20%26%20stones"
+          ? {
+              params: { id: "sticks%20%26%20stones" },
+              route: productRoute,
+            }
+          : null;
+      },
+    });
+
+    try {
+      const response = await handler(
+        new Request("https://example.test/docs/source/sticks%20%26%20stones", {
+          headers: {
+            "x-vinext-prerender-secret": "test-secret",
+            "x-vinext-prerender-route-params": prerenderRouteParamsHeader({
+              routePattern: "/source/:slug",
+              params: { slug: "sticks%20%26%20stones" },
+            }),
+          },
+        }),
+        null,
+      );
+
+      expect(response.status).toBe(200);
+      expect(dispatchMatchedPage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          cleanPathname: "/product/sticks%20%26%20stones",
+          params: { id: "sticks%20%26%20stones" },
+          staticParamsValidationParams: undefined,
+        }),
+      );
+    } finally {
+      if (previousPrerender === undefined) {
+        delete process.env.VINEXT_PRERENDER;
+      } else {
+        process.env.VINEXT_PRERENDER = previousPrerender;
+      }
+    }
+  });
+
+  it("ignores encoded prerender route params when a same-pattern rewrite changes the matched params", async () => {
+    const previousPrerender = process.env.VINEXT_PRERENDER;
+    process.env.VINEXT_PRERENDER = "1";
+    const dispatchMatchedPage = vi.fn(async () => new Response("page", { status: 200 }));
+    const productRoute = createPageRoute({
+      isDynamic: true,
+      pattern: "/product/:id",
+      routeSegments: ["product", "[id]"],
+    });
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [{ source: "/product/:id", destination: "/product/sticks-and-stones" }],
+        afterFiles: [],
+        fallback: [],
+      },
+      dispatchMatchedPage,
+      matchRoute(pathname: string) {
+        return pathname === "/product/sticks-and-stones"
+          ? {
+              params: { id: "sticks-and-stones" },
+              route: productRoute,
+            }
+          : null;
+      },
+    });
+
+    try {
+      const response = await handler(
+        new Request("https://example.test/docs/product/sticks%20%26%20stones", {
+          headers: {
+            "x-vinext-prerender-secret": "test-secret",
+            "x-vinext-prerender-route-params": prerenderRouteParamsHeader({
+              routePattern: "/product/:id",
+              params: { id: "sticks%20%26%20stones" },
+            }),
+          },
+        }),
+        null,
+      );
+
+      expect(response.status).toBe(200);
+      expect(dispatchMatchedPage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          cleanPathname: "/product/sticks-and-stones",
+          params: { id: "sticks-and-stones" },
+          staticParamsValidationParams: undefined,
+        }),
+      );
+    } finally {
+      if (previousPrerender === undefined) {
+        delete process.env.VINEXT_PRERENDER;
+      } else {
+        process.env.VINEXT_PRERENDER = previousPrerender;
+      }
+    }
+  });
+
+  it("ignores forged prerender route params outside trusted prerender requests", async () => {
+    const previousPrerender = process.env.VINEXT_PRERENDER;
+    delete process.env.VINEXT_PRERENDER;
+    const dispatchMatchedPage = vi.fn(async () => new Response("page", { status: 200 }));
+    const prerenderRoute = createPageRoute({
+      isDynamic: true,
+      pattern: "/prerender-encoding/:id",
+      routeSegments: ["prerender-encoding", "[id]"],
+    });
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchRoute(pathname: string) {
+        return pathname === "/prerender-encoding/sticks & stones"
+          ? {
+              params: { id: "sticks & stones" },
+              route: prerenderRoute,
+            }
+          : null;
+      },
+    });
+
+    try {
+      const response = await handler(
+        new Request("https://example.test/docs/prerender-encoding/sticks%20%26%20stones", {
+          headers: {
+            "x-vinext-prerender-secret": "test-secret",
+            "x-vinext-prerender-route-params": prerenderRouteParamsHeader({
+              routePattern: "/prerender-encoding/:id",
+              params: { id: "forged" },
+            }),
+          },
+        }),
+        null,
+      );
+
+      expect(response.status).toBe(200);
+      expect(dispatchMatchedPage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          params: { id: "sticks & stones" },
+        }),
+      );
+      expect(dispatchMatchedPage).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          staticParamsValidationParams: expect.anything(),
+        }),
+      );
+    } finally {
+      if (previousPrerender === undefined) {
+        delete process.env.VINEXT_PRERENDER;
+      } else {
+        process.env.VINEXT_PRERENDER = previousPrerender;
+      }
+    }
+  });
+
+  it("returns config redirects before route dispatch and skips finalization", async () => {
+    const dispatchMatchedPage = vi.fn(async () => new Response("page", { status: 200 }));
+    const handler = createHandler({
+      configRedirects: [{ source: "/old-about", destination: "/about", permanent: true }],
+      dispatchMatchedPage,
+    });
+
+    const response = await handler(new Request("https://example.test/docs/old-about"), null);
+
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe("/docs/about");
+    expect(response.headers.get("x-test-header")).toBeNull();
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("does not match config redirects through percent-encoded literal aliases", async () => {
+    const dispatchMatchedPage = vi.fn(async () => new Response("page", { status: 200 }));
+    const handler = createHandler({
+      configHeaders: [],
+      configRedirects: [{ source: "/old-about", destination: "/about", permanent: false }],
+      dispatchMatchedPage,
+    });
+
+    const response = await handler(new Request("https://example.test/docs/%6Fld-about"), null);
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("location")).toBeNull();
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("preserves raw encoding when substituting repeated config redirect captures", async () => {
+    const handler = createHandler({
+      configHeaders: [],
+      configRedirects: [
+        {
+          source: "/legacy/:id",
+          destination: "/target/:id/:id",
+          permanent: false,
+        },
+      ],
+    });
+
+    const response = await handler(new Request("https://example.test/docs/legacy/a%252Fb"), null);
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("/docs/target/a%252Fb/a%252Fb");
+  });
+
+  it("does not prepend basePath to opt-out redirects outside basePath", async () => {
+    const handler = createHandler({
+      configHeaders: [],
+      configRedirects: [
+        { source: "/outside", destination: "/landing", permanent: false, basePath: false },
+      ],
+    });
+
+    const response = await handler(new Request("https://example.test/outside"), null);
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("/landing");
+  });
+
+  it("does not prepend basePath when normalizing trailing slashes outside basePath", async () => {
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [
+          { source: "/outside", destination: "https://upstream.example/about", basePath: false },
+        ],
+        afterFiles: [],
+        fallback: [],
+      },
+      trailingSlash: true,
+    });
+
+    const response = await handler(new Request("https://example.test/outside"), null);
+
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe("/outside/");
+  });
+
+  // Ported from Next.js: test/e2e/skip-trailing-slash-redirect/index.test.ts
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/skip-trailing-slash-redirect/index.test.ts
+  it.each([
+    { trailingSlash: false, pathname: "/docs/about/" },
+    { trailingSlash: true, pathname: "/docs/about" },
+  ])(
+    "serves $pathname without a redirect under skipTrailingSlashRedirect (trailingSlash: $trailingSlash)",
+    async ({ trailingSlash, pathname }) => {
+      const route = createPageRoute();
+      // The real route matcher tolerates either slash form.
+      const matchRoute = (pathname: string) =>
+        pathname.replace(/\/$/, "") === "/about" ? { params: {}, route } : null;
+      const handler = createHandler({
+        configHeaders: [],
+        matchRoute,
+        skipTrailingSlashRedirect: true,
+        trailingSlash,
+      });
+
+      const response = await handler(new Request(`https://example.test${pathname}`), null);
+
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe("page");
+    },
+  );
+
+  it("preserves raw encoded spelling when normalizing trailing slashes", async () => {
+    const handler = createHandler({ configHeaders: [], trailingSlash: true });
+
+    const response = await handler(new Request("https://example.test/docs/%61bout"), null);
+
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe("/docs/%61bout/");
+  });
+
+  it("keeps the real status for config redirects on Pages data requests", async () => {
+    // Ported from Next.js: test/e2e/middleware-general/test/index.test.ts
+    // https://github.com/vercel/next.js/blob/v16.2.6/test/e2e/middleware-general/test/index.test.ts
+    const handler = createHandler({
+      configRedirects: [{ source: "/old-about", destination: "/about", permanent: true }],
+      matchRoute: () => null,
+      renderPagesFallback: async () => new Response("pages-data"),
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/_next/data/build-id/old-about.json"),
+      null,
+    );
+
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe("/docs/about");
+    expect(response.headers.get("x-nextjs-redirect")).toBeNull();
+  });
+
+  it("ignores forged data headers for App Router config redirects", async () => {
+    const handler = createHandler({
+      configRedirects: [{ source: "/old-about", destination: "/about", permanent: true }],
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/old-about", {
+        headers: { "x-nextjs-data": "1" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe("/docs/about");
+    expect(response.headers.get("x-nextjs-redirect")).toBeNull();
+  });
+
+  it("lets middleware redirect headers override earlier matching config headers", async () => {
+    // Next.js route order reference:
+    // https://github.com/vercel/next.js/blob/canary/packages/next/src/server/lib/router-utils/resolve-routes.ts
+    const dispatchMatchedPage = vi.fn(async () => new Response("page", { status: 200 }));
+    const handler = createHandler({
+      dispatchMatchedPage,
+      middlewareModule: {
+        default: () =>
+          new Response(null, {
+            status: 307,
+            headers: {
+              Location: "/login",
+              "x-test-header": "middleware",
+            },
+          }),
+      },
+    });
+
+    const response = await handler(new Request("https://example.test/docs/about"), null);
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("/login");
+    expect(response.headers.get("x-test-header")).toBe("middleware");
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("carries config headers on middleware redirects when middleware does not override them", async () => {
+    // Next.js route order reference:
+    // https://github.com/vercel/next.js/blob/canary/packages/next/src/server/lib/router-utils/resolve-routes.ts
+    const dispatchMatchedPage = vi.fn(async () => new Response("page", { status: 200 }));
+    const handler = createHandler({
+      dispatchMatchedPage,
+      middlewareModule: {
+        default: () =>
+          new Response(null, {
+            status: 307,
+            headers: { Location: "/login" },
+          }),
+      },
+    });
+
+    const response = await handler(new Request("https://example.test/docs/about"), null);
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("/login");
+    expect(response.headers.get("x-test-header")).toBe("applied");
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("applies config headers to redirects that application code returns", async () => {
+    // Next.js stages config headers before a page, Route Handler or Pages
+    // route runs, so the redirects those return carry them.
+    const routeHandlerRoute = createPageRoute({
+      __loadPage: undefined,
+      __loadRouteHandler() {},
+      page: null,
+      routeHandler: { GET: () => new Response("route") },
+    });
+    const pagesOnly = { matchRequestRoute: () => null, matchRoute: () => null };
+    const cases: Array<[string, ReturnType<typeof createHandler>, number, string | null]> = [
+      [
+        "page redirect",
+        createHandler({
+          dispatchMatchedPage: async () =>
+            new Response(null, { status: 307, headers: { Location: "/docs/login" } }),
+        }),
+        307,
+        "applied",
+      ],
+      [
+        "Route Handler Response.redirect()",
+        createHandler({
+          dispatchMatchedRouteHandler: async () =>
+            Response.redirect("https://example.test/docs/login", 308),
+          matchRoute: (pathname) =>
+            pathname === "/about" ? { params: {}, route: routeHandlerRoute } : null,
+        }),
+        308,
+        "applied",
+      ],
+      [
+        "Pages route redirect",
+        createHandler({
+          ...pagesOnly,
+          renderPagesFallback: async () =>
+            new Response(null, { status: 307, headers: { Location: "/docs/login" } }),
+        }),
+        307,
+        "applied",
+      ],
+      // Next.js answers the locale-detection redirect before staging them.
+      [
+        "Pages locale redirect",
+        createHandler({
+          ...pagesOnly,
+          renderPagesFallback: async () =>
+            markLocaleRedirect(
+              new Response(null, { status: 307, headers: { Location: "/docs/fr/about" } }),
+            ),
+        }),
+        307,
+        null,
+      ],
+    ];
+
+    for (const [label, handler, status, header] of cases) {
+      const response = await handler(new Request("https://example.test/docs/about"), null);
+      expect({
+        label,
+        status: response.status,
+        header: response.headers.get("x-test-header"),
+      }).toEqual({ label, status, header });
+    }
+  });
+
+  it("lets next.config headers meet Route Handler headers like Next.js", async () => {
+    // Next.js copies a Node Route Handler's header only where config left
+    // none, and appends an edge handler's after config. A page keeps its own.
+    const handlerHeaders = {
+      "x-collision": "handler",
+      "www-authenticate": "Basic realm=handler",
+    };
+    const configHeaders = [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Collision", value: "config" },
+          { key: "WWW-Authenticate", value: "Bearer realm=config" },
+        ],
+      },
+    ];
+    const routeFor = (runtime?: string) =>
+      createPageRoute({
+        __loadPage: undefined,
+        __loadRouteHandler() {},
+        page: null,
+        routeHandler: { GET: () => new Response("route"), runtime },
+      });
+    const cases = [
+      { label: "node", route: routeFor(), status: 200 },
+      { label: "node 302", route: routeFor(), status: 302 },
+      { label: "edge", route: routeFor("edge"), status: 200 },
+      { label: "page", route: undefined, status: 200 },
+    ];
+
+    const results = [];
+    for (const staged of [false, true]) {
+      for (const { label, route, status } of cases) {
+        const handlerResponse = () =>
+          new Response(null, {
+            status,
+            headers: status === 302 ? { ...handlerHeaders, Location: "/" } : handlerHeaders,
+          });
+        const handler = createHandler({
+          configHeaders,
+          dispatchMatchedPage: async () => handlerResponse(),
+          dispatchMatchedRouteHandler: async () => handlerResponse(),
+          ...(route && {
+            matchRoute: (pathname: string) =>
+              pathname === "/about" ? { params: {}, route } : null,
+          }),
+        });
+        const response = await handler(
+          new Request("https://example.test/docs/about"),
+          null,
+          false,
+          staged ? async () => handlerResponse() : undefined,
+        );
+        results.push({
+          label: `${staged ? "staged " : ""}${label}`,
+          collision: response.headers.get("x-collision"),
+          challenge: response.headers.get("www-authenticate"),
+        });
+      }
+    }
+
+    const node = { collision: "config", challenge: "Bearer realm=config, Basic realm=handler" };
+    const edge = {
+      collision: "config, handler",
+      challenge: "Bearer realm=config, Basic realm=handler",
+    };
+    const page = { collision: "handler", challenge: "Basic realm=handler" };
+    expect(results).toEqual(
+      ["", "staged "].flatMap((prefix) => [
+        { label: `${prefix}node`, ...node },
+        { label: `${prefix}node 302`, ...node },
+        { label: `${prefix}edge`, ...edge },
+        { label: `${prefix}page`, ...page },
+      ]),
+    );
+  });
+
+  it("propagates middleware rewrite query parameters to App pages", async () => {
+    let pageOptions: Parameters<HandlerOptions["dispatchMatchedPage"]>[0] | undefined;
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage: async (options) => {
+        pageOptions = options;
+        return new Response("page");
+      },
+      middlewareModule: {
+        default: () =>
+          new Response(null, {
+            headers: {
+              "x-middleware-rewrite": "https://example.test/docs/about?destination=2&same=new",
+            },
+          }),
+      },
+    });
+
+    await handler(new Request("https://example.test/docs/source?original=1&same=old"), null);
+
+    expect(Object.fromEntries(pageOptions!.searchParams)).toEqual({
+      destination: "2",
+      same: "new",
+    });
+  });
+
+  it("preserves the encoded request pathname for direct interception matching", async () => {
+    let pageOptions: Parameters<HandlerOptions["dispatchMatchedPage"]>[0] | undefined;
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage: async (options) => {
+        pageOptions = options;
+        return new Response("page");
+      },
+      matchRequestRoute(pathname: string) {
+        return pathname === "/about/%2561"
+          ? {
+              params: {},
+              route: createPageRoute({ pattern: "/about/:id", isDynamic: true }),
+            }
+          : null;
+      },
+    });
+
+    await handler(new Request("https://example.test/docs/about/%2561"), null);
+
+    expect(pageOptions?.interceptionPathname).toBe("/about/%2561");
+  });
+
+  it("uses the normalized rewrite destination for interception matching", async () => {
+    let pageOptions: Parameters<HandlerOptions["dispatchMatchedPage"]>[0] | undefined;
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage: async (options) => {
+        pageOptions = options;
+        return new Response("page");
+      },
+      middlewareModule: {
+        default: () =>
+          new Response(null, {
+            headers: {
+              "x-middleware-rewrite": "https://example.test/docs/about/%2561",
+            },
+          }),
+      },
+      matchRoute(pathname: string) {
+        return pathname === "/about/%2561"
+          ? {
+              params: {},
+              route: createPageRoute({ pattern: "/about/:id", isDynamic: true }),
+            }
+          : null;
+      },
+    });
+
+    await handler(new Request("https://example.test/docs/source"), null);
+
+    expect(pageOptions?.interceptionPathname).toBe("/about/%2561");
+  });
+
+  it("treats an explicit middleware rewrite as authoritative after normalization", async () => {
+    const dispatchMatchedPage = vi.fn(async () => new Response("admin"));
+    const requestRouteMatch = vi.fn(() => null);
+    const rewrittenRoute = createPageRoute({ pattern: "/admin", routeSegments: ["admin"] });
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchRequestRoute: requestRouteMatch,
+      matchRoute(pathname: string) {
+        return pathname === "/admin" ? { params: {}, route: rewrittenRoute } : null;
+      },
+      middlewareModule: {
+        default: (request: NextRequest) =>
+          new Response(null, {
+            headers: {
+              "x-middleware-rewrite": new URL("/docs/admin", request.url).toString(),
+            },
+          }),
+      },
+    });
+
+    const response = await handler(new Request("https://example.test/docs/%61dmin"), null);
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe("admin");
+    expect(requestRouteMatch).not.toHaveBeenCalled();
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({ cleanPathname: "/admin", route: rewrittenRoute }),
+    );
+  });
+
+  it("evaluates config rewrite conditions against middleware rewrite queries", async () => {
+    let pageOptions: Parameters<HandlerOptions["dispatchMatchedPage"]>[0] | undefined;
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [
+          {
+            source: "/intermediate",
+            destination: "/about?destination=2",
+            has: [{ type: "query", key: "stage", value: "1" }],
+          },
+        ],
+        afterFiles: [],
+        fallback: [],
+      },
+      dispatchMatchedPage: async (options) => {
+        pageOptions = options;
+        return new Response("page");
+      },
+      middlewareModule: {
+        default: () =>
+          new Response(null, {
+            headers: {
+              "x-middleware-rewrite": "https://example.test/docs/intermediate?stage=1",
+            },
+          }),
+      },
+    });
+
+    await handler(new Request("https://example.test/docs/source"), null);
+
+    expect(Object.fromEntries(pageOptions!.searchParams)).toEqual({
+      destination: "2",
+      stage: "1",
+    });
+  });
+
+  it("allows middleware-rewritten RSC requests to hand off to Pages HTML", async () => {
+    const headers = createRscRequestHeaders();
+    const rscUrl = await createRscRequestUrl("/docs/source", headers);
+    const renderPagesFallback = vi.fn(async ({ allowRscDocumentFallback, pathname }) =>
+      allowRscDocumentFallback && pathname === "/pages"
+        ? new Response("pages", { headers: { "content-type": "text/html" } })
+        : null,
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      matchRoute: () => null,
+      middlewareModule: {
+        default: () =>
+          new Response(null, {
+            headers: { "x-middleware-rewrite": "https://example.test/docs/pages" },
+          }),
+      },
+      renderPagesFallback,
+    });
+
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.headers.get("content-type")).toBe("text/html");
+    expect(await response.text()).toBe("pages");
+  });
+
+  it("does not hand query-only middleware-rewritten RSC requests to Pages HTML", async () => {
+    const headers = createRscRequestHeaders();
+    const rscUrl = await createRscRequestUrl("/docs/source", headers);
+    const renderPagesFallback = vi.fn(async ({ allowRscDocumentFallback }) =>
+      allowRscDocumentFallback
+        ? new Response("pages", { headers: { "content-type": "text/html" } })
+        : null,
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      matchRoute: () => null,
+      middlewareModule: {
+        default: () =>
+          new Response(null, {
+            headers: { "x-middleware-rewrite": "https://example.test/docs/source?query=updated" },
+          }),
+      },
+      renderPagesFallback,
+    });
+
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("content-type")).not.toBe("text/html");
+    expect(renderPagesFallback).toHaveBeenCalledWith(
+      expect.objectContaining({ allowRscDocumentFallback: false }),
+    );
+  });
+
+  it("does not duplicate additive config headers on non-redirect middleware responses", async () => {
+    const handler = createHandler({
+      configHeaders: [
+        {
+          source: "/about",
+          headers: [{ key: "Vary", value: "X-Config" }],
+        },
+      ],
+      middlewareModule: {
+        default: () =>
+          new Response("blocked", {
+            status: 401,
+            headers: { Vary: "User-Agent" },
+          }),
+      },
+    });
+
+    const response = await handler(new Request("https://example.test/docs/about"), null);
+    const varyTokens = (response.headers.get("vary") ?? "").split(",").map((token) => token.trim());
+
+    expect(response.status).toBe(401);
+    expect(varyTokens).toContain("User-Agent");
+    expect(varyTokens).toContain("X-Config");
+    expect(varyTokens.filter((token) => token === "X-Config")).toHaveLength(1);
+  });
+
+  it("canonicalizes config redirect locations for RSC requests", async () => {
+    const headers = createRscRequestHeaders({ mountedSlotsHeader: "slot:modal:/" });
+    const expectedHash = await computeRscCacheBustingSearchParam(headers);
+    const handler = createHandler({
+      configHeaders: [],
+      configRedirects: [{ source: "/old-about", destination: "/about?from=old", permanent: false }],
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/old-about", { headers }),
+      null,
+    );
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe(
+      `https://example.test/docs/about?from=old&_rsc=${expectedHash}`,
+    );
+  });
+
+  it("preserves the original request query on config redirects for document requests (#1529)", async () => {
+    // A plain (non-RSC) document request that hits a config redirect must
+    // carry its original query onto the Location, matching Next.js
+    // resolve-routes.ts. The destination's own query wins on key conflicts,
+    // overriding the request value in its request position.
+    const handler = createHandler({
+      configHeaders: [],
+      configRedirects: [{ source: "/old-about", destination: "/about?from=old", permanent: true }],
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/old-about?foo=bar&from=req"),
+      null,
+    );
+
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe("/docs/about?foo=bar&from=old");
+  });
+
+  it("redirects invalid RSC cache-busting requests before middleware", async () => {
+    const middleware = vi.fn(() => new Response("middleware"));
+    const dispatchMatchedPage = vi.fn(async () => new Response("page", { status: 200 }));
+    const headers = createRscRequestHeaders({ mountedSlotsHeader: "slot:modal:/" });
+    const expectedHash = await computeRscCacheBustingSearchParam(headers);
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      middlewareModule: { default: middleware },
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about?tab=latest", { headers }),
+      null,
+    );
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe(`/docs/about?tab=latest&_rsc=${expectedHash}`);
+    expect(middleware).not.toHaveBeenCalled();
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("hides internal RSC cache-busting params from middleware nextUrl", async () => {
+    // Ported from Next.js:
+    // test/e2e/app-dir/navigation/middleware.js
+    // https://github.com/vercel/next.js/blob/v16.2.6/test/e2e/app-dir/navigation/middleware.js
+    const middleware = vi.fn<(request: { nextUrl: URL }) => Response>(
+      () => new Response(null, { headers: { "x-middleware-next": "1" } }),
+    );
+    const dispatchMatchedPage = vi.fn(async () => new Response("page", { status: 200 }));
+    const headers = createRscRequestHeaders({ mountedSlotsHeader: "slot:modal:/" });
+    const rscUrl = await createRscRequestUrl("/docs/about?tab=latest", headers);
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      middlewareModule: { default: middleware },
+    });
+
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    expect(middleware).toHaveBeenCalledTimes(1);
+    const middlewareRequest = middleware.mock.calls[0]?.[0];
+    expect(middlewareRequest?.nextUrl.searchParams.has(VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM)).toBe(
+      false,
+    );
+    expect(middlewareRequest?.nextUrl.search).toBe("?tab=latest");
+    expect(dispatchMatchedPage).toHaveBeenCalledTimes(1);
+  });
+
+  it("forwards validated RSC cache-busting params to external rewrite proxies", async () => {
+    // Matches Next.js middleware-rsc-external-rewrite: the destination server
+    // needs `_rsc` because it cannot validate against the original request URL.
+    // The fetch-cache instrumentation captures the real `fetch` at module load
+    // and reinstalls a patched copy during request handling, so a global
+    // `fetch` mock can't intercept the proxied request. Use a real loopback
+    // server as the external rewrite destination and record the URL it
+    // receives — that exercises the full handler -> applyRewrite ->
+    // proxyExternalRequest path without fighting the instrumentation.
+    const receivedUrls: string[] = [];
+    const server = createServer((req, res) => {
+      receivedUrls.push(req.url ?? "");
+      res.writeHead(200, { "content-type": "text/plain" });
+      res.end("upstream");
+    });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const address = server.address() as AddressInfo;
+    const upstreamBase = `http://127.0.0.1:${address.port}`;
+
+    try {
+      const headers = createRscRequestHeaders({ mountedSlotsHeader: "slot:modal:/" });
+      const rscUrl = await createRscRequestUrl("/docs/proxy?tab=latest", headers);
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: {
+          beforeFiles: [{ source: "/proxy", destination: `${upstreamBase}/proxy` }],
+          afterFiles: [],
+          fallback: [],
+        },
+        matchRoute: () => null,
+      });
+
+      const response = await handler(
+        new Request(`https://example.test${rscUrl}`, { headers }),
+        null,
+      );
+
+      expect(response.status).toBe(200);
+      expect(receivedUrls).toHaveLength(1);
+      const forwardedUrl = new URL(`${upstreamBase}${receivedUrls[0]}`);
+      expect(forwardedUrl.searchParams.has(VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM)).toBe(true);
+      expect(forwardedUrl.searchParams.get("tab")).toBe("latest");
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+  });
+
+  it.each(["beforeFiles", "afterFiles", "fallback"] as const)(
+    "validates out-of-basePath RSC requests before %s external rewrite proxies",
+    async (phase) => {
+      const receivedUrls: string[] = [];
+      const server = createServer((req, res) => {
+        receivedUrls.push(req.url ?? "");
+        res.writeHead(200, { "content-type": "text/plain" });
+        res.end("upstream");
+      });
+      await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+      const address = server.address() as AddressInfo;
+      const upstreamBase = `http://127.0.0.1:${address.port}`;
+
+      try {
+        const headers = createRscRequestHeaders({ mountedSlotsHeader: "slot:modal:/" });
+        const expectedHash = await computeRscCacheBustingSearchParam(headers);
+        const rewrite = {
+          source: "/outside",
+          destination: `${upstreamBase}/proxy`,
+          basePath: false as const,
+        };
+        const handler = createHandler({
+          configHeaders: [],
+          configRewrites: {
+            beforeFiles: phase === "beforeFiles" ? [rewrite] : [],
+            afterFiles: phase === "afterFiles" ? [rewrite] : [],
+            fallback: phase === "fallback" ? [rewrite] : [],
+          },
+          matchRoute: () => null,
+        });
+
+        for (const method of ["GET", "HEAD"] as const) {
+          const response = await handler(
+            new Request("https://example.test/outside?tab=latest", { headers, method }),
+            null,
+          );
+
+          expect(response.status).toBe(307);
+          expect(response.headers.get("location")).toBe(`/outside?tab=latest&_rsc=${expectedHash}`);
+        }
+        expect(receivedUrls).toEqual([]);
+      } finally {
+        await new Promise<void>((resolve) => server.close(() => resolve()));
+      }
+    },
+  );
+
+  it.each(["middleware", "forwarded"] as const)(
+    "validates out-of-basePath RSC requests before %s external rewrite proxies",
+    async (mode) => {
+      const receivedUrls: string[] = [];
+      const server = createServer((req, res) => {
+        receivedUrls.push(req.url ?? "");
+        res.writeHead(200, { "content-type": "text/plain" });
+        res.end("upstream");
+      });
+      await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+      const address = server.address() as AddressInfo;
+      const upstreamUrl = `http://127.0.0.1:${address.port}/proxy`;
+
+      try {
+        const headers = createRscRequestHeaders({ mountedSlotsHeader: "slot:modal:/" });
+        const expectedHash = await computeRscCacheBustingSearchParam(headers);
+        if (mode === "forwarded") {
+          headers.set(
+            VINEXT_MW_CTX_HEADER,
+            sealedForwardedContext({
+              h: [
+                ["location", "/middleware-location"],
+                ["set-cookie", "session=forwarded"],
+              ],
+              r: upstreamUrl,
+            }),
+          );
+        }
+        const handler = createHandler({
+          configHeaders: [],
+          middlewareModule: {
+            default: () =>
+              new Response(null, {
+                headers: {
+                  location: "/middleware-location",
+                  "set-cookie": "session=middleware",
+                  "x-middleware-rewrite": upstreamUrl,
+                },
+              }),
+          },
+          matchRoute: () => null,
+        });
+
+        for (const method of ["GET", "HEAD"] as const) {
+          const response = await handler(
+            new Request("https://example.test/outside?tab=latest", { headers, method }),
+            null,
+          );
+
+          expect(response.status).toBe(307);
+          expect(response.headers.get("location")).toBe(`/outside?tab=latest&_rsc=${expectedHash}`);
+          expect(response.headers.get("set-cookie")).toBe(`session=${mode}`);
+        }
+        expect(receivedUrls).toEqual([]);
+      } finally {
+        await new Promise<void>((resolve) => server.close(() => resolve()));
+      }
+    },
+  );
+
+  it.each(["middleware", "forwarded"] as const)(
+    "forwards valid RSC cache-busting params to %s external rewrite proxies",
+    async (mode) => {
+      const receivedRequests: Array<{
+        headers: import("node:http").IncomingHttpHeaders;
+        url: string;
+      }> = [];
+      const server = createServer((req, res) => {
+        receivedRequests.push({ headers: req.headers, url: req.url ?? "" });
+        res.writeHead(200, { "content-type": "text/plain" });
+        res.end("upstream");
+      });
+      await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+      const address = server.address() as AddressInfo;
+      const upstreamUrl = `http://127.0.0.1:${address.port}/proxy`;
+
+      try {
+        const headers = createRscRequestHeaders({
+          mountedSlotsHeader: "slot:modal:/",
+          prefetchRouterState: { pathAndSearch: "/outside?tab=latest", routeId: "/outside" },
+        });
+        const routerState = headers.get("next-router-state-tree");
+        expect(routerState).not.toBeNull();
+        if (mode === "forwarded") {
+          headers.set(
+            VINEXT_MW_CTX_HEADER,
+            sealedForwardedContext({
+              h: [
+                [
+                  "x-middleware-override-headers",
+                  "rsc,next-router-prefetch,next-router-state-tree",
+                ],
+                ["x-middleware-request-next-router-prefetch", "0"],
+                ["x-middleware-request-next-router-state-tree", "tampered"],
+                ["x-middleware-request-rsc", "0"],
+              ],
+              r: upstreamUrl,
+            }),
+          );
+        }
+        const requestUrl = await createRscRequestUrl("/outside?tab=latest", headers);
+        const handler = createHandler({
+          configHeaders: [],
+          middlewareModule: {
+            default: () =>
+              new Response(null, {
+                headers: {
+                  "x-middleware-override-headers":
+                    "rsc,next-router-prefetch,next-router-state-tree",
+                  "x-middleware-request-next-router-prefetch": "0",
+                  "x-middleware-request-next-router-state-tree": "tampered",
+                  "x-middleware-request-rsc": "0",
+                  "x-middleware-rewrite": upstreamUrl,
+                },
+              }),
+          },
+          matchRoute: () => null,
+        });
+
+        const response = await handler(
+          new Request(`https://example.test${requestUrl}`, { headers }),
+          null,
+        );
+
+        expect(response.status).toBe(200);
+        expect(receivedRequests).toHaveLength(1);
+        const [received] = receivedRequests;
+        const forwardedUrl = new URL(`http://vinext.local${received.url}`);
+        expect(forwardedUrl.searchParams.has(VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM)).toBe(true);
+        expect(received.headers[RSC_HEADER.toLowerCase()]).toBe("1");
+        expect(received.headers[NEXT_ROUTER_PREFETCH_HEADER.toLowerCase()]).toBe("1");
+        expect(received.headers["next-router-state-tree"]).toBe(routerState);
+      } finally {
+        await new Promise<void>((resolve) => server.close(() => resolve()));
+      }
+    },
+  );
+
+  it.each([
+    { phase: "beforeFiles", action: false },
+    { phase: "afterFiles", action: false },
+    { phase: "fallback", action: false },
+    { phase: "afterFiles", action: true },
+    { phase: "fallback", action: true },
+  ] as const)(
+    "forwards middleware's request header override to $phase external rewrite proxies (action: $action)",
+    async ({ phase, action }) => {
+      // Next.js applies the override to req.headers before any config rewrite
+      // runs, so credentials deleted by middleware never reach the proxy.
+      const receivedRequests: Array<{
+        body: string;
+        headers: import("node:http").IncomingHttpHeaders;
+        url: string;
+      }> = [];
+      const server = createServer((req, res) => {
+        const chunks: Buffer[] = [];
+        req.on("data", (chunk: Buffer) => chunks.push(chunk));
+        req.on("end", () => {
+          receivedRequests.push({
+            body: Buffer.concat(chunks).toString("utf8"),
+            headers: req.headers,
+            url: req.url ?? "",
+          });
+          res.writeHead(200, { "content-type": "text/plain" });
+          res.end("upstream");
+        });
+      });
+      await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+      const address = server.address() as AddressInfo;
+      // Server Actions resolve late rewrites early only outside the basePath.
+      const rewrite = {
+        source: "/outside",
+        destination: `http://127.0.0.1:${address.port}/proxy`,
+        ...(action ? { basePath: false as const } : {}),
+      };
+
+      try {
+        const headers = createRscRequestHeaders({ mountedSlotsHeader: "slot:modal:/" });
+        headers.set("authorization", "Bearer secret");
+        headers.set("cookie", "session=secret");
+        headers.set("x-kept", "kept");
+        if (action) {
+          headers.set("next-action", "action-id");
+          headers.set("content-type", "text/plain");
+        }
+        const requestUrl = await createRscRequestUrl(
+          action ? "/outside" : "/docs/outside",
+          headers,
+        );
+        const handler = createHandler({
+          configHeaders: [],
+          configRewrites: {
+            beforeFiles: phase === "beforeFiles" ? [rewrite] : [],
+            afterFiles: phase === "afterFiles" ? [rewrite] : [],
+            fallback: phase === "fallback" ? [rewrite] : [],
+          },
+          middlewareModule: {
+            default(request: NextRequest) {
+              const nextHeaders = new Headers(request.headers);
+              nextHeaders.delete("authorization");
+              nextHeaders.delete("cookie");
+              nextHeaders.set("x-from-middleware", "added");
+              return new Response(null, {
+                headers: {
+                  "x-middleware-next": "1",
+                  "x-middleware-override-headers": [...nextHeaders.keys()].join(","),
+                  ...Object.fromEntries(
+                    [...nextHeaders].map(([name, value]) => [
+                      `x-middleware-request-${name}`,
+                      value,
+                    ]),
+                  ),
+                },
+              });
+            },
+          },
+          matchRoute: () => null,
+        });
+
+        const response = await handler(
+          new Request(
+            `https://example.test${requestUrl}`,
+            action ? { body: "action-body", headers, method: "POST" } : { headers },
+          ),
+          null,
+        );
+
+        expect(response.status).toBe(200);
+        expect(receivedRequests).toHaveLength(1);
+        const [received] = receivedRequests;
+        expect(received.body).toBe(action ? "action-body" : "");
+        expect(received.headers.authorization).toBeUndefined();
+        expect(received.headers.cookie).toBeUndefined();
+        expect(received.headers["x-kept"]).toBe("kept");
+        expect(received.headers["x-from-middleware"]).toBe("added");
+        // Flight headers are not overridable, so the proxy still receives them.
+        expect(received.headers[RSC_HEADER.toLowerCase()]).toBe("1");
+        const forwardedUrl = new URL(`http://vinext.local${received.url}`);
+        expect(forwardedUrl.searchParams.has(VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM)).toBe(true);
+      } finally {
+        await new Promise<void>((resolve) => server.close(() => resolve()));
+      }
+    },
+  );
+
+  it("applies basePath false rewrites before rejecting outside-basePath requests", async () => {
+    // Ported from Next.js: test/e2e/app-dir/app-basepath/index.test.ts
+    // https://github.com/vercel/next.js/blob/v16.2.6/test/e2e/app-dir/app-basepath/index.test.ts
+    const server = createServer((_req, res) => {
+      res.writeHead(200, { "content-type": "text/plain" });
+      res.end("outside-base-path upstream");
+    });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const address = server.address() as AddressInfo;
+
+    try {
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: {
+          beforeFiles: [
+            {
+              source: "/outsideBasePath",
+              destination: `http://127.0.0.1:${address.port}/`,
+              basePath: false,
+            },
+          ],
+          afterFiles: [],
+          fallback: [],
+        },
+        matchRoute: () => null,
+      });
+
+      const response = await handler(new Request("https://example.test/outsideBasePath"), null);
+
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe("outside-base-path upstream");
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+  });
+
+  it("does not expose direct App routes outside basePath when an opt-out rule exists", async () => {
+    const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [
+          {
+            source: "/only-this-path",
+            destination: "https://upstream.example/about",
+            basePath: false,
+          },
+        ],
+        afterFiles: [],
+        fallback: [],
+      },
+      dispatchMatchedPage,
+    });
+
+    const response = await handler(new Request("https://example.test/about"), null);
+
+    expect(response.status).toBe(404);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("does not dispatch server actions outside basePath when an opt-out rule exists", async () => {
+    const handleServerActionRequest = vi.fn(async () => new Response("action"));
+    const handler = createHandler({
+      configHeaders: [{ source: "/outside", headers: [], basePath: false }],
+      handleServerActionRequest,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/about", {
+        method: "POST",
+        headers: { "next-action": "abc123" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(404);
+    expect(handleServerActionRequest).not.toHaveBeenCalled();
+  });
+
+  it("passes outside-basePath state to middleware", async () => {
+    let pathname: string | undefined;
+    let basePath: string | undefined;
+    const handler = createHandler({
+      configHeaders: [{ source: "/outside", headers: [], basePath: false }],
+      middlewareModule: {
+        default: (request: Request & { nextUrl: URL & { basePath: string } }) => {
+          pathname = request.nextUrl.pathname;
+          basePath = request.nextUrl.basePath;
+          return new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+
+    await handler(new Request("https://example.test/outside"), null);
+
+    expect(pathname).toBe("/outside");
+    expect(basePath).toBe("");
+  });
+
+  it("allows middleware-only apps to handle requests outside basePath", async () => {
+    const handler = createHandler({
+      configHeaders: [],
+      middlewareModule: {
+        default: (request: Request) =>
+          Response.redirect(new URL("/docs/about", request.url).toString(), 307),
+      },
+    });
+
+    const response = await handler(new Request("https://example.test/outside"), null);
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("/docs/about");
+  });
+
+  it("returns a plain 404 when middleware leaves an outside-basePath request unchanged", async () => {
+    const renderNotFound = vi.fn(async () => new Response("rendered not found", { status: 404 }));
+    const handler = createHandler({
+      configHeaders: [],
+      middlewareModule: {
+        default: () => new Response(null, { headers: { "x-middleware-next": "1" } }),
+      },
+      renderNotFound,
+    });
+
+    const response = await handler(new Request("https://example.test/outside"), null);
+
+    expect(response.status).toBe(404);
+    expect(await response.text()).not.toBe("rendered not found");
+    expect(renderNotFound).not.toHaveBeenCalled();
+  });
+
+  // Like Next.js' resolve-routes, the rewrite destination's basePath decides
+  // whether an outside-basePath request reaches a route.
+  it.each([
+    { destination: "/docs/about?from=middleware", expectedStatus: 200 },
+    { destination: "/about?from=middleware", expectedStatus: 404 },
+  ])(
+    "makes outside-basePath routes eligible only for middleware rewrites to $destination under basePath",
+    async ({ destination, expectedStatus }) => {
+      const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+      const handler = createHandler({
+        configHeaders: [{ source: "/about", headers: [], basePath: false }],
+        dispatchMatchedPage,
+        middlewareModule: {
+          default: (request: Request) =>
+            new Response(null, {
+              headers: {
+                "x-middleware-rewrite": new URL(destination, request.url).toString(),
+              },
+            }),
+        },
+      });
+
+      const response = await handler(new Request("https://example.test/about"), null);
+
+      expect(response.status).toBe(expectedStatus);
+      expect(dispatchMatchedPage).toHaveBeenCalledTimes(expectedStatus === 200 ? 1 : 0);
+    },
+  );
+
+  it("preserves Node route handler RSC URLs while hiding internal parsed params", async () => {
+    // Ported from Next.js:
+    // test/e2e/app-dir/front-redirect-issue/front-redirect-issue.test.ts
+    // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/front-redirect-issue/front-redirect-issue.test.ts
+    //
+    // The upstream fixture fallback-rewrites a front URL to an App route
+    // handler. Next strips `_rsc` from the parsed query in base-server.ts, but
+    // its Node request adapter rebuilds request.url from initURL and preserves
+    // the original search string.
+    const route = createPageRoute({
+      isDynamic: true,
+      page: null,
+      pattern: "/api/app-redirect/:path",
+      routeHandler: { GET: () => new Response("route") },
+      routeSegments: ["api", "app-redirect", "[path]"],
+    });
+    const dispatchMatchedRouteHandler = vi.fn<DispatchMatchedRouteHandler>(
+      async () => new Response("route", { status: 200 }),
+    );
+    const headers = createRscRequestHeaders({ mountedSlotsHeader: "slot:modal:/" });
+    const rscUrl = await createRscRequestUrl("/docs/vercel-user?tab=latest", headers);
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [],
+        afterFiles: [],
+        fallback: [{ source: "/:path*", destination: "/api/app-redirect/:path*" }],
+      },
+      dispatchMatchedRouteHandler,
+      matchRoute: (pathname: string) =>
+        pathname === "/api/app-redirect/vercel-user"
+          ? {
+              params: { path: "vercel-user" },
+              route,
+            }
+          : null,
+    });
+
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    expect(dispatchMatchedRouteHandler).toHaveBeenCalledTimes(1);
+    const dispatched = dispatchMatchedRouteHandler.mock.calls[0]?.[0];
+    expect(dispatched).toEqual(
+      expect.objectContaining({
+        cleanPathname: "/api/app-redirect/vercel-user",
+        params: { path: "vercel-user" },
+        route,
+      }),
+    );
+    const dispatchedUrl = new URL(dispatched?.request.url ?? "");
+    expect(dispatchedUrl.pathname).toBe("/docs/vercel-user");
+    expect(dispatchedUrl.searchParams.has("_rsc")).toBe(true);
+    expect(dispatchedUrl.searchParams.get("tab")).toBe("latest");
+    expect(dispatched?.searchParams.has("_rsc")).toBe(false);
+  });
+
+  it("normalizes edge route handler RSC URLs and hides internal params", async () => {
+    // Next.js strips internal search params from the Edge NextRequest in
+    // web/adapter.ts.
+    const route = createPageRoute({
+      page: null,
+      pattern: "/api/inspect",
+      routeHandler: { GET: () => new Response("route"), runtime: "edge" },
+      routeSegments: ["api", "inspect"],
+    });
+    const dispatchMatchedRouteHandler = vi.fn<DispatchMatchedRouteHandler>(
+      async () => new Response("route", { status: 200 }),
+    );
+    const headers = createRscRequestHeaders({ mountedSlotsHeader: "slot:modal:/" });
+    const rscUrl = await createRscRequestUrl("/docs/api/inspect?tab=latest", headers);
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedRouteHandler,
+      matchRoute: (pathname: string) =>
+        pathname === "/api/inspect" ? { params: {}, route } : null,
+    });
+
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    const dispatched = dispatchMatchedRouteHandler.mock.calls[0]?.[0];
+    const dispatchedUrl = new URL(dispatched?.request.url ?? "");
+    expect(dispatchedUrl.pathname).toBe("/docs/api/inspect");
+    expect(dispatchedUrl.search).toBe("?tab=latest");
+    expect(dispatched?.searchParams.toString()).toBe("tab=latest");
+  });
+
+  it("preserves non-RSC route handler request URLs while hiding internal parsed params", async () => {
+    const route = createPageRoute({
+      page: null,
+      pattern: "/api/inspect",
+      routeHandler: { GET: () => new Response("route") },
+      routeSegments: ["api", "inspect"],
+    });
+    const dispatchMatchedRouteHandler = vi.fn<DispatchMatchedRouteHandler>(
+      async () => new Response("route", { status: 200 }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedRouteHandler,
+      matchRoute: (pathname: string) =>
+        pathname === "/api/inspect" ? { params: {}, route } : null,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/api/inspect?tab=latest&_rsc=user-value"),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    const dispatched = dispatchMatchedRouteHandler.mock.calls[0]?.[0];
+    expect(new URL(dispatched?.request.url ?? "").search).toBe("?tab=latest&_rsc=user-value");
+    expect(dispatched?.searchParams.toString()).toBe("tab=latest");
+  });
+
+  it("hides internal RSC params from non-RSC edge route handler request URLs", async () => {
+    const route = createPageRoute({
+      page: null,
+      pattern: "/api/inspect",
+      routeHandler: { GET: () => new Response("route"), runtime: "edge" },
+      routeSegments: ["api", "inspect"],
+    });
+    const dispatchMatchedRouteHandler = vi.fn<DispatchMatchedRouteHandler>(
+      async () => new Response("route", { status: 200 }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedRouteHandler,
+      matchRoute: (pathname: string) =>
+        pathname === "/api/inspect" ? { params: {}, route } : null,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/api/inspect?tab=latest&_rsc=user-value"),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    const dispatched = dispatchMatchedRouteHandler.mock.calls[0]?.[0];
+    expect(new URL(dispatched?.request.url ?? "").search).toBe("?tab=latest");
+    expect(dispatched?.searchParams.toString()).toBe("tab=latest");
+  });
+
+  it.each([
+    { name: "Node", runtime: undefined },
+    { name: "Edge", runtime: "edge" },
+  ])("preserves Workers cf metadata for $name route handlers", async ({ runtime }) => {
+    const route = createPageRoute({
+      page: null,
+      pattern: "/api/inspect",
+      routeHandler: { GET: () => new Response("route"), runtime },
+      routeSegments: ["api", "inspect"],
+    });
+    const dispatchMatchedRouteHandler = vi.fn<DispatchMatchedRouteHandler>(
+      async () => new Response("route", { status: 200 }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedRouteHandler,
+      matchRoute: (pathname: string) =>
+        pathname === "/api/inspect" ? { params: {}, route } : null,
+    });
+    const request = new Request("https://example.test/docs/api/inspect");
+    const cf = { country: "AU" };
+    Object.defineProperty(request, "cf", { value: cf, enumerable: true });
+
+    const response = await handler(request, null);
+
+    expect(response.status).toBe(200);
+    const dispatched = dispatchMatchedRouteHandler.mock.calls[0]?.[0];
+    expect(Reflect.get(dispatched!.request, "cf")).toBe(cf);
+  });
+
+  it("serves full-route RSC payloads at HTML URLs marked by RSC header alone", async () => {
+    // Ported from Next.js:
+    // test/e2e/app-dir/ppr-root-param-rsc-fallback/ppr-root-param-rsc-fallback.test.ts
+    // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/ppr-root-param-rsc-fallback/ppr-root-param-rsc-fallback.test.ts
+    const dispatchMatchedPage = vi.fn(async ({ isRscRequest }) =>
+      isRscRequest
+        ? new Response("flight", { status: 200, headers: { "content-type": "text/x-component" } })
+        : new Response("<!DOCTYPE html><html>document</html>", {
+            status: 200,
+            headers: { "content-type": "text/html; charset=utf-8" },
+          }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about", {
+        headers: { [RSC_HEADER]: "1" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("/docs/about?_rsc");
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+
+    const followedResponse = await handler(
+      new Request(`https://example.test${response.headers.get("location")}`, {
+        headers: { [RSC_HEADER]: "1" },
+      }),
+      null,
+    );
+
+    expect(followedResponse.status).toBe(200);
+    expect(followedResponse.headers.get("content-type")).toContain("text/x-component");
+    await expect(followedResponse.text()).resolves.not.toContain("<!DOCTYPE html>");
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cleanPathname: "/about",
+        isRscRequest: true,
+      }),
+    );
+  });
+
+  it("serves full-route RSC payloads at cache-separated HTML URLs marked by RSC header", async () => {
+    const dispatchMatchedPage = vi.fn(async ({ isRscRequest }) =>
+      isRscRequest
+        ? new Response("flight", { status: 200, headers: { "content-type": "text/x-component" } })
+        : new Response("<!DOCTYPE html><html>document</html>", {
+            status: 200,
+            headers: { "content-type": "text/html; charset=utf-8" },
+          }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about?_rsc", {
+        headers: { [RSC_HEADER]: "1" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/x-component");
+    await expect(response.text()).resolves.not.toContain("<!DOCTYPE html>");
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cleanPathname: "/about",
+        isRscRequest: true,
+      }),
+    );
+  });
+
+  it("strips internal RSC cache-busting params before setting navigation context", async () => {
+    const setNavigationContext = vi.fn();
+    const headers = createRscRequestHeaders();
+    const rscUrl = await createRscRequestUrl("/docs/about?tab=latest", headers);
+    const handler = createHandler({
+      configHeaders: [],
+      setNavigationContext,
+    });
+
+    const response = await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(response.status).toBe(200);
+    expect(setNavigationContext).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        pathname: "/about",
+        params: {},
+      }),
+    );
+    const context = setNavigationContext.mock.lastCall?.[0];
+    expect(context?.searchParams.get("tab")).toBe("latest");
+    expect(context?.searchParams.has("_rsc")).toBe(false);
+  });
+
+  it("preserves beforeFiles destination query while stripping the RSC cache key", async () => {
+    const headers = createRscRequestHeaders();
+    const rscUrl = await createRscRequestUrl("/docs/legacy?original=1", headers);
+    let pageOptions: Parameters<HandlerOptions["dispatchMatchedPage"]>[0] | undefined;
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [{ source: "/legacy", destination: "/about?destination=2" }],
+        afterFiles: [],
+        fallback: [],
+      },
+      dispatchMatchedPage: async (options) => {
+        pageOptions = options;
+        return new Response("page");
+      },
+    });
+
+    await handler(new Request(`https://example.test${rscUrl}`, { headers }), null);
+
+    expect(Object.fromEntries(pageOptions!.searchParams)).toEqual({
+      destination: "2",
+      original: "1",
+    });
+  });
+
+  it("runs beforeFiles rewrites before route matching", async () => {
+    const matchRoute = vi.fn((pathname: string) =>
+      pathname === "/about"
+        ? {
+            params: {},
+            route: createPageRoute(),
+          }
+        : null,
+    );
+    const dispatchMatchedPage = vi.fn(
+      async (_options: Parameters<HandlerOptions["dispatchMatchedPage"]>[0]) =>
+        new Response("rewritten", { status: 200 }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [{ source: "/alias", destination: "/about" }],
+        afterFiles: [],
+        fallback: [],
+      },
+      dispatchMatchedPage,
+      matchRoute,
+    });
+
+    const response = await handler(new Request("https://example.test/docs/alias"), null);
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe("rewritten");
+    expect(matchRoute).toHaveBeenLastCalledWith("/about");
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({ cleanPathname: "/about" }),
+    );
+  });
+
+  it("does not match config rewrites through percent-encoded literal aliases", async () => {
+    const dispatchMatchedPage = vi.fn(async () => new Response("page", { status: 200 }));
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [{ source: "/alias", destination: "/about" }],
+        afterFiles: [],
+        fallback: [],
+      },
+      dispatchMatchedPage,
+    });
+
+    const response = await handler(new Request("https://example.test/docs/%61lias"), null);
+
+    expect(response.status).toBe(404);
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("propagates rewritten query parameters to App pages", async () => {
+    const setNavigationContext = vi.fn();
+    let pageOptions: Parameters<HandlerOptions["dispatchMatchedPage"]>[0] | undefined;
+    const dispatchMatchedPage = vi.fn(
+      async (options: Parameters<HandlerOptions["dispatchMatchedPage"]>[0]) => {
+        pageOptions = options;
+        return new Response("rewritten", { status: 200 });
+      },
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [{ source: "/legacy", destination: "/about?destination=2&same=new" }],
+        afterFiles: [],
+        fallback: [],
+      },
+      dispatchMatchedPage,
+      setNavigationContext,
+    });
+
+    await handler(new Request("https://example.test/docs/legacy?original=1&same=old"), null);
+
+    expect(Object.fromEntries(pageOptions!.searchParams)).toEqual({
+      destination: "2",
+      original: "1",
+      same: "new",
+    });
+    expect(Object.fromEntries(setNavigationContext.mock.lastCall![0].searchParams)).toEqual({
+      destination: "2",
+      original: "1",
+      same: "new",
+    });
+  });
+
+  it("applies sequential beforeFiles rewrites with accumulated query conditions", async () => {
+    let pageOptions: Parameters<HandlerOptions["dispatchMatchedPage"]>[0] | undefined;
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [
+          { source: "/source", destination: "/intermediate?preview=1" },
+          {
+            source: "/intermediate",
+            destination: "/about?destination=2",
+            has: [{ type: "query", key: "preview", value: "1" }],
+          },
+        ],
+        afterFiles: [],
+        fallback: [],
+      },
+      dispatchMatchedPage: async (options) => {
+        pageOptions = options;
+        return new Response("page");
+      },
+    });
+
+    await handler(new Request("https://example.test/docs/source?original=1"), null);
+
+    expect(Object.fromEntries(pageOptions!.searchParams)).toEqual({
+      destination: "2",
+      original: "1",
+      preview: "1",
+    });
+  });
+
+  it("exposes unused rewrite source params through App searchParams", async () => {
+    let pageOptions: Parameters<HandlerOptions["dispatchMatchedPage"]>[0] | undefined;
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [
+          {
+            source: "/source/:section/:name",
+            destination: "/about?first=:section&second=:name",
+          },
+        ],
+        afterFiles: [],
+        fallback: [],
+      },
+      dispatchMatchedPage: async (options) => {
+        pageOptions = options;
+        return new Response("page");
+      },
+    });
+
+    await handler(new Request("https://example.test/docs/source/hello/world"), null);
+
+    expect(Object.fromEntries(pageOptions!.searchParams)).toEqual({
+      first: "hello",
+      name: "world",
+      second: "world",
+      section: "hello",
+    });
+  });
+
+  it.each(["afterFiles", "fallback"] as const)(
+    "continues through unmatched %s rewrite destinations",
+    async (rewritePhase) => {
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: {
+          beforeFiles: [],
+          afterFiles:
+            rewritePhase === "afterFiles"
+              ? [
+                  { source: "/source", destination: "/intermediate" },
+                  { source: "/intermediate", destination: "/about" },
+                ]
+              : [],
+          fallback:
+            rewritePhase === "fallback"
+              ? [
+                  { source: "/source", destination: "/intermediate" },
+                  { source: "/intermediate", destination: "/about" },
+                ]
+              : [],
+        },
+        matchRoute: (pathname) =>
+          pathname === "/about" ? { params: {}, route: createPageRoute() } : null,
+      });
+
+      const response = await handler(new Request("https://example.test/docs/source"), null);
+
+      expect(response.status).toBe(200);
+    },
+  );
+
+  it.each(["beforeFiles", "fallback"] as const)(
+    "propagates %s rewrite query parameters to App route handlers",
+    async (rewritePhase) => {
+      const route = createPageRoute({
+        page: null,
+        pattern: "/api/static",
+        routeHandler: { GET: () => new Response("route") },
+        routeSegments: ["api", "static"],
+      });
+      const dispatchMatchedRouteHandler = vi.fn(
+        async (_options: Parameters<HandlerOptions["dispatchMatchedRouteHandler"]>[0]) =>
+          new Response("route"),
+      );
+      const rewrite = { source: "/legacy", destination: "/api/static?destination=2&same=new" };
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: {
+          beforeFiles: rewritePhase === "beforeFiles" ? [rewrite] : [],
+          afterFiles: [],
+          fallback: rewritePhase === "fallback" ? [rewrite] : [],
+        },
+        dispatchMatchedRouteHandler,
+        matchRoute: (pathname) => (pathname === "/api/static" ? { params: {}, route } : null),
+      });
+
+      await handler(new Request("https://example.test/docs/legacy?original=1&same=old"), null);
+
+      const routeHandlerOptions = dispatchMatchedRouteHandler.mock.lastCall?.[0];
+      expect(Object.fromEntries(routeHandlerOptions!.searchParams)).toEqual({
+        destination: "2",
+        original: "1",
+        same: "new",
+      });
+      expect(new URL(routeHandlerOptions!.request.url).pathname).toBe("/docs/legacy");
+      expect(Object.fromEntries(new URL(routeHandlerOptions!.request.url).searchParams)).toEqual({
+        destination: "2",
+        original: "1",
+        same: "new",
+      });
+    },
+  );
+
+  it("does not let afterFiles rewrites override non-dynamic app routes", async () => {
+    const routes = {
+      "/about": createPageRoute({ pattern: "/about", routeSegments: ["about"] }),
+      "/nav": createPageRoute({ pattern: "/nav", routeSegments: ["nav"] }),
+    };
+    const dispatchMatchedPage = vi.fn(
+      async ({ route }) => new Response(`page:${route.pattern}`, { status: 200 }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [],
+        afterFiles: [{ source: "/nav", destination: "/about" }],
+        fallback: [],
+      },
+      dispatchMatchedPage,
+      matchRoute: (pathname: string) => {
+        if (pathname === "/about") return { params: {}, route: routes["/about"] };
+        if (pathname === "/nav") return { params: {}, route: routes["/nav"] };
+        return null;
+      },
+    });
+
+    const response = await handler(new Request("https://example.test/docs/nav"), null);
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe("page:/nav");
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({ cleanPathname: "/nav", route: routes["/nav"] }),
+    );
+  });
+
+  it("runs afterFiles rewrites before dynamic app route matching", async () => {
+    const routes = {
+      "/about": createPageRoute({ pattern: "/about", routeSegments: ["about"] }),
+      dynamicBlog: createPageRoute({
+        isDynamic: true,
+        pattern: "/blog/:slug",
+        routeSegments: ["blog", "[slug]"],
+      }),
+    };
+    const dispatchMatchedPage = vi.fn(
+      async ({ route }) => new Response(`page:${route.pattern}`, { status: 200 }),
+    );
+    const emptyParams: Record<string, string | string[]> = {};
+    const legacyParams: Record<string, string | string[]> = { slug: "legacy" };
+    const matchRoute: HandlerOptions["matchRoute"] = (pathname) => {
+      if (pathname === "/about") return { params: emptyParams, route: routes["/about"] };
+      if (pathname === "/blog/legacy") {
+        return { params: legacyParams, route: routes.dynamicBlog };
+      }
+      return null;
+    };
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [],
+        afterFiles: [{ source: "/blog/legacy", destination: "/about" }],
+        fallback: [],
+      },
+      dispatchMatchedPage,
+      matchRoute,
+    });
+
+    const response = await handler(new Request("https://example.test/docs/blog/legacy"), null);
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe("page:/about");
+    expect(dispatchMatchedPage).toHaveBeenCalledWith(
+      expect.objectContaining({ cleanPathname: "/about", route: routes["/about"] }),
+    );
+  });
+
+  it.each([
+    { label: "context-only requests", interceptionId: null, expectedStatus: 200 },
+    {
+      label: "selector-bearing requests",
+      interceptionId: "interception:slot:modal:/feed:/feed->/blog/:slug",
+      expectedStatus: 400,
+    },
+  ])(
+    "revalidates interception proof after afterFiles rewrites for $label",
+    async ({ expectedStatus, interceptionId }) => {
+      const routes = {
+        about: createPageRoute({ pattern: "/about", routeSegments: ["about"] }),
+        blog: createPageRoute({
+          isDynamic: true,
+          pattern: "/blog/:slug",
+          routeSegments: ["blog", "[slug]"],
+        }),
+        feed: createPageRoute({ pattern: "/feed", routeSegments: ["feed"] }),
+      };
+      const matchInterceptRoute = vi.fn(
+        (pathname: string, sourcePathname: string, requestedId?: string | null) =>
+          pathname === "/blog/legacy" &&
+          sourcePathname === "/feed" &&
+          requestedId === interceptionId
+            ? { interceptionSourceIsConcrete: true, params: {}, route: routes.feed }
+            : null,
+      );
+      const dispatchMatchedPage = vi.fn(
+        async () =>
+          new Response("page", {
+            headers: { "Cache-Control": "public, max-age=3600" },
+          }),
+      );
+      const emptyParams: Record<string, string | string[]> = {};
+      const blogParams: Record<string, string | string[]> = { slug: "legacy" };
+      const matchRoute: HandlerOptions["matchRoute"] = (pathname) => {
+        if (pathname === "/about") return { params: emptyParams, route: routes.about };
+        if (pathname === "/blog/legacy") {
+          return { params: blogParams, route: routes.blog };
+        }
+        return null;
+      };
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: {
+          beforeFiles: [],
+          afterFiles: [{ source: "/blog/legacy", destination: "/about" }],
+          fallback: [],
+        },
+        dispatchMatchedPage,
+        hasInterceptionId: (requestedId) => requestedId === interceptionId,
+        matchInterceptRoute,
+        matchRoute,
+      });
+      const headers = createRscRequestHeaders({
+        interceptionContext: "/feed",
+        interceptionId,
+      });
+      const rscUrl = await createRscRequestUrl("/docs/blog/legacy", headers);
+
+      const response = await handler(
+        new Request(`https://example.test${rscUrl}`, { headers }),
+        null,
+      );
+
+      expect(response.status).toBe(expectedStatus);
+      expect(response.headers.get("cache-control")).toBe(
+        "private, no-cache, no-store, max-age=0, must-revalidate",
+      );
+      expect(matchInterceptRoute).toHaveBeenCalledWith("/about", "/feed", interceptionId);
+      if (interceptionId === null) {
+        expect(dispatchMatchedPage).toHaveBeenCalledWith(
+          expect.objectContaining({
+            bypassInterceptionContextCache: true,
+            cleanPathname: "/about",
+            interceptionContext: null,
+          }),
+        );
+      } else {
+        expect(dispatchMatchedPage).not.toHaveBeenCalled();
+      }
+    },
+  );
+
+  it.each([
+    {
+      expectedBypass: true,
+      expectedCacheControl: "private, no-cache, no-store, max-age=0, must-revalidate",
+      // Never authorized by source middleware, so it does not render.
+      expectedInterceptionContext: null,
+      expectedMiddlewarePaths: ["/blog/legacy"],
+      initialSourceMatch: false,
+      label: "newly discovered sources",
+    },
+    {
+      expectedBypass: false,
+      expectedCacheControl: "public, max-age=3600",
+      expectedInterceptionContext: "/feed",
+      expectedMiddlewarePaths: ["/blog/legacy", "/feed"],
+      initialSourceMatch: true,
+      label: "previously authorized sources",
+    },
+  ])(
+    "restores cacheability after late rewrites only for $label",
+    async ({
+      expectedBypass,
+      expectedCacheControl,
+      expectedInterceptionContext,
+      expectedMiddlewarePaths,
+      initialSourceMatch,
+    }) => {
+      const routes = {
+        about: createPageRoute({ pattern: "/about", routeSegments: ["about"] }),
+        blog: createPageRoute({
+          isDynamic: true,
+          pattern: "/blog/:slug",
+          routeSegments: ["blog", "[slug]"],
+        }),
+        feed: createPageRoute({ pattern: "/feed", routeSegments: ["feed"] }),
+      };
+      const matchInterceptRoute = vi.fn((pathname: string, sourcePathname: string) =>
+        sourcePathname === "/feed" && (pathname === "/about" || initialSourceMatch)
+          ? { interceptionSourceIsConcrete: true, params: {}, route: routes.feed }
+          : null,
+      );
+      const middlewarePaths: string[] = [];
+      const dispatchMatchedPage = vi.fn(
+        async () =>
+          new Response("page", {
+            headers: { "Cache-Control": "public, max-age=3600" },
+          }),
+      );
+      const emptyParams: Record<string, string | string[]> = {};
+      const blogParams: Record<string, string | string[]> = { slug: "legacy" };
+      const matchRoute: HandlerOptions["matchRoute"] = (pathname) => {
+        if (pathname === "/about") return { params: emptyParams, route: routes.about };
+        if (pathname === "/blog/legacy") {
+          return { params: blogParams, route: routes.blog };
+        }
+        return null;
+      };
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: {
+          beforeFiles: [],
+          afterFiles: [{ source: "/blog/legacy", destination: "/about" }],
+          fallback: [],
+        },
+        dispatchMatchedPage,
+        matchInterceptRoute,
+        matchRoute,
+        async runMiddleware({ cleanPathname }) {
+          middlewarePaths.push(cleanPathname);
+          return { kind: "continue", cleanPathname, matched: true, rewritten: false, search: null };
+        },
+      });
+      const headers = createRscRequestHeaders({ interceptionContext: "/feed" });
+      const rscUrl = await createRscRequestUrl("/docs/blog/legacy", headers);
+
+      const response = await handler(
+        new Request(`https://example.test${rscUrl}`, { headers }),
+        null,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("cache-control")).toBe(expectedCacheControl);
+      expect(middlewarePaths).toEqual(expectedMiddlewarePaths);
+      expect(dispatchMatchedPage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          bypassInterceptionContextCache: expectedBypass,
+          cleanPathname: "/about",
+          interceptionContext: expectedInterceptionContext,
+        }),
+      );
+    },
+  );
+
+  it("lets a static Pages route win before afterFiles rewrites", async () => {
+    const dynamicRoute = createPageRoute({
+      isDynamic: true,
+      pattern: "/:path+",
+      routeSegments: ["[...path]"],
+    });
+    const renderPagesFallback = vi.fn(async () => new Response("pages:/about", { status: 200 }));
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [],
+        afterFiles: [{ source: "/about", destination: "/rewritten" }],
+        fallback: [],
+      },
+      matchRoute: () => ({ params: { path: ["about"] }, route: dynamicRoute }),
+      renderPagesFallback,
+    });
+
+    const state: RouteCacheabilityState = {
+      captureDeadlineAt: Date.now() + 1_000,
+      mode: "admit",
+    };
+    const context = {
+      [CACHEABILITY_REQUEST_STATE]: state,
+      waitUntil() {},
+    };
+    const response = await runWithExecutionContext(context, () =>
+      handler(new Request("https://example.test/docs/about"), null),
+    );
+
+    expect(await response.text()).toBe("pages:/about");
+    expect(state.preserveResponseCachePolicy).toBe(true);
+    expect(renderPagesFallback).toHaveBeenCalledWith(
+      expect.objectContaining({
+        matchKind: "static",
+        pathname: "/about",
+        appRouteMatch: expect.objectContaining({ route: dynamicRoute }),
+      }),
+    );
+  });
+
+  it("normalizes hybrid Pages data requests before middleware", async () => {
+    let middlewarePathname: string | null = null;
+    let middlewareIsData: boolean | undefined;
+    let middlewareCf: unknown;
+    let pagesDataCf: unknown;
+    let pagesDataUrl: string | null = null;
+    const renderPagesFallback = vi.fn(async (_options: unknown) => new Response("pages-data"));
+    const handler = createHandler({
+      configHeaders: [],
+      matchRoute: () => null,
+      middlewareModule: {
+        default: (request: Request) => {
+          middlewarePathname = new URL(request.url).pathname;
+          middlewareIsData = (request as Request & { __isData?: boolean }).__isData;
+          middlewareCf = (request as Request & { cf?: unknown }).cf;
+          return new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+      renderPagesFallback: async (options) => {
+        pagesDataCf = (options.pagesDataRequest as (Request & { cf?: unknown }) | null)?.cf;
+        pagesDataUrl = options.pagesDataRequest?.url ?? null;
+        return renderPagesFallback(options);
+      },
+    });
+
+    const request = new Request(
+      "https://example.test/docs/_next/data/build-id/form-search.json?query=basic",
+    );
+    const cf = { colo: "LHR" };
+    Object.defineProperty(request, "cf", { value: cf, enumerable: true });
+    const response = await handler(request, null);
+
+    expect(await response.text()).toBe("pages-data");
+    expect(middlewarePathname).toBe("/docs/form-search");
+    expect(middlewareIsData).toBe(true);
+    expect(middlewareCf).toBe(cf);
+    expect(pagesDataCf).toBe(cf);
+    expect(pagesDataUrl).toBe(
+      "https://example.test/_next/data/build-id/form-search.json?query=basic",
+    );
+    expect(renderPagesFallback).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pathname: "/form-search?query=basic",
+        pagesDataRequest: expect.any(Request),
+      }),
+    );
+  });
+
+  it("does not expose forged data headers to App Router middleware", async () => {
+    let middlewareIsData: boolean | undefined;
+    const handler = createHandler({
+      middlewareModule: {
+        default: (request: Request) => {
+          middlewareIsData = (request as Request & { __isData?: boolean }).__isData;
+          return new Response(null, { headers: { "x-middleware-next": "1" } });
+        },
+      },
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about", {
+        headers: { "x-nextjs-data": "1" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    expect(middlewareIsData).toBeUndefined();
+  });
+
+  it("exposes the rewritten route on hybrid Pages data responses", async () => {
+    const renderPagesFallback = vi.fn(
+      async () =>
+        new Response('{"pageProps":{"query":"basic"}}', {
+          headers: { "content-type": "application/json" },
+        }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [{ source: "/form-search", destination: "/rewritten-search" }],
+        afterFiles: [],
+        fallback: [],
+      },
+      matchRoute: () => null,
+      renderPagesFallback,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/_next/data/build-id/form-search.json?query=basic"),
+      null,
+    );
+
+    expect(response.headers.get("x-nextjs-rewrite")).toBe("/rewritten-search?query=basic");
+    expect(renderPagesFallback).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pathname: "/rewritten-search?query=basic",
+        pagesDataRequest: expect.any(Request),
+      }),
+    );
+  });
+
+  it("exposes middleware rewrites from Pages data requests to App routes", async () => {
+    // Ported from Next.js: test/e2e/app-dir/app/index.test.ts
+    // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/app/index.test.ts
+    // "rewrites should support rewrites on client-side navigation from pages to app with existing pages path"
+    const clearRequestContext = vi.fn();
+    const dispatchMatchedPage = vi.fn(async () => new Response("app"));
+    const renderPagesFallback = vi.fn(async () => new Response("pages"));
+    const handler = createHandler({
+      clearRequestContext,
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchRoute: (pathname: string) =>
+        pathname === "/about"
+          ? {
+              params: {},
+              route: createPageRoute({ pattern: "/about", routeSegments: ["about"] }),
+            }
+          : null,
+      middlewareModule: {
+        default: (request: NextRequest) => {
+          if (request.nextUrl.pathname === "/exists-but-not-routed") {
+            return new Response(null, {
+              headers: {
+                "set-cookie": "probe=1; Path=/",
+                "x-test-header": "middleware",
+                "x-middleware-rewrite": new URL("/docs/about", request.url).toString(),
+              },
+            });
+          }
+          return undefined;
+        },
+      },
+      renderPagesFallback,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/_next/data/build-id/exists-but-not-routed.json", {
+        headers: { "x-nextjs-data": "1" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("application/json");
+    expect(response.headers.get("x-nextjs-rewrite")).toBe("/about");
+    expect(response.headers.get("x-test-header")).toBe("middleware");
+    expect(response.headers.get("set-cookie")).toBe("probe=1; Path=/");
+    expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+    expect(await response.text()).toBe("{}");
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+    expect(renderPagesFallback).not.toHaveBeenCalled();
+    expect(clearRequestContext).toHaveBeenCalled();
+  });
+
+  it("lets a concrete Pages route win a middleware rewrite over a dynamic App match", async () => {
+    // A dynamic App match does not own the rewrite target: the Pages route is
+    // more specific, so its data (here a getServerSideProps redirect) must be
+    // rendered rather than short-circuited into an empty rewrite response.
+    const renderPagesFallback = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ pageProps: { __N_REDIRECT: "/login" } }), {
+          headers: { "content-type": "application/json" },
+        }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      matchRoute: (pathname: string) =>
+        pathname === "/protected"
+          ? {
+              params: { slug: ["protected"] },
+              route: createPageRoute({
+                isDynamic: true,
+                pattern: "/[...slug]",
+                routeSegments: ["[...slug]"],
+              }),
+            }
+          : null,
+      middlewareModule: {
+        default: (request: NextRequest) =>
+          request.nextUrl.pathname === "/source"
+            ? new Response(null, {
+                headers: {
+                  "x-middleware-rewrite": new URL("/docs/protected", request.url).toString(),
+                },
+              })
+            : undefined,
+      },
+      renderPagesFallback,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/_next/data/build-id/source.json", {
+        headers: { "x-nextjs-data": "1" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-nextjs-rewrite")).toBe("/protected");
+    expect(await response.json()).toEqual({ pageProps: { __N_REDIRECT: "/login" } });
+    expect(renderPagesFallback).toHaveBeenCalled();
+  });
+
+  it("keeps middleware response headers when a rewrite lands on a dynamic App route", async () => {
+    // No Pages route claims the target, so the App match legitimately owns it.
+    // The response still has to carry cookies the middleware set on the way.
+    const handler = createHandler({
+      configHeaders: [],
+      matchRoute: (pathname: string) =>
+        pathname === "/app-only"
+          ? {
+              params: { slug: ["app-only"] },
+              route: createPageRoute({
+                isDynamic: true,
+                pattern: "/[...slug]",
+                routeSegments: ["[...slug]"],
+              }),
+            }
+          : null,
+      middlewareModule: {
+        default: (request: NextRequest) =>
+          request.nextUrl.pathname === "/source"
+            ? new Response(null, {
+                headers: {
+                  "set-cookie": "probe=1; Path=/",
+                  "x-test-header": "middleware",
+                  "x-middleware-rewrite": new URL("/docs/app-only", request.url).toString(),
+                },
+              })
+            : undefined,
+      },
+      renderPagesFallback: vi.fn(async () => null),
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/_next/data/build-id/source.json", {
+        headers: { "x-nextjs-data": "1" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-nextjs-rewrite")).toBe("/app-only");
+    expect(response.headers.get("set-cookie")).toBe("probe=1; Path=/");
+    expect(response.headers.get("x-test-header")).toBe("middleware");
+    expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+    expect(await response.text()).toBe("{}");
+  });
+
+  it.each([
+    { convention: "middleware", isProxy: false },
+    { convention: "proxy", isProxy: true },
+  ])(
+    "exposes $convention rewrites to App routes on hybrid Pages data responses",
+    async ({ isProxy }) => {
+      const dispatchMatchedPage = vi.fn(async () => new Response("page"));
+      const renderPagesFallback = vi.fn(async () => new Response("pages-data"));
+      const handler = createHandler({
+        configHeaders: [],
+        dispatchMatchedPage,
+        isMiddlewareProxy: isProxy,
+        middlewareModule: {
+          default: (request: Request) =>
+            new Response(null, {
+              headers: {
+                "x-middleware-rewrite": new URL("/docs/about", request.url).toString(),
+              },
+            }),
+        },
+        renderPagesFallback,
+      });
+
+      const response = await handler(
+        new Request("https://example.test/docs/_next/data/build-id/rewrite-to-app.json"),
+        null,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain("application/json");
+      expect(response.headers.get("x-nextjs-rewrite")).toBe("/about");
+      expect(await response.text()).toBe("{}");
+      expect(dispatchMatchedPage).not.toHaveBeenCalled();
+      expect(renderPagesFallback).not.toHaveBeenCalled();
+    },
+  );
+
+  it("uses the soft redirect protocol for URL-recognized Pages data requests", async () => {
+    const handler = createHandler({
+      configHeaders: [],
+      matchRoute: () => null,
+      middlewareModule: {
+        default: () => new Response(null, { status: 307, headers: { Location: "/login" } }),
+      },
+      renderPagesFallback: async () => new Response("pages-data"),
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/_next/data/build-id/form-search.json"),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("location")).toBeNull();
+    expect(response.headers.get("x-nextjs-redirect")).toBe("/login");
+  });
+
+  it("returns JSON 404 for stale hybrid Pages data requests before middleware", async () => {
+    const middleware = vi.fn(() => new Response(null, { headers: { "x-middleware-next": "1" } }));
+    const renderPagesFallback = vi.fn(async () => new Response("pages-data"));
+    const handler = createHandler({
+      configHeaders: [],
+      matchRoute: () => null,
+      middlewareModule: { default: middleware },
+      renderPagesFallback,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/_next/data/stale/form-search.json?query=basic"),
+      null,
+    );
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("content-type")).toContain("application/json");
+    expect(await response.text()).toBe("{}");
+    expect(middleware).not.toHaveBeenCalled();
+    expect(renderPagesFallback).not.toHaveBeenCalled();
+  });
+
+  it("returns middleware-enabled Pages data misses with the requested matched path", async () => {
+    const handler = createHandler({
+      configHeaders: [],
+      matchRoute: () => null,
+      middlewareModule: {
+        default: () => new Response(null, { headers: { "x-middleware-next": "1" } }),
+      },
+      renderPagesFallback: async () => null,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/_next/data/build-id/missing.json"),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("application/json");
+    expect(response.headers.get("x-nextjs-matched-path")).toBe("/missing");
+    expect(await response.text()).toBe("{}");
+  });
+
+  it("does not normalize hybrid Pages data requests outside basePath", async () => {
+    const renderPagesFallback = vi.fn(async () => new Response("pages-data"));
+    const handler = createHandler({
+      configHeaders: [],
+      matchRoute: () => null,
+      renderPagesFallback,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/_next/data/build-id/form-search.json?query=basic"),
+      null,
+    );
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("content-type")).not.toContain("application/json");
+    expect(renderPagesFallback).not.toHaveBeenCalled();
+  });
+
+  it("returns JSON 404 when an App route owns a Pages data URL", async () => {
+    const appRoute = createPageRoute({ pattern: "/app-only" });
+    const dispatchMatchedPage = vi.fn(async () => new Response("app-html"));
+    const renderPagesFallback = vi.fn(async () => null);
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedPage,
+      matchRoute: (pathname) => (pathname === "/app-only" ? { route: appRoute, params: {} } : null),
+      renderPagesFallback,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/_next/data/build-id/app-only.json"),
+      null,
+    );
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("content-type")).toContain("application/json");
+    expect(await response.text()).toBe("{}");
+    expect(renderPagesFallback).not.toHaveBeenCalled();
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("runs afterFiles rewrites before dynamic Pages route ownership", async () => {
+    const appDynamicRoute = createPageRoute({
+      isDynamic: true,
+      pattern: "/:slug",
+      routeSegments: ["[slug]"],
+    });
+    const appDestinationRoute = createPageRoute({
+      pattern: "/destination",
+      routeSegments: ["destination"],
+    });
+    const renderPagesFallback = vi.fn(async ({ matchKind }) =>
+      matchKind === "dynamic" ? new Response("pages-dynamic", { status: 200 }) : null,
+    );
+    const dispatchMatchedPage = vi.fn(
+      async ({ route }) => new Response(`app:${route.pattern}`, { status: 200 }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [],
+        afterFiles: [{ source: "/legacy", destination: "/destination" }],
+        fallback: [],
+      },
+      dispatchMatchedPage,
+      matchRoute: (pathname): ReturnType<HandlerOptions["matchRoute"]> => {
+        if (pathname === "/legacy") {
+          return { params: { slug: "legacy" }, route: appDynamicRoute };
+        }
+        if (pathname === "/destination") return { params: {}, route: appDestinationRoute };
+        return null;
+      },
+      renderPagesFallback,
+    });
+
+    const response = await handler(new Request("https://example.test/docs/legacy"), null);
+
+    expect(await response.text()).toBe("app:/destination");
+    expect(renderPagesFallback).toHaveBeenCalledWith(
+      expect.objectContaining({ matchKind: "static", pathname: "/legacy" }),
+    );
+    expect(renderPagesFallback).not.toHaveBeenCalledWith(
+      expect.objectContaining({ matchKind: "dynamic", pathname: "/legacy" }),
+    );
+  });
+
+  it("rechecks static Pages routes after an afterFiles rewrite", async () => {
+    const renderPagesFallback = vi.fn(async ({ matchKind, pathname }) =>
+      matchKind === "static" && pathname === "/pages-static"
+        ? new Response("pages-static", { status: 200 })
+        : null,
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [],
+        afterFiles: [{ source: "/legacy", destination: "/pages-static" }],
+        fallback: [],
+      },
+      matchRoute: () => null,
+      renderPagesFallback,
+    });
+
+    const response = await handler(new Request("https://example.test/docs/legacy"), null);
+
+    expect(await response.text()).toBe("pages-static");
+  });
+
+  it("rechecks static and dynamic Pages routes after a fallback rewrite", async () => {
+    const renderPagesFallback = vi.fn(async ({ matchKind, pathname }) =>
+      pathname === "/pages-dynamic" && matchKind === "dynamic"
+        ? new Response("pages-dynamic", { status: 200 })
+        : null,
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [],
+        afterFiles: [],
+        fallback: [{ source: "/legacy", destination: "/pages-dynamic" }],
+      },
+      matchRoute: () => null,
+      renderPagesFallback,
+    });
+
+    const response = await handler(new Request("https://example.test/docs/legacy"), null);
+
+    expect(await response.text()).toBe("pages-dynamic");
+    expect(renderPagesFallback).toHaveBeenCalledWith(
+      expect.objectContaining({ matchKind: "static", pathname: "/pages-dynamic" }),
+    );
+    expect(renderPagesFallback).toHaveBeenCalledWith(
+      expect.objectContaining({ matchKind: "dynamic", pathname: "/pages-dynamic" }),
+    );
+  });
+
+  it.each(["beforeFiles", "afterFiles", "fallback"] as const)(
+    "preserves and overrides query parameters for %s rewrites to Pages routes",
+    async (rewritePhase) => {
+      const renderPagesFallback = vi.fn(async ({ pathname }) =>
+        pathname.startsWith("/pages?") ? new Response("pages", { status: 200 }) : null,
+      );
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: {
+          beforeFiles:
+            rewritePhase === "beforeFiles"
+              ? [{ source: "/legacy", destination: "/pages?dest=2&same=new" }]
+              : [],
+          afterFiles:
+            rewritePhase === "afterFiles"
+              ? [{ source: "/legacy", destination: "/pages?dest=2&same=new" }]
+              : [],
+          fallback:
+            rewritePhase === "fallback"
+              ? [{ source: "/legacy", destination: "/pages?dest=2&same=new" }]
+              : [],
+        },
+        matchRoute: () => null,
+        renderPagesFallback,
+      });
+
+      const response = await handler(
+        new Request("https://example.test/docs/legacy?keep=1&same=old"),
+        null,
+      );
+
+      expect(await response.text()).toBe("pages");
+      const rewrittenCall = renderPagesFallback.mock.calls.find(([options]) =>
+        options.pathname.startsWith("/pages?"),
+      );
+      expect(rewrittenCall).toBeDefined();
+      const rewrittenUrl = new URL(rewrittenCall![0].pathname, "https://example.test");
+      expect(rewrittenUrl.pathname).toBe("/pages");
+      expect(Object.fromEntries(rewrittenUrl.searchParams)).toEqual({
+        dest: "2",
+        keep: "1",
+        same: "new",
+      });
+    },
+  );
+
+  it.each(["beforeFiles", "afterFiles", "fallback"] as const)(
+    "excludes rewrite fragments from %s route matching",
+    async (rewritePhase) => {
+      const matchRoute = vi.fn((pathname: string) =>
+        pathname === "/about"
+          ? {
+              params: {},
+              route: createPageRoute(),
+            }
+          : null,
+      );
+      const handler = createHandler({
+        configHeaders: [],
+        configRewrites: {
+          beforeFiles:
+            rewritePhase === "beforeFiles"
+              ? [{ source: "/legacy/:code", destination: "/about#:code" }]
+              : [],
+          afterFiles:
+            rewritePhase === "afterFiles"
+              ? [{ source: "/legacy/:code", destination: "/about#:code" }]
+              : [],
+          fallback:
+            rewritePhase === "fallback"
+              ? [{ source: "/legacy/:code", destination: "/about#:code" }]
+              : [],
+        },
+        matchRoute,
+      });
+
+      const response = await handler(new Request("https://example.test/docs/legacy/500"), null);
+
+      expect(response.status).toBe(200);
+      expect(matchRoute).toHaveBeenCalledWith("/about");
+      expect(matchRoute).not.toHaveBeenCalledWith("/about#500");
+    },
+  );
+
+  it("serves public files before route matching and clears request context", async () => {
+    const clearRequestContext = vi.fn();
+    const matchRoute = vi.fn(() => null);
+    const handler = createHandler({
+      clearRequestContext,
+      configHeaders: [],
+      matchRoute,
+      publicFiles: new Set(["/logo.svg"]),
+    });
+
+    const response = await handler(new Request("https://example.test/docs/logo.svg"), null);
+
+    expect(response.status).toBe(200);
+    expect(readStaticFileSignal(response)).toBe("%2Flogo.svg");
+    expect(response.headers.get("x-vinext-static-file")).toBeNull();
+    expect(response.headers.get("vary")).toBeNull();
+    expect(clearRequestContext).toHaveBeenCalledTimes(1);
+    expect(matchRoute).not.toHaveBeenCalled();
+  });
+
+  it("serves public files by their normalized request pathname", async () => {
+    const handler = createHandler({
+      configHeaders: [],
+      configRewrites: {
+        beforeFiles: [{ source: "/files/:name", destination: "/:name" }],
+        afterFiles: [],
+        fallback: [],
+      },
+      matchRoute: () => null,
+      publicFiles: new Set(
+        ["/members only/file.txt", "/hello copy.txt", "/C#-notes.txt"].map(publicFileRouteKey),
+      ),
+    });
+    const signalFor = async (path: string) => {
+      const response = await handler(new Request(`https://example.test/docs${path}`), null);
+      const signal = readStaticFileSignal(response);
+      return signal === null ? null : decodeURIComponent(signal);
+    };
+
+    expect(await signalFor("/members%20only/file.txt")).toBe("/members only/file.txt");
+    expect(await signalFor("/C%23-notes.txt")).toBe("/C%23-notes.txt");
+    // Rewrite destinations are still URL-encoded when public files are checked.
+    expect(await signalFor("/files/hello%20copy.txt")).toBe("/hello copy.txt");
+    // Middleware matchers see this alias as /members%20only/file.txt, so it
+    // must not reach public/members only/file.txt.
+    expect(await signalFor("/members%2520only/file.txt")).toBeNull();
+  });
+
+  it.each([
+    {
+      name: "public files",
+      path: "/logo.svg",
+      overrides: { publicFiles: new Set(["/logo.svg"]) },
+    },
+    {
+      name: "image optimization",
+      path: "/_next/image?url=%2Fimg.jpg&w=640&q=75",
+      overrides: {},
+    },
+    {
+      name: "metadata routes",
+      path: "/favicon.ico",
+      overrides: {
+        metadataRoutes: [
+          {
+            type: "favicon" as const,
+            isDynamic: false,
+            filePath: "/tmp/app/favicon.ico",
+            routePrefix: "",
+            routeSegments: [],
+            servedUrl: "/favicon.ico",
+            contentType: "image/x-icon",
+            fileDataBase64: btoa("icon-bytes"),
+          },
+        ],
+      },
+    },
+  ])("does not expose $name directly outside basePath", async ({ path, overrides }) => {
+    const handler = createHandler({ configHeaders: [], matchRoute: () => null, ...overrides });
+
+    const response = await handler(new Request(`https://example.test${path}`), null);
+
+    expect(response.status).toBe(404);
+  });
+
+  it("lets middleware Cache-Control override static metadata route defaults", async () => {
+    // Ported from Next.js: test/e2e/app-dir/no-duplicate-headers-middleware/no-duplicate-headers-middleware.test.ts
+    // https://github.com/vercel/next.js/blob/v16.2.6/test/e2e/app-dir/no-duplicate-headers-middleware/no-duplicate-headers-middleware.test.ts
+    const handler = createHandler({
+      configHeaders: [],
+      matchRoute: () => null,
+      metadataRoutes: [
+        {
+          type: "favicon",
+          isDynamic: false,
+          filePath: "/tmp/app/favicon.ico",
+          routePrefix: "",
+          routeSegments: [],
+          servedUrl: "/favicon.ico",
+          contentType: "image/x-icon",
+          fileDataBase64: btoa("icon-bytes"),
+        },
+      ],
+      middlewareModule: {
+        middleware() {
+          return new Response(null, {
+            headers: {
+              "Cache-Control": "max-age=1234",
+              "x-middleware-next": "1",
+            },
+          });
+        },
+      },
+    });
+
+    const response = await handler(new Request("https://example.test/docs/favicon.ico"), null);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("max-age=1234");
+    expect(response.headers.get("content-type")).toBe("image/x-icon");
+    await expect(response.text()).resolves.toBe("icon-bytes");
+  });
+
+  it("lets next.config headers override static metadata route defaults", async () => {
+    // Ported from Next.js: test/e2e/app-dir/no-duplicate-headers-next-config/no-duplicate-headers-next-config.test.ts
+    // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/no-duplicate-headers-next-config/no-duplicate-headers-next-config.test.ts
+    const handler = createHandler({
+      configHeaders: [
+        {
+          source: "/favicon.ico",
+          headers: [
+            { key: "cache-control", value: "max-age=1234" },
+            { key: "content-type", value: "text/plain" },
+          ],
+        },
+      ],
+      matchRoute: () => null,
+      metadataRoutes: [
+        {
+          type: "favicon",
+          isDynamic: false,
+          filePath: "/tmp/app/favicon.ico",
+          routePrefix: "",
+          routeSegments: [],
+          servedUrl: "/favicon.ico",
+          contentType: "image/x-icon",
+          fileDataBase64: btoa("icon-bytes"),
+        },
+      ],
+    });
+
+    const response = await handler(new Request("https://example.test/docs/favicon.ico"), null);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("max-age=1234");
+    expect(response.headers.get("content-type")).toBe("image/x-icon");
+    await expect(response.text()).resolves.toBe("icon-bytes");
+  });
+
+  it("keeps middleware Cache-Control above matching config headers for metadata routes", async () => {
+    const handler = createHandler({
+      configHeaders: [
+        {
+          source: "/favicon.ico",
+          headers: [{ key: "cache-control", value: "max-age=1234" }],
+        },
+      ],
+      matchRoute: () => null,
+      metadataRoutes: [
+        {
+          type: "favicon",
+          isDynamic: false,
+          filePath: "/tmp/app/favicon.ico",
+          routePrefix: "",
+          routeSegments: [],
+          servedUrl: "/favicon.ico",
+          contentType: "image/x-icon",
+          fileDataBase64: btoa("icon-bytes"),
+        },
+      ],
+      middlewareModule: {
+        middleware() {
+          return new Response(null, {
+            headers: {
+              "Cache-Control": "max-age=5678",
+              "x-middleware-next": "1",
+            },
+          });
+        },
+      },
+    });
+
+    const response = await handler(new Request("https://example.test/docs/favicon.ico"), null);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("max-age=5678");
+    expect(response.headers.get("content-type")).toBe("image/x-icon");
+    await expect(response.text()).resolves.toBe("icon-bytes");
+  });
+
+  it("lets server actions short-circuit routing while still applying final headers", async () => {
+    const dispatchMatchedPage = vi.fn(async () => new Response("page", { status: 200 }));
+    const handleServerActionRequest = vi.fn(
+      async () => new Response("action", { status: 200, headers: { "x-action": "done" } }),
+    );
+    const handler = createHandler({
+      configRewrites: {
+        beforeFiles: [],
+        afterFiles: [{ source: "/about", destination: "/rewritten-action" }],
+        fallback: [],
+      },
+      dispatchMatchedPage,
+      handleServerActionRequest,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about", {
+        method: "POST",
+        headers: { "next-action": "abc123" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe("action");
+    expect(response.headers.get("x-action")).toBe("done");
+    expect(response.headers.get("x-test-header")).toBe("applied");
+    expect(handleServerActionRequest).toHaveBeenCalledWith(
+      expect.objectContaining({ actionId: "abc123", cleanPathname: "/about" }),
+    );
+    expect(dispatchMatchedPage).not.toHaveBeenCalled();
+  });
+
+  it("uses one isolated middleware branch for body-bearing RSC actions", async () => {
+    const rscHeaders = createRscRequestHeaders();
+    rscHeaders.set("content-type", "text/plain");
+    rscHeaders.set("next-action", "abc123");
+    const rscHash = await computeRscCacheBustingSearchParam(rscHeaders);
+    const cloneSpy = vi.spyOn(Request.prototype, "clone");
+    const handleServerActionRequest = vi.fn(async ({ request }: { request: Request }) => {
+      await expect(request.text()).resolves.toBe("streamed-action-body");
+      return new Response("action");
+    });
+    const middleware = vi.fn(async (request: Request) => {
+      await expect(request.text()).resolves.toBe("streamed-action-body");
+      return new Response(null, {
+        headers: { "x-middleware-next": "1" },
+      });
+    });
+    const handler = createHandler({
+      configHeaders: [],
+      handleServerActionRequest,
+      middlewareModule: {
+        default: middleware,
+      },
+    });
+
+    try {
+      const response = await handler(
+        new Request(`https://example.test/docs/about?_rsc=${rscHash}`, {
+          body: "streamed-action-body",
+          headers: rscHeaders,
+          method: "POST",
+        }),
+        null,
+      );
+
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe("action");
+      expect(middleware).toHaveBeenCalledOnce();
+      expect(handleServerActionRequest).toHaveBeenCalledOnce();
+      // URL/query/header normalization shares the downstream body owner. The
+      // only tee is the real middleware/downstream boundary, and middleware's
+      // branch is transferred into NextRequest rather than abandoned.
+      expect(cloneSpy).toHaveBeenCalledTimes(1);
+      expect((cloneSpy.mock.results[0]!.value as Request).bodyUsed).toBe(true);
+    } finally {
+      cloneSpy.mockRestore();
+    }
+  });
+
+  it("does not tee body-bearing RSC actions when middleware is absent", async () => {
+    const rscHeaders = createRscRequestHeaders();
+    rscHeaders.set("content-type", "text/plain");
+    rscHeaders.set("next-action", "abc123");
+    const rscHash = await computeRscCacheBustingSearchParam(rscHeaders);
+    const cloneSpy = vi.spyOn(Request.prototype, "clone");
+    const handleServerActionRequest = vi.fn(async ({ request }: { request: Request }) => {
+      await expect(request.text()).resolves.toBe("streamed-action-body");
+      return new Response("action");
+    });
+    const handler = createHandler({ configHeaders: [], handleServerActionRequest });
+
+    try {
+      const response = await handler(
+        new Request(`https://example.test/docs/about?_rsc=${rscHash}`, {
+          body: "streamed-action-body",
+          headers: rscHeaders,
+          method: "POST",
+        }),
+        null,
+      );
+
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe("action");
+      expect(cloneSpy).not.toHaveBeenCalled();
+    } finally {
+      cloneSpy.mockRestore();
+    }
+  });
+
+  it("cancels the isolated RSC body branch when middleware does not match", async () => {
+    const rscHeaders = createRscRequestHeaders();
+    rscHeaders.set("content-type", "text/plain");
+    rscHeaders.set("next-action", "abc123");
+    const rscHash = await computeRscCacheBustingSearchParam(rscHeaders);
+    const cloneSpy = vi.spyOn(Request.prototype, "clone");
+    const middleware = vi.fn(() => new Response("unexpected"));
+    const handleServerActionRequest = vi.fn(async ({ request }: { request: Request }) => {
+      await expect(request.text()).resolves.toBe("streamed-action-body");
+      return new Response("action");
+    });
+    const handler = createHandler({
+      configHeaders: [],
+      handleServerActionRequest,
+      middlewareModule: {
+        config: { matcher: "/middleware-only" },
+        default: middleware,
+      },
+    });
+
+    try {
+      const response = await handler(
+        new Request(`https://example.test/docs/about?_rsc=${rscHash}`, {
+          body: "streamed-action-body",
+          headers: rscHeaders,
+          method: "POST",
+        }),
+        null,
+      );
+
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe("action");
+      expect(middleware).not.toHaveBeenCalled();
+      expect(cloneSpy).toHaveBeenCalledTimes(1);
+      expect((cloneSpy.mock.results[0]!.value as Request).bodyUsed).toBe(true);
+    } finally {
+      cloneSpy.mockRestore();
+    }
+  });
+
+  it("accepts the vinext action header name for server actions", async () => {
+    const handleServerActionRequest = vi.fn(async () => new Response("action", { status: 200 }));
+    const handler = createHandler({ handleServerActionRequest });
+
+    await handler(
+      new Request("https://example.test/docs/about", {
+        method: "POST",
+        headers: { "x-rsc-action": "vinext-action" },
+      }),
+      null,
+    );
+
+    expect(handleServerActionRequest).toHaveBeenCalledWith(
+      expect.objectContaining({ actionId: "vinext-action" }),
+    );
+  });
+
+  it("rejects stale action requests without retaining the action runtime", async () => {
+    const clearRequestContext = vi.fn();
+    const handler = createHandler({
+      clearRequestContext,
+      handleProgressiveActionRequest: undefined,
+      handleServerActionRequest: undefined,
+    });
+
+    const response = await handler(
+      new Request("https://example.test/docs/about", {
+        method: "POST",
+        headers: { "next-action": "stale-action" },
+      }),
+      null,
+    );
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("x-nextjs-action-not-found")).toBe("1");
+    expect(await response.text()).toBe("Server action not found.");
+    expect(clearRequestContext).toHaveBeenCalledTimes(1);
+  });
+
+  it("skips action dispatchers for ordinary page requests", async () => {
+    const handleProgressiveActionRequest = vi.fn(async () => null);
+    const handleServerActionRequest = vi.fn(async () => null);
+    const handler = createHandler({
+      handleProgressiveActionRequest,
+      handleServerActionRequest,
+    });
+
+    const response = await handler(new Request("https://example.test/docs/about"), null);
+
+    expect(response.status).toBe(200);
+    expect(handleProgressiveActionRequest).not.toHaveBeenCalled();
+    expect(handleServerActionRequest).not.toHaveBeenCalled();
+  });
+
+  it("dispatches route handlers with matched params", async () => {
+    const route = createPageRoute({
+      isDynamic: true,
+      page: null,
+      pattern: "/api/:id",
+      routeHandler: { GET: () => new Response("route") },
+      routeSegments: ["api", "[id]"],
+    });
+    const dispatchMatchedRouteHandler = vi.fn(async () => new Response("route", { status: 200 }));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedRouteHandler,
+      matchRoute: (pathname: string) =>
+        pathname === "/api/123"
+          ? {
+              params: { id: "123" },
+              route,
+            }
+          : null,
+    });
+
+    const response = await handler(new Request("https://example.test/docs/api/123"), null);
+
+    expect(response.status).toBe(200);
+    expect(dispatchMatchedRouteHandler).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cleanPathname: "/api/123",
+        params: { id: "123" },
+        route,
+      }),
+    );
+  });
+
+  // Matches Next.js behavior: non-dynamic route handlers receive params=null.
+  // See test/e2e/app-dir/app-routes/app-custom-routes.test.ts in next.js.
+  it("dispatches non-dynamic route handlers with params: null", async () => {
+    const route = createPageRoute({
+      isDynamic: false,
+      page: null,
+      pattern: "/api/static",
+      routeHandler: { GET: () => new Response("route") },
+      routeSegments: ["api", "static"],
+    });
+    const dispatchMatchedRouteHandler = vi.fn(async () => new Response("route", { status: 200 }));
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedRouteHandler,
+      matchRoute: (pathname: string) =>
+        pathname === "/api/static"
+          ? {
+              params: {},
+              route,
+            }
+          : null,
+    });
+
+    const response = await handler(new Request("https://example.test/docs/api/static"), null);
+
+    expect(response.status).toBe(200);
+    expect(dispatchMatchedRouteHandler).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cleanPathname: "/api/static",
+        params: null,
+        route,
+      }),
+    );
+  });
+
+  it("appends App Router RSC vary values to route handler responses", async () => {
+    const route = createPageRoute({
+      isDynamic: true,
+      page: null,
+      pattern: "/api/:id",
+      routeHandler: { GET: () => new Response("route") },
+      routeSegments: ["api", "[id]"],
+    });
+    const dispatchMatchedRouteHandler = vi.fn(
+      async () => new Response("route", { status: 200, headers: { Vary: "User-Agent" } }),
+    );
+    const handler = createHandler({
+      configHeaders: [],
+      dispatchMatchedRouteHandler,
+      matchRoute: (pathname: string) =>
+        pathname === "/api/123"
+          ? {
+              params: { id: "123" },
+              route,
+            }
+          : null,
+    });
+
+    const response = await handler(new Request("https://example.test/docs/api/123"), null);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("vary")).toBe(`User-Agent, ${VINEXT_RSC_VARY_HEADER}`);
+  });
+
+  it("clears request context before returning the plain 404 fallback", async () => {
+    const clearRequestContext = vi.fn();
+    const handler = createHandler({
+      clearRequestContext,
+      configHeaders: [],
+      matchRoute: () => null,
+      renderNotFound: async () => null,
+    });
+
+    const response = await handler(new Request("https://example.test/docs/missing"), null);
+
+    expect(response.status).toBe(404);
+    expect(await response.text()).toBe("This page could not be found");
+    expect(clearRequestContext).toHaveBeenCalledTimes(1);
+  });
+
+  // Issue #1452 — root params must be visible to actions/route handlers/use cache,
+  // not only to the page render. The handler used to call setRootParams only
+  // after the post-action route match, leaving rootParams null during action
+  // dispatch and route-handler dispatch. See app-rsc-handler.ts pre-action
+  // seeding block.
+  describe("root params propagation (issue #1452)", () => {
+    it("populates root params before route-handler dispatch", async () => {
+      const route = createPageRoute({
+        isDynamic: true,
+        page: null,
+        pattern: "/:lang/:locale/api",
+        rootParamNames: ["lang", "locale"],
+        routeHandler: { GET: () => new Response("route") },
+        routeSegments: ["[lang]", "[locale]", "api"],
+      });
+      let observedRootParams: Record<string, string | string[] | undefined> | null = null;
+      const dispatchMatchedRouteHandler = vi.fn(async () => {
+        // Read from the unified request context active at dispatch time.
+        const { getRootParam } = await import("../packages/vinext/src/shims/root-params.js");
+        observedRootParams = {
+          lang: await getRootParam("lang"),
+          locale: await getRootParam("locale"),
+        };
+        return new Response("route", { status: 200 });
+      });
+      const handler = createHandler({
+        configHeaders: [],
+        dispatchMatchedRouteHandler,
+        matchRoute: (pathname: string) =>
+          pathname === "/en/us/api"
+            ? {
+                params: { lang: "en", locale: "us" },
+                route,
+              }
+            : null,
+      });
+
+      const response = await handler(new Request("https://example.test/docs/en/us/api"), null);
+      expect(response.status).toBe(200);
+      expect(observedRootParams).toEqual({ lang: "en", locale: "us" });
+    });
+
+    it("populates root params before server-action dispatch", async () => {
+      const route = createPageRoute({
+        isDynamic: true,
+        pattern: "/:lang/:locale/server-action",
+        rootParamNames: ["lang", "locale"],
+        routeSegments: ["[lang]", "[locale]", "server-action"],
+      });
+      let observedRootParams: Record<string, string | string[] | undefined> | null = null;
+      const handleServerActionRequest = vi.fn(async () => {
+        const { getRootParam } = await import("../packages/vinext/src/shims/root-params.js");
+        observedRootParams = {
+          lang: await getRootParam("lang"),
+          locale: await getRootParam("locale"),
+        };
+        return new Response("action", { status: 200 });
+      });
+      const handler = createHandler({
+        configHeaders: [],
+        handleServerActionRequest,
+        matchRoute: (pathname: string) =>
+          pathname === "/en/us/server-action"
+            ? {
+                params: { lang: "en", locale: "us" },
+                route,
+              }
+            : null,
+      });
+
+      const response = await handler(
+        new Request("https://example.test/docs/en/us/server-action", {
+          method: "POST",
+          headers: { "next-action": "abc123" },
+        }),
+        null,
+      );
+      expect(response.status).toBe(200);
+      expect(observedRootParams).toEqual({ lang: "en", locale: "us" });
+    });
+
+    it("populates root params before progressive (form) action dispatch", async () => {
+      const route = createPageRoute({
+        isDynamic: true,
+        pattern: "/:lang/:locale/server-action",
+        rootParamNames: ["lang", "locale"],
+        routeSegments: ["[lang]", "[locale]", "server-action"],
+      });
+      let observedRootParams: Record<string, string | string[] | undefined> | null = null;
+      const handleProgressiveActionRequest = vi.fn(async () => {
+        const { getRootParam } = await import("../packages/vinext/src/shims/root-params.js");
+        observedRootParams = {
+          lang: await getRootParam("lang"),
+          locale: await getRootParam("locale"),
+        };
+        return new Response("progressive-action", { status: 200 });
+      });
+      const handler = createHandler({
+        configHeaders: [],
+        handleProgressiveActionRequest,
+        matchRoute: (pathname: string) =>
+          pathname === "/en/us/server-action"
+            ? {
+                params: { lang: "en", locale: "us" },
+                route,
+              }
+            : null,
+      });
+
+      const response = await handler(
+        new Request("https://example.test/docs/en/us/server-action", {
+          method: "POST",
+          headers: { "content-type": "multipart/form-data; boundary=vinext" },
+        }),
+        null,
+      );
+      expect(response.status).toBe(200);
+      expect(observedRootParams).toEqual({ lang: "en", locale: "us" });
+    });
+
+    it("only picks root params declared on the matched route", async () => {
+      // The route has a dynamic [slug] segment but only [lang] is a root param.
+      // setRootParams must surface only `lang`, not `slug`.
+      const route = createPageRoute({
+        isDynamic: true,
+        page: null,
+        pattern: "/:lang/blog/:slug",
+        rootParamNames: ["lang"],
+        routeHandler: { GET: () => new Response("route") },
+        routeSegments: ["[lang]", "blog", "[slug]"],
+      });
+      let observedLang: string | string[] | undefined = "<unset>";
+      let observedSlug: string | string[] | undefined = "<unset>";
+      const dispatchMatchedRouteHandler = vi.fn(async () => {
+        const { getRootParam } = await import("../packages/vinext/src/shims/root-params.js");
+        observedLang = await getRootParam("lang");
+        observedSlug = await getRootParam("slug");
+        return new Response("route", { status: 200 });
+      });
+      const handler = createHandler({
+        configHeaders: [],
+        dispatchMatchedRouteHandler,
+        matchRoute: (pathname: string) =>
+          pathname === "/en/blog/hello"
+            ? {
+                params: { lang: "en", slug: "hello" },
+                route,
+              }
+            : null,
+      });
+
+      const response = await handler(new Request("https://example.test/docs/en/blog/hello"), null);
+      expect(response.status).toBe(200);
+      expect(observedLang).toBe("en");
+      expect(observedSlug).toBeUndefined();
+    });
+  });
+});

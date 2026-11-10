@@ -1,0 +1,261 @@
+/** Request-only App Worker stage with no local renderer fallback dependency. */
+
+import "./server-globals.js";
+import requestRscHandler, {
+  __assetPrefix,
+  __basePath,
+  __clientBuildFiles,
+  __ensureHybridPagesApplication,
+  __ensureInstrumentation,
+  __imageAllowedWidths,
+  __imageConfig,
+  __prerenderSecret,
+} from "virtual:vinext-app-request-entry";
+import { runWithExecutionContext, type ExecutionContextLike } from "vinext/shims/request-context";
+// @ts-expect-error -- virtual module resolved by vinext
+import * as configuredCdnCacheAdapters from "virtual:vinext-cdn-cache-adapter";
+import { registerLazyDataCacheHandler } from "vinext/shims/cache-handler";
+import { getExplicitCdnCacheAdapter } from "vinext/shims/cdn-cache-state";
+import { applyCdnResponseIdentityHeaders, validateCdnRequest } from "./cache-control.js";
+// @ts-expect-error -- virtual module resolved by vinext
+import { registerConfiguredImageOptimizer } from "virtual:vinext-image-adapters";
+import type { DispatchAppWorkerResponseStage } from "./app-worker-stages.js";
+import { readImageOptimizationSignal } from "./image-optimization.js";
+import { createStaticAssetRequest, resolveStaticAssetSignal } from "./worker-utils.js";
+import { resolveClientBuildFile } from "./client-build-files.js";
+import { assetPrefixPathname } from "../utils/asset-prefix.js";
+import {
+  cloneRequestWithHeaders,
+  cloneRequestWithUrl,
+  filterInternalHeaders,
+  guardProtocolRelativeUrl,
+} from "./request-pipeline.js";
+import {
+  VINEXT_CACHEABILITY_PROBE_HEADER,
+  VINEXT_CACHEABILITY_PROBE_QUERY_PARAM,
+  VINEXT_EXPECTED_WORKER_VERSION_HEADER,
+  VINEXT_PRERENDER_SECRET_HEADER,
+  VINEXT_REVALIDATE_HOST_HEADER,
+  RSC_HEADER,
+} from "./headers.js";
+import { readTrustedPrerenderStateFromHeaders } from "./prerender-route-params.js";
+import { badRequestResponse } from "./http-error-responses.js";
+import { createWorkerRevalidationContext } from "./worker-revalidation-context.js";
+import {
+  createWorkerPrerenderDiscoveryContext,
+  createWorkerPrerenderReadinessResponse,
+} from "./worker-prerender-discovery.js";
+import type {
+  VinextAssetFetcher,
+  VinextCacheabilityProbeMode,
+  VinextRequestStageContext,
+} from "./multi-stage.js";
+import type { WorkerCacheabilityProbeRoute } from "./cacheability-request.js";
+import { consumeFrameworkRequestRoute, traceFrameworkRequest } from "./request-tracing.js";
+
+export type AppRequestStageEnv = Record<string, unknown>;
+type AppRequestStageContext = ExecutionContextLike & VinextRequestStageContext;
+
+const clientBuildFiles: ReadonlySet<string> = new Set(__clientBuildFiles);
+const assetPathPrefix = assetPrefixPathname(__assetPrefix);
+
+// An image source is served only as a public file, so it never renders a page.
+const rejectResponseStage: DispatchAppWorkerResponseStage = () =>
+  Promise.resolve(new Response(null, { status: 404 }));
+
+export function handleRequestStage(
+  request: Request,
+  env: AppRequestStageEnv | undefined,
+  ctx: AppRequestStageContext | undefined,
+  dispatchResponseStage: DispatchAppWorkerResponseStage,
+): Promise<Response> {
+  const originalRequest = request;
+  const handleStage = async () => {
+    await __ensureInstrumentation(ctx);
+    const url = new URL(request.url);
+    return traceFrameworkRequest({
+      callback: () =>
+        handleRequest(request, env, ctx, dispatchResponseStage, ctx?.assets).then((response) =>
+          applyCdnResponseIdentityHeaders(response, originalRequest),
+        ),
+      getStatus: (response) => response?.status,
+      headers: request.headers,
+      isRsc: request.headers.get(RSC_HEADER) === "1",
+      method: request.method,
+      target: url.pathname + url.search,
+    });
+  };
+  return ctx ? runWithExecutionContext(ctx, handleStage) : handleStage();
+}
+
+async function handleRequest(
+  request: Request,
+  env: AppRequestStageEnv | undefined,
+  platformCtx: ExecutionContextLike | undefined,
+  dispatchResponseStage: DispatchAppWorkerResponseStage,
+  assets: VinextAssetFetcher | undefined,
+): Promise<Response> {
+  let ctx = platformCtx?.trustedRevalidateOrigin
+    ? platformCtx
+    : createWorkerRevalidationContext(
+        platformCtx,
+        (internalRequest, internalCtx) =>
+          handleRequest(internalRequest, env, internalCtx, dispatchResponseStage, assets),
+        "node",
+      );
+
+  configuredCdnCacheAdapters.registerConfiguredCacheAdapters(env);
+  // Adapters can resolve their own asset binding. The revalidation context's
+  // closure reads this parameter at call time, so it sees the fallback too.
+  assets ??= getExplicitCdnCacheAdapter()?.assets;
+  if (configuredCdnCacheAdapters.hasConfiguredDataCache) {
+    registerLazyDataCacheHandler(async () => {
+      // @ts-expect-error -- virtual module resolved by vinext
+      const adapters = await import("virtual:vinext-cache-adapters");
+      adapters.registerConfiguredCacheAdapters(env);
+    });
+  }
+  registerConfiguredImageOptimizer(env);
+
+  const requestCtx = ctx;
+  ctx = createWorkerPrerenderDiscoveryContext(ctx, request, __prerenderSecret);
+  const readinessResponse = createWorkerPrerenderReadinessResponse(ctx, request);
+  let didValidateCdnRequest = false;
+  if (readinessResponse) {
+    const validationResponse = await validateCdnRequest(request);
+    if (validationResponse) return validationResponse;
+    didValidateCdnRequest = true;
+    // An authenticated readiness request must continue through the response
+    // dispatcher so independently hosted stages are proven ready as a unit.
+    // Failed capability checks stay inside the framework-owned namespace.
+    if (readinessResponse.status !== 204) return readinessResponse;
+    await __ensureHybridPagesApplication(ctx);
+  }
+
+  let probeMode: VinextCacheabilityProbeMode | null = null;
+  let probeRoute: WorkerCacheabilityProbeRoute | null = null;
+  if (request.headers.has(VINEXT_CACHEABILITY_PROBE_HEADER)) {
+    const { readWorkerCacheabilityProbeMode, readWorkerCacheabilityProbeRoute } =
+      await import("./cacheability-request.js");
+    probeMode = readWorkerCacheabilityProbeMode(request, __prerenderSecret);
+    if (probeMode) {
+      probeRoute = readWorkerCacheabilityProbeRoute(request);
+      const probeUrl = new URL(request.url);
+      probeUrl.searchParams.delete(VINEXT_CACHEABILITY_PROBE_QUERY_PARAM);
+      request = cloneRequestWithUrl(request, probeUrl.href);
+    }
+  }
+
+  if (!didValidateCdnRequest) {
+    const cdnValidationResponse = await validateCdnRequest(request);
+    if (cdnValidationResponse) return cdnValidationResponse;
+  }
+
+  const url = new URL(request.url);
+  const protocolRelativeGuard = guardProtocolRelativeUrl(url.pathname, url.search);
+  if (protocolRelativeGuard) return protocolRelativeGuard;
+  try {
+    decodeURIComponent(url.pathname);
+  } catch {
+    return badRequestResponse();
+  }
+
+  // Client build files outside `_next/static` are build output like the
+  // hashed assets, so serve them before middleware when the Worker runs first.
+  if (assets && (request.method === "GET" || request.method === "HEAD")) {
+    const clientBuildFile = resolveClientBuildFile(url.pathname, __basePath, clientBuildFiles);
+    if (clientBuildFile) {
+      return await assets.fetch(createStaticAssetRequest(clientBuildFile, request));
+    }
+  }
+
+  const trustedPrerenderState = readTrustedPrerenderStateFromHeaders(
+    request.headers,
+    __prerenderSecret,
+  );
+  const filteredHeaders = ctx.isInternalPagesRevalidation
+    ? new Headers(request.headers)
+    : filterInternalHeaders(request.headers);
+  filteredHeaders.delete(VINEXT_PRERENDER_SECRET_HEADER);
+  filteredHeaders.delete(VINEXT_REVALIDATE_HOST_HEADER);
+  if (readinessResponse?.status === 204) {
+    const expectedWorkerVersion = request.headers.get(VINEXT_EXPECTED_WORKER_VERSION_HEADER);
+    if (expectedWorkerVersion) {
+      // The request stage already authenticated the build capability. Preserve
+      // only the version assertion needed by the independently hosted response
+      // stage; the prerender secret remains confined to this gateway.
+      filteredHeaders.set(VINEXT_EXPECTED_WORKER_VERSION_HEADER, expectedWorkerVersion);
+    }
+  }
+  request = cloneRequestWithHeaders(request, filteredHeaders);
+
+  let responseStageDispatched = false;
+  const trackedDispatchResponseStage: DispatchAppWorkerResponseStage = (
+    stageRequest,
+    props,
+    options,
+  ) => {
+    responseStageDispatched = true;
+    const response = dispatchResponseStage(stageRequest, props, options);
+    return props.kind === "app-full-request"
+      ? response.then(consumeFrameworkRequestRoute)
+      : response;
+  };
+
+  const handle = () =>
+    requestRscHandler(
+      request,
+      ctx,
+      trackedDispatchResponseStage,
+      probeMode,
+      ctx.isPrerenderPathDiscovery === true,
+      trustedPrerenderState,
+    );
+  const result = await runWithExecutionContext(ctx, handle);
+  let response = result;
+  // The image endpoint runs through middleware and rewrites like any request;
+  // the handler then signals that the Worker may serve the image itself.
+  // Without an optimizer the Worker serves the source unoptimized, as the
+  // Pages Router Worker and the Node server do.
+  const imageSignal = assets ? readImageOptimizationSignal(response) : null;
+  if (imageSignal && assets) {
+    const { fetchSignalledPublicFile, serveWorkerImageOptimization } =
+      await import("./worker-image-optimization.js");
+    response = await serveWorkerImageOptimization(
+      request,
+      imageSignal,
+      __imageAllowedWidths,
+      __imageConfig,
+      {
+        assets,
+        basePath: __basePath,
+        assetPathPrefix,
+        clientBuildFiles,
+        // The source runs outside this request's cacheability probe.
+        fetchPublicFile: async (sourceRequest) =>
+          fetchSignalledPublicFile(
+            await runWithExecutionContext(requestCtx, () =>
+              requestRscHandler(sourceRequest, requestCtx, rejectResponseStage, null, false, null),
+            ),
+            sourceRequest,
+            assets,
+          ),
+      },
+    );
+  } else if (assets) {
+    const assetResponse = await resolveStaticAssetSignal(response, {
+      fetchAsset: (path, requestHeaders) =>
+        Promise.resolve(assets.fetch(createStaticAssetRequest(path, request, requestHeaders))),
+    });
+    if (assetResponse) response = assetResponse;
+  }
+  if (probeMode && probeRoute && !responseStageDispatched) {
+    const { finalizeRequestStageCacheabilityProbe } = await import("./cacheability-request.js");
+    response = finalizeRequestStageCacheabilityProbe(response, {
+      mode: probeMode,
+      responseStageDispatched,
+      route: probeRoute,
+    });
+  }
+  return response;
+}

@@ -1,0 +1,787 @@
+/**
+ * Behavior tests for normalizeRscRequest and normalizeMountedSlotsHeader.
+ *
+ * These functions sit at the security and compatibility boundary of the App
+ * Router request pipeline. Wrong behavior here produces:
+ *   - Open redirect vulnerabilities (protocol-relative bypass)
+ *   - Route confusion (malformed %2F interpreted as path separator)
+ *   - Cache fragmentation (non-canonical slot headers)
+ *   - 500s instead of 400s on bad client input
+ *
+ * Each test names the observable failure on regression, not the implementation
+ * detail being exercised.
+ */
+import { describe, it, expect } from "vite-plus/test";
+import {
+  normalizeRscRequest,
+  normalizeMountedSlotsHeader,
+  type NormalizedRscRequest,
+} from "../packages/vinext/src/server/app-rsc-request-normalization.js";
+import {
+  VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM,
+  VINEXT_RSC_RENDER_MODE_HEADER,
+} from "../packages/vinext/src/server/app-rsc-cache-busting.js";
+import {
+  APP_RSC_RENDER_MODE_NAVIGATION,
+  APP_RSC_RENDER_MODE_PREFETCH_EMPTY,
+  APP_RSC_RENDER_MODE_PREFETCH_LOADING_SHELL,
+} from "../packages/vinext/src/server/app-rsc-render-mode.js";
+import {
+  NEXT_ROUTER_PREFETCH_HEADER,
+  NEXT_ROUTER_SEGMENT_PREFETCH_HEADER,
+  NEXT_ROUTER_STATE_TREE_HEADER,
+  NEXT_URL_HEADER,
+  RSC_HEADER,
+} from "../packages/vinext/src/server/headers.js";
+
+function prefetchRouterStateHeader(pathAndSearch: string, routeId = "route:/dashboard"): string {
+  return encodeURIComponent(JSON.stringify({ pathAndSearch, routeId }));
+}
+
+function flightRouterStateHeader(slug: string): string {
+  return encodeURIComponent(
+    JSON.stringify([
+      "",
+      {
+        children: [
+          "prefetch-auto",
+          {
+            children: [["slug", slug, "d", null], { children: ["__PAGE__", {}] }],
+          },
+        ],
+      },
+      null,
+      null,
+      16,
+    ]),
+  );
+}
+
+function req(path: string, headers: Record<string, string> = {}): Request {
+  return new Request(`http://localhost${path}`, { headers });
+}
+
+function normalized(result: Response | NormalizedRscRequest): NormalizedRscRequest {
+  if (result instanceof Response) {
+    throw new Error(`Expected NormalizedRscRequest but got Response(${result.status})`);
+  }
+  return result;
+}
+
+// ── Protocol-relative URL guard ─────────────────────────────────────────────
+
+describe("normalizeRscRequest — protocol-relative URL guard", () => {
+  it("308s a // path to the collapsed same-origin path, like Next.js", () => {
+    // Regression for: trailing-slash 308 echoes //evil.com → open redirect.
+    const result = normalizeRscRequest(req("//evil.com/path?a=1"), "");
+    expect(result).toBeInstanceOf(Response);
+    expect((result as Response).status).toBe(308);
+    expect((result as Response).headers.get("location")).toBe("/evil.com/path?a=1");
+  });
+
+  it("308s a /\\ path to the collapsed path (the URL parser turns \\ into /)", () => {
+    const result = normalizeRscRequest(req("/\\evil.com"), "");
+    expect(result).toBeInstanceOf(Response);
+    expect((result as Response).status).toBe(308);
+    expect((result as Response).headers.get("location")).toBe("/evil.com");
+  });
+
+  it("308s repeated slashes inside a basePath before the basePath check", () => {
+    const result = normalizeRscRequest(req("/docs//"), "/docs");
+    expect((result as Response).status).toBe(308);
+    expect((result as Response).headers.get("location")).toBe("/docs/");
+  });
+
+  it("returns 404 for /%5C encoded backslash (survives segment-wise decode, then echoed in Location)", () => {
+    const result = normalizeRscRequest(req("/%5Cevil.com"), "");
+    expect(result).toBeInstanceOf(Response);
+    expect((result as Response).status).toBe(404);
+  });
+
+  it("returns 404 for /%2F encoded slash (decodes to // in Location header)", () => {
+    const result = normalizeRscRequest(req("/%2Fevil.com"), "");
+    expect(result).toBeInstanceOf(Response);
+    expect((result as Response).status).toBe(404);
+  });
+
+  it("guard fires before normalizePath would collapse // into /", () => {
+    // If guard ran after normalizePath, //evil.com → /evil.com and the guard
+    // would miss it. Verify the guard still fires on the raw url.pathname.
+    const result = normalizeRscRequest(req("//evil.com"), "");
+    expect(result).toBeInstanceOf(Response);
+    expect((result as Response).status).toBe(308);
+    expect((result as Response).headers.get("location")).toBe("/evil.com");
+  });
+
+  it("does not block a normal leading-slash path", () => {
+    const result = normalizeRscRequest(req("/about"), "");
+    expect(result).not.toBeInstanceOf(Response);
+  });
+});
+
+// ── Malformed percent-encoding ───────────────────────────────────────────────
+
+describe("normalizeRscRequest — malformed percent-encoding", () => {
+  it("returns 400 for invalid percent sequence (%GG)", () => {
+    // A bad percent sequence arriving in a URL segment must be rejected with
+    // 400 rather than silently passed through (which could bypass guards
+    // relying on decoded values).
+    const result = normalizeRscRequest(req("/%GG/page"), "");
+    expect(result).toBeInstanceOf(Response);
+    expect((result as Response).status).toBe(400);
+  });
+
+  it("returns 400 for truncated percent sequence (% at end)", () => {
+    const result = normalizeRscRequest(req("/path/%"), "");
+    expect(result).toBeInstanceOf(Response);
+    expect((result as Response).status).toBe(400);
+  });
+
+  it("returns 400 for single hex digit (%A with no second digit)", () => {
+    const result = normalizeRscRequest(req("/path/%A"), "");
+    expect(result).toBeInstanceOf(Response);
+    expect((result as Response).status).toBe(400);
+  });
+
+  it("does not 400 for valid percent-encoded ASCII (%41 = 'A')", () => {
+    const result = normalizeRscRequest(req("/%41bc"), "");
+    expect(result).not.toBeInstanceOf(Response);
+  });
+
+  it("does not 400 for valid percent-encoded non-ASCII (%C3%A9 = 'é')", () => {
+    const result = normalizeRscRequest(req("/caf%C3%A9"), "");
+    expect(result).not.toBeInstanceOf(Response);
+  });
+});
+
+// ── basePath check and strip ─────────────────────────────────────────────────
+
+describe("normalizeRscRequest — basePath", () => {
+  it.each(["", "/cdn", "https://cdn.example.test/cdn"])(
+    "retains static asset paths outside basePath with assetPrefix %s",
+    (assetPrefix) => {
+      const pathname = `${assetPrefix ? "/cdn" : ""}/_next/static/missing.js`;
+      const result = normalized(normalizeRscRequest(req(pathname), "/app", false, assetPrefix));
+      expect(result.pathname).toBe(pathname);
+      expect(result.hadBasePath).toBe(false);
+      expect(normalizeRscRequest(req("/cdn/page"), "/app", false, assetPrefix)).toBeInstanceOf(
+        Response,
+      );
+    },
+  );
+  it("returns 404 when pathname lacks basePath prefix, preventing unintended route leak", () => {
+    // Without this check a request to /other/page would match /page routes
+    // as if the basePath didn't exist.
+    const result = normalizeRscRequest(req("/other/page"), "/app");
+    expect(result).toBeInstanceOf(Response);
+    expect((result as Response).status).toBe(404);
+  });
+
+  it("retains an out-of-basePath pathname for config rules that opt out", () => {
+    const result = normalized(normalizeRscRequest(req("/outside"), "/app", true));
+
+    expect(result.pathname).toBe("/outside");
+    expect(result.hadBasePath).toBe(false);
+  });
+
+  it("strips basePath prefix so internal routing sees basePath-free pathname", () => {
+    const result = normalized(normalizeRscRequest(req("/app/dashboard"), "/app"));
+    expect(result.pathname).toBe("/dashboard");
+  });
+
+  it("strips basePath when path equals basePath exactly", () => {
+    const result = normalized(normalizeRscRequest(req("/app"), "/app"));
+    expect(result.pathname).toBe("/");
+  });
+
+  it("does not strip basePath prefix when only a path prefix (not segment boundary)", () => {
+    // /application does not start with /app/ so it must 404, not strip /app.
+    const result = normalizeRscRequest(req("/application/page"), "/app");
+    expect(result).toBeInstanceOf(Response);
+    expect((result as Response).status).toBe(404);
+  });
+
+  it("bypasses basePath check for /__vinext/ internal prerender endpoints", () => {
+    // Prerender endpoints must be reachable even with a basePath configured.
+    const result = normalizeRscRequest(req("/__vinext/prerender/status"), "/app");
+    expect(result).not.toBeInstanceOf(Response);
+  });
+
+  it("skips basePath check entirely when basePath is empty string", () => {
+    const result = normalized(normalizeRscRequest(req("/any/path"), ""));
+    expect(result.pathname).toBe("/any/path");
+  });
+});
+
+// ── Path normalization ───────────────────────────────────────────────────────
+
+describe("normalizeRscRequest — path normalization", () => {
+  it("308s double slashes within a path to the collapsed path, like Next.js", () => {
+    const result = normalizeRscRequest(req("/foo//bar"), "");
+    expect((result as Response).status).toBe(308);
+    expect((result as Response).headers.get("location")).toBe("/foo/bar");
+  });
+
+  it("resolves single-dot segments", () => {
+    const result = normalized(normalizeRscRequest(req("/foo/./bar"), ""));
+    expect(result.pathname).toBe("/foo/bar");
+  });
+
+  it("resolves double-dot segments", () => {
+    const result = normalized(normalizeRscRequest(req("/foo/../bar"), ""));
+    expect(result.pathname).toBe("/bar");
+  });
+
+  it("preserves %2F encoded slash within a segment (not treated as path separator)", () => {
+    // /users%2Fadmin must remain as a single segment, matching route /users%2Fadmin,
+    // not split into /users/admin (which would match a different route).
+    const result = normalized(normalizeRscRequest(req("/users%2Fadmin"), ""));
+    expect(result.pathname).toBe("/users%2Fadmin");
+    expect(result.pathname).not.toBe("/users/admin");
+  });
+
+  it("decodes non-ASCII characters (é → decoded in pathname)", () => {
+    const result = normalized(normalizeRscRequest(req("/caf%C3%A9"), ""));
+    expect(result.pathname).toBe("/café");
+  });
+});
+
+// ── RSC request detection ────────────────────────────────────────────────────
+
+describe("normalizeRscRequest — RSC detection", () => {
+  // Next.js selects the RSC payload only with `RSC: 1`; a `.rsc` suffix is an
+  // ordinary part of the pathname (`/open/acme.rsc` binds slug "acme.rsc").
+  it.each([
+    ["/about.rsc", "/about.rsc"],
+    ["/dashboard/...rsc", "/dashboard/...rsc"],
+    ["/dashboard/%2E%2E.rsc", "/dashboard/...rsc"],
+  ])("treats a .rsc suffix in %s as part of the pathname", (path, pathname) => {
+    const result = normalized(normalizeRscRequest(req(path, { accept: "text/x-component" }), ""));
+    expect(result.isRscRequest).toBe(false);
+    expect(result.pathname).toBe(pathname);
+  });
+
+  it("does not select RSC rendering by Accept: text/x-component header alone", () => {
+    const result = normalized(
+      normalizeRscRequest(req("/about", { accept: "text/x-component" }), ""),
+    );
+    expect(result.isRscRequest).toBe(false);
+  });
+
+  it("detects full-route RSC requests by RSC header alone on an HTML URL", () => {
+    // Ported from Next.js:
+    // test/e2e/app-dir/ppr-root-param-rsc-fallback/ppr-root-param-rsc-fallback.test.ts
+    // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/ppr-root-param-rsc-fallback/ppr-root-param-rsc-fallback.test.ts
+    const result = normalized(normalizeRscRequest(req("/about", { [RSC_HEADER]: "1" }), ""));
+    expect(result.isRscRequest).toBe(true);
+    expect(result.pathname).toBe("/about");
+  });
+
+  it("keeps a .rsc suffix in the pathname of an RSC request", () => {
+    const result = normalized(normalizeRscRequest(req("/about.rsc", { [RSC_HEADER]: "1" }), ""));
+    expect(result.isRscRequest).toBe(true);
+    expect(result.pathname).toBe("/about.rsc");
+  });
+
+  it("does not select RSC rendering by _rsc query alone on an HTML URL", () => {
+    const result = normalized(
+      normalizeRscRequest(req(`/about?${VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM}`), ""),
+    );
+    expect(result.isRscRequest).toBe(false);
+    expect(result.pathname).toBe("/about");
+  });
+
+  it("detects Next-style RSC requests by RSC header plus _rsc query on an HTML URL", () => {
+    const result = normalized(
+      normalizeRscRequest(
+        req(`/about?${VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM}`, { [RSC_HEADER]: "1" }),
+        "",
+      ),
+    );
+    expect(result.isRscRequest).toBe(true);
+    expect(result.pathname).toBe("/about");
+  });
+
+  it("detects a plain (non-RSC) request", () => {
+    const result = normalized(normalizeRscRequest(req("/about"), ""));
+    expect(result.isRscRequest).toBe(false);
+    expect(result.pathname).toBe("/about");
+  });
+});
+
+// ── Interception context header sanitization ─────────────────────────────────
+
+describe("normalizeRscRequest — interception context sanitization", () => {
+  it("returns null for absent interception context header", () => {
+    const result = normalized(normalizeRscRequest(req("/page"), ""));
+    expect(result.interceptionContextHeader).toBeNull();
+  });
+
+  it("returns null for empty interception context header", () => {
+    // An empty string is treated as absent — callers use null as the sentinel.
+    const result = normalized(
+      normalizeRscRequest(req("/page", { "X-Vinext-Interception-Context": "" }), ""),
+    );
+    expect(result.interceptionContextHeader).toBeNull();
+  });
+
+  it("preserves a legitimate same-origin pathname interception context", () => {
+    const result = normalized(
+      normalizeRscRequest(req("/page", { "X-Vinext-Interception-Context": "/feed" }), ""),
+    );
+    expect(result.interceptionContextHeader).toBe("/feed");
+  });
+
+  it("preserves a nested-pathname interception context", () => {
+    const result = normalized(
+      normalizeRscRequest(req("/page", { "X-Vinext-Interception-Context": "/feed/photos/42" }), ""),
+    );
+    expect(result.interceptionContextHeader).toBe("/feed/photos/42");
+  });
+
+  it("strips null bytes from interception context header to prevent header injection", () => {
+    // new Request() rejects \0 in header values, so construct a structural fake.
+    const request = {
+      url: "http://localhost/page",
+      headers: {
+        get(name: string) {
+          if (name.toLowerCase() === "x-vinext-interception-context") {
+            return "/fe\0ed";
+          }
+          return null;
+        },
+      },
+    } as unknown as Request;
+
+    const result = normalized(normalizeRscRequest(request, ""));
+    expect(result.interceptionContextHeader).toBe("/feed");
+  });
+
+  it("rejects non-pathname interception context values", () => {
+    // Attacker-supplied values that don't start with `/` are not legitimate
+    // browser-emitted pathnames; treat them as absent so they cannot influence
+    // cache keys. See F-PROD-1.
+    const result = normalized(
+      normalizeRscRequest(req("/page", { "X-Vinext-Interception-Context": "evil" }), ""),
+    );
+    expect(result.interceptionContextHeader).toBeNull();
+  });
+
+  it("rejects an oversized interception context value", () => {
+    const huge = "/" + "a".repeat(2048);
+    const result = normalized(
+      normalizeRscRequest(req("/page", { "X-Vinext-Interception-Context": huge }), ""),
+    );
+    expect(result.interceptionContextHeader).toBeNull();
+  });
+
+  it("bounds cache-key cardinality across many attacker-supplied values", () => {
+    // The fix's purpose: even if an attacker fans out 1000 distinct header
+    // values, the cache-key derived from the normalized value is bounded.
+    const distinct = new Set<string>();
+    for (let i = 0; i < 1000; i++) {
+      const result = normalizeRscRequest(
+        // 2KiB payload — exceeds the 1KiB cap.
+        req("/page", { "X-Vinext-Interception-Context": "/" + "x".repeat(2048) + String(i) }),
+        "",
+      );
+      if (result instanceof Response) continue;
+      distinct.add(result.interceptionContextHeader ?? "null");
+    }
+    // All 1000 attacker values collapse to a single normalized result.
+    expect(distinct.size).toBe(1);
+  });
+});
+
+// ── Mounted slots header normalization ───────────────────────────────────────
+
+describe("normalizeRscRequest — mounted slots normalization", () => {
+  it("sorts slot ids so different client orderings hit the same RSC cache entry", () => {
+    // If not sorted, a client sending slots in navigation order (b a) and another
+    // sending (a b) would get different cache keys, causing unnecessary cache misses.
+    const result = normalized(
+      normalizeRscRequest(req("/page", { "x-vinext-mounted-slots": "slot:b:/ slot:a:/" }), ""),
+    );
+    expect(result.mountedSlotsHeader).toBe("slot:a:/ slot:b:/");
+  });
+
+  it("deduplicates slot ids", () => {
+    const result = normalized(
+      normalizeRscRequest(
+        req("/page", { "x-vinext-mounted-slots": "slot:a:/ slot:b:/ slot:a:/" }),
+        "",
+      ),
+    );
+    expect(result.mountedSlotsHeader).toBe("slot:a:/ slot:b:/");
+  });
+
+  it("returns null for absent mounted-slots header", () => {
+    const result = normalized(normalizeRscRequest(req("/page"), ""));
+    expect(result.mountedSlotsHeader).toBeNull();
+  });
+
+  it("returns null for blank mounted-slots header", () => {
+    const result = normalized(
+      normalizeRscRequest(req("/page", { "x-vinext-mounted-slots": "   \t  " }), ""),
+    );
+    expect(result.mountedSlotsHeader).toBeNull();
+  });
+
+  it("drops tokens that do not match the legitimate slot:<name>:<treePath> wire format", () => {
+    // Attacker-supplied tokens without the wire shape (no tree path, missing
+    // `slot:` prefix, etc.) must not influence the cache key. See F-PROD-1.
+    const result = normalized(
+      normalizeRscRequest(
+        req("/page", { "x-vinext-mounted-slots": "slot:a slot:b modal slot:c:/ junk" }),
+        "",
+      ),
+    );
+    expect(result.mountedSlotsHeader).toBe("slot:c:/");
+  });
+
+  it("returns null when every token is malformed", () => {
+    const result = normalized(
+      normalizeRscRequest(req("/page", { "x-vinext-mounted-slots": "modal drawer overlay" }), ""),
+    );
+    expect(result.mountedSlotsHeader).toBeNull();
+  });
+
+  it("bounds the number of mounted-slot tokens that reach the cache key", () => {
+    // Cap at 16 tokens. An attacker who supplies 100 legitimately-shaped tokens
+    // would otherwise be able to fan out unique cache keys.
+    const attackerTokens = Array.from({ length: 100 }, (_, i) => `slot:s${i}:/`).join(" ");
+    const result = normalized(
+      normalizeRscRequest(req("/page", { "x-vinext-mounted-slots": attackerTokens }), ""),
+    );
+    const tokens = result.mountedSlotsHeader?.split(" ") ?? [];
+    expect(tokens.length).toBeLessThanOrEqual(16);
+  });
+
+  it("rejects an oversized mounted-slots header value", () => {
+    // Cap raw header length to bound cache-key cardinality. An attacker that
+    // supplies a multi-megabyte payload must not blow up KV writes.
+    const huge = "slot:a:/" + "x".repeat(8192);
+    const result = normalized(
+      normalizeRscRequest(req("/page", { "x-vinext-mounted-slots": huge }), ""),
+    );
+    expect(result.mountedSlotsHeader).toBeNull();
+  });
+
+  it("drops a single oversized token but keeps short legitimate tokens", () => {
+    const longToken = `slot:overlong:${"/a".repeat(200)}`;
+    const result = normalized(
+      normalizeRscRequest(
+        req("/page", { "x-vinext-mounted-slots": `slot:a:/ ${longToken} slot:b:/` }),
+        "",
+      ),
+    );
+    expect(result.mountedSlotsHeader).toBe("slot:a:/ slot:b:/");
+  });
+
+  it("normalizes the semantic render mode marker", () => {
+    const normal = normalized(
+      normalizeRscRequest(
+        req("/page", { [RSC_HEADER]: "1", [VINEXT_RSC_RENDER_MODE_HEADER]: "true" }),
+        "",
+      ),
+    );
+    const prefetchShell = normalized(
+      normalizeRscRequest(
+        req("/page", {
+          [RSC_HEADER]: "1",
+          [VINEXT_RSC_RENDER_MODE_HEADER]: APP_RSC_RENDER_MODE_PREFETCH_LOADING_SHELL,
+        }),
+        "",
+      ),
+    );
+    const html = normalized(
+      normalizeRscRequest(
+        req("/page", {
+          [VINEXT_RSC_RENDER_MODE_HEADER]: APP_RSC_RENDER_MODE_PREFETCH_LOADING_SHELL,
+        }),
+        "",
+      ),
+    );
+
+    expect(prefetchShell.renderMode).toBe(APP_RSC_RENDER_MODE_PREFETCH_LOADING_SHELL);
+    expect(normal.renderMode).toBe(APP_RSC_RENDER_MODE_NAVIGATION);
+    expect(html.renderMode).toBe(APP_RSC_RENDER_MODE_NAVIGATION);
+  });
+
+  it("normalizes render mode for Next-style RSC header plus _rsc query requests", () => {
+    const result = normalized(
+      normalizeRscRequest(
+        req(`/page?${VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM}`, {
+          [RSC_HEADER]: "1",
+          [VINEXT_RSC_RENDER_MODE_HEADER]: APP_RSC_RENDER_MODE_PREFETCH_LOADING_SHELL,
+        }),
+        "",
+      ),
+    );
+
+    expect(result.isRscRequest).toBe(true);
+    expect(result.renderMode).toBe(APP_RSC_RENDER_MODE_PREFETCH_LOADING_SHELL);
+  });
+
+  it("maps a Next prefetch for the current tree to an empty payload", () => {
+    const result = normalized(
+      normalizeRscRequest(
+        req(`/prefetch-auto/justputit?${VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM}`, {
+          [RSC_HEADER]: "1",
+          [NEXT_ROUTER_PREFETCH_HEADER]: "1",
+          [NEXT_ROUTER_STATE_TREE_HEADER]: prefetchRouterStateHeader("/prefetch-auto/justputit"),
+          [NEXT_URL_HEADER]: "/prefetch-auto/justputit",
+        }),
+        "",
+      ),
+    );
+
+    expect(result.renderMode).toBe(APP_RSC_RENDER_MODE_PREFETCH_EMPTY);
+  });
+
+  it("maps Next.js Flight router-state arrays for the current tree to an empty payload", () => {
+    // Ported from Next.js: test/e2e/app-dir/app-prefetch/prefetching.test.ts
+    // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/app-prefetch/prefetching.test.ts
+    const result = normalized(
+      normalizeRscRequest(
+        req(`/prefetch-auto/justputit?${VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM}`, {
+          [RSC_HEADER]: "1",
+          [NEXT_ROUTER_PREFETCH_HEADER]: "1",
+          [NEXT_ROUTER_STATE_TREE_HEADER]: flightRouterStateHeader("justputit"),
+          [NEXT_URL_HEADER]: "/prefetch-auto/justputit",
+        }),
+        "",
+      ),
+    );
+
+    expect(result.renderMode).toBe(APP_RSC_RENDER_MODE_PREFETCH_EMPTY);
+  });
+
+  it("falls back to a valid parallel slot when the children state has no visible path", () => {
+    const routerState = encodeURIComponent(
+      JSON.stringify([
+        "",
+        {
+          children: ["__DEFAULT__", {}],
+          modal: ["dashboard", { children: ["__PAGE__", {}] }],
+        },
+      ]),
+    );
+    const result = normalized(
+      normalizeRscRequest(
+        req(`/dashboard?${VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM}`, {
+          [RSC_HEADER]: "1",
+          [NEXT_ROUTER_PREFETCH_HEADER]: "1",
+          [NEXT_ROUTER_STATE_TREE_HEADER]: routerState,
+          [NEXT_URL_HEADER]: "/dashboard",
+        }),
+        "",
+      ),
+    );
+
+    expect(result.renderMode).toBe(APP_RSC_RENDER_MODE_PREFETCH_EMPTY);
+  });
+
+  it("infers the current tree under basePath after stripping the prefix", () => {
+    const result = normalized(
+      normalizeRscRequest(
+        req(`/docs/dashboard?tab=current&${VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM}`, {
+          [RSC_HEADER]: "1",
+          [NEXT_ROUTER_PREFETCH_HEADER]: "1",
+          [NEXT_ROUTER_STATE_TREE_HEADER]: prefetchRouterStateHeader("/dashboard?tab=current"),
+          [NEXT_URL_HEADER]: "/docs/dashboard?tab=current",
+        }),
+        "/docs",
+      ),
+    );
+
+    expect(result.renderMode).toBe(APP_RSC_RENDER_MODE_PREFETCH_EMPTY);
+  });
+
+  it.each([
+    ["encoded spaces", "term=%20", "term=+"],
+    ["valueless params", "preview", "preview="],
+  ])("normalizes equivalent %s before current-tree comparison", (_, rawQuery, stateQuery) => {
+    const result = normalized(
+      normalizeRscRequest(
+        req(`/dashboard?${rawQuery}&${VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM}`, {
+          [RSC_HEADER]: "1",
+          [NEXT_ROUTER_PREFETCH_HEADER]: "1",
+          [NEXT_ROUTER_STATE_TREE_HEADER]: prefetchRouterStateHeader(`/dashboard?${stateQuery}`),
+          [NEXT_URL_HEADER]: `/dashboard?${rawQuery}`,
+        }),
+        "",
+      ),
+    );
+
+    expect(result.renderMode).toBe(APP_RSC_RENDER_MODE_PREFETCH_EMPTY);
+  });
+
+  it("ignores malformed Next-Url instead of crashing request normalization", () => {
+    const result = normalized(
+      normalizeRscRequest(
+        req(`/dashboard?tab=current&${VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM}`, {
+          [RSC_HEADER]: "1",
+          [NEXT_ROUTER_PREFETCH_HEADER]: "1",
+          [NEXT_ROUTER_STATE_TREE_HEADER]: prefetchRouterStateHeader("/dashboard?tab=current"),
+          [NEXT_URL_HEADER]: "http://[",
+        }),
+        "",
+      ),
+    );
+
+    expect(result.renderMode).toBe(APP_RSC_RENDER_MODE_NAVIGATION);
+  });
+
+  it("maps a Next prefetch from another dynamic segment to a loading shell", () => {
+    const result = normalized(
+      normalizeRscRequest(
+        req(`/prefetch-auto/justputit?${VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM}`, {
+          [RSC_HEADER]: "1",
+          [NEXT_ROUTER_PREFETCH_HEADER]: "1",
+          [NEXT_ROUTER_STATE_TREE_HEADER]: prefetchRouterStateHeader("/prefetch-auto/vercel"),
+          [NEXT_URL_HEADER]: "/prefetch-auto/vercel",
+        }),
+        "",
+      ),
+    );
+
+    expect(result.renderMode).toBe(APP_RSC_RENDER_MODE_PREFETCH_LOADING_SHELL);
+  });
+
+  it("maps Next.js Flight router-state arrays from another segment to a loading shell", () => {
+    // Ported from Next.js: test/e2e/app-dir/app-prefetch/prefetching.test.ts
+    // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/app-prefetch/prefetching.test.ts
+    const result = normalized(
+      normalizeRscRequest(
+        req(`/prefetch-auto/justputit?${VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM}`, {
+          [RSC_HEADER]: "1",
+          [NEXT_ROUTER_PREFETCH_HEADER]: "1",
+          [NEXT_ROUTER_STATE_TREE_HEADER]: flightRouterStateHeader("vercel"),
+          [NEXT_URL_HEADER]: "/prefetch-auto/vercel",
+        }),
+        "",
+      ),
+    );
+
+    expect(result.renderMode).toBe(APP_RSC_RENDER_MODE_PREFETCH_LOADING_SHELL);
+  });
+
+  it("does not infer a loading shell for vinext segment-prefetch requests", () => {
+    const result = normalized(
+      normalizeRscRequest(
+        req(`/static-page?${VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM}`, {
+          [RSC_HEADER]: "1",
+          [NEXT_ROUTER_PREFETCH_HEADER]: "1",
+          [NEXT_ROUTER_SEGMENT_PREFETCH_HEADER]: "1",
+          [NEXT_ROUTER_STATE_TREE_HEADER]: prefetchRouterStateHeader("/current"),
+          [NEXT_URL_HEADER]: "/current",
+        }),
+        "",
+      ),
+    );
+
+    expect(result.renderMode).toBe(APP_RSC_RENDER_MODE_NAVIGATION);
+  });
+
+  it("does not treat pathname-only equality as current router-state equality", () => {
+    const result = normalized(
+      normalizeRscRequest(
+        req(`/dashboard?tab=next&${VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM}`, {
+          [RSC_HEADER]: "1",
+          [NEXT_ROUTER_PREFETCH_HEADER]: "1",
+          [NEXT_ROUTER_STATE_TREE_HEADER]: prefetchRouterStateHeader("/dashboard?tab=current"),
+          [NEXT_URL_HEADER]: "/dashboard?tab=current",
+        }),
+        "",
+      ),
+    );
+
+    expect(result.renderMode).toBe(APP_RSC_RENDER_MODE_PREFETCH_LOADING_SHELL);
+  });
+
+  it("ignores incomplete Next prefetch hints without router-state semantics", () => {
+    const result = normalized(
+      normalizeRscRequest(
+        req(`/dashboard?${VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM}`, {
+          [RSC_HEADER]: "1",
+          [NEXT_ROUTER_PREFETCH_HEADER]: "1",
+          [NEXT_URL_HEADER]: "/dashboard",
+        }),
+        "",
+      ),
+    );
+
+    expect(result.renderMode).toBe(APP_RSC_RENDER_MODE_NAVIGATION);
+  });
+});
+
+// ── Compound scenarios ───────────────────────────────────────────────────────
+
+describe("normalizeRscRequest — compound scenarios", () => {
+  it("basePath + RSC: strips basePath and keeps a .rsc suffix in the pathname", () => {
+    const result = normalized(
+      normalizeRscRequest(req("/app/dashboard.rsc", { [RSC_HEADER]: "1" }), "/app"),
+    );
+    expect(result.pathname).toBe("/dashboard.rsc");
+    expect(result.requestPathname).toBe("/dashboard.rsc");
+    expect(result.isRscRequest).toBe(true);
+    expect(result.hadBasePath).toBe(true);
+  });
+
+  it("preserves outside-basePath pathnames when config rules opt out", () => {
+    const result = normalized(normalizeRscRequest(req("/outside"), "/app", true));
+    expect(result.pathname).toBe("/outside");
+    expect(result.hadBasePath).toBe(false);
+  });
+
+  it("returns the parsed URL object so middleware can later mutate url.search", () => {
+    const result = normalized(normalizeRscRequest(req("/page?foo=bar"), ""));
+    expect(result.url).toBeInstanceOf(URL);
+    expect(result.url.searchParams.get("foo")).toBe("bar");
+  });
+
+  it("basePath + /__vinext/ bypass: /__vinext/ with basePath returns valid result", () => {
+    const result = normalized(
+      normalizeRscRequest(req("/__vinext/prerender/pages-static-paths"), "/app"),
+    );
+    expect(result.pathname).toBe("/__vinext/prerender/pages-static-paths");
+  });
+});
+
+// ── normalizeMountedSlotsHeader (standalone) ─────────────────────────────────
+
+describe("normalizeMountedSlotsHeader", () => {
+  it("returns null for null input", () => {
+    expect(normalizeMountedSlotsHeader(null)).toBeNull();
+  });
+
+  it("returns null for undefined input", () => {
+    expect(normalizeMountedSlotsHeader(undefined)).toBeNull();
+  });
+
+  it("returns null for blank-only string", () => {
+    expect(normalizeMountedSlotsHeader("   \t\n  ")).toBeNull();
+  });
+
+  it("deduplicates and sorts whitespace-separated slot ids", () => {
+    expect(
+      normalizeMountedSlotsHeader(" slot:sidebar:/  slot:modal:/ slot:sidebar:/\tslot:cart:/ "),
+    ).toBe("slot:cart:/ slot:modal:/ slot:sidebar:/");
+  });
+
+  it("handles single slot id", () => {
+    expect(normalizeMountedSlotsHeader("slot:modal:/")).toBe("slot:modal:/");
+  });
+
+  it("rejects tokens that do not match the slot:<name>:<treePath> wire format", () => {
+    // SECURITY-AUDIT-2026-05 F-PROD-1: external requests must not be able to
+    // inject arbitrary strings into the cache key. Anything that does not
+    // match the legitimate wire format is dropped.
+    expect(normalizeMountedSlotsHeader("modal")).toBeNull();
+    expect(normalizeMountedSlotsHeader("attacker:value")).toBeNull();
+    expect(normalizeMountedSlotsHeader("slot:nopath")).toBeNull();
+    expect(normalizeMountedSlotsHeader("slot::/")).toBeNull();
+    expect(normalizeMountedSlotsHeader("slot:name:notabspath")).toBeNull();
+  });
+});

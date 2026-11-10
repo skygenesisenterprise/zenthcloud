@@ -1,0 +1,272 @@
+/**
+ * Next.js Compatibility Tests: next/dynamic
+ *
+ * Ported from: https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/dynamic/dynamic.test.ts
+ *
+ * Tests next/dynamic behavior in the App Router:
+ * - React.lazy in client components (SSR rendering)
+ * - dynamic() in server components (SSR rendering)
+ * - dynamic() in client components (SSR rendering)
+ * - dynamic() server component importing client component
+ * - dynamic() with ssr: false (content NOT present in SSR HTML)
+ * - dynamic() with named exports (via .then(mod => mod.X))
+ *
+ * Fixture pages live in:
+ * - fixtures/app-basic/app/nextjs-compat/dynamic/ (main page + components)
+ * - fixtures/app-basic/app/nextjs-compat/dynamic/named-export/ (named export sub-page)
+ * - fixtures/app-basic/app/nextjs-compat/dynamic/ssr-false-only/ (isolated ssr:false test)
+ * - fixtures/app-basic/app/nextjs-compat/dynamic/{default,default-server,default-loading}/
+ *   (slow loader with and without a loading option)
+ */
+
+import { describe, it, expect, beforeAll, afterAll } from "vite-plus/test";
+import type { ViteDevServer } from "vite-plus";
+import { APP_FIXTURE_DIR, startFixtureServer, fetchHtml } from "../helpers.js";
+
+describe("Next.js compat: next/dynamic", () => {
+  let server: ViteDevServer;
+  let baseUrl: string;
+
+  beforeAll(async () => {
+    ({ server, baseUrl } = await startFixtureServer(APP_FIXTURE_DIR, {
+      appRouter: true,
+    }));
+    // Warm up
+    await fetch(`${baseUrl}/`).catch(() => {});
+  }, 60_000);
+
+  afterAll(async () => {
+    await server?.close();
+  });
+
+  // ── Main /dynamic page ───────────────────────────────────────
+
+  // Next.js: 'should handle next/dynamic in SSR correctly'
+  // Source: https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/dynamic/dynamic.test.ts#L17-L27
+  //
+  // The main /dynamic page composes:
+  // 1. LazyClientComponent (React.lazy) -> renders "next-dynamic lazy"
+  // 2. NextDynamicServerComponent (dynamic() in server) -> renders "next-dynamic dynamic on server"
+  // 3. NextDynamicClientComponent (dynamic() in client) -> renders "next-dynamic dynamic on client"
+  //    Also includes DynamicNoSSR (ssr:false) -> should NOT be in SSR HTML
+  // 4. NextDynamicServerImportClientComponent -> renders "next-dynamic server import client"
+
+  it("SSR: should contain React.lazy loaded content", async () => {
+    const { html } = await fetchHtml(baseUrl, "/nextjs-compat/dynamic");
+    expect(html).toContain("next-dynamic lazy");
+  });
+
+  it("SSR: should contain dynamic() server component content", async () => {
+    const { html } = await fetchHtml(baseUrl, "/nextjs-compat/dynamic");
+    expect(html).toContain("next-dynamic dynamic on server");
+  });
+
+  it("SSR: should contain dynamic() client component content", async () => {
+    const { html } = await fetchHtml(baseUrl, "/nextjs-compat/dynamic");
+    expect(html).toContain("next-dynamic dynamic on client");
+    expect(html).toContain('id="css-text-dynamic-client"');
+  });
+
+  // Regression test for issue #75: dynamic() client components must render
+  // their own imported component, not another client component's content.
+  it("SSR: dynamic() client should not render LazyClientComponent content (#75)", async () => {
+    const { html } = await fetchHtml(baseUrl, "/nextjs-compat/dynamic");
+    // class="hi" appears exactly once (from LazyClientComponent), not duplicated
+    // by NextDynamicClientComponent rendering the wrong module
+    const hiMatches = (html.match(/class="hi"/g) || []).length;
+    expect(hiMatches).toBe(1);
+  });
+
+  it("SSR: should contain dynamic() server-imported client content", async () => {
+    const { html } = await fetchHtml(baseUrl, "/nextjs-compat/dynamic");
+    expect(html).toContain("next-dynamic server import client");
+  });
+
+  it("SSR: should NOT contain ssr:false client content in HTML", async () => {
+    const { html } = await fetchHtml(baseUrl, "/nextjs-compat/dynamic");
+    expect(html).not.toContain("next-dynamic dynamic no ssr on client");
+  });
+
+  // ── Named export ─────────────────────────────────────────────
+
+  // Next.js: 'should support dynamic import with accessing named exports from client component'
+  // Source: https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/dynamic/dynamic.test.ts#L97-L100
+  //
+  // Uses dynamic(() => import('./client').then(mod => ({ default: mod.Button })))
+
+  it("SSR: named export via dynamic() should render button content", async () => {
+    const { html } = await fetchHtml(baseUrl, "/nextjs-compat/dynamic/named-export");
+    expect(html).toContain("this is a client button");
+  });
+
+  // ── SSR false only page ──────────────────────────────────────
+
+  // Next.js: 'should not render client component imported through ssr: false in client components'
+  // Source: https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/dynamic/dynamic.test.ts#L79-L96
+
+  it("SSR: ssr:false page should contain static content", async () => {
+    const { html } = await fetchHtml(baseUrl, "/nextjs-compat/dynamic/ssr-false-only");
+    expect(html).toContain("This is static content");
+  });
+
+  it("SSR: ssr:false page should NOT contain dynamic content", async () => {
+    const { html } = await fetchHtml(baseUrl, "/nextjs-compat/dynamic/ssr-false-only");
+    expect(html).not.toContain("next-dynamic dynamic no ssr on client");
+  });
+
+  // ── Suspense boundary only with ssr:false or loading ─────────
+
+  // Next.js: 'should not render loading by default'
+  // Source: https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/dynamic/dynamic.test.ts#L62-L65
+  //
+  // Next's Loadable only wraps the lazy component in <Suspense> when
+  // `ssr: false` or a `loading` component is set:
+  // https://github.com/vercel/next.js/blob/canary/packages/next/src/shared/lib/lazy-dynamic/loadable.tsx
+  // Without a boundary, the slow import blocks the shell, so the component is
+  // in the initial HTML rather than streamed into a hidden segment and
+  // revealed after first paint (issue #3718).
+  //
+  // The lazy component is cached at module level, so only the first render
+  // of each page suspends. The exact markup assertion still catches a
+  // boundary on a cached render (it emits <!--$-->), but keep these the first
+  // requests for their URLs so they also cover the pending-shell case.
+  for (const [label, urlPath] of [
+    ["client", "/nextjs-compat/dynamic/default"],
+    ["server", "/nextjs-compat/dynamic/default-server"],
+  ] as const) {
+    it(`SSR: dynamic() without loading renders inline in the shell (${label} component)`, async () => {
+      const { html } = await fetchHtml(baseUrl, urlPath);
+      expect(html).toContain(
+        '<div><div id="dynamic-component">This is a dynamically imported component</div></div>',
+      );
+      expect(html).not.toContain("<!--$?-->");
+      expect(html).not.toMatch(/<div hidden id="S:/);
+    });
+  }
+
+  // Without a boundary of its own, a slow dynamic() suspends to the nearest
+  // parent boundary, here the route's loading.tsx: its fallback is in the
+  // shell, and the component streams in behind it with no boundary of its
+  // own. This must be the first request for its URL: a cached render resolves
+  // synchronously.
+  it("SSR: dynamic() without loading suspends to the parent loading.tsx boundary", async () => {
+    const { html } = await fetchHtml(baseUrl, "/nextjs-compat/dynamic/default-parent-loading");
+    expect(html).toContain("<!--$?-->");
+    expect(html).toContain('<p id="parent-loading">Loading page...</p>');
+    // The page streams in behind that fallback with the component in place, or
+    // with a placeholder for it as part of the same boundary, never inside a
+    // boundary of its own (`<div><!--$?--><template id="B:…`).
+    expect(html).toMatch(
+      /<div hidden id="S:\d+"><div>(?:<template id="P:\d+"><\/template>|<div id="dynamic-component">)/,
+    );
+    expect(html).toContain(
+      '<div id="dynamic-component">This is a dynamically imported component</div>',
+    );
+  });
+
+  // Next.js: 'should render loading by default if loading is specified and loader is slow'
+  // Source: https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/dynamic/dynamic.test.ts#L53-L60
+  //
+  // An explicit loading component keeps the Suspense boundary: the shell
+  // flushes the loading UI and the component streams in behind it. This must
+  // be the first request for its URL: a cached render resolves synchronously.
+  it("SSR: dynamic() with loading streams the component behind the loading fallback", async () => {
+    const { html } = await fetchHtml(baseUrl, "/nextjs-compat/dynamic/default-loading");
+    expect(html).toContain("<div><!--$?-->");
+    expect(html).toContain("<p>Loading...</p>");
+    expect(html).toMatch(
+      /<div hidden id="S:\d+"><div id="dynamic-component">This is a dynamically imported component<\/div>/,
+    );
+  });
+
+  // ── RSC (pure server component) dynamic() ────────────────────
+
+  // Regression test for: https://github.com/cloudflare/vinext/pull/466
+  //
+  // Verifies that dynamic() works when called from a pure server component.
+  // In React 19.x, React.lazy IS available in the react-server condition,
+  // so this exercises the standard LazyServer path in RSC.
+  // The AsyncServerDynamic fallback (for hypothetical future React versions
+  // that strip lazy) is covered by unit tests in tests/dynamic.test.ts.
+
+  it("RSC: dynamic() in a pure server component renders content", async () => {
+    const { html } = await fetchHtml(baseUrl, "/nextjs-compat/dynamic/rsc-dynamic");
+    expect(html).toContain("next-dynamic dynamic on rsc");
+    expect(html).toContain('id="css-text-dynamic-rsc"');
+  });
+
+  // Ported from Next.js: test/e2e/app-dir/dynamic-import/dynamic-import.test.ts
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/dynamic-import/dynamic-import.test.ts
+  it("RSC: resolves extensionless variable dynamic imports", async () => {
+    const { html } = await fetchHtml(baseUrl, "/nextjs-compat/dynamic/extensionless-import");
+    expect(html).toContain("<button>submit</button>");
+    expect(html).toContain("<p>file import</p>");
+    expect(html).toContain("<p>json import</p>");
+    expect(html).toContain("<p>prefixed import</p>");
+    expect(html).toContain("<p>suffixless import</p>");
+  });
+
+  // Ported from Next.js: test/e2e/app-dir/next-dynamic-csp-nonce/next-dynamic-csp-nonce.test.ts
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/next-dynamic-csp-nonce/next-dynamic-csp-nonce.test.ts
+  it("SSR: adds nonce attributes to preload links when next/dynamic runs under CSP", async () => {
+    const { html, res } = await fetchHtml(baseUrl, "/nextjs-compat/dynamic?csp-nonce=1");
+    expect(res.headers.get("content-security-policy")).toBe(
+      "script-src 'nonce-vinext-test-nonce' 'strict-dynamic';",
+    );
+
+    const preloadLinks = [
+      ...html.matchAll(/<link\b[^>]*rel="(?:preload|modulepreload)"[^>]*>/g),
+    ].map((match) => match[0]);
+    expect(preloadLinks.length).toBeGreaterThan(0);
+    for (const tag of preloadLinks) {
+      expect(tag).toContain('nonce="vinext-test-nonce"');
+    }
+  });
+
+  // ── Browser-only tests (documented, not ported) ──────────────
+  //
+  // SKIP: 'should handle next/dynamic in hydration correctly'
+  //   Source: dynamic.test.ts#L29-L36
+  //   WHY: Requires Playwright. After hydration, ssr:false component appears
+  //   via client-side rendering. The #css-text-dynamic-no-ssr-client element
+  //   should show "next-dynamic dynamic no ssr on client:suffix".
+  //   TO PORT: tests/e2e/app-router/nextjs-compat/dynamic.spec.ts
+  //
+  // SKIP: 'should handle ssr: false in pages when appDir is enabled'
+  //   Source: dynamic.test.ts#L13-L21
+  //   WHY: Tests Pages Router /legacy/no-ssr. We're testing App Router patterns only.
+  //   N/A for this suite.
+  //
+  // SKIP: 'should generate correct client manifest for dynamic chunks'
+  //   Source: dynamic.test.ts#L38-L41
+  //   WHY: Tests chunk loading via a specific /chunk-loading/server page.
+  //   Would need a dedicated fixture. Low priority for compat.
+  //   N/A — build manifest structure differs in vinext.
+  //
+  // SKIP: 'should render loading by default if loading is specified and loader is slow'
+  //   Source: dynamic.test.ts#L43-L50
+  //   WHY: Dev-only behavior — slow loader shows loading component. In production
+  //   the component resolves. The test patches a file at runtime (dev-only).
+  //   N/A for HTTP-level SSR testing.
+  //
+  // SKIP: 'should ignore next/dynamic in routes'
+  //   Source: dynamic.test.ts#L57-L60
+  //   WHY: Tests route handler (API route) behavior. Covered in Chunk 5 (app-routes).
+  //
+  // SKIP: 'should ignore next/dynamic in sitemap'
+  //   Source: dynamic.test.ts#L62-L65
+  //   WHY: Tests sitemap.xml generation. Vinext sitemap support is a separate feature.
+  //   N/A for this suite.
+  //
+  // SKIP: 'should not render client component imported through ssr: false in client components in edge runtime'
+  //   Source: dynamic.test.ts#L68-L96
+  //   WHY: Tests edge runtime variant + build manifest inspection. Both need Playwright
+  //   and prod build. N/A for dev SSR tests.
+  //
+  // SKIP: 'should support dynamic import with TLA in client components'
+  //   Source: dynamic.test.ts#L102-L116
+  //   WHY: Tests top-level await in client component dynamic imports.
+  //   Partially testable at SSR level, but the key assertion (no-ssr text empty
+  //   on server, present after hydration) needs Playwright.
+  //   TO PORT: tests/e2e/app-router/nextjs-compat/dynamic.spec.ts
+});

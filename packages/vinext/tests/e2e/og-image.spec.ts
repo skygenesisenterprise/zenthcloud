@@ -1,0 +1,185 @@
+/**
+ * E2E tests for @next/og ImageResponse (OG image generation).
+ *
+ * Tests that /api/og returns a valid PNG at the expected dimensions (1200×630),
+ * that the title query param changes the output, and that different params
+ * produce different images.
+ *
+ * Also covers /api/og-custom-font, which loads a font asset that lives three
+ * directories up at the project root (assets/noto-sans.ttf) via
+ * `fetch(new URL("../../../assets/noto-sans.ttf", import.meta.url))`. This is the
+ * regression test for the vinext:og-inline-fetch-assets plugin's handling of
+ * ../-relative paths — without build-time inlining the route 500s on Workers
+ * (import.meta.url === "worker") and on Node.js (fetch() rejects file:// URLs).
+ *
+ * This spec runs across three Playwright projects:
+ *   - app-router      (app-basic fixture, Vite dev, port 4174)
+ *   - cloudflare-dev  (app-router-cloudflare, Vite dev + @cloudflare/vite-plugin, port 4178)
+ *   - cloudflare-workers (app-router-cloudflare, wrangler/miniflare, port 4176)
+ *
+ * PNG signature bytes: 0x89 0x50 0x4E 0x47 0x0D 0x0A 0x1A 0x0A
+ * PNG width/height are encoded as big-endian uint32 at bytes 16-19 and 20-23
+ * of the IHDR chunk (which starts at byte 8).
+ */
+
+import { test, expect } from "@playwright/test";
+
+/** Read a big-endian uint32 from a Buffer at the given offset. */
+function readUint32BE(buf: Buffer, offset: number): number {
+  return (
+    ((buf[offset] << 24) | (buf[offset + 1] << 16) | (buf[offset + 2] << 8) | buf[offset + 3]) >>> 0
+  );
+}
+
+test.describe("OG Image Generation (@next/og)", () => {
+  test("GET /api/og returns a PNG", async ({ request }) => {
+    const response = await request.get("/api/og");
+    expect(response.status()).toBe(200);
+
+    const contentType = response.headers()["content-type"];
+    expect(contentType).toContain("image/png");
+  });
+
+  test("GET /api/og returns a PNG with correct dimensions (1200×630)", async ({ request }) => {
+    const response = await request.get("/api/og");
+    expect(response.status()).toBe(200);
+
+    const buffer = Buffer.from(await response.body());
+
+    // Verify PNG signature
+    expect(buffer[0]).toBe(0x89);
+    expect(buffer[1]).toBe(0x50); // P
+    expect(buffer[2]).toBe(0x4e); // N
+    expect(buffer[3]).toBe(0x47); // G
+
+    // IHDR chunk starts at byte 8; width at byte 16, height at byte 20
+    const width = readUint32BE(buffer, 16);
+    const height = readUint32BE(buffer, 20);
+
+    expect(width).toBe(1200);
+    expect(height).toBe(630);
+  });
+
+  test("GET /api/og without title uses default text", async ({ request }) => {
+    const response = await request.get("/api/og");
+    expect(response.status()).toBe(200);
+
+    // Must be a non-empty PNG
+    const buffer = Buffer.from(await response.body());
+    expect(buffer.length).toBeGreaterThan(1000);
+
+    // PNG signature
+    expect(buffer[0]).toBe(0x89);
+    expect(buffer[1]).toBe(0x50);
+  });
+
+  test("GET /api/og?title=Hello renders with custom title", async ({ request }) => {
+    const response = await request.get("/api/og?title=Hello");
+    expect(response.status()).toBe(200);
+
+    const contentType = response.headers()["content-type"];
+    expect(contentType).toContain("image/png");
+
+    const buffer = Buffer.from(await response.body());
+    expect(buffer.length).toBeGreaterThan(1000);
+  });
+
+  test("different title params produce different images", async ({ request }) => {
+    const [res1, res2] = await Promise.all([
+      request.get("/api/og?title=Hello"),
+      request.get("/api/og?title=World"),
+    ]);
+
+    expect(res1.status()).toBe(200);
+    expect(res2.status()).toBe(200);
+
+    const buf1 = Buffer.from(await res1.body());
+    const buf2 = Buffer.from(await res2.body());
+
+    // Both must be valid PNGs
+    expect(buf1[0]).toBe(0x89);
+    expect(buf2[0]).toBe(0x89);
+
+    // Different text → different pixels → different buffers
+    expect(buf1.equals(buf2)).toBe(false);
+  });
+
+  test("same title param produces identical images (deterministic)", async ({ request }) => {
+    const [res1, res2] = await Promise.all([
+      request.get("/api/og?title=Deterministic"),
+      request.get("/api/og?title=Deterministic"),
+    ]);
+
+    expect(res1.status()).toBe(200);
+    expect(res2.status()).toBe(200);
+
+    const buf1 = Buffer.from(await res1.body());
+    const buf2 = Buffer.from(await res2.body());
+
+    expect(buf1.equals(buf2)).toBe(true);
+  });
+});
+
+/**
+ * Regression coverage for OG routes that load a custom font from a ../-relative
+ * asset path. Ported from Next.js:
+ *   test/e2e/og-routes-custom-font/og-routes-custom-font.test.ts
+ *   https://github.com/vercel/next.js/blob/canary/test/e2e/og-routes-custom-font/og-routes-custom-font.test.ts
+ *
+ * The /api/og-custom-font route reads assets/noto-sans.ttf (at the project root,
+ * three levels up from the route file) via
+ * `fetch(new URL("../../../assets/noto-sans.ttf", import.meta.url))` and passes
+ * it to ImageResponse's `fonts` option. The vinext:og-inline-fetch-assets plugin
+ * must inline that asset as base64 at build/transform time; otherwise the runtime
+ * fetch throws "TypeError: Invalid URL" on Workers (import.meta.url === "worker")
+ * and rejects on Node.js (fetch() does not support file:// URLs), making the
+ * route return a 500. The plugin previously only matched ./-relative paths, so
+ * this ../-relative fixture reproduces that gap.
+ */
+test.describe("OG Image Generation with ../-relative custom font (@next/og)", () => {
+  test("GET /api/og-custom-font returns a 1200×630 PNG", async ({ request }) => {
+    const response = await request.get("/api/og-custom-font");
+    expect(response.status()).toBe(200);
+
+    const contentType = response.headers()["content-type"];
+    expect(contentType).toContain("image/png");
+
+    const buffer = Buffer.from(await response.body());
+
+    // PNG signature
+    expect(buffer[0]).toBe(0x89);
+    expect(buffer[1]).toBe(0x50); // P
+    expect(buffer[2]).toBe(0x4e); // N
+    expect(buffer[3]).toBe(0x47); // G
+
+    // IHDR chunk starts at byte 8; width at byte 16, height at byte 20
+    expect(readUint32BE(buffer, 16)).toBe(1200);
+    expect(readUint32BE(buffer, 20)).toBe(630);
+  });
+});
+
+/**
+ * Vinext-specific coverage for fonts loaded by an external linked package.
+ * The package module itself evaluates `new URL("./noto-sans.ttf", import.meta.url)`,
+ * so this exercises resolveId provenance and package-scoped asset containment
+ * through Cloudflare Vite dev and the built Workers bundle. The shared
+ * app-router fixture is skipped because many integration tests copy its app/
+ * tree without copying fixture-specific Vite aliases.
+ */
+test.describe("OG Image Generation with a linked-package font", () => {
+  test("GET /api/og-linked-font returns a 1200×630 PNG", async ({ request }, testInfo) => {
+    test.skip(testInfo.project.name === "app-router", "linked package fixture is Cloudflare-only");
+
+    const response = await request.get("/api/og-linked-font");
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toContain("image/png");
+
+    const buffer = Buffer.from(await response.body());
+    expect(buffer[0]).toBe(0x89);
+    expect(buffer[1]).toBe(0x50);
+    expect(buffer[2]).toBe(0x4e);
+    expect(buffer[3]).toBe(0x47);
+    expect(readUint32BE(buffer, 16)).toBe(1200);
+    expect(readUint32BE(buffer, 20)).toBe(630);
+  });
+});

@@ -1,0 +1,137 @@
+import {
+  resolveHardNavigationTargetFromRscResponse,
+  stripRscCacheBustingSearchParam,
+  toPathAbsolutePathname,
+} from "./app-rsc-cache-busting.js";
+import { isDangerousScheme, reportBlockedDangerousNavigation } from "vinext/shims/url-safety";
+
+const MAX_RSC_REDIRECT_DEPTH = 10;
+
+export function blockDangerousStreamedRscRedirect(
+  response: Response,
+  streamedRedirectTarget: string | null,
+): boolean {
+  if (streamedRedirectTarget === null || !isDangerousScheme(streamedRedirectTarget)) {
+    return false;
+  }
+
+  void response.body?.cancel().catch(() => {});
+  reportBlockedDangerousNavigation();
+  return true;
+}
+
+type RscRedirectHistoryUpdateMode = "push" | "replace" | undefined;
+
+type RscRedirectLifecycleDecision =
+  | { href: string; kind: "no-redirect" }
+  | {
+      href: string;
+      historyUpdateMode: RscRedirectHistoryUpdateMode;
+      kind: "follow";
+      previousNextUrl: string | null;
+      redirectDepth: number;
+    }
+  | {
+      href: string;
+      kind: "terminal-hard-navigation";
+      reason: "externalRedirect" | "maxRedirectsExceeded";
+      redirectDepth: number;
+    };
+
+// The hrefs the router follows are path-absolute, so a "//" pathname keeps
+// its "/." prefix and is not read as a protocol-relative URL naming another host.
+function toVisibleAppHref(href: string, origin: string): string {
+  const url = new URL(href, origin);
+  stripRscCacheBustingSearchParam(url);
+  return `${toPathAbsolutePathname(url.pathname)}${url.search}${url.hash}`;
+}
+
+function toStreamedRedirectVisibleAppHref(url: URL): string {
+  return `${toPathAbsolutePathname(url.pathname)}${url.search}${url.hash}`;
+}
+
+function resolveRedirectLifecycleHopFromTarget(options: {
+  currentHref: string;
+  historyUpdateMode: RscRedirectHistoryUpdateMode;
+  maxRedirectDepth?: number;
+  origin: string;
+  redirectedHref: string;
+  redirectDepth: number;
+  requestPreviousNextUrl: string | null;
+  targetUrl: URL;
+}): RscRedirectLifecycleDecision {
+  if (options.targetUrl.origin !== options.origin) {
+    return {
+      href: options.targetUrl.href,
+      kind: "terminal-hard-navigation",
+      reason: "externalRedirect",
+      redirectDepth: options.redirectDepth,
+    };
+  }
+
+  const redirectedHref = options.redirectedHref;
+  if (redirectedHref === toVisibleAppHref(options.currentHref, options.origin)) {
+    return { href: redirectedHref, kind: "no-redirect" };
+  }
+
+  const maxRedirectDepth = options.maxRedirectDepth ?? MAX_RSC_REDIRECT_DEPTH;
+  if (options.redirectDepth >= maxRedirectDepth) {
+    return {
+      href: redirectedHref,
+      kind: "terminal-hard-navigation",
+      reason: "maxRedirectsExceeded",
+      redirectDepth: options.redirectDepth,
+    };
+  }
+
+  return {
+    href: redirectedHref,
+    historyUpdateMode: options.historyUpdateMode,
+    kind: "follow",
+    previousNextUrl: options.requestPreviousNextUrl,
+    redirectDepth: options.redirectDepth + 1,
+  };
+}
+
+export function resolveRscRedirectLifecycleHop(options: {
+  currentHref: string;
+  historyUpdateMode: RscRedirectHistoryUpdateMode;
+  maxRedirectDepth?: number;
+  origin: string;
+  redirectDepth: number;
+  requestPreviousNextUrl: string | null;
+  responseUrl: string;
+}): RscRedirectLifecycleDecision {
+  const responseUrl = new URL(options.responseUrl, options.origin);
+  return resolveRedirectLifecycleHopFromTarget({
+    ...options,
+    redirectedHref: resolveHardNavigationTargetFromRscResponse(
+      responseUrl.href,
+      options.currentHref,
+      options.origin,
+    ),
+    targetUrl: responseUrl,
+  });
+}
+
+export function resolveStreamedRscRedirectLifecycleHop(options: {
+  currentHref: string;
+  historyUpdateMode: Exclude<RscRedirectHistoryUpdateMode, undefined>;
+  maxRedirectDepth?: number;
+  origin: string;
+  redirectDepth: number;
+  requestPreviousNextUrl: string | null;
+  streamedRedirectTarget: string;
+}): RscRedirectLifecycleDecision {
+  // The target is a URL reference from the page being fetched, so a
+  // scheme-relative one such as `https:foo` resolves against that page's path.
+  const requestedUrl = new URL(options.currentHref, options.origin);
+  const streamedRedirectUrl = new URL(options.streamedRedirectTarget, requestedUrl);
+  // Streamed headers are semantic redirect targets, so preserve their target
+  // path/search/hash while the shared same-target guard normalizes currentHref.
+  return resolveRedirectLifecycleHopFromTarget({
+    ...options,
+    redirectedHref: toStreamedRedirectVisibleAppHref(streamedRedirectUrl),
+    targetUrl: streamedRedirectUrl,
+  });
+}

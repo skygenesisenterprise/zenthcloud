@@ -1,0 +1,89 @@
+// Ported from Next.js: test/e2e/app-dir/trailingslash/trailingslash.test.ts
+// https://github.com/vercel/next.js/blob/v16.2.6/test/e2e/app-dir/trailingslash/trailingslash.test.ts
+
+import fs from "node:fs";
+import path from "node:path";
+import { createBuilder, preview } from "vite";
+import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
+import vinext from "../packages/vinext/src/index.js";
+
+const FIXTURE_DIR = path.resolve(import.meta.dirname, "./fixtures/app-trailing-slash-isr");
+
+describe("App Router trailing-slash ISR with generated static params", () => {
+  let previewServer: Awaited<ReturnType<typeof preview>>;
+  let baseUrl: string;
+
+  beforeAll(async () => {
+    const builder = await createBuilder({
+      root: FIXTURE_DIR,
+      plugins: [vinext({ appDir: FIXTURE_DIR })],
+      logLevel: "silent",
+    });
+    await builder.buildApp();
+
+    previewServer = await preview({
+      root: FIXTURE_DIR,
+      plugins: [vinext({ appDir: FIXTURE_DIR })],
+      preview: { port: 0 },
+      logLevel: "silent",
+    });
+    const address = previewServer.httpServer.address();
+    baseUrl = address && typeof address === "object" ? `http://localhost:${address.port}` : "";
+  }, 120_000);
+
+  afterAll(() => {
+    previewServer?.httpServer.close();
+    fs.rmSync(path.join(FIXTURE_DIR, "dist"), { recursive: true, force: true });
+  });
+
+  it("serves the rewritten generated path from its canonical source URL", async () => {
+    const destinationResponse = await fetch(`${baseUrl}/en/legacy/`);
+    const destinationHtml = await destinationResponse.text();
+    const response = await fetch(`${baseUrl}/en`);
+    const html = await response.text();
+
+    expect(destinationResponse.status).toBe(200);
+    expect(destinationHtml).toContain('id="generated-at"');
+    expect(response.status).toBe(200);
+    expect(response.url).toBe(`${baseUrl}/en/`);
+    expect(html).toContain('id="generated-at"');
+    expect(html).toMatch(/id="generated-at">[^<]{10,}/);
+    expect(html).toContain('id="lang">en');
+  });
+
+  // "/guarded/(.*)" accepts /guarded/ only as requested, slash included.
+  // Next.js then retests without the slash and ends the request with an empty
+  // 200; vinext runs middleware.
+  it("runs middleware for a request only the slashed matcher accepts", async () => {
+    // The RSC request follows the cache-busting `_rsc` redirect first.
+    for (const headers of [{}, { RSC: "1" }] as Record<string, string>[]) {
+      const response = await fetch(`${baseUrl}/guarded/`, { headers });
+
+      expect(new URL(response.url).pathname).toBe("/guarded/");
+      expect(response.status).toBe(403);
+      expect(await response.text()).toBe("blocked by middleware");
+    }
+
+    const nested = await fetch(`${baseUrl}/guarded/inner/`, { redirect: "manual" });
+    expect(nested.status).toBe(403);
+    expect(await nested.text()).toBe("blocked by middleware");
+  });
+
+  // Next.js matches /guarded/.rsc whole: the slash before the suffix is not a
+  // terminal slash, and the compiled matcher permits the suffix, so middleware
+  // runs.
+  it("runs middleware for a .rsc payload URL that a slash-ending matcher accepts", async () => {
+    const response = await fetch(`${baseUrl}/guarded/.rsc`);
+
+    expect(response.status).toBe(403);
+    expect(await response.text()).toBe("blocked by middleware");
+  });
+
+  // Next.js's trailingSlash: true redirect has no /api exception.
+  it("redirects an unslashed route handler request to its slashed spelling", async () => {
+    const response = await fetch(`${baseUrl}/api/revalidate?lang=en`, { redirect: "manual" });
+
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe("/api/revalidate/?lang=en");
+  });
+});

@@ -1,0 +1,2533 @@
+import { Fragment, Suspense, type ComponentType, type ReactNode } from "react";
+import {
+  AppElementsWire,
+  APP_LAYOUT_IDS_KEY,
+  APP_PREFETCH_LOADING_SHELL_MARKER_KEY,
+  APP_ROOT_LAYOUT_KEY,
+  APP_SKIPPED_LAYOUT_IDS_KEY,
+  APP_STATIC_SIBLINGS_KEY,
+  APP_STREAMING_METADATA_BODY_ID_PREFIX,
+  normalizeAppElementsSlotBindings,
+  type AppElementValue,
+  type AppElements,
+  type AppElementsInterception,
+  type AppElementsSlotBinding,
+} from "./app-elements.js";
+import {
+  ErrorBoundary,
+  ForbiddenBoundary,
+  HttpAccessFallbackPassthrough,
+  GlobalErrorBoundary,
+  NotFoundBoundary,
+  RedirectBoundary,
+  UnauthorizedBoundary,
+} from "vinext/shims/error-boundary";
+import { AppRouterScrollTarget } from "vinext/shims/app-router-scroll";
+import DefaultGlobalError from "vinext/shims/default-global-error";
+import DefaultForbidden from "vinext/shims/default-forbidden";
+import DefaultNotFound from "vinext/shims/default-not-found";
+import DefaultUnauthorized from "vinext/shims/default-unauthorized";
+import type { AppRouteSemanticIds } from "../routing/app-route-graph.js";
+import { LayoutSegmentProvider } from "vinext/shims/layout-segment-context";
+import { withUseCacheLayoutMarker } from "vinext/shims/internal/app-page-props-cache-key";
+import {
+  MetadataHead,
+  ViewportHead,
+  renderMetadataToHtml,
+  type Metadata,
+  type Viewport,
+} from "vinext/shims/metadata";
+import {
+  BfcacheChildrenBoundary,
+  BfcacheSegmentBoundary,
+  Children,
+  ParallelSlot,
+  Slot,
+} from "vinext/shims/slot";
+import { StreamedIconsInsertion } from "vinext/shims/streamed-icons";
+import { fnv1a64 } from "vinext/internal/utils/hash";
+import { createBfcacheChildSegmentStateKey } from "./bfcache-identity.js";
+import { createInlineScriptTag, escapeHtmlAttr } from "./html.js";
+import type { AppPageParams } from "./app-page-boundary.js";
+import {
+  createAppRenderDependency,
+  invokeAppComponentMappingErrors,
+  isReactOwnedAppComponent,
+  renderAfterAppDependencies,
+  renderAppComponentWithDependencyBarrier,
+  type AppComponentSettledCallback,
+  type AppPageRenderDependency,
+  type AppRenderDependency,
+} from "./app-render-dependency.js";
+import {
+  APP_PAGE_NOT_FOUND_BOUNDARY_ID,
+  tagAppPageLayoutError,
+  tagAppPageSlotError,
+} from "./app-page-execution.js";
+import { createAppPageLayoutGate, registerAppPageLayoutGate } from "./app-page-layout-gate.js";
+import { hashMountedLayoutIdentity } from "./app-mounted-layouts.js";
+import { resolveAppPageBranchParams, resolveAppPageSegmentParams } from "./app-page-params.js";
+import { probeReactServerSubtree } from "./app-page-probe.js";
+import {
+  APP_RSC_RENDER_MODE_NAVIGATION,
+  APP_RSC_RENDER_MODE_PREFETCH_EMPTY,
+  APP_RSC_RENDER_MODE_PREFETCH_LOADING_SHELL,
+  type AppRscRenderMode,
+} from "./app-rsc-render-mode.js";
+import {
+  APP_PAGE_SEGMENT_KEY,
+  resolveAppPageChildSegments,
+  resolveAppPageSegmentStateKey,
+  resolveAppPageTemplateStateKey,
+  type AppPageSemanticSegment,
+  isAppPageRouteGroupSegment,
+} from "./app-page-segment-state.js";
+import { createAppPageSegmentPlan } from "./app-page-segment-plan.js";
+import type { AppPageRenderIdentity } from "./app-page-render-identity.js";
+import {
+  resolveAppPageModuleTraceSegment,
+  traceGetLayoutOrPageModule,
+} from "./app-page-tracing.js";
+
+export { resolveAppPageChildSegments } from "./app-page-segment-state.js";
+
+type AppPageComponentProps = {
+  children?: ReactNode;
+  error?: unknown;
+  params?: unknown;
+  reset?: () => void;
+} & Record<string, unknown>;
+
+type AppPageComponent = ComponentType<AppPageComponentProps>;
+type AppPageErrorComponent = ComponentType<{ error: unknown; reset: () => void }>;
+const APP_PAGE_SLOT_SEGMENT_KEY = "(__SLOT__)";
+const APP_PAGE_LAYOUT_PROBE_CHILD = <Fragment />;
+const DEFAULT_GLOBAL_ERROR_COMPONENT = DefaultGlobalError as AppPageErrorComponent;
+const DEFAULT_NOT_FOUND_COMPONENT = DefaultNotFound as AppPageComponent;
+const DEFAULT_FORBIDDEN_COMPONENT = DefaultForbidden as AppPageComponent;
+const DEFAULT_UNAUTHORIZED_COMPONENT = DefaultUnauthorized as AppPageComponent;
+
+function resolveSlotLayoutParams(
+  routeSegments: readonly string[],
+  treePosition: number,
+  params: AppPageParams,
+): AppPageParams {
+  return resolveAppPageBranchParams(routeSegments, treePosition, params);
+}
+
+export type AppPageModule = Record<string, unknown> & {
+  default?: AppPageComponent | null | undefined;
+};
+
+export type AppPageErrorModule = Record<string, unknown> & {
+  default?: AppPageErrorComponent | null | undefined;
+};
+
+export type AppPageRouteWiringSlot<
+  TModule extends AppPageModule = AppPageModule,
+  TErrorModule extends AppPageErrorModule = AppPageErrorModule,
+> = {
+  /** Graph-owned semantic slot identity. */
+  id?: string | null;
+  /** Slot prop name passed to the owning layout (e.g. "modal" from @modal). */
+  name: string;
+  default?: TModule | null;
+  configLayouts?: readonly (TModule | null | undefined)[] | null;
+  configLayoutTreePositions?: readonly number[] | null;
+  error?: TErrorModule | null;
+  errors?: readonly (TErrorModule | null | undefined)[] | null;
+  errorTreePositions?: readonly number[] | null;
+  layout?: TModule | null;
+  layoutIndex: number;
+  loading?: TModule | null;
+  loadings?: readonly (TModule | null | undefined)[] | null;
+  loadingTreePositions?: readonly number[] | null;
+  ownerTreePosition?: number | null;
+  notFound?: TModule | null;
+  notFoundTreePosition?: number | null;
+  notFounds?: readonly (TModule | null | undefined)[] | null;
+  notFoundTreePositions?: readonly number[] | null;
+  page?: TModule | null;
+  routeSegments?: readonly string[] | null;
+  /**
+   * Full URL pattern parts for the slot's mirrored sub-page. Set when the
+   * slot's params may differ from the route's (e.g. inherited slot whose
+   * dynamic markers have different names than the route's). The runtime
+   * matches the request URL against these parts to extract slot params.
+   */
+  slotPatternParts?: readonly string[] | null;
+  /** Param names captured by `slotPatternParts`, in order. */
+  slotParamNames?: readonly string[] | null;
+};
+
+export type AppPageRouteWiringRoute<
+  TModule extends AppPageModule = AppPageModule,
+  TErrorModule extends AppPageErrorModule = AppPageErrorModule,
+> = {
+  ids?: AppRouteSemanticIds | null;
+  error?: TErrorModule | null;
+  errorPaths?: readonly TErrorModule[] | null;
+  errors?: readonly (TErrorModule | null | undefined)[] | null;
+  errorTreePositions?: readonly number[] | null;
+  layoutTreePositions?: readonly number[] | null;
+  layouts: readonly (TModule | null | undefined)[];
+  loading?: TModule | null;
+  loadings?: readonly (TModule | null | undefined)[] | null;
+  loadingTreePositions?: readonly number[] | null;
+  notFound?: TModule | null;
+  notFounds?: readonly (TModule | null | undefined)[] | null;
+  notFoundTreePosition?: number | null;
+  forbidden?: TModule | null;
+  forbiddenTreePosition?: number | null;
+  forbiddens?: readonly (TModule | null | undefined)[] | null;
+  unauthorized?: TModule | null;
+  unauthorizedTreePosition?: number | null;
+  unauthorizeds?: readonly (TModule | null | undefined)[] | null;
+  /**
+   * Every segment's not-found, forbidden and unauthorized file, with or
+   * without a layout, aligned with the matching tree positions. Without them,
+   * only the files beside a layout wrap the tree.
+   */
+  segmentNotFounds?: readonly (TModule | null | undefined)[] | null;
+  segmentNotFoundTreePositions?: readonly number[] | null;
+  segmentForbiddens?: readonly (TModule | null | undefined)[] | null;
+  segmentForbiddenTreePositions?: readonly number[] | null;
+  segmentUnauthorizeds?: readonly (TModule | null | undefined)[] | null;
+  segmentUnauthorizedTreePositions?: readonly number[] | null;
+  routeSegments?: readonly string[];
+  childrenRouteSegments?: readonly string[] | null;
+  /**
+   * Keyed by stable slot id (name + owner path), not necessarily the slot prop name.
+   */
+  slots?: Readonly<Record<string, AppPageRouteWiringSlot<TModule, TErrorModule>>> | null;
+  childrenSlot?: {
+    /** Graph-owned semantic identity; the wire address is derived from ownerTreePath. */
+    id: string;
+    ownerTreePath: string;
+    state: AppElementsSlotBinding["state"];
+    /** A slot sub-route whose children its route segments don't describe. */
+    synthetic?: boolean;
+  } | null;
+  /**
+   * Static sibling segment names at each dynamic URL level for this route. Used
+   * by the client router to determine if a cached prefetch of the dynamic
+   * route can be reused when navigating to a static sibling URL.
+   *
+   * Mirrors Next.js's `staticSiblings` tuple element on the loader-tree
+   * dynamic segments — see `.nextjs-ref/packages/next/src/shared/lib/app-router-types.ts`
+   * (DynamicSegmentTuple) and the loader emit in
+   * `packages/next/src/build/webpack/loaders/next-app-loader/index.ts`.
+   *
+   * Issue: https://github.com/cloudflare/vinext/issues/1525
+   */
+  staticSiblings?: readonly string[] | null;
+  templateTreePositions?: readonly number[] | null;
+  templates?: readonly (TModule | null | undefined)[] | null;
+};
+
+export type AppPageSlotOverride<TModule extends AppPageModule = AppPageModule> = {
+  branchSegments?: readonly string[] | null;
+  /** Route-matcher-resolved semantic branch, aligned with the flattened branch. */
+  identitySegments?: readonly AppPageSemanticSegment[] | null;
+  layoutSegments?: readonly (readonly string[])[] | null;
+  layoutModules?: readonly (TModule | null | undefined)[] | null;
+  loadingModules?: readonly (TModule | null | undefined)[] | null;
+  loadingTreePositions?: readonly number[] | null;
+  /**
+   * Rendered beside the override's page, inside the slot's boundaries, as
+   * Next.js renders a page's MetadataOutlet in the page's own segment.
+   */
+  metadataOutlet?: ReactNode;
+  /** The intercepting route's not-found.tsx files and their branch tree positions. */
+  notFoundModules?: readonly (TModule | null | undefined)[] | null;
+  notFoundTreePositions?: readonly number[] | null;
+  /** The intercepting route's forbidden.tsx files and their branch tree positions. */
+  forbiddenModules?: readonly (TModule | null | undefined)[] | null;
+  forbiddenTreePositions?: readonly number[] | null;
+  /** The intercepting route's unauthorized.tsx files and their branch tree positions. */
+  unauthorizedModules?: readonly (TModule | null | undefined)[] | null;
+  unauthorizedTreePositions?: readonly number[] | null;
+  /** The intercepting route's error.tsx files and their branch tree positions. */
+  errorModules?: readonly (AppPageErrorModule | null | undefined)[] | null;
+  errorTreePositions?: readonly number[] | null;
+  /**
+   * The page module to render for this slot. Optional — when omitted, the
+   * slot's existing `page` is used (e.g. when the override only changes the
+   * slot's `params` for an inherited mirror with distinct param names).
+   */
+  pageModule?: TModule | null;
+  params?: AppPageParams;
+  props?: Readonly<Record<string, unknown>>;
+  routeSegments?: readonly string[] | null;
+};
+
+export type AppPageLayoutEntry<
+  TModule extends AppPageModule = AppPageModule,
+  TErrorModule extends AppPageErrorModule = AppPageErrorModule,
+> = {
+  errorModule?: TErrorModule | null | undefined;
+  forbiddenModule?: TModule | null | undefined;
+  id: string;
+  layoutModule?: TModule | null | undefined;
+  notFoundModule?: TModule | null | undefined;
+  unauthorizedModule?: TModule | null | undefined;
+  treePath: string;
+  treePosition: number;
+};
+
+type BuildAppPageRouteElementOptions<
+  TModule extends AppPageModule = AppPageModule,
+  TErrorModule extends AppPageErrorModule = AppPageErrorModule,
+> = {
+  element: ReactNode;
+  /**
+   * Builds the page element around the head's error outlet, in place of
+   * `element`, for a page whose own boundaries must catch its
+   * generateMetadata() errors, such as a sibling intercepting route's.
+   */
+  renderElementWithMetadataOutlet?: ((metadataOutlet: ReactNode) => ReactNode) | null;
+  globalErrorModule?: TErrorModule | null;
+  makeThenableParams: MakeThenableParams;
+  matchedParams: AppPageParams;
+  metadataPlacement?: "body" | "head";
+  /**
+   * Starts resolving the page's head. The head, its streamed body tags and its
+   * error outlet each call this while Flight renders them, so callers memoise
+   * it per render with React's `cache()`. Without it the head has no metadata.
+   */
+  resolveHead?: (() => AppPageRouteHead) | null;
+  resolvedMetadataPathname?: string;
+  scriptNonce?: string;
+  streamingMetadataOutletSuspended?: boolean;
+  trailingSlash?: boolean;
+  rootForbiddenModule?: TModule | null;
+  rootNotFoundModule?: TModule | null;
+  rootUnauthorizedModule?: TModule | null;
+  route: AppPageRouteWiringRoute<TModule, TErrorModule>;
+  createPageElement?: (
+    component: AppPageComponent,
+    props: Readonly<Record<string, unknown>>,
+    /** For a parallel slot's page or default: the layout that renders the slot. */
+    slotLayoutIndex?: number,
+    /** The id of the slot's own not-found boundary that catches its notFound(). */
+    slotNotFoundBoundary?: string,
+  ) => ReactNode;
+  pageRenderDependency?: AppPageRenderDependency | null;
+  searchParams?: unknown;
+  slotOverrides?: Readonly<Record<string, AppPageSlotOverride<TModule>>> | null;
+};
+
+/**
+ * A parallel slot's layout, whose notFound(), forbidden() and unauthorized()
+ * are caught above the layout that renders the slot, as its page's are. Next.js
+ * attaches the slot's own boundaries inside that layout, so they never catch it.
+ * https://github.com/vercel/next.js/blob/canary/packages/next/src/server/app-render/create-component-tree.tsx
+ */
+function createSlotLayoutElement(
+  LayoutComponent: AppPageComponent,
+  props: Readonly<Record<string, unknown>>,
+  slotLayoutIndex: number | undefined,
+  notFoundBoundary: string | undefined,
+): ReactNode {
+  if (slotLayoutIndex === undefined || isReactOwnedAppComponent(LayoutComponent)) {
+    return <LayoutComponent {...props} />;
+  }
+  const SlotLayoutInvoker = () =>
+    invokeAppComponentMappingErrors(LayoutComponent, props, (error) =>
+      tagAppPageSlotError(error, slotLayoutIndex, notFoundBoundary),
+    );
+  return <SlotLayoutInvoker />;
+}
+
+/**
+ * A route layout, whose notFound(), forbidden() and unauthorized() are caught
+ * above it: its own boundaries wrap only its `children`. The layout's index
+ * tags what it throws, so the response's fallback finds that boundary from the
+ * render. `onSettled` hears how the layout rendered.
+ * https://github.com/vercel/next.js/blob/canary/packages/next/src/server/app-render/create-component-tree.tsx
+ */
+function createRouteLayoutElement(
+  LayoutComponent: AppPageComponent,
+  props: Readonly<Record<string, unknown>>,
+  layoutIndex: number,
+  dependency: AppRenderDependency | undefined,
+  onSettled: AppComponentSettledCallback | undefined,
+): ReactNode {
+  const mapError = (error: unknown) => tagAppPageLayoutError(error, layoutIndex);
+  if (dependency) {
+    return renderAppComponentWithDependencyBarrier(
+      LayoutComponent,
+      props,
+      dependency,
+      mapError,
+      onSettled,
+    );
+  }
+  if (isReactOwnedAppComponent(LayoutComponent)) return <LayoutComponent {...props} />;
+  const RouteLayoutInvoker = () =>
+    invokeAppComponentMappingErrors(LayoutComponent, props, mapError, onSettled);
+  RouteLayoutInvoker.displayName = LayoutComponent.displayName ?? LayoutComponent.name;
+  return <RouteLayoutInvoker />;
+}
+
+/**
+ * A page's head as Flight renders it. `metadata` and `viewport` hold the tags
+ * to render, including the HTTP access fallback's when resolution failed, so
+ * they never reject. `outlet` rejects with the resolution error so the route's
+ * boundaries can handle it.
+ */
+export type AppPageRouteHead = {
+  metadata: Promise<Metadata | null>;
+  outlet: Promise<null>;
+  /** `null` when resolution failed: like Next.js, the head then has no viewport tags. */
+  viewport: Promise<Viewport | null>;
+};
+
+type MakeThenableParams = (params: AppPageParams) => unknown;
+
+type BuildAppPageElementsOptions<
+  TModule extends AppPageModule = AppPageModule,
+  TErrorModule extends AppPageErrorModule = AppPageErrorModule,
+> = BuildAppPageRouteElementOptions<TModule, TErrorModule> & {
+  interception?: AppElementsInterception | null;
+  interceptionId?: string | null;
+  interceptionContext?: string | null;
+  isRscRequest?: boolean;
+  /**
+   * The render can never be stored and, in production, is never sent with
+   * static cache headers (see app-page-dispatch.ts).
+   */
+  isUncacheableRender?: boolean;
+  /**
+   * Hashed segment identities of the layouts the navigating client holds (see
+   * app-mounted-layouts.ts). A render that can never be stored leaves out the
+   * outermost layouts it names, as Next.js renders only below where a
+   * navigation diverges from the client's router state.
+   */
+  mountedLayouts?: ReadonlySet<string> | null;
+  mountedSlotIds?: ReadonlySet<string> | null;
+  renderIdentity?: AppPageRenderIdentity;
+  /**
+   * The render has no PPR (see app-page-dispatch.ts), so a loading-shell
+   * prefetch without a loading boundary sends only the route tree. Without it,
+   * the layouts render, as Next.js renders them with isRoutePPREnabled.
+   */
+  routeTreeOnlyPrefetchShell?: boolean;
+  renderMode?: AppRscRenderMode;
+  routePath: string;
+  semanticPageIdentity?: Readonly<{
+    boundSegmentKey: string;
+    interceptionGraphId: string;
+    sourceBoundSegmentKey: string;
+    sourceRouteGraphId: string;
+  }> | null;
+  semanticInterceptionTargetRouteId?: string | null;
+  /**
+   * A sibling intercept's segment state keys, app root first, down to the
+   * segment its page element renders. Its BFCache segment levels follow these
+   * rather than the source route's segments.
+   */
+  siblingInterceptSegmentKeys?: readonly string[] | null;
+  sourcePageSegments?: readonly string[] | null;
+};
+
+export type AppPageTemplateEntry<TModule extends AppPageModule = AppPageModule> = {
+  id: string;
+  templateModule?: TModule | null | undefined;
+  treePath: string;
+  treePosition: number;
+};
+
+type AppPageErrorEntry<TErrorModule extends AppPageErrorModule = AppPageErrorModule> = {
+  errorModule?: TErrorModule | null | undefined;
+  treePosition: number;
+};
+
+type AppPageAccessBoundary<TModule extends AppPageModule = AppPageModule> = {
+  component: AppPageComponent;
+  /** `null` for a built-in page. */
+  module: TModule | null;
+};
+
+type AppPageLoadingEntry<TModule extends AppPageModule = AppPageModule> = {
+  loadingModule?: TModule | null | undefined;
+  treePosition: number;
+};
+
+function getDefaultExport<TModule extends AppPageModule>(
+  module: TModule | null | undefined,
+): AppPageComponent | null {
+  return module?.default ?? null;
+}
+
+function getErrorBoundaryExport<TModule extends AppPageErrorModule>(
+  module: TModule | null | undefined,
+): AppPageErrorComponent | null {
+  return module?.default ?? null;
+}
+
+export function createAppPageTreePath(
+  routeSegments: readonly string[] | null | undefined,
+  treePosition: number,
+): string {
+  const treePathSegments = routeSegments?.slice(0, treePosition) ?? [];
+  if (treePathSegments.length === 0) {
+    return "/";
+  }
+  return `/${treePathSegments.join("/")}`;
+}
+
+/**
+ * Renders the layout at `layoutIndex` with a placeholder for its children, so
+ * whatever it or a component it renders throws comes out.
+ */
+export function probeAppPageLayout<TModule extends AppPageModule>(options: {
+  layoutIndex: number;
+  makeThenableParams: MakeThenableParams;
+  matchedParams: AppPageParams;
+  route: Pick<
+    AppPageRouteWiringRoute<TModule>,
+    "layoutTreePositions" | "layouts" | "routeSegments"
+  >;
+}): unknown {
+  const treePosition = options.route.layoutTreePositions?.[options.layoutIndex] ?? 0;
+  const LayoutComponent = getDefaultExport(options.route.layouts[options.layoutIndex]);
+  if (!LayoutComponent) return null;
+  const layoutParams = resolveAppPageSegmentParams(
+    options.route.routeSegments,
+    treePosition,
+    options.matchedParams,
+  );
+  return probeReactServerSubtree(
+    <LayoutComponent
+      {...withUseCacheLayoutMarker(LayoutComponent, {
+        params: options.makeThenableParams(layoutParams),
+      })}
+    >
+      {APP_PAGE_LAYOUT_PROBE_CHILD}
+    </LayoutComponent>,
+  );
+}
+
+export function createAppPageLayoutEntries<
+  TModule extends AppPageModule,
+  TErrorModule extends AppPageErrorModule,
+>(
+  route: Pick<
+    AppPageRouteWiringRoute<TModule, TErrorModule>,
+    | "errors"
+    | "errorTreePositions"
+    | "layoutTreePositions"
+    | "layouts"
+    | "notFounds"
+    | "routeSegments"
+  > & {
+    forbiddens?: readonly (TModule | null | undefined)[] | null;
+    unauthorizeds?: readonly (TModule | null | undefined)[] | null;
+  },
+): AppPageLayoutEntry<TModule, TErrorModule>[] {
+  return route.layouts.map((layoutModule, index) => {
+    const treePosition = route.layoutTreePositions?.[index] ?? 0;
+    const treePath = createAppPageTreePath(route.routeSegments, treePosition);
+    return {
+      errorModule: route.errorTreePositions ? null : (route.errors?.[index] ?? null),
+      forbiddenModule: route.forbiddens?.[index] ?? null,
+      id: AppElementsWire.encodeLayoutId(treePath),
+      layoutModule,
+      notFoundModule: route.notFounds?.[index] ?? null,
+      unauthorizedModule: route.unauthorizeds?.[index] ?? null,
+      treePath,
+      treePosition,
+    };
+  });
+}
+
+function createAppPageTemplateEntries<TModule extends AppPageModule>(
+  route: Pick<
+    AppPageRouteWiringRoute<TModule>,
+    "routeSegments" | "templateTreePositions" | "templates"
+  >,
+): AppPageTemplateEntry<TModule>[] {
+  return (route.templates ?? []).map((templateModule, index) => {
+    const treePosition = route.templateTreePositions?.[index] ?? 0;
+    const treePath = createAppPageTreePath(route.routeSegments, treePosition);
+    return {
+      id: AppElementsWire.encodeTemplateId(treePath),
+      templateModule,
+      treePath,
+      treePosition,
+    };
+  });
+}
+
+export function createAppPageSourcePage(
+  routeSegments: readonly string[] | null | undefined,
+): string {
+  return `/${[...(routeSegments ?? []), "page"].join("/")}`;
+}
+
+function resolveAppPageLayoutSegmentProviderSegments(
+  routeSegments: readonly string[],
+  treePosition: number,
+  params: AppPageParams,
+): string[] {
+  const segments = resolveAppPageChildSegments(routeSegments, treePosition, params);
+  return segments.at(-1) === APP_PAGE_SEGMENT_KEY ? segments.slice(0, -1) : segments;
+}
+
+function createAppPageErrorEntries<TErrorModule extends AppPageErrorModule>(
+  route: Pick<
+    AppPageRouteWiringRoute<AppPageModule, TErrorModule>,
+    "errorPaths" | "errors" | "errorTreePositions"
+  >,
+): AppPageErrorEntry<TErrorModule>[] {
+  return (route.errorPaths ?? route.errors ?? []).flatMap((errorModule, index) => {
+    if (!errorModule) return [];
+    const treePosition = route.errorTreePositions?.[index];
+    if (treePosition === undefined) return [];
+    return [{ errorModule, treePosition }];
+  });
+}
+
+function createAppPageLoadingEntries<TModule extends AppPageModule>(
+  route: Pick<AppPageRouteWiringRoute<TModule>, "loadings" | "loadingTreePositions">,
+): AppPageLoadingEntry<TModule>[] {
+  return (route.loadings ?? []).flatMap((loadingModule, index) => {
+    if (!loadingModule) return [];
+    const treePosition = route.loadingTreePositions?.[index];
+    if (treePosition === undefined) return [];
+    return [{ loadingModule, treePosition }];
+  });
+}
+
+export function resolveAppPageLoadingModuleAtOrAbove<TModule extends AppPageModule>(
+  route: Pick<AppPageRouteWiringRoute<TModule>, "loading" | "loadings" | "loadingTreePositions">,
+  treePosition: number,
+): TModule | null {
+  let nearest: AppPageLoadingEntry<TModule> | null = null;
+  for (const entry of createAppPageLoadingEntries(route)) {
+    if (
+      entry.treePosition <= treePosition &&
+      getDefaultExport(entry.loadingModule) !== null &&
+      (nearest === null || entry.treePosition > nearest.treePosition)
+    ) {
+      nearest = entry;
+    }
+  }
+
+  if (nearest?.loadingModule) {
+    return nearest.loadingModule;
+  }
+  return getDefaultExport(route.loading) === null ? null : (route.loading ?? null);
+}
+
+function getPrefetchLoadingEntry<TModule extends AppPageModule>(
+  route: Pick<
+    AppPageRouteWiringRoute<TModule>,
+    "loading" | "loadings" | "loadingTreePositions" | "routeSegments"
+  >,
+): AppPageLoadingEntry<TModule> | null {
+  let rootEntry: AppPageLoadingEntry<TModule> | null = null;
+  let firstNestedEntry: AppPageLoadingEntry<TModule> | null = null;
+  for (const [index, loadingModule] of (route.loadings ?? []).entries()) {
+    if (!getDefaultExport(loadingModule)) continue;
+    const treePosition = route.loadingTreePositions?.[index];
+    if (treePosition === undefined) continue;
+    if (treePosition === 0) {
+      rootEntry ??= { loadingModule, treePosition };
+    } else if (firstNestedEntry === null || treePosition < firstNestedEntry.treePosition) {
+      firstNestedEntry = { loadingModule, treePosition };
+    }
+  }
+  // The root layout is already shared for a client-side prefetch. Prefer the
+  // first loading boundary below it, falling back to the root loading UI only
+  // when no nested boundary exists.
+  if (firstNestedEntry) return firstNestedEntry;
+  if (rootEntry) return rootEntry;
+
+  // Legacy/eager route fixtures may only expose the leaf loading field.
+  return getDefaultExport(route.loading)
+    ? { loadingModule: route.loading, treePosition: route.routeSegments?.length ?? 0 }
+    : null;
+}
+
+function createAppPageSlotLoadingEntries<TModule extends AppPageModule>(
+  slot: Pick<AppPageRouteWiringSlot<TModule>, "loading" | "loadings" | "loadingTreePositions">,
+  override: Pick<AppPageSlotOverride<TModule>, "loadingModules" | "loadingTreePositions"> | null,
+): AppPageLoadingEntry<TModule>[] {
+  const entries: AppPageLoadingEntry<TModule>[] = [];
+  const slotLoadingModules =
+    (slot.loadings?.length ?? 0) > 0 ? slot.loadings! : slot.loading ? [slot.loading] : [];
+  const slotLoadingTreePositions =
+    (slot.loadingTreePositions?.length ?? 0) > 0 ? slot.loadingTreePositions! : [0];
+
+  for (const [index, loadingModule] of slotLoadingModules.entries()) {
+    const treePosition = slotLoadingTreePositions[index];
+    if (!getDefaultExport(loadingModule) || treePosition === undefined) continue;
+    // An interception replaces the slot's normal active branch. Only the slot
+    // root is necessarily shared; nested normal-branch loadings belong to a
+    // sibling subtree and must not wrap the intercepting page.
+    if (override && treePosition !== 0) continue;
+    entries.push({ loadingModule, treePosition });
+  }
+
+  for (const [index, loadingModule] of (override?.loadingModules ?? []).entries()) {
+    const treePosition = override?.loadingTreePositions?.[index];
+    if (!getDefaultExport(loadingModule) || treePosition === undefined) continue;
+    entries.push({ loadingModule, treePosition });
+  }
+
+  return entries;
+}
+
+/**
+ * Only an override that replaces the slot's page or layouts changes its tree.
+ * A params-only override, as built for an inherited slot with its own param
+ * names, keeps the slot's nested loading boundaries.
+ */
+function getAppPageSlotTreeOverride<TModule extends AppPageModule>(
+  override: AppPageSlotOverride<TModule> | null | undefined,
+): AppPageSlotOverride<TModule> | null {
+  return override?.pageModule != null || override?.layoutModules !== undefined
+    ? (override ?? null)
+    : null;
+}
+
+function getFirstLoadingEntry<TModule extends AppPageModule>(
+  entries: readonly AppPageLoadingEntry<TModule>[],
+): AppPageLoadingEntry<TModule> | null {
+  return entries.reduce<AppPageLoadingEntry<TModule> | null>(
+    (first, entry) => (first === null || entry.treePosition < first.treePosition ? entry : first),
+    null,
+  );
+}
+
+function createAppPageParallelSlotEntries<
+  TModule extends AppPageModule,
+  TErrorModule extends AppPageErrorModule,
+>(
+  layoutIndex: number,
+  layoutEntries: readonly AppPageLayoutEntry<TModule, TErrorModule>[],
+  route: AppPageRouteWiringRoute<TModule, TErrorModule>,
+  getEffectiveSlotParams: (slotKey: string, slotName: string) => AppPageParams,
+  resolveSlotOverride: (
+    slotKey: string,
+    slotName: string,
+  ) => AppPageSlotOverride<TModule> | undefined,
+): Readonly<Record<string, ReactNode>> | undefined {
+  const parallelSlots: Record<string, ReactNode> = {};
+
+  for (const [slotKey, slot] of Object.entries(route.slots ?? {})) {
+    const slotName = slot.name;
+    const targetIndex = slot.layoutIndex >= 0 ? slot.layoutIndex : layoutEntries.length - 1;
+    if (targetIndex !== layoutIndex) {
+      continue;
+    }
+
+    const layoutEntry = layoutEntries[targetIndex];
+    const treePath = layoutEntry?.treePath ?? "/";
+    const slotId = resolveAppPageSlotId(slot, treePath);
+    const slotParams = getEffectiveSlotParams(slotKey, slotName);
+    const routeSegments =
+      resolveSlotOverride(slotKey, slotName)?.routeSegments ?? slot.routeSegments;
+    const slotSegments = routeSegments
+      ? resolveAppPageLayoutSegmentProviderSegments(routeSegments, 0, slotParams)
+      : [];
+    parallelSlots[slotName] = (
+      <LayoutSegmentProvider providerId={slotId} segmentMap={{ children: slotSegments }}>
+        <Slot id={slotId} />
+      </LayoutSegmentProvider>
+    );
+  }
+
+  return Object.keys(parallelSlots).length > 0 ? parallelSlots : undefined;
+}
+
+function resolveAppPageSlotId(slot: AppPageRouteWiringSlot, treePath: string): string {
+  return AppElementsWire.encodeSlotId(slot.name, treePath);
+}
+
+function resolveAppPageChildrenSlotId(
+  childrenSlot: NonNullable<AppPageRouteWiringRoute["childrenSlot"]>,
+): string {
+  return AppElementsWire.encodeSlotId("children", childrenSlot.ownerTreePath);
+}
+
+function resolveAppPageSlotBindingState(
+  slot: AppPageRouteWiringSlot,
+  override: AppPageSlotOverride | undefined,
+): AppElementsSlotBinding["state"] {
+  const pageComponent = getDefaultExport(override?.pageModule) ?? getDefaultExport(slot.page);
+  if (pageComponent) return "active";
+  if (getDefaultExport(slot.default)) return "default";
+  return "unmatched";
+}
+
+function createAppPageSlotBindings<
+  TModule extends AppPageModule,
+  TErrorModule extends AppPageErrorModule,
+>(
+  route: AppPageRouteWiringRoute<TModule, TErrorModule>,
+  layoutEntries: readonly AppPageLayoutEntry<TModule, TErrorModule>[],
+  resolveSlotOverride: (
+    slotKey: string,
+    slotName: string,
+  ) => AppPageSlotOverride<TModule> | undefined,
+  options: {
+    interception: AppElementsInterception | null;
+    interceptionId: string | null;
+    routeId: string;
+    routePath: string;
+  },
+): readonly AppElementsSlotBinding[] {
+  const bindings: AppElementsSlotBinding[] = [];
+  if (route.childrenSlot) {
+    const ownerLayoutId = layoutEntries.find(
+      (layoutEntry) => layoutEntry.treePath === route.childrenSlot?.ownerTreePath,
+    )?.id;
+    const slotId = resolveAppPageChildrenSlotId(route.childrenSlot);
+    bindings.push({
+      ...(route.childrenSlot.state === "active" ? { activeRouteId: options.routeId } : {}),
+      ownerLayoutId: ownerLayoutId ?? null,
+      slotId,
+      state: route.childrenSlot.state,
+    });
+  }
+  for (const [slotKey, slot] of Object.entries(route.slots ?? {})) {
+    const targetIndex = slot.layoutIndex >= 0 ? slot.layoutIndex : layoutEntries.length - 1;
+    const layoutEntry = layoutEntries[targetIndex] ?? null;
+    const ownerLayoutId = layoutEntry?.id ?? null;
+    const override = resolveSlotOverride(slotKey, slot.name);
+    const slotId = resolveAppPageSlotId(slot, layoutEntry?.treePath ?? "/");
+    const state = resolveAppPageSlotBindingState(slot, override);
+    const activeRouteId =
+      state === "active"
+        ? options.interception?.slotId === slotId
+          ? options.interception.targetRouteId
+          : AppElementsWire.encodeRouteId(options.routePath, null)
+        : null;
+    const isInterceptedSlot = options.interception?.slotId === slotId;
+    bindings.push({
+      ...(activeRouteId !== null ? { activeRouteId } : {}),
+      ...(isInterceptedSlot && options.interceptionId !== null
+        ? { interceptionId: options.interceptionId }
+        : {}),
+      ...(isInterceptedSlot
+        ? { interceptionSourceMatchedUrl: options.interception!.sourceMatchedUrl }
+        : {}),
+      ownerLayoutId,
+      slotId,
+      state,
+    });
+  }
+  return normalizeAppElementsSlotBindings(bindings, {
+    layoutIds: layoutEntries.map((entry) => entry.id),
+  });
+}
+
+function createAppPageRouteHead(
+  resolveHead: (() => AppPageRouteHead) | null | undefined,
+  pathname: string,
+  metadataPlacement: "body" | "head",
+  trailingSlash?: boolean,
+): ReactNode {
+  return (
+    <>
+      <meta charSet="utf-8" />
+      {resolveHead ? (
+        <AppPageHead
+          metadataPlacement={metadataPlacement}
+          pathname={pathname}
+          resolveHead={resolveHead}
+          trailingSlash={trailingSlash}
+        />
+      ) : (
+        <ViewportHead viewport={{}} />
+      )}
+    </>
+  );
+}
+
+// Like Next.js's MetadataTree/ViewportTree, the head resolves while Flight
+// renders it, so generateMetadata() and generateViewport() share React's
+// cache() with the page instead of running before the render.
+async function AppPageHead(props: {
+  metadataPlacement: "body" | "head";
+  pathname: string;
+  resolveHead: () => AppPageRouteHead;
+  trailingSlash?: boolean;
+}): Promise<ReactNode> {
+  const head = props.resolveHead();
+  const [metadata, viewport] = await Promise.all([
+    props.metadataPlacement === "head" ? head.metadata : null,
+    head.viewport,
+  ]);
+  return (
+    <>
+      {metadata ? (
+        <MetadataHead
+          metadata={metadata}
+          pathname={props.pathname}
+          trailingSlash={props.trailingSlash}
+        />
+      ) : null}
+      {viewport ? <ViewportHead viewport={viewport} /> : null}
+    </>
+  );
+}
+AppPageHead.displayName = "Vinext.Head";
+
+function hasStreamedIcons(metadata: Metadata): boolean {
+  const icons = metadata.icons;
+  if (!icons) return false;
+  if (typeof icons === "string" || icons instanceof URL || Array.isArray(icons)) {
+    return !Array.isArray(icons) || icons.length > 0;
+  }
+  if ("url" in icons) return true;
+  return Boolean(icons.shortcut || icons.icon || icons.apple || icons.other);
+}
+
+function createStreamedIconKey(pathname: string, metadataHtml: string): string {
+  // Keep route identity opaque so crawlers cannot mistake the key for a URL.
+  return `vi${fnv1a64(`${pathname}\0${metadataHtml}`)}`;
+}
+
+const STREAMED_ICON_KEY_PLACEHOLDER = "vinext-pending-streamed-icon-key";
+
+const REINSERT_STREAMED_ICONS_SCRIPT = `document.querySelectorAll('body link[rel="icon"], body link[rel="apple-touch-icon"]').forEach(el => document.head.appendChild(el));const a='data-vinext-streamed-icon',o=el=>{const m=el.getAttribute(a),i=m.lastIndexOf(':');return Number(m.slice(i+1))};[...document.querySelectorAll('link['+a+']')].sort((l,r)=>o(l)-o(r)).forEach(el=>document.head.appendChild(el))`;
+
+export function createAppPageRouteBodyMetadata(
+  metadata: Metadata | null,
+  pathname: string,
+  metadataPlacement: "body" | "head",
+  trailingSlash?: boolean,
+  scriptNonce?: string,
+): ReactNode {
+  if (!metadata || metadataPlacement !== "body") return null;
+  const streamedIconKey = hasStreamedIcons(metadata) ? STREAMED_ICON_KEY_PLACEHOLDER : undefined;
+  const renderedMetadataHtml = renderMetadataToHtml(metadata, pathname, {
+    trailingSlash,
+    streamedIconKey,
+  });
+  const metadataKey = streamedIconKey ? createStreamedIconKey(pathname, renderedMetadataHtml) : "";
+  const metadataHtml = streamedIconKey
+    ? renderedMetadataHtml.replaceAll(
+        `<link data-vinext-streamed-icon="${STREAMED_ICON_KEY_PLACEHOLDER}:`,
+        // A replacer function keeps `$` sequences in the key literal.
+        () => `<link data-vinext-streamed-icon="${escapeHtmlAttr(metadataKey)}:`,
+      )
+    : renderedMetadataHtml;
+  const parserInsertedMetadataHtml =
+    metadataHtml + createInlineScriptTag(REINSERT_STREAMED_ICONS_SCRIPT, scriptNonce);
+  return (
+    <>
+      <div
+        hidden
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: parserInsertedMetadataHtml,
+        }}
+      />
+      <StreamedIconsInsertion metadataKey={metadataKey} />
+    </>
+  );
+}
+
+async function AppPageStreamingMetadata(props: {
+  pathname: string;
+  resolveHead: () => AppPageRouteHead;
+  scriptNonce?: string;
+  trailingSlash?: boolean;
+}): Promise<ReactNode> {
+  try {
+    const metadata = await props.resolveHead().metadata;
+    return createAppPageRouteBodyMetadata(
+      metadata,
+      props.pathname,
+      "body",
+      props.trailingSlash,
+      props.scriptNonce,
+    );
+  } catch {
+    // The matching outlet below rethrows inside the route's error boundaries.
+    // Keeping the tag outlet successful lets already-flushed HTML remain valid.
+    return null;
+  }
+}
+AppPageStreamingMetadata.displayName = "Vinext.StreamingMetadata";
+
+async function AppPageMetadataOutlet(props: {
+  resolveHead: () => AppPageRouteHead;
+}): Promise<null> {
+  return props.resolveHead().outlet;
+}
+AppPageMetadataOutlet.displayName = "Vinext.MetadataOutlet";
+
+function createAppPageStreamingMetadataOutlet(
+  elementId: string | null,
+  suspended = true,
+): ReactNode {
+  if (!elementId) return null;
+  const outlet = <Slot id={elementId} />;
+  return suspended ? <Suspense fallback={null}>{outlet}</Suspense> : outlet;
+}
+
+function createAppPageStreamingMetadataBody(elementId: string | null): ReactNode {
+  if (!elementId) return null;
+  return (
+    // React treats metadata tags as hoistable and otherwise waits for them
+    // before flushing the document. Next.js uses the same persistent hidden
+    // host boundary so the shell can flush while this Suspense branch is open.
+    <div hidden>
+      <Suspense fallback={null}>
+        <Slot id={elementId} />
+      </Suspense>
+    </div>
+  );
+}
+
+export function buildAppPageElements<
+  TModule extends AppPageModule,
+  TErrorModule extends AppPageErrorModule,
+>(options: BuildAppPageElementsOptions<TModule, TErrorModule>): AppElements {
+  const renderIdentity = options.renderIdentity;
+  const interceptionContext =
+    renderIdentity?.interceptionContext ?? options.interceptionContext ?? null;
+  const renderMode = options.renderMode ?? APP_RSC_RENDER_MODE_NAVIGATION;
+  const routeSegments = options.route.routeSegments ?? [];
+  const routeId =
+    renderIdentity?.routeId ??
+    AppElementsWire.encodeRouteId(options.routePath, interceptionContext);
+  const pageId =
+    renderIdentity?.pageId ?? AppElementsWire.encodePageId(options.routePath, interceptionContext);
+  const pageElementId = options.route.childrenSlot
+    ? resolveAppPageChildrenSlotId(options.route.childrenSlot)
+    : pageId;
+  const metadataPlacement = options.metadataPlacement ?? "head";
+  // Head resolution can fail after the render has started, so every resolved
+  // head gets an outlet that rethrows inside the route's boundaries.
+  const streamingMetadataOutletId = options.resolveHead
+    ? `__vinext_streaming_metadata_outlet:${routeId}`
+    : null;
+  const layoutEntries = createAppPageLayoutEntries(options.route);
+  const templateEntries = createAppPageTemplateEntries(options.route);
+  const loadingEntries = createAppPageLoadingEntries(options.route);
+  const errorEntries = createAppPageErrorEntries(options.route);
+  const findNearestAncestorLoadingEntry = (
+    treePosition: number,
+  ): AppPageLoadingEntry<TModule> | undefined => {
+    for (let index = loadingEntries.length - 1; index >= 0; index--) {
+      if (loadingEntries[index].treePosition < treePosition) return loadingEntries[index];
+    }
+    return undefined;
+  };
+  const findNearestLoadingEntryAtOrAbove = (
+    treePosition: number,
+  ): AppPageLoadingEntry<TModule> | undefined => {
+    let nearest: AppPageLoadingEntry<TModule> | undefined;
+    for (const entry of loadingEntries) {
+      if (
+        entry.treePosition <= treePosition &&
+        (!nearest || entry.treePosition > nearest.treePosition)
+      ) {
+        nearest = entry;
+      }
+    }
+    return nearest;
+  };
+  const isPrefetchEmpty = renderMode === APP_RSC_RENDER_MODE_PREFETCH_EMPTY;
+  const isPrefetchLoadingShell = renderMode === APP_RSC_RENDER_MODE_PREFETCH_LOADING_SHELL;
+  // Loading-shell prefetches intentionally omit the page, so they cannot wait
+  // on a dependency that only the page invocation can release.
+  const pageRenderDependency = isPrefetchLoadingShell ? null : options.pageRenderDependency;
+  const prefetchLoadingEntry = isPrefetchLoadingShell
+    ? getPrefetchLoadingEntry(options.route)
+    : null;
+  const layoutEntriesByTreePosition = new Map<number, AppPageLayoutEntry<TModule, TErrorModule>>();
+  const templateEntriesByTreePosition = new Map<number, AppPageTemplateEntry<TModule>>();
+  const loadingEntriesByTreePosition = new Map<number, AppPageLoadingEntry<TModule>>();
+  const errorEntriesByTreePosition = new Map<number, AppPageErrorEntry<TErrorModule>>();
+  for (const layoutEntry of layoutEntries) {
+    layoutEntriesByTreePosition.set(layoutEntry.treePosition, layoutEntry);
+  }
+  for (const templateEntry of templateEntries) {
+    templateEntriesByTreePosition.set(templateEntry.treePosition, templateEntry);
+  }
+  for (const loadingEntry of loadingEntries) {
+    loadingEntriesByTreePosition.set(loadingEntry.treePosition, loadingEntry);
+  }
+  for (const errorEntry of errorEntries) {
+    errorEntriesByTreePosition.set(errorEntry.treePosition, errorEntry);
+  }
+  // Next.js renders a loading.tsx as one Suspense boundary around everything
+  // below its segment. vinext repeats that boundary inside the value of the
+  // outermost flat-record entry under it, but not in deeper entries: they
+  // already render inside it, and a second boundary there streams the
+  // fallback again when a deeper entry is still pending as the outer boundary
+  // completes. Per segment, a layout renders outside its template and the
+  // parallel slots passed to it, and all of them outside the segment's page.
+  // A slot's position is that of the layout it is passed to, not its owner:
+  // templates between the two wrap only the children branch.
+  const isOutermostEntryBelowLoading = (
+    loadingTreePosition: number,
+    treePosition: number,
+    kind: "layout" | "template" | "slot" | "page",
+  ): boolean => {
+    const enclosesEntry = (entryTreePosition: number, sameSegmentEncloses: boolean): boolean =>
+      entryTreePosition > loadingTreePosition &&
+      (entryTreePosition < treePosition ||
+        (sameSegmentEncloses && entryTreePosition === treePosition));
+    return (
+      !layoutEntries.some(
+        (entry) =>
+          getDefaultExport(entry.layoutModule) &&
+          enclosesEntry(entry.treePosition, kind !== "layout"),
+      ) &&
+      !templateEntries.some(
+        (entry) =>
+          getDefaultExport(entry.templateModule) &&
+          enclosesEntry(entry.treePosition, kind === "page"),
+      )
+    );
+  };
+  const layoutIndicesByTreePosition = new Map<number, number>();
+  for (let index = 0; index < layoutEntries.length; index++) {
+    layoutIndicesByTreePosition.set(layoutEntries[index].treePosition, index);
+  }
+  // Next.js wraps each segment's children in that segment's not-found,
+  // forbidden and unauthorized boundaries, inside its layout, whether or not
+  // the segment has a layout. The root segment falls back to the built-in
+  // page, and a first-layer route group without a file of its own
+  // inherits the root's, as Turbopack does.
+  // https://github.com/vercel/next.js/blob/canary/packages/next/src/server/app-render/create-component-tree.tsx
+  // https://github.com/vercel/next.js/blob/canary/crates/next-core/src/app_structure.rs
+  const resolveAccessBoundaries = (
+    segmentModules: readonly (TModule | null | undefined)[] | null | undefined,
+    segmentTreePositions: readonly number[] | null | undefined,
+    getLayoutModule: (
+      entry: AppPageLayoutEntry<TModule, TErrorModule>,
+    ) => TModule | null | undefined,
+    builtInComponent: AppPageComponent | null,
+  ): Map<number, AppPageAccessBoundary<TModule>> => {
+    const files = new Map<number, TModule>();
+    if (segmentTreePositions) {
+      for (const [index, treePosition] of segmentTreePositions.entries()) {
+        const module = segmentModules?.[index];
+        if (module && getDefaultExport(module)) files.set(treePosition, module);
+      }
+    } else {
+      // Routes without segment data only know the files beside a layout.
+      for (const entry of layoutEntries) {
+        const module = getLayoutModule(entry);
+        if (module && getDefaultExport(module)) files.set(entry.treePosition, module);
+      }
+    }
+    const boundaries = new Map<number, AppPageAccessBoundary<TModule>>();
+    for (const [treePosition, module] of files) {
+      const component = getDefaultExport(module);
+      if (component) boundaries.set(treePosition, { component, module });
+    }
+    const rootTreePosition = layoutEntriesByTreePosition.has(0)
+      ? 0
+      : (layoutEntries[0]?.treePosition ?? null);
+    // The root layout holds <html>, so the deepest file at or above it renders
+    // inside it.
+    let rootModuleTreePosition = files.has(0) ? 0 : null;
+    for (const treePosition of files.keys()) {
+      if (
+        rootTreePosition !== null &&
+        treePosition <= rootTreePosition &&
+        (rootModuleTreePosition === null || treePosition > rootModuleTreePosition)
+      ) {
+        rootModuleTreePosition = treePosition;
+      }
+    }
+    const rootModule =
+      rootModuleTreePosition === null ? undefined : files.get(rootModuleTreePosition);
+    const rootComponent = getDefaultExport(rootModule) ?? builtInComponent;
+    if (rootComponent) {
+      const rootBoundary = { component: rootComponent, module: rootModule ?? null };
+      if (rootTreePosition !== null && !files.has(rootTreePosition)) {
+        boundaries.set(rootTreePosition, rootBoundary);
+      }
+      const firstSegment = routeSegments[0];
+      if (firstSegment !== undefined && isAppPageRouteGroupSegment(firstSegment) && !files.has(1)) {
+        boundaries.set(1, rootBoundary);
+      }
+    }
+    for (const treePosition of boundaries.keys()) {
+      const hasLayout = layoutEntriesByTreePosition.has(treePosition);
+      // A file above the root layout would render outside <html>. In the
+      // page's own segment, the page-level boundary wraps the page instead.
+      if (
+        (rootTreePosition !== null && treePosition < rootTreePosition) ||
+        (!hasLayout && (treePosition === 0 || treePosition >= routeSegments.length))
+      ) {
+        boundaries.delete(treePosition);
+      }
+    }
+    return boundaries;
+  };
+  // Segment data already holds the root segment's files. Without it, the
+  // manifest's root files stand in for them.
+  const rootNotFoundModule = options.route.segmentNotFoundTreePositions
+    ? null
+    : options.rootNotFoundModule;
+  const rootForbiddenModule = options.route.segmentForbiddenTreePositions
+    ? null
+    : options.rootForbiddenModule;
+  const rootUnauthorizedModule = options.route.segmentUnauthorizedTreePositions
+    ? null
+    : options.rootUnauthorizedModule;
+  const notFoundBoundaries = resolveAccessBoundaries(
+    options.route.segmentNotFounds,
+    options.route.segmentNotFoundTreePositions,
+    (entry) => entry.notFoundModule,
+    rootNotFoundModule ? null : DEFAULT_NOT_FOUND_COMPONENT,
+  );
+  const forbiddenBoundaries = resolveAccessBoundaries(
+    options.route.segmentForbiddens,
+    options.route.segmentForbiddenTreePositions,
+    (entry) => entry.forbiddenModule,
+    rootForbiddenModule ? null : DEFAULT_FORBIDDEN_COMPONENT,
+  );
+  const unauthorizedBoundaries = resolveAccessBoundaries(
+    options.route.segmentUnauthorizeds,
+    options.route.segmentUnauthorizedTreePositions,
+    (entry) => entry.unauthorizedModule,
+    rootUnauthorizedModule ? null : DEFAULT_UNAUTHORIZED_COMPONENT,
+  );
+  const layoutGate = createAppPageLayoutGate();
+  const layoutDependenciesByIndex = new Map<number, AppRenderDependency>();
+  const layoutDependenciesBefore: AppRenderDependency[][] = [];
+  const slotDependenciesByLayoutIndex: AppRenderDependency[][] = [];
+  const templateDependenciesById = new Map<string, AppRenderDependency>();
+  const templateDependenciesBeforeById = new Map<string, AppRenderDependency[]>();
+  const pageDependencies: AppRenderDependency[] = [];
+  const rootLayoutTreePath = layoutEntries[0]?.treePath ?? null;
+  const slotNameCounts = new Map<string, number>();
+  for (const slot of Object.values(options.route.slots ?? {})) {
+    const slotName = slot.name;
+    slotNameCounts.set(slotName, (slotNameCounts.get(slotName) ?? 0) + 1);
+  }
+  const orderedTreePositions = Array.from(
+    new Set<number>([
+      ...layoutEntries.map((entry) => entry.treePosition),
+      ...templateEntries.map((entry) => entry.treePosition),
+      ...loadingEntries.map((entry) => entry.treePosition),
+      ...errorEntries.map((entry) => entry.treePosition),
+      ...notFoundBoundaries.keys(),
+      ...forbiddenBoundaries.keys(),
+      ...unauthorizedBoundaries.keys(),
+    ]),
+  ).sort((left, right) => left - right);
+  const resolveSlotOverride = (slotKey: string, slotName: string) => {
+    const overrideByKey = options.slotOverrides?.[slotKey];
+    if (overrideByKey) {
+      return overrideByKey;
+    }
+
+    // Legacy callers may still provide overrides by slot prop name.
+    // Only allow that fallback when it is unambiguous.
+    if (slotKey === slotName || (slotNameCounts.get(slotName) ?? 0) === 1) {
+      return options.slotOverrides?.[slotName];
+    }
+
+    return undefined;
+  };
+  const interception = renderIdentity?.interception ?? options.interception ?? null;
+  const slotBindings = createAppPageSlotBindings(
+    options.route,
+    layoutEntries,
+    resolveSlotOverride,
+    {
+      interception,
+      interceptionId: options.interceptionId ?? null,
+      routeId,
+      routePath: options.routePath,
+    },
+  );
+  const prefetchSlotLoadingEntries = isPrefetchLoadingShell
+    ? Object.entries(options.route.slots ?? {}).flatMap(([slotKey, slot]) => {
+        const override = getAppPageSlotTreeOverride(resolveSlotOverride(slotKey, slot.name));
+        const firstLoadingEntry = getFirstLoadingEntry(
+          createAppPageSlotLoadingEntries(slot, override),
+        );
+        return firstLoadingEntry ? [{ ownerTreePosition: slot.ownerTreePosition ?? 0 }] : [];
+      })
+    : [];
+  const prefetchLoadingComponent = getDefaultExport(prefetchLoadingEntry?.loadingModule);
+  const shouldRenderPrefetchLoadingShell =
+    isPrefetchLoadingShell &&
+    (prefetchLoadingComponent !== null || prefetchSlotLoadingEntries.length > 0);
+  // A loading-shell prefetch with no loading boundary is the counterpart of
+  // Next.js's pre-PPR no-loading prefetch, which sends only the router state
+  // and a [null, null] head. Leave the streamed generateMetadata() tags out of
+  // it too. A shell that renders a loading boundary keeps them, as Next.js's
+  // walkTreeWithFlightRouterState() returns rscHead with that shell.
+  const streamingMetadataBodyId =
+    options.resolveHead &&
+    metadataPlacement === "body" &&
+    (!isPrefetchLoadingShell || shouldRenderPrefetchLoadingShell)
+      ? `${APP_STREAMING_METADATA_BODY_ID_PREFIX}${routeId}`
+      : null;
+  // The children spine must reach every slot owner whose branch has a loading
+  // boundary. A loading on the spine itself stops traversal first, matching
+  // Next.js's per-parallel-route pre-PPR component-tree walk.
+  const prefetchCutoffTreePosition = isPrefetchLoadingShell
+    ? (prefetchLoadingEntry?.treePosition ??
+      prefetchSlotLoadingEntries.reduce(
+        (deepest, entry) => Math.max(deepest, entry.ownerTreePosition),
+        0,
+      ))
+    : null;
+  const includesPrefetchTreePosition = (treePosition: number): boolean =>
+    prefetchCutoffTreePosition === null || treePosition <= prefetchCutoffTreePosition;
+  const segmentPlan = createAppPageSegmentPlan({
+    includeSlot(ownerTreePosition, targetTreePosition) {
+      if (isPrefetchEmpty) return false;
+      if (!isPrefetchLoadingShell) return true;
+      return prefetchLoadingEntry
+        ? ownerTreePosition <= prefetchLoadingEntry.treePosition
+        : includesPrefetchTreePosition(targetTreePosition);
+    },
+    interception,
+    layoutEntries,
+    matchedParams: options.matchedParams,
+    pageElementId,
+    resolveSlotOverride,
+    rootLayoutTreePath,
+    route: options.route,
+    routeSegments,
+    semanticPageIdentity: options.semanticPageIdentity,
+    semanticInterceptionTargetRouteId: options.semanticInterceptionTargetRouteId ?? null,
+    slotBindings,
+    templateEntries,
+  });
+  const routeResetKey = segmentPlan.routeResetKey;
+  const skippedLayoutIds = new Set<string>();
+  if (
+    options.mountedLayouts &&
+    options.isRscRequest === true &&
+    options.isUncacheableRender === true &&
+    renderMode === APP_RSC_RENDER_MODE_NAVIGATION &&
+    interception === null
+  ) {
+    // Only the layouts above the first one the client doesn't hold, as a
+    // layout below a re-rendered one renders inside it.
+    for (const layoutEntry of layoutEntries) {
+      const identity = segmentPlan.bfcacheSegmentIdentities[layoutEntry.id];
+      if (identity === undefined) break;
+      if (!options.mountedLayouts.has(hashMountedLayoutIdentity(identity))) break;
+      skippedLayoutIds.add(layoutEntry.id);
+    }
+  }
+  const slotPlansByKey = new Map(segmentPlan.slots.map((slot) => [slot.key, slot]));
+  const resolveRouteSegmentResetKey = (treePosition: number): string =>
+    resolveAppPageSegmentStateKey(routeSegments, treePosition, options.matchedParams);
+  const metadataEntries = AppElementsWire.createMetadataEntries({
+    bfcacheSegmentIdentities: segmentPlan.bfcacheSegmentIdentities,
+    interception,
+    interceptionContext,
+    layoutIds: layoutEntries.map((entry) => entry.id),
+    rootLayoutTreePath,
+    routeId,
+    sourcePage: createAppPageSourcePage(options.sourcePageSegments ?? routeSegments),
+    slotBindings,
+  });
+  if (isPrefetchEmpty) {
+    return {
+      ...metadataEntries,
+      [APP_LAYOUT_IDS_KEY]: [],
+      [APP_ROOT_LAYOUT_KEY]: null,
+      [pageElementId]: null,
+      [routeId]: null,
+    };
+  }
+  // A loading-shell prefetch with no loading boundary is the counterpart of
+  // Next.js's pre-PPR no-loading prefetch, which sends only the router state
+  // and a [null, null] head (walkTreeWithFlightRouterState() in
+  // server/app-render/walk-tree-with-flight-router-state.tsx). The client only
+  // learns the route from it, so no layout, template, slot or head renders.
+  // A static route's shell does the same, as it's learning-only too, where
+  // Next.js serves the route's prerendered payload. With PPR, Next.js renders
+  // the layouts.
+  if (
+    isPrefetchLoadingShell &&
+    !shouldRenderPrefetchLoadingShell &&
+    options.routeTreeOnlyPrefetchShell === true
+  ) {
+    return {
+      ...metadataEntries,
+      ...(options.route.staticSiblings && options.route.staticSiblings.length > 0
+        ? { [APP_STATIC_SIBLINGS_KEY]: options.route.staticSiblings }
+        : {}),
+      [pageElementId]: null,
+      [routeId]: null,
+    };
+  }
+  const elements: Record<string, AppElementValue> = {};
+  // Synthetic nested segment entries carry membership independently of the
+  // proof map. If identity metadata is absent or rejected atomically, the
+  // browser can still discover these ids and mint conservative fresh keys.
+  for (const slotPlan of segmentPlan.slots) {
+    for (const segment of slotPlan.nestedBfcacheSegments) {
+      elements[segment.id] = null;
+    }
+  }
+  // Surface static-sibling info on the wire so the client router can decide
+  // whether a cached dynamic-route prefetch can be reused when navigating to a
+  // static sibling URL. Mirrors Next.js's loader-tree `staticSiblings` tuple
+  // element (issue cloudflare/vinext#1525). Only included when the route has
+  // dynamic segments with static siblings — keeps the payload lean for
+  // fully-static routes.
+  if (options.route.staticSiblings && options.route.staticSiblings.length > 0) {
+    elements[APP_STATIC_SIBLINGS_KEY] = options.route.staticSiblings;
+  }
+  if (options.resolveHead && streamingMetadataBodyId) {
+    elements[streamingMetadataBodyId] = (
+      <AppPageStreamingMetadata
+        pathname={options.resolvedMetadataPathname ?? options.routePath}
+        resolveHead={options.resolveHead}
+        scriptNonce={options.scriptNonce}
+        trailingSlash={options.trailingSlash}
+      />
+    );
+  }
+  if (options.resolveHead && streamingMetadataOutletId) {
+    elements[streamingMetadataOutletId] = (
+      <AppPageMetadataOutlet resolveHead={options.resolveHead} />
+    );
+  }
+  const getEffectiveSlotParams = (slotKey: string, _slotName: string): AppPageParams =>
+    slotPlansByKey.get(slotKey)?.params ?? options.matchedParams;
+
+  for (const treePosition of orderedTreePositions) {
+    if (isPrefetchLoadingShell && !includesPrefetchTreePosition(treePosition)) continue;
+    const layoutIndex = layoutIndicesByTreePosition.get(treePosition);
+    if (layoutIndex !== undefined) {
+      const layoutEntry = layoutEntries[layoutIndex];
+      layoutDependenciesBefore[layoutIndex] = [...pageDependencies];
+      if (!skippedLayoutIds.has(layoutEntry.id) && getDefaultExport(layoutEntry.layoutModule)) {
+        const layoutDependency = createAppRenderDependency();
+        layoutDependenciesByIndex.set(layoutIndex, layoutDependency);
+        pageDependencies.push(layoutDependency);
+      }
+      slotDependenciesByLayoutIndex[layoutIndex] = [...pageDependencies];
+    }
+
+    const templateEntry = templateEntriesByTreePosition.get(treePosition);
+    if (!templateEntry || !getDefaultExport(templateEntry.templateModule)) {
+      continue;
+    }
+
+    const templateDependency = createAppRenderDependency();
+    templateDependenciesById.set(templateEntry.id, templateDependency);
+    templateDependenciesBeforeById.set(templateEntry.id, [...pageDependencies]);
+    pageDependencies.push(templateDependency);
+  }
+
+  pageRenderDependency?.setResultDependencies(pageDependencies);
+
+  const routeLoadingComponent = getDefaultExport(options.route.loading);
+  if (shouldRenderPrefetchLoadingShell) {
+    // Client loading components serialize as module references in Flight. Keep
+    // a durable marker in the shell payload so external router tests and
+    // diagnostics can recognize this as a loading-boundary response without
+    // requiring source text to appear in client component references.
+    elements[APP_PREFETCH_LOADING_SHELL_MARKER_KEY] = "LoadingBoundary";
+  }
+
+  const pageLoadingModule = resolveAppPageLoadingModuleAtOrAbove(
+    options.route,
+    routeSegments.length,
+  );
+  // The page and route are sibling values in vinext's flat Flight record. The
+  // route-level Suspense below cannot catch the page value suspending while the
+  // record itself is serialized, so the page entry needs its own boundary to
+  // expose the fallback. Once <Slot> reconnects the entries this is nested
+  // inside the route boundary; that duplication is an intentional transport
+  // artifact, not two independently selected loading conventions. A layout or
+  // template between the loading segment and the page carries the boundary
+  // instead (see isOutermostEntryBelowLoading).
+  const pageLoadingEntry = loadingEntries.find(
+    (entry) => entry.loadingModule === pageLoadingModule,
+  );
+  const PageLoadingComponent =
+    pageRenderDependency &&
+    (!pageLoadingEntry ||
+      isOutermostEntryBelowLoading(pageLoadingEntry.treePosition, routeSegments.length, "page"))
+      ? getDefaultExport(pageLoadingModule)
+      : null;
+  const streamingMetadataOutlet = createAppPageStreamingMetadataOutlet(
+    streamingMetadataOutletId,
+    options.streamingMetadataOutletSuspended,
+  );
+  const renderElementWithMetadataOutlet = options.renderElementWithMetadataOutlet;
+  const pageContent = renderElementWithMetadataOutlet
+    ? renderElementWithMetadataOutlet(streamingMetadataOutlet)
+    : options.element;
+  const pageElement = PageLoadingComponent ? (
+    <Suspense key={routeResetKey} fallback={<PageLoadingComponent />}>
+      {pageContent}
+    </Suspense>
+  ) : (
+    pageContent
+  );
+  elements[pageElementId] = isPrefetchLoadingShell
+    ? null
+    : pageRenderDependency
+      ? pageElement
+      : renderAfterAppDependencies(pageElement, pageDependencies);
+
+  for (const templateEntry of templateEntries) {
+    if (isPrefetchLoadingShell && !includesPrefetchTreePosition(templateEntry.treePosition)) {
+      continue;
+    }
+    const templateComponent = getDefaultExport(templateEntry.templateModule);
+    if (!templateComponent) {
+      continue;
+    }
+    const TemplateComponent = templateComponent;
+    const templateDependency = templateDependenciesById.get(templateEntry.id);
+    let templateElement: ReactNode = templateDependency ? (
+      renderAppComponentWithDependencyBarrier(
+        TemplateComponent,
+        { children: <Children /> },
+        templateDependency,
+      )
+    ) : (
+      <TemplateComponent>
+        <Children />
+      </TemplateComponent>
+    );
+    const ancestorLoadingEntry = findNearestAncestorLoadingEntry(templateEntry.treePosition);
+    const ancestorLoadingComponent = getDefaultExport(ancestorLoadingEntry?.loadingModule);
+    if (
+      ancestorLoadingComponent &&
+      ancestorLoadingEntry &&
+      isOutermostEntryBelowLoading(
+        ancestorLoadingEntry.treePosition,
+        templateEntry.treePosition,
+        "template",
+      )
+    ) {
+      const AncestorLoadingComponent = ancestorLoadingComponent;
+      const loadingResetKey = resolveRouteSegmentResetKey(ancestorLoadingEntry.treePosition);
+      templateElement = (
+        <Suspense key={loadingResetKey || routeResetKey} fallback={<AncestorLoadingComponent />}>
+          {templateElement}
+        </Suspense>
+      );
+    }
+    elements[templateEntry.id] = renderAfterAppDependencies(templateElement, [
+      ...(pageRenderDependency ? [pageRenderDependency] : []),
+      ...(templateDependenciesBeforeById.get(templateEntry.id) ?? []),
+    ]);
+  }
+
+  for (let index = 0; index < layoutEntries.length; index++) {
+    const layoutEntry = layoutEntries[index];
+    if (isPrefetchLoadingShell && !includesPrefetchTreePosition(layoutEntry.treePosition)) {
+      continue;
+    }
+    // The client keeps the one it holds.
+    if (skippedLayoutIds.has(layoutEntry.id)) continue;
+    if (!layoutEntry.layoutModule) continue;
+    const layoutComponent = traceGetLayoutOrPageModule(
+      resolveAppPageModuleTraceSegment(routeSegments, layoutEntry.treePosition),
+      () => getDefaultExport(layoutEntry.layoutModule),
+    );
+    if (!layoutComponent) continue;
+    const layoutParams = resolveAppPageSegmentParams(
+      options.route.routeSegments,
+      layoutEntry.treePosition,
+      options.matchedParams,
+    );
+
+    const layoutProps: Record<string, unknown> = {
+      params: options.makeThenableParams(layoutParams),
+    };
+
+    for (const slot of Object.values(options.route.slots ?? {})) {
+      const slotName = slot.name;
+      const targetIndex = slot.layoutIndex >= 0 ? slot.layoutIndex : layoutEntries.length - 1;
+      if (targetIndex !== index) {
+        continue;
+      }
+      layoutProps[slotName] = <ParallelSlot name={slotName} />;
+    }
+
+    const LayoutComponent = layoutComponent;
+    const ancestorLoadingEntry = findNearestAncestorLoadingEntry(layoutEntry.treePosition);
+    // A client layout renders outside the RSC render, so it holds nothing.
+    const holdsResponse = !ancestorLoadingEntry && !isReactOwnedAppComponent(LayoutComponent);
+    if (holdsResponse) layoutGate.hold(layoutEntry.id, index);
+    let layoutElement = createRouteLayoutElement(
+      LayoutComponent,
+      withUseCacheLayoutMarker(LayoutComponent, { ...layoutProps, children: <Children /> }),
+      index,
+      layoutDependenciesByIndex.get(index),
+      holdsResponse ? (failure) => layoutGate.settle(layoutEntry.id, failure) : undefined,
+    );
+    // Next.js gives each segment its own RedirectBoundary, inside its loading
+    // boundary. A redirect() streamed in the payload, such as one a component
+    // the layout renders throws, is then followed once the navigation has
+    // committed, with the layouts above still mounted.
+    layoutElement = (
+      <RedirectBoundary resetKey={resolveRouteSegmentResetKey(layoutEntry.treePosition)}>
+        {layoutElement}
+      </RedirectBoundary>
+    );
+    const ancestorLoadingComponent = getDefaultExport(ancestorLoadingEntry?.loadingModule);
+    if (
+      ancestorLoadingComponent &&
+      ancestorLoadingEntry &&
+      isOutermostEntryBelowLoading(
+        ancestorLoadingEntry.treePosition,
+        layoutEntry.treePosition,
+        "layout",
+      )
+    ) {
+      const AncestorLoadingComponent = ancestorLoadingComponent;
+      const loadingResetKey = resolveRouteSegmentResetKey(ancestorLoadingEntry.treePosition);
+      layoutElement = (
+        <Suspense key={loadingResetKey || routeResetKey} fallback={<AncestorLoadingComponent />}>
+          {layoutElement}
+        </Suspense>
+      );
+    }
+    elements[layoutEntry.id] = renderAfterAppDependencies(layoutElement, [
+      ...(pageRenderDependency ? [pageRenderDependency] : []),
+      ...(layoutDependenciesBefore[index] ?? []),
+    ]);
+  }
+
+  for (const slotPlan of segmentPlan.slots) {
+    const {
+      branchSegments,
+      includedInPayload,
+      nestedBfcacheSegments,
+      ownerTreePosition,
+      params: slotParams,
+      resetKey: slotResetKey,
+      routeSegments: slotRouteSegments,
+      slot,
+      slotId,
+      slotOverride,
+      targetIndex,
+    } = slotPlan;
+    const isOwnedAtRoutePrefetchCutoff =
+      isPrefetchLoadingShell &&
+      prefetchLoadingEntry !== null &&
+      ownerTreePosition === prefetchLoadingEntry.treePosition;
+    if (!includedInPayload) continue;
+    const slotOwnerParams = resolveAppPageSegmentParams(
+      options.route.routeSegments,
+      layoutEntries[targetIndex]?.treePosition ?? 0,
+      options.matchedParams,
+    );
+    const slotTreeOverride = getAppPageSlotTreeOverride(slotOverride);
+    const hasSlotTreeOverride = slotTreeOverride !== null;
+    const slotLoadingEntries = createAppPageSlotLoadingEntries(slot, slotTreeOverride);
+    const prefetchSlotLoadingEntry = isOwnedAtRoutePrefetchCutoff
+      ? prefetchLoadingEntry
+      : isPrefetchLoadingShell
+        ? getFirstLoadingEntry(slotLoadingEntries)
+        : null;
+    if (isPrefetchLoadingShell && prefetchSlotLoadingEntry === null) {
+      continue;
+    }
+    const resolvedOverrideOrPageComponent =
+      slotOverride?.pageModule || slot.page
+        ? traceGetLayoutOrPageModule(
+            APP_PAGE_SEGMENT_KEY,
+            () => getDefaultExport(slotOverride?.pageModule) ?? getDefaultExport(slot.page),
+          )
+        : null;
+    const resolvedDefaultComponent = getDefaultExport(slot.default);
+
+    // On soft nav (RSC): omit key when only default.tsx exists and the slot is
+    // already mounted on the client. Absent key means the browser retains prior
+    // slot content rather than replacing it. When the slot is not yet mounted
+    // (first entry into this layout), include the key so default.tsx renders.
+    if (
+      !resolvedOverrideOrPageComponent &&
+      resolvedDefaultComponent &&
+      options.isRscRequest &&
+      options.mountedSlotIds?.has(slotId)
+    ) {
+      continue;
+    }
+
+    const slotComponent = resolvedOverrideOrPageComponent ?? resolvedDefaultComponent;
+    const overrideOrPageComponent = resolvedOverrideOrPageComponent;
+
+    if (!slotComponent && !isOwnedAtRoutePrefetchCutoff) {
+      elements[slotId] = AppElementsWire.unmatchedSlotValue;
+      continue;
+    }
+
+    // Each not-found.tsx in the slot's branch belongs to its own segment, so,
+    // as in Next.js, it catches notFound() from inside that segment's layout,
+    // and a layout's own notFound() reaches the boundary of the segment above.
+    // An unmatched slot renders its default.tsx as Next.js's `__DEFAULT__`
+    // segment, which carries none of the slot directory's files, so the
+    // default's notFound() is caught above the layout rendering the slot.
+    const branchNotFounds = new Map<number, AppPageComponent>();
+    const slotNotFoundModules = !overrideOrPageComponent
+      ? undefined
+      : hasSlotTreeOverride
+        ? slotOverride?.notFoundModules
+        : slot.notFounds;
+    const slotNotFoundTreePositions = hasSlotTreeOverride
+      ? slotOverride?.notFoundTreePositions
+      : slot.notFoundTreePositions;
+    for (const [index, notFoundModule] of (slotNotFoundModules ?? []).entries()) {
+      const component = getDefaultExport(notFoundModule);
+      const treePosition = slotNotFoundTreePositions?.[index];
+      if (component && treePosition !== undefined) branchNotFounds.set(treePosition, component);
+    }
+    // An intercepting route's forbidden.tsx and unauthorized.tsx files catch
+    // its signals in their own segments too, as its not-found.tsx files do, so
+    // a layout's own forbidden() reaches the boundary of the segment above.
+    const branchAccessBoundaries = new Map<
+      number,
+      { component: AppPageComponent; Boundary: typeof ForbiddenBoundary }[]
+    >();
+    if (overrideOrPageComponent && hasSlotTreeOverride) {
+      for (const [modules, treePositions, Boundary] of [
+        [slotOverride?.forbiddenModules, slotOverride?.forbiddenTreePositions, ForbiddenBoundary],
+        [
+          slotOverride?.unauthorizedModules,
+          slotOverride?.unauthorizedTreePositions,
+          UnauthorizedBoundary,
+        ],
+      ] as const) {
+        for (const [index, module] of (modules ?? []).entries()) {
+          const component = getDefaultExport(module);
+          const treePosition = treePositions?.[index];
+          if (!component || treePosition === undefined) continue;
+          const entries = branchAccessBoundaries.get(treePosition) ?? [];
+          entries.push({ component, Boundary });
+          branchAccessBoundaries.set(treePosition, entries);
+        }
+      }
+    }
+    // Its error.tsx files catch errors in their own segments too, including
+    // its page's generateMetadata() errors, as Next.js renders the page's
+    // MetadataOutlet in its segment. The slot's own error.tsx stays at its root.
+    // A slot's default.tsx carries none of them, like its not-found files.
+    const branchErrors = new Map<number, AppPageErrorComponent>();
+    const slotErrorModules = !overrideOrPageComponent
+      ? undefined
+      : hasSlotTreeOverride
+        ? slotOverride?.errorModules
+        : slot.errors;
+    const slotErrorTreePositions = hasSlotTreeOverride
+      ? slotOverride?.errorTreePositions
+      : slot.errorTreePositions;
+    for (const [index, errorModule] of (slotErrorModules ?? []).entries()) {
+      const component = getErrorBoundaryExport(errorModule);
+      const treePosition = slotErrorTreePositions?.[index];
+      if (component && treePosition !== undefined) branchErrors.set(treePosition, component);
+    }
+    // The id of the innermost of those boundaries above a component at
+    // `treePosition`, which catches its notFound() on the client. The document
+    // renders that boundary caught instead of the fallback above the layout
+    // rendering the slot.
+    const resolveSlotNotFoundBoundary = (treePosition: number): string | undefined => {
+      let caughtAt: number | undefined;
+      for (const position of branchNotFounds.keys()) {
+        if (position < treePosition && (caughtAt === undefined || position > caughtAt)) {
+          caughtAt = position;
+        }
+      }
+      return caughtAt === undefined ? undefined : `${slotId}:${caughtAt}`;
+    };
+
+    let slotElement: ReactNode;
+    if (prefetchSlotLoadingEntry) {
+      const PrefetchSlotLoadingComponent = getDefaultExport(
+        prefetchSlotLoadingEntry.loadingModule,
+      )!;
+      slotElement = <PrefetchSlotLoadingComponent />;
+    } else {
+      const slotThenableParams = options.makeThenableParams(slotParams);
+      const slotProps: Record<string, unknown> = {
+        params: slotThenableParams,
+      };
+      if (options.searchParams !== undefined) {
+        slotProps.searchParams = options.searchParams;
+      }
+      if (slotOverride?.props) {
+        Object.assign(slotProps, slotOverride.props);
+      }
+      // On the server, the slot's notFound(), forbidden() and unauthorized()
+      // are caught above the layout that renders it (a root layout re-renders
+      // around its own boundary instead, for not-found or when it is a client
+      // component), so the fallback needs to know which layout.
+      slotElement = options.createPageElement
+        ? options.createPageElement(
+            slotComponent!,
+            slotProps,
+            targetIndex >= 0 ? targetIndex : undefined,
+            resolveSlotNotFoundBoundary(Number.POSITIVE_INFINITY),
+          )
+        : (() => {
+            const SlotComponent = slotComponent!;
+            return <SlotComponent {...slotProps} />;
+          })();
+      if (overrideOrPageComponent) {
+        // Named parallel-slot entries flatten the slot page and its layout
+        // chain into one wire element. Key only the page leaf so dynamic
+        // siblings reset page-local client state while the surrounding slot
+        // layouts keep their state, matching Next.js segment ownership.
+        slotElement = (
+          <Fragment key={slotResetKey}>
+            {slotElement}
+            {slotOverride?.metadataOutlet}
+          </Fragment>
+        );
+      }
+      // Next.js gives each slot segment its own RedirectBoundary, so a slot
+      // page's redirect() keeps the route's layouts mounted.
+      slotElement = <RedirectBoundary resetKey={slotResetKey}>{slotElement}</RedirectBoundary>;
+    }
+    const branchLayouts = new Map<
+      number,
+      { component: AppPageComponent; params: AppPageParams }[]
+    >();
+    const addBranchLayout = (
+      treePosition: number,
+      entry: { component: AppPageComponent; params: AppPageParams },
+    ) => {
+      const entries = branchLayouts.get(treePosition) ?? [];
+      entries.push(entry);
+      branchLayouts.set(treePosition, entries);
+    };
+
+    if (hasSlotTreeOverride) {
+      for (const [layoutIndex, layoutModule] of (slotOverride?.layoutModules ?? []).entries()) {
+        if (!layoutModule) continue;
+        const treePosition =
+          slotOverride?.layoutSegments?.[layoutIndex]?.length ?? branchSegments.length;
+        const component = traceGetLayoutOrPageModule(
+          resolveAppPageModuleTraceSegment(branchSegments, treePosition),
+          () => getDefaultExport(layoutModule),
+        );
+        if (!component) continue;
+        addBranchLayout(treePosition, {
+          component,
+          params: resolveSlotLayoutParams(branchSegments, treePosition, slotParams),
+        });
+      }
+    } else {
+      for (const [layoutIndex, layoutModule] of (slot.configLayouts ?? []).entries()) {
+        if (!layoutModule) continue;
+        const treePosition = slot.configLayoutTreePositions?.[layoutIndex] ?? 0;
+        const component = traceGetLayoutOrPageModule(
+          resolveAppPageModuleTraceSegment(slotRouteSegments, treePosition),
+          () => getDefaultExport(layoutModule),
+        );
+        if (!component) continue;
+        addBranchLayout(treePosition, {
+          component,
+          params: {
+            ...slotOwnerParams,
+            ...resolveSlotLayoutParams(slotRouteSegments, treePosition, slotParams),
+          },
+        });
+      }
+    }
+
+    const slotLayoutComponent =
+      overrideOrPageComponent && slot.layout
+        ? traceGetLayoutOrPageModule(APP_PAGE_SLOT_SEGMENT_KEY, () => getDefaultExport(slot.layout))
+        : null;
+    if (slotLayoutComponent) {
+      const rootEntries = branchLayouts.get(0) ?? [];
+      branchLayouts.set(0, [
+        { component: slotLayoutComponent, params: slotOwnerParams },
+        ...rootEntries,
+      ]);
+    }
+
+    const branchLoadings = new Map<number, AppPageComponent[]>();
+    for (const entry of slotLoadingEntries) {
+      const component = getDefaultExport(entry.loadingModule);
+      if (!component) continue;
+      const components = branchLoadings.get(entry.treePosition) ?? [];
+      components.push(component);
+      branchLoadings.set(entry.treePosition, components);
+    }
+
+    const slotErrorComponent = getErrorBoundaryExport(slot.error);
+    const branchTreePositions = Array.from(
+      new Set([
+        ...branchLayouts.keys(),
+        ...branchLoadings.keys(),
+        ...(slotErrorComponent ? [0] : []),
+        ...branchNotFounds.keys(),
+        ...branchAccessBoundaries.keys(),
+        ...branchErrors.keys(),
+        ...nestedBfcacheSegments.flatMap((segment) =>
+          segment.treePosition === null ? [] : [segment.treePosition],
+        ),
+      ]),
+    )
+      .filter(
+        (treePosition) =>
+          !prefetchSlotLoadingEntry ||
+          (!isOwnedAtRoutePrefetchCutoff && treePosition <= prefetchSlotLoadingEntry.treePosition),
+      )
+      .sort((left, right) => left - right);
+    for (let index = branchTreePositions.length - 1; index >= 0; index--) {
+      const treePosition = branchTreePositions[index];
+      const loadingComponents = prefetchSlotLoadingEntry
+        ? []
+        : (branchLoadings.get(treePosition) ?? []);
+      for (let loadingIndex = loadingComponents.length - 1; loadingIndex >= 0; loadingIndex--) {
+        const LoadingComponent = loadingComponents[loadingIndex];
+        const loadingResetKey = resolveAppPageSegmentStateKey(
+          branchSegments,
+          treePosition,
+          slotParams,
+        );
+        slotElement = (
+          <Suspense key={loadingResetKey || slotResetKey} fallback={<LoadingComponent />}>
+            {slotElement}
+          </Suspense>
+        );
+      }
+
+      const SlotNotFoundComponent = branchNotFounds.get(treePosition);
+      if (SlotNotFoundComponent) {
+        slotElement = (
+          <NotFoundBoundary
+            resetKey={resolveAppPageTemplateStateKey(branchSegments, treePosition, slotParams)}
+            fallback={<SlotNotFoundComponent />}
+            caughtId={`${slotId}:${treePosition}`}
+          >
+            {slotElement}
+          </NotFoundBoundary>
+        );
+      }
+      // Next.js nesting per segment (outer to inner): Unauthorized > Forbidden > NotFound.
+      for (const { component: AccessComponent, Boundary } of branchAccessBoundaries.get(
+        treePosition,
+      ) ?? []) {
+        slotElement = (
+          <Boundary
+            resetKey={resolveAppPageTemplateStateKey(branchSegments, treePosition, slotParams)}
+            fallback={<AccessComponent />}
+          >
+            {slotElement}
+          </Boundary>
+        );
+      }
+
+      const SegmentErrorComponent =
+        branchErrors.get(treePosition) ?? (treePosition === 0 ? slotErrorComponent : null);
+      if (SegmentErrorComponent) {
+        slotElement = (
+          <ErrorBoundary
+            resetKey={
+              treePosition === 0
+                ? slotResetKey
+                : resolveAppPageSegmentStateKey(branchSegments, treePosition, slotParams) ||
+                  slotResetKey
+            }
+            fallback={SegmentErrorComponent}
+          >
+            {slotElement}
+          </ErrorBoundary>
+        );
+      }
+
+      // Like Next.js's, each entry of a level holds its own copy of the
+      // loading, access and error boundaries of the segment above it, so an
+      // error caught in one entry leaves the hidden entries mounted.
+      const nestedBfcacheSegment = nestedBfcacheSegments.find(
+        (segment) => segment.treePosition === treePosition,
+      );
+      if (nestedBfcacheSegment) {
+        slotElement = (
+          <BfcacheSegmentBoundary
+            id={nestedBfcacheSegment.id}
+            stateKey={nestedBfcacheSegment.stateKey}
+          >
+            {slotElement}
+          </BfcacheSegmentBoundary>
+        );
+      }
+
+      const layoutEntriesAtPosition = branchLayouts.get(treePosition) ?? [];
+      for (let layoutIndex = layoutEntriesAtPosition.length - 1; layoutIndex >= 0; layoutIndex--) {
+        const layoutEntry = layoutEntriesAtPosition[layoutIndex];
+        slotElement = createSlotLayoutElement(
+          layoutEntry.component,
+          withUseCacheLayoutMarker(layoutEntry.component, {
+            params: options.makeThenableParams(layoutEntry.params),
+            children: slotElement,
+          }),
+          targetIndex >= 0 ? targetIndex : undefined,
+          prefetchSlotLoadingEntry ? undefined : resolveSlotNotFoundBoundary(treePosition),
+        );
+      }
+    }
+
+    const unalignedBfcacheSegment = nestedBfcacheSegments.find(
+      (segment) => segment.treePosition === null,
+    );
+    if (unalignedBfcacheSegment) {
+      // Interception branches can have a marker-bearing filesystem shape that
+      // cannot be aligned safely with the semantic target route. Wrap the
+      // complete flattened branch so no intercept layout can retain stale
+      // state, while still publishing a distinct leaf BFCache id.
+      slotElement = (
+        <BfcacheSegmentBoundary
+          id={unalignedBfcacheSegment.id}
+          stateKey={unalignedBfcacheSegment.stateKey}
+        >
+          {slotElement}
+        </BfcacheSegmentBoundary>
+      );
+    }
+
+    // A loading convention on the owning segment applies to every parallel
+    // child slot, not only the flattened `children` branch. The slot payload is
+    // serialized as a separate element entry, so the boundary must wrap this
+    // entry directly rather than only the <Slot> placeholder in routeChildren.
+    const ownerLoadingEntry = isPrefetchLoadingShell
+      ? undefined
+      : findNearestLoadingEntryAtOrAbove(ownerTreePosition);
+    const ownerLoadingComponent = getDefaultExport(ownerLoadingEntry?.loadingModule);
+    const slotLayoutTreePosition = layoutEntries[targetIndex]?.treePosition;
+    if (
+      ownerLoadingComponent &&
+      ownerLoadingEntry &&
+      (slotLayoutTreePosition === undefined ||
+        isOutermostEntryBelowLoading(
+          ownerLoadingEntry.treePosition,
+          slotLayoutTreePosition,
+          "slot",
+        ))
+    ) {
+      const OwnerLoadingComponent = ownerLoadingComponent;
+      const ownerResetKey = resolveRouteSegmentResetKey(ownerLoadingEntry.treePosition);
+      slotElement = (
+        <Suspense key={ownerResetKey || slotResetKey} fallback={<OwnerLoadingComponent />}>
+          {slotElement}
+        </Suspense>
+      );
+    }
+
+    elements[slotId] = renderAfterAppDependencies(slotElement, [
+      ...(pageRenderDependency ? [pageRenderDependency] : []),
+      ...(targetIndex >= 0 ? (slotDependenciesByLayoutIndex[targetIndex] ?? []) : []),
+    ]);
+  }
+
+  let routeChildren: ReactNode = (
+    <>
+      <LayoutSegmentProvider
+        providerId={pageElementId}
+        segmentMap={{ children: [APP_PAGE_SEGMENT_KEY] }}
+      >
+        <Slot id={pageElementId} />
+      </LayoutSegmentProvider>
+      {renderElementWithMetadataOutlet ? null : streamingMetadataOutlet}
+    </>
+  );
+
+  if (isPrefetchLoadingShell) {
+    // A prefetch loading shell is a cached payload, not a committed navigation,
+    // so it intentionally does not mount AppRouterScrollTarget — the scroll/focus
+    // effect belongs to the real render that replaces this shell (handled in the
+    // else branch below).
+    if (prefetchLoadingComponent === null) {
+      routeChildren = null;
+    } else {
+      const PrefetchLoadingComponent = prefetchLoadingComponent;
+      routeChildren = <PrefetchLoadingComponent />;
+    }
+  } else {
+    // Wrap the page slot in a per-segment RedirectBoundary so that a
+    // redirect() thrown from a server component (or a client component
+    // within the page subtree) is caught here — below the route's layouts —
+    // rather than at the top-level boundary in app-browser-entry. Catching
+    // at the top level unmounts the entire route tree including layouts,
+    // which destroys client-side state in layout-hosted components
+    // (counters, theme toggles, form drafts). Here, only the page subtree
+    // is unmounted; the surrounding layouts stay mounted across the
+    // boundary's null-render → router.replace transition, and segment
+    // reuse keeps their React state intact.
+    //
+    // Placed inside the Suspense (loading) boundary to match Next.js nesting
+    // for the redirect boundary specifically:
+    //   Error > AccessFallback > Loading (Suspense) > Redirect > content
+    // (Note: Next.js places AccessFallback inside Loading, not outside — that
+    // is a pre-existing nesting divergence tracked separately.)
+    // This keeps the loading fallback visible during redirect-driven
+    // transitions rather than unmounting it.
+    routeChildren = <RedirectBoundary resetKey={routeResetKey}>{routeChildren}</RedirectBoundary>;
+
+    if (routeLoadingComponent) {
+      const RouteLoadingComponent = routeLoadingComponent;
+      // Route-level wrappers cover the full page branch in vinext's flat element
+      // transport, so their reset key includes the visible segment-state path.
+      // Dynamic param changes reset the pending boundary, while search-only changes
+      // preserve it.
+      routeChildren = (
+        <Suspense key={routeResetKey} fallback={<RouteLoadingComponent />}>
+          {routeChildren}
+        </Suspense>
+      );
+    }
+
+    // Mount the scroll/focus target *outside* the loading Suspense so it does
+    // not suspend with the page content. Next.js places ScrollAndMaybeFocusHandler
+    // above the LoadingBoundary for the same reason: the handler must stay
+    // committed while the loading.js fallback renders, so the default-navigation
+    // scroll fires against the loading boundary's DOM (`should apply scroll when
+    // loading.js is used`) and again when the final content commits — rather than
+    // relying on a raw post-navigation scrollTo fallback that only runs after the
+    // streamed content resolves.
+    routeChildren = <AppRouterScrollTarget>{routeChildren}</AppRouterScrollTarget>;
+  }
+
+  const lastLayoutErrorModule =
+    errorEntries.length > 0 ? errorEntries[errorEntries.length - 1].errorModule : null;
+  // Next.js nesting (outer to inner): Error > Unauthorized > Forbidden > NotFound > children.
+  // Building bottom-up means NotFoundBoundary must wrap first, then Forbidden, Unauthorized, Error.
+  // The page-level boundaries render the route's nearest file, walking up from
+  // the page. When that file belongs to an ancestor segment, the segment's own
+  // boundary catches the page's signal in place of every layout below it. The
+  // page-level boundary passes the signal up to it. It stays in the tree so the
+  // element shape above a preserved children slot never depends on which route
+  // owns the file.
+  const resolveAccessBoundaryOwner = (
+    boundaries: ReadonlyMap<number, AppPageAccessBoundary<TModule>>,
+    pageModule: TModule | null,
+  ): number | null => {
+    let deepest: number | null = null;
+    for (const treePosition of boundaries.keys()) {
+      if (treePosition < routeSegments.length && (deepest === null || treePosition > deepest)) {
+        deepest = treePosition;
+      }
+    }
+    // A file beside the page, or one no segment boundary renders, stays with
+    // the page-level boundary.
+    return deepest !== null && boundaries.get(deepest)?.module === pageModule ? deepest : null;
+  };
+  const resolvePageAccessModule = (
+    routeModule: TModule | null | undefined,
+    rootModule: TModule | null | undefined,
+  ): TModule | null =>
+    (getDefaultExport(routeModule) ? routeModule : null) ??
+    (getDefaultExport(rootModule) ? rootModule : null) ??
+    null;
+  const notFoundPageModule = resolvePageAccessModule(options.route.notFound, rootNotFoundModule);
+  const forbiddenPageModule = resolvePageAccessModule(options.route.forbidden, rootForbiddenModule);
+  const unauthorizedPageModule = resolvePageAccessModule(
+    options.route.unauthorized,
+    rootUnauthorizedModule,
+  );
+  const notFoundOwnerTreePosition = resolveAccessBoundaryOwner(
+    notFoundBoundaries,
+    notFoundPageModule,
+  );
+  const forbiddenOwnerTreePosition = resolveAccessBoundaryOwner(
+    forbiddenBoundaries,
+    forbiddenPageModule,
+  );
+  const unauthorizedOwnerTreePosition = resolveAccessBoundaryOwner(
+    unauthorizedBoundaries,
+    unauthorizedPageModule,
+  );
+  // Next's app loader injects its built-in not-found at the root segment,
+  // inside the root layout. Layoutless synthetic/test routes keep it around
+  // the page instead, where it also catches late client-side signals such as
+  // a streaming MetadataOutlet rejection.
+  const notFoundComponent =
+    getDefaultExport(notFoundPageModule) ??
+    (layoutEntries.length === 0 ? DEFAULT_NOT_FOUND_COMPONENT : null);
+  // The boundary that catches the page's own notFound(), the page-level one or
+  // else the deepest segment's, carries an id so that a document whose slot
+  // boundaries catch their slots' signals renders it caught beside them.
+  // A sibling intercept page brings its own boundaries and renders only for
+  // an RSC navigation, which never replays a caught document, so the source
+  // route's boundaries carry no id then.
+  const identifiesPageNotFoundCatcher = !renderElementWithMetadataOutlet;
+  const isPageNotFoundCaughtAtPage =
+    identifiesPageNotFoundCatcher &&
+    notFoundComponent !== null &&
+    notFoundOwnerTreePosition === null;
+  let pageNotFoundCatcherTreePosition: number | null = null;
+  if (identifiesPageNotFoundCatcher && !isPageNotFoundCaughtAtPage) {
+    for (const treePosition of notFoundBoundaries.keys()) {
+      if (
+        pageNotFoundCatcherTreePosition === null ||
+        treePosition > pageNotFoundCatcherTreePosition
+      ) {
+        pageNotFoundCatcherTreePosition = treePosition;
+      }
+    }
+  }
+  if (notFoundComponent) {
+    const NotFoundComponent = notFoundComponent;
+    routeChildren = (
+      <NotFoundBoundary
+        resetKey={routeResetKey}
+        caughtId={isPageNotFoundCaughtAtPage ? APP_PAGE_NOT_FOUND_BOUNDARY_ID : undefined}
+        fallback={
+          notFoundOwnerTreePosition === null ? (
+            <NotFoundComponent />
+          ) : (
+            <HttpAccessFallbackPassthrough status={404} />
+          )
+        }
+      >
+        {routeChildren}
+      </NotFoundBoundary>
+    );
+  }
+
+  const forbiddenComponent = getDefaultExport(forbiddenPageModule);
+  if (forbiddenComponent) {
+    const ForbiddenComponent = forbiddenComponent;
+    routeChildren = (
+      <ForbiddenBoundary
+        resetKey={routeResetKey}
+        fallback={
+          forbiddenOwnerTreePosition === null ? (
+            <ForbiddenComponent />
+          ) : (
+            <HttpAccessFallbackPassthrough status={403} />
+          )
+        }
+      >
+        {routeChildren}
+      </ForbiddenBoundary>
+    );
+  }
+
+  const unauthorizedComponent = getDefaultExport(unauthorizedPageModule);
+  if (unauthorizedComponent) {
+    const UnauthorizedComponent = unauthorizedComponent;
+    routeChildren = (
+      <UnauthorizedBoundary
+        resetKey={routeResetKey}
+        fallback={
+          unauthorizedOwnerTreePosition === null ? (
+            <UnauthorizedComponent />
+          ) : (
+            <HttpAccessFallbackPassthrough status={401} />
+          )
+        }
+      >
+        {routeChildren}
+      </UnauthorizedBoundary>
+    );
+  }
+
+  const pageErrorComponent = getErrorBoundaryExport(options.route.error);
+  if (pageErrorComponent && options.route.error !== lastLayoutErrorModule) {
+    routeChildren = (
+      <ErrorBoundary resetKey={routeResetKey} fallback={pageErrorComponent}>
+        {routeChildren}
+      </ErrorBoundary>
+    );
+  }
+
+  // Next.js keeps an Activity list at every segment level, so a directory
+  // without a layout still retains each child segment separately: /chat/a and
+  // /chat/b are two entries in the chat level's list, and one entry, "chat", in
+  // the parent layout's. Without those levels the parent's list would hold one
+  // entry per leaf and evict sooner. A sibling intercept rendered on the route
+  // that owns its marker follows the intercepting route's segments down to its
+  // page element, so /photo/1 shares the "feed" entry with /feed. Other
+  // interceptions, and slot sub-routes whose children render a default, a
+  // sibling catch-all, or nothing, render children that their route segments
+  // don't describe, so they keep a single list per layout. A page under a
+  // layout with named slots binds its children slot too, and keeps its levels.
+  const firstLayoutWithElementTreePosition = layoutEntries.find(
+    (entry) => getDefaultExport(entry.layoutModule) !== null,
+  )?.treePosition;
+  const siblingInterceptSegmentKeys = options.siblingInterceptSegmentKeys ?? null;
+  const keepsSegmentLevelLists =
+    String(process.env.__NEXT_CACHE_COMPONENTS) === "true" &&
+    firstLayoutWithElementTreePosition !== undefined &&
+    !options.route.childrenSlot?.synthetic &&
+    (options.semanticPageIdentity === undefined || siblingInterceptSegmentKeys !== null);
+  const spineSegmentCount = siblingInterceptSegmentKeys?.length ?? routeSegments.length;
+  const spineTreePositions = keepsSegmentLevelLists
+    ? Array.from(
+        new Set([
+          ...orderedTreePositions,
+          ...Array.from(
+            { length: Math.max(0, spineSegmentCount - firstLayoutWithElementTreePosition) },
+            (_, offset) => firstLayoutWithElementTreePosition + 1 + offset,
+          ),
+        ]),
+      ).sort((left, right) => left - right)
+    : orderedTreePositions;
+  const renderedTreePositions = isPrefetchLoadingShell
+    ? spineTreePositions.filter(includesPrefetchTreePosition)
+    : spineTreePositions;
+  // The segment a layout's children render: the page, or the nearest layout
+  // below. The list keyed by it sits one level above that segment. A loading
+  // shell keys its levels like the full render, even past its cutoff, so the
+  // full render lands in the same entries.
+  const firstLayoutBelowShell =
+    keepsSegmentLevelLists && isPrefetchLoadingShell
+      ? layoutEntries.find(
+          (entry) =>
+            !includesPrefetchTreePosition(entry.treePosition) &&
+            getDefaultExport(entry.layoutModule) !== null,
+        )
+      : undefined;
+  let childSegmentElementId = firstLayoutBelowShell?.id ?? pageElementId;
+  let childSegmentTreePosition = firstLayoutBelowShell?.treePosition ?? spineSegmentCount + 1;
+  // Retains the children of the segment at treePosition, keyed by the child
+  // element when it's the next segment down, else by the child segment.
+  const retainChildSegment = (treePosition: number, children: ReactNode): ReactNode =>
+    treePosition === childSegmentTreePosition - 1 ? (
+      <BfcacheChildrenBoundary id={childSegmentElementId}>{children}</BfcacheChildrenBoundary>
+    ) : (
+      <BfcacheChildrenBoundary
+        stateKey={createBfcacheChildSegmentStateKey(
+          siblingInterceptSegmentKeys
+            ? JSON.stringify(siblingInterceptSegmentKeys.slice(0, treePosition + 1))
+            : resolveAppPageTemplateStateKey(routeSegments, treePosition, options.matchedParams),
+        )}
+      >
+        {children}
+      </BfcacheChildrenBoundary>
+    );
+  for (let index = renderedTreePositions.length - 1; index >= 0; index--) {
+    const treePosition = renderedTreePositions[index];
+    const segmentResetKey = resolveRouteSegmentResetKey(treePosition);
+    let segmentChildren: ReactNode = routeChildren;
+    const layoutEntry = layoutEntriesByTreePosition.get(treePosition);
+    const templateEntry = templateEntriesByTreePosition.get(treePosition);
+    const loadingEntry = loadingEntriesByTreePosition.get(treePosition);
+    const errorEntry = errorEntriesByTreePosition.get(treePosition);
+
+    // The leaf loading convention keeps using the route-level wrapper above so
+    // its ordering relative to page access/error boundaries and scroll handling
+    // remains unchanged. Ancestor segment boundaries are inserted here so they
+    // can suspend while a child layout entry renders.
+    if (!isPrefetchLoadingShell && treePosition < routeSegments.length) {
+      const segmentLoadingComponent = getDefaultExport(loadingEntry?.loadingModule);
+      if (segmentLoadingComponent) {
+        const SegmentLoadingComponent = segmentLoadingComponent;
+        segmentChildren = (
+          <Suspense key={segmentResetKey || routeResetKey} fallback={<SegmentLoadingComponent />}>
+            {segmentChildren}
+          </Suspense>
+        );
+      }
+    }
+
+    // Next.js nesting per segment (outer to inner): Layout > Template > Error > Unauthorized > Forbidden > NotFound > Loading > children.
+    // Building bottom-up means Loading must wrap the leaf subtree first, then
+    // access/error boundaries, Template, and finally the Layout slot.
+    const accessBoundaries = [
+      [notFoundBoundaries, NotFoundBoundary],
+      [forbiddenBoundaries, ForbiddenBoundary],
+      [unauthorizedBoundaries, UnauthorizedBoundary],
+    ] as const;
+    // Like Next.js's, every access boundary clears when the visible pathname
+    // changes, even under an intercepted route whose reset key stays the
+    // source's. Next.js also remounts it when the segment below it changes,
+    // including a route group, so a rewrite that keeps the pathname clears it
+    // only then. The reset key is the route's state path down to that
+    // segment, keyed like a template's.
+    // https://github.com/vercel/next.js/blob/canary/packages/next/src/client/components/layout-router.tsx
+    const accessResetKey = resolveAppPageTemplateStateKey(
+      routeSegments,
+      treePosition,
+      options.matchedParams,
+    );
+    for (const [boundaries, AccessBoundary] of accessBoundaries) {
+      const boundary = boundaries.get(treePosition);
+      if (!boundary) continue;
+      const BoundaryComponent = boundary.component;
+      segmentChildren =
+        AccessBoundary === NotFoundBoundary && treePosition === pageNotFoundCatcherTreePosition ? (
+          <NotFoundBoundary
+            resetKey={accessResetKey}
+            fallback={<BoundaryComponent />}
+            caughtId={APP_PAGE_NOT_FOUND_BOUNDARY_ID}
+          >
+            {segmentChildren}
+          </NotFoundBoundary>
+        ) : (
+          <AccessBoundary resetKey={accessResetKey} fallback={<BoundaryComponent />}>
+            {segmentChildren}
+          </AccessBoundary>
+        );
+    }
+
+    const segmentErrorComponent = getErrorBoundaryExport(
+      errorEntry?.errorModule ?? layoutEntry?.errorModule,
+    );
+    if (segmentErrorComponent) {
+      segmentChildren = (
+        <ErrorBoundary resetKey={segmentResetKey} fallback={segmentErrorComponent}>
+          {segmentChildren}
+        </ErrorBoundary>
+      );
+    }
+
+    if (templateEntry && getDefaultExport(templateEntry.templateModule)) {
+      const templateStateKey = resolveAppPageTemplateStateKey(
+        routeSegments,
+        templateEntry.treePosition,
+        options.matchedParams,
+      );
+      segmentChildren = (
+        <Slot
+          id={templateEntry.id}
+          key={
+            String(process.env.__NEXT_CACHE_COMPONENTS) === "true" ? undefined : templateStateKey
+          }
+        >
+          {segmentChildren}
+        </Slot>
+      );
+    }
+
+    const layoutHasElement =
+      layoutEntry !== undefined && getDefaultExport(layoutEntry.layoutModule) !== null;
+    if (
+      keepsSegmentLevelLists &&
+      !layoutHasElement &&
+      treePosition > firstLayoutWithElementTreePosition &&
+      treePosition < childSegmentTreePosition
+    ) {
+      segmentChildren = retainChildSegment(treePosition, segmentChildren);
+    }
+    if (!layoutEntry) {
+      routeChildren = segmentChildren;
+      continue;
+    }
+    const layoutIndex = layoutIndicesByTreePosition.get(treePosition) ?? -1;
+    const segmentMap: { children: string[] } & Record<string, string[]> = {
+      children: resolveAppPageLayoutSegmentProviderSegments(
+        options.route.childrenRouteSegments ?? routeSegments,
+        layoutEntry.treePosition,
+        options.matchedParams,
+      ),
+    };
+    for (const [slotKey, slot] of Object.entries(options.route.slots ?? {})) {
+      const slotName = slot.name;
+      const targetIndex = slot.layoutIndex >= 0 ? slot.layoutIndex : layoutEntries.length - 1;
+      if (targetIndex !== layoutIndex) {
+        continue;
+      }
+      const slotParams = getEffectiveSlotParams(slotKey, slotName);
+      const slotOverride = resolveSlotOverride(slotKey, slotName);
+      const hasActiveSlotPage =
+        getDefaultExport(slotOverride?.pageModule) !== null || getDefaultExport(slot.page) !== null;
+      const shouldPreserveMountedSlot =
+        !hasActiveSlotPage &&
+        options.isRscRequest &&
+        options.mountedSlotIds?.has(resolveAppPageSlotId(slot, layoutEntry.treePath));
+      if (shouldPreserveMountedSlot) {
+        continue;
+      }
+      const slotRouteSegments = slotOverride?.routeSegments ?? slot.routeSegments;
+      segmentMap[slotName] = slotRouteSegments
+        ? resolveAppPageLayoutSegmentProviderSegments(slotRouteSegments, 0, slotParams)
+        : [];
+    }
+
+    routeChildren = (
+      <LayoutSegmentProvider providerId={layoutEntry.id} segmentMap={segmentMap}>
+        {layoutHasElement ? (
+          <Slot
+            id={layoutEntry.id}
+            parallelSlots={createAppPageParallelSlotEntries(
+              layoutIndex,
+              layoutEntries,
+              options.route,
+              getEffectiveSlotParams,
+              resolveSlotOverride,
+            )}
+          >
+            {keepsSegmentLevelLists ? (
+              retainChildSegment(treePosition, segmentChildren)
+            ) : (
+              <BfcacheChildrenBoundary id={childSegmentElementId}>
+                {segmentChildren}
+              </BfcacheChildrenBoundary>
+            )}
+          </Slot>
+        ) : (
+          segmentChildren
+        )}
+      </LayoutSegmentProvider>
+    );
+    if (layoutHasElement) {
+      childSegmentElementId = layoutEntry.id;
+      childSegmentTreePosition = treePosition;
+    }
+  }
+
+  const globalErrorComponent = getErrorBoundaryExport(options.globalErrorModule);
+  routeChildren = (
+    <GlobalErrorBoundary
+      fallback={DEFAULT_GLOBAL_ERROR_COMPONENT}
+      wrapsGlobalErrorBoundary={globalErrorComponent !== null}
+    >
+      {globalErrorComponent ? (
+        <ErrorBoundary fallback={globalErrorComponent} isGlobalErrorBoundary>
+          {routeChildren}
+        </ErrorBoundary>
+      ) : (
+        routeChildren
+      )}
+    </GlobalErrorBoundary>
+  );
+
+  const routeElement = (
+    <>
+      {createAppPageRouteHead(
+        options.resolveHead,
+        options.resolvedMetadataPathname ?? options.routePath,
+        metadataPlacement,
+        options.trailingSlash,
+      )}
+      {routeChildren}
+      {createAppPageStreamingMetadataBody(streamingMetadataBodyId)}
+    </>
+  );
+  elements[routeId] = pageRenderDependency
+    ? renderAfterAppDependencies(routeElement, [pageRenderDependency])
+    : routeElement;
+
+  // Merge only after rendering is complete so metadata never participates in
+  // element construction, without copying the rendered element map on return.
+  Object.assign(
+    elements,
+    metadataEntries,
+    options.route.staticSiblings && options.route.staticSiblings.length > 0
+      ? { [APP_STATIC_SIBLINGS_KEY]: options.route.staticSiblings }
+      : {},
+    shouldRenderPrefetchLoadingShell
+      ? {
+          // Client loading components serialize as module references in Flight. Keep
+          // a durable marker in the shell payload so external router tests and
+          // diagnostics can recognize this as a loading-boundary response without
+          // requiring source text to appear in client component references.
+          [APP_PREFETCH_LOADING_SHELL_MARKER_KEY]: "LoadingBoundary",
+        }
+      : {},
+    skippedLayoutIds.size > 0 ? { [APP_SKIPPED_LAYOUT_IDS_KEY]: [...skippedLayoutIds] } : {},
+  );
+  registerAppPageLayoutGate(elements, layoutGate);
+  return elements;
+}

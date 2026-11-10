@@ -1,0 +1,2471 @@
+/**
+ * Prerendering phase for vite build.
+ *
+ * Classifies every route, renders static and ISR routes to HTML/JSON/RSC files,
+ * and writes a `vinext-prerender.json` build index.
+ *
+ * Two public functions:
+ *   prerenderPages()  — Pages Router
+ *   prerenderApp()    — App Router
+ *
+ * Both return a `PrerenderResult` with one entry per route. The caller
+ * (cli.ts) can merge these into the build report.
+ *
+ * Modes:
+ *   'default'  — skips SSR routes (served at request time); ISR routes rendered
+ *   'export'   — SSR routes are build errors; ISR treated as static (no revalidate)
+ */
+
+import path from "pathslash";
+import fs from "node:fs";
+import os from "node:os";
+import type { Server as HttpServer } from "node:http";
+import type { Route } from "../routing/pages-router.js";
+import { appRouteLayoutStaticParamsGroups, type AppRoute } from "../routing/app-router.js";
+import type { ResolvedNextConfig } from "../config/next-config.js";
+import { buildPregeneratedConcretePathTable } from "../server/prerender-manifest.js";
+import { BLOCKED_PAGES } from "vinext/shims/constants";
+import { classifyPagesRoute, classifyAppRoute, getAppRouteRenderEntryPath } from "./report.js";
+import {
+  concatUint8Arrays,
+  decodeRscEmbeddedChunk,
+  RSC_EMBEDDED_BINARY_CHUNK,
+  type RscEmbeddedChunk,
+} from "../server/app-rsc-embedded-chunks.js";
+import { NoOpCacheHandler, setCacheHandler, getCacheHandler } from "vinext/shims/cache-handler";
+import { _consumeRequestScopedCacheLife } from "vinext/shims/cache-request-state";
+import { runWithHeadersContext, headersContextFromRequest } from "vinext/shims/headers";
+import { createValidFileMatcher, findFileWithExtensions } from "../routing/file-matcher.js";
+import {
+  normalizeStaticPathname,
+  normalizeStaticPathsEntry,
+  type StaticPathsEntry,
+} from "../routing/route-pattern.js";
+import { extractLocaleFromUrl } from "../server/pages-i18n.js";
+import { isUnknownRecord } from "../utils/record.js";
+import { navigationRuntimeRscBootstrapExpression } from "../server/app-ssr-stream.js";
+import { createRscRequestUrl } from "../server/app-rsc-cache-busting.js";
+import {
+  NEXT_CACHE_TAGS_HEADER,
+  VINEXT_CACHE_HEADER,
+  VINEXT_METADATA_ROUTE_CACHE_HEADER,
+  VINEXT_PRERENDER_CACHE_LIFE_HEADER,
+  VINEXT_PRERENDER_REWRITTEN_HEADER,
+  VINEXT_PRERENDER_METADATA_ROUTES_PATH,
+  VINEXT_PRERENDER_RENDER_ERROR_HEADER,
+  VINEXT_PRERENDER_SPECIAL_ERROR_HEADER,
+  VINEXT_PRERENDER_ROUTE_PARAMS_HEADER,
+  VINEXT_PRERENDER_SECRET_HEADER,
+  VINEXT_PRERENDER_SPECULATIVE_HEADER,
+} from "../server/headers.js";
+import {
+  encodePrerenderRouteParams,
+  serializePrerenderRouteParamsHeader,
+  type PrerenderRouteParamsPayload,
+} from "../server/prerender-route-params.js";
+import { startProdServer } from "../server/prod-server.js";
+import {
+  prerenderPoolAvailable,
+  resolvePrerenderPoolSize,
+  startPrerenderServerPool,
+  type PrerenderServerPool,
+} from "./prerender-server-pool.js";
+import { readPrerenderSecret } from "./server-manifest.js";
+import {
+  assertNormalizedPagePath,
+  getAppRouteOutputPath,
+  getOutputPath,
+  getRscOutputPath,
+  PagePathMismatchError,
+} from "../utils/prerender-output-paths.js";
+import { resolveClientStaleTimeSeconds } from "../utils/cache-control-metadata.js";
+import type { MetadataFileRoute } from "../server/metadata-routes.js";
+import type { PrerenderableMetadataRoute } from "../server/metadata-route-response.js";
+import {
+  createAppPprFallbackShells,
+  markAppPprDynamicFallbackShellHtml,
+} from "../server/app-ppr-fallback-shell.js";
+import { enterPrerenderPhase } from "./prerender-phase.js";
+import { buildAppRouteCacheValue } from "../server/app-route-handler-response.js";
+export { readPrerenderSecret } from "./server-manifest.js";
+
+const EXPERIMENTAL_PPR_FALLBACK_SHELLS_ENV = "__VINEXT_EXPERIMENTAL_PPR_FALLBACK_SHELLS";
+
+function isExperimentalPprFallbackShellGenerationEnabled(
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): boolean {
+  return env[EXPERIMENTAL_PPR_FALLBACK_SHELLS_ENV] === "1";
+}
+
+function getErrorMessageWithStack(err: Error): string {
+  // Include the full stack trace for sourcemap-aware error reporting during
+  // prerender. When Node.js has sourcemaps enabled via process.setSourceMapsEnabled(true)
+  // and the server bundle includes sourcemaps, this resolves bundled stack frames to
+  // original source files, matching Next.js's enablePrerenderSourceMaps behavior.
+  return err.stack || err.message;
+}
+
+async function startOptionalPrerenderServerPool(
+  outDir: string,
+  poolSize: number,
+  rscEntryPath?: string,
+  serverDir?: string,
+): Promise<PrerenderServerPool | null> {
+  try {
+    return await startPrerenderServerPool(outDir, poolSize, { rscEntryPath, serverDir });
+  } catch (e) {
+    // The pool is a performance optimization layered over the already-running
+    // in-process prerender server. Startup failure is still before any route has
+    // rendered, so degrade; render-time worker failures remain fatal later.
+    console.warn(
+      `[vinext] prerender render pool failed to start; falling back to single-process render: ${
+        e instanceof Error ? e.message : String(e)
+      }`,
+    );
+    return null;
+  }
+}
+
+// A user's generateStaticParams/getStaticPaths threw, surfaced by the prerender
+// endpoint as a 500. Distinct from transport/`fetch` failures (a crashed prod
+// server, connection reset) so only genuine user-function errors are marked
+// fatal to the build. Refs cloudflare/vinext#1982
+class PrerenderUserFunctionError extends Error {}
+
+// A generateStaticParams/getStaticPaths result that breaks the route's param
+// contract (a non-string single segment, a non-array catch-all, a dot
+// segment). Next.js throws from build/static-paths/app.ts validateParams,
+// which fails `next build` in every mode, so prerenderApp marks it fatal too.
+class InvalidStaticParamsError extends Error {}
+
+// The prerender static-params / static-paths endpoints return the real error
+// thrown by a user's generateStaticParams/getStaticPaths as `{ error }` in a 500
+// body (app-prerender-endpoints.ts). Extract that message. For our JSON envelope
+// with a missing/empty/non-string `error`, return a generic message rather than
+// echoing the raw `{"error":""}` back; for a non-JSON body, use the raw text.
+// Refs cloudflare/vinext#1982
+function parsePrerenderEndpointError(text: string): string {
+  try {
+    const parsed = JSON.parse(text) as { error?: unknown };
+    if (parsed && typeof parsed === "object" && "error" in parsed) {
+      return typeof parsed.error === "string" && parsed.error.length > 0
+        ? parsed.error
+        : "Unknown prerender endpoint error";
+    }
+  } catch {
+    // Non-JSON body — fall through to the raw text.
+  }
+  return text || "Unknown prerender endpoint error";
+}
+
+// ─── Public Types ─────────────────────────────────────────────────────────────
+
+export type PrerenderResult = {
+  /** One entry per route (including skipped/error routes). */
+  routes: PrerenderRouteResult[];
+  /** Additional generated files that are not represented as route entries. */
+  outputFiles?: string[];
+};
+
+export type PrerenderRouteResult =
+  | {
+      /** The route's file-system pattern, e.g. `/blog/:slug`. */
+      route: string;
+      status: "rendered";
+      outputFiles: string[];
+      revalidate: number | false;
+      expire?: number;
+      /** Client-router reuse bound resolved from the prerender's `cacheLife`. */
+      stale?: number;
+      /**
+       * The concrete prerendered URL path, e.g. `/blog/hello-world`.
+       * Only present when the route is dynamic and `path` differs from `route`.
+       * Omitted for non-dynamic routes where pattern === path.
+       */
+      path?: string;
+      /** Which router produced this route. Used by cache seeding. */
+      router: "app" | "pages" | "metadata";
+      /** Response headers that must be replayed with the prerendered artifact. */
+      headers?: Record<string, string | string[]>;
+      /** Original HTTP status for prerendered route responses. */
+      responseStatus?: number;
+      /** Pages source returned notFound, distinct from the custom 404 document. */
+      notFound?: true;
+      /** Original Pages redirect props, including client navigation semantics. */
+      redirectProps?: object;
+      /** Pages locale rendered for this public pathname. */
+      locale?: string;
+      /** Cache tags collected while rendering this route. */
+      tags?: string[];
+      /** Raw app-tree segments used to derive App Route implicit tags. */
+      routeSegments?: string[];
+      /** Set to true when this is a PPR fallback shell. */
+      fallback?: boolean;
+    }
+  | {
+      route: string;
+      status: "skipped";
+      reason: "ssr" | "dynamic" | "no-static-params" | "empty-static-params" | "api" | "internal";
+    }
+  | {
+      route: string;
+      status: "error";
+      error: string;
+      /**
+       * Set when the error must fail the build in ALL modes (default included),
+       * not just `output: 'export'`. Used for a thrown generateStaticParams /
+       * getStaticPaths, which Next.js treats as a fatal build error rather than a
+       * silently-skipped route. Refs cloudflare/vinext#1982
+       */
+      fatal?: true;
+    };
+
+/** Called after each route is resolved (rendered, skipped, or error). */
+type PrerenderProgressCallback = (update: {
+  /** Routes completed so far (rendered + skipped + error). */
+  completed: number;
+  /** Total routes queued for rendering. */
+  total: number;
+  /** The route URL that just finished. */
+  route: string;
+  /** Its final status. */
+  status: PrerenderRouteResult["status"];
+}) => void;
+
+type PrerenderOptions = {
+  /**
+   * 'default' — prerender static/ISR routes; skip SSR routes
+   * 'export'  — same as default but SSR routes are errors
+   */
+  mode: "default" | "export";
+  /** Output directory for generated HTML/RSC files. */
+  outDir: string;
+  /**
+   * Directory where `vinext-prerender.json` is written.
+   * Defaults to `outDir` when omitted.
+   * Set this when the manifest should land in a different location than the
+   * generated HTML/RSC files (e.g. `dist/server/` while HTML goes to `dist/server/prerendered-routes/`).
+   */
+  manifestDir?: string;
+  /** Resolved next.config.js. */
+  config: ResolvedNextConfig;
+  /**
+   * Maximum number of routes rendered in parallel.
+   * Defaults to `os.availableParallelism()` capped at 8.
+   */
+  concurrency?: number;
+  /**
+   * Called after each route finishes rendering.
+   * Use this to display a progress bar in the CLI.
+   */
+  onProgress?: PrerenderProgressCallback;
+  /**
+   * When true, skip writing `vinext-prerender.json` at the end of this phase.
+   * Use this when the caller (e.g. `runPrerender`) will merge results from
+   * multiple phases and write a single unified manifest itself.
+   */
+  skipManifest?: boolean;
+};
+
+type PrerenderPagesOptions = {
+  /** Discovered page routes (non-API). */
+  routes: Route[];
+  /** Discovered API routes. */
+  apiRoutes: Route[];
+  /** Pages directory path. */
+  pagesDir: string;
+  /**
+   * Absolute path to the pre-built Pages Router server bundle
+   * (e.g. `dist/server/entry.js`).
+   *
+   * Required when not passing `_prodServer`. For hybrid builds,
+   * `runPrerender` passes a shared `_prodServer` instead.
+   */
+  pagesBundlePath?: string;
+} & PrerenderOptions;
+
+type PrerenderAppOptions = {
+  /** Discovered app routes. */
+  routes: AppRoute[];
+  /** Discovered file-based metadata routes. Used by static export. */
+  metadataRoutes?: readonly MetadataFileRoute[];
+  /**
+   * Absolute path to the pre-built RSC handler bundle (e.g. `dist/server/index.js`).
+   */
+  rscBundlePath: string;
+  /**
+   * Root directory for build metadata and sibling server artifacts. Defaults
+   * to the RSC entry's directory for compatibility with standalone callers.
+   */
+  serverDir?: string;
+  /**
+   * Root of the complete production build passed to the local prerender
+   * server. Defaults to the parent of `serverDir` for standalone callers.
+   */
+  buildOutDir?: string;
+} & PrerenderOptions;
+
+// ─── Internal option extensions ───────────────────────────────────────────────
+// These types extend the public option interfaces with an internal `_prodServer`
+// field used by `runPrerender` to share a single prod server across both prerender
+// phases in a hybrid build.
+
+type PrerenderPagesOptionsInternal = PrerenderPagesOptions & {
+  _prodServer?: { server: HttpServer; port: number };
+  /**
+   * Prerender secret to use when `_prodServer` is provided and `pagesBundlePath`
+   * is absent (hybrid builds). Read from `vinext-server.json` by `runPrerender`
+   * and passed here so `prerenderPages` does not need to locate the manifest itself.
+   */
+  _prerenderSecret?: string;
+};
+
+type PrerenderAppOptionsInternal = PrerenderAppOptions & {
+  _prodServer?: { server: HttpServer; port: number };
+};
+
+// ─── Concurrency helpers ──────────────────────────────────────────────────────
+
+/** Sentinel path used to trigger 404 rendering without a real route match. */
+const NOT_FOUND_SENTINEL_PATH = "/__vinext_nonexistent_for_404__";
+
+const DEFAULT_CONCURRENCY = Math.min(os.availableParallelism(), 8);
+
+const RSC_LEGACY_CHUNK_SCRIPT_PREFIX = "self.__VINEXT_RSC_CHUNKS__=self.__VINEXT_RSC_CHUNKS__||[];";
+const RSC_LEGACY_DONE_SCRIPT = "self.__VINEXT_RSC_DONE__=true";
+// Full literals that createRscEmbedTransform concatenates before the chunk
+// argument in packages/vinext/src/server/app-ssr-stream.ts.
+const RSC_LEGACY_CHUNK_FULL_PREFIX = `${RSC_LEGACY_CHUNK_SCRIPT_PREFIX}self.__VINEXT_RSC_CHUNKS__.push(`;
+const RSC_RUNTIME_BOOTSTRAP_EXPRESSION = navigationRuntimeRscBootstrapExpression();
+const RSC_RUNTIME_CHUNK_FULL_PREFIX = `${RSC_RUNTIME_BOOTSTRAP_EXPRESSION}.rsc.push(`;
+const RSC_RUNTIME_DONE_SCRIPT = `${RSC_RUNTIME_BOOTSTRAP_EXPRESSION}.done=true`;
+
+/**
+ * Reconstruct the RSC payload from a prerender HTML response by parsing the
+ * inline bootstrap chunk scripts emitted by createRscEmbedTransform.
+ *
+ * Returns null when the HTML contains no chunk scripts at all — the caller
+ * should fall back to a second handler invocation. This is reachable when
+ * middleware short-circuits the App Router pipeline with a custom 200 HTML
+ * response that never went through createRscEmbedTransform.
+ *
+ * Throws on partial or malformed embeds (chunks present but no done marker,
+ * tampered chunk JSON, etc.) — those are real vinext-internal regressions.
+ *
+ * Safe regex usage: scriptSafeJsonStringify (used by createRscEmbedTransform)
+ * escapes every '<' that begins "</script" (case-insensitive) in the embedded
+ * JSON, preventing false </script> matches.
+ */
+export function extractRscPayloadFromPrerenderedHtml(html: string): Uint8Array | null {
+  const scriptPattern = /<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi;
+  const chunks: Uint8Array[] = [];
+  let sawDone = false;
+  let match: RegExpExecArray | null;
+
+  while ((match = scriptPattern.exec(html)) !== null) {
+    const script = (match[1] ?? "").trim().replace(/;$/, "");
+
+    if (
+      script === RSC_RUNTIME_DONE_SCRIPT ||
+      script === RSC_LEGACY_DONE_SCRIPT ||
+      script.endsWith(`;${RSC_RUNTIME_DONE_SCRIPT}`)
+    ) {
+      sawDone = true;
+      continue;
+    }
+
+    if (script.startsWith(RSC_RUNTIME_CHUNK_FULL_PREFIX)) {
+      chunks.push(
+        decodeRscEmbeddedChunk(parseRscChunkPushArgument(script, RSC_RUNTIME_CHUNK_FULL_PREFIX)),
+      );
+      continue;
+    }
+
+    if (script.startsWith(RSC_LEGACY_CHUNK_SCRIPT_PREFIX)) {
+      chunks.push(
+        decodeRscEmbeddedChunk(parseRscChunkPushArgument(script, RSC_LEGACY_CHUNK_FULL_PREFIX)),
+      );
+    }
+  }
+
+  // No chunks AND no done marker → middleware/early-return path. Caller falls
+  // back to a second invocation with `RSC: 1`.
+  if (chunks.length === 0 && !sawDone) {
+    return null;
+  }
+  if (chunks.length === 0) {
+    throw new Error(
+      "[vinext] Malformed prerender RSC embed: done marker present without chunk scripts",
+    );
+  }
+  if (!sawDone) {
+    throw new Error("[vinext] Malformed prerender RSC embed: missing RSC done marker");
+  }
+
+  return concatUint8Arrays(chunks);
+}
+
+/**
+ * Parse the JSON argument of a single chunk-push script. The script
+ * shape is exactly `<prefix>(<safeJsonStringify(chunk)>)` because the writer
+ * concatenates those literals — so the body always starts with the full
+ * prefix and ends with `)`. JSON.parse on the slice catches any tampering or
+ * trailing code.
+ */
+function parseRscChunkPushArgument(script: string, chunkPrefix: string): RscEmbeddedChunk {
+  if (!script.startsWith(chunkPrefix) || !script.endsWith(")")) {
+    throw new Error("[vinext] Malformed prerender RSC embed: unexpected chunk script shape");
+  }
+  const jsonSource = script.slice(chunkPrefix.length, -1);
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(jsonSource);
+  } catch {
+    throw new Error("[vinext] Malformed prerender RSC embed: invalid chunk JSON");
+  }
+  if (typeof parsed === "string") {
+    return parsed;
+  }
+  if (
+    Array.isArray(parsed) &&
+    parsed.length === 2 &&
+    parsed[0] === RSC_EMBEDDED_BINARY_CHUNK &&
+    typeof parsed[1] === "string"
+  ) {
+    return [parsed[0], parsed[1]];
+  }
+  throw new Error("[vinext] Malformed prerender RSC embed: unsupported chunk payload");
+}
+
+/**
+ * Run an array of async tasks with bounded concurrency.
+ * Results are returned in the same order as `items`.
+ */
+async function runWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  fn: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  const results = Array.from<R>({ length: items.length });
+  let nextIndex = 0;
+
+  async function worker() {
+    while (nextIndex < items.length) {
+      const i = nextIndex++;
+      results[i] = await fn(items[i], i);
+    }
+  }
+
+  if (items.length === 0) return results;
+  const workers = Array.from({ length: Math.min(concurrency, items.length) }, worker);
+  await Promise.all(workers);
+  return results;
+}
+
+// ─── Helpers (shared with static-export.ts) ───────────────────────────────────
+
+/**
+ * Build a URL path from a route pattern and params.
+ * "/posts/:id" + { id: "42" } → "/posts/42"
+ * "/docs/:slug+" + { slug: ["a", "b"] } → "/docs/a/b"
+ *
+ * Throws a descriptive error rather than a cryptic `Cannot read properties of
+ * undefined` if `params` itself is missing or required keys are absent — the
+ * caller (prerenderPages / prerenderApp) catches this and surfaces it as a
+ * per-route error result.
+ */
+export function buildUrlFromParams(
+  pattern: string,
+  params: Record<string, string | string[]> | undefined | null,
+): string {
+  if (params === undefined || params === null) {
+    throw new Error(
+      `[vinext] buildUrlFromParams: params is ${params === null ? "null" : "undefined"} for pattern "${pattern}". ` +
+        `Check that getStaticPaths / generateStaticParams returned an object with a "params" key, ` +
+        `or pass a string path (see https://nextjs.org/docs/pages/api-reference/functions/get-static-paths).`,
+    );
+  }
+
+  const parts = pattern.split("/").filter(Boolean);
+  const result: string[] = [];
+
+  for (const part of parts) {
+    if (part.endsWith("+") || part.endsWith("*")) {
+      const paramName = part.slice(1, -1);
+      const value = params[paramName];
+      if (Array.isArray(value)) {
+        result.push(...value.map((s) => encodeURIComponent(s)));
+      } else if (value) {
+        result.push(encodeURIComponent(String(value)));
+      }
+    } else if (part.startsWith(":")) {
+      const paramName = part.slice(1);
+      const value = params[paramName];
+      if (value === undefined || value === null) {
+        throw new Error(
+          `[vinext] buildUrlFromParams: required param "${paramName}" is missing for pattern "${pattern}". ` +
+            `Check that generateStaticParams (or getStaticPaths) returns an object with a "${paramName}" key.`,
+        );
+      }
+      result.push(encodeURIComponent(String(value)));
+    } else {
+      result.push(part);
+    }
+  }
+
+  return "/" + result.join("/");
+}
+
+function metadataOutputPath(servedUrl: string): string | null {
+  const pathname = servedUrl.split("?", 1)[0];
+  if (!pathname || !pathname.startsWith("/")) return null;
+
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.length === 0 || segments.some((segment) => segment === "." || segment === "..")) {
+    return null;
+  }
+
+  return segments.join("/");
+}
+
+function emitStaticMetadataFiles(
+  metadataRoutes: readonly MetadataFileRoute[],
+  outDir: string,
+  basePath = "",
+): string[] {
+  const outputFiles: string[] = [];
+  const outputPrefix = basePath.replace(/^\//, "").replace(/\/$/, "");
+  for (const route of metadataRoutes) {
+    if (route.isDynamic) continue;
+
+    const outputPath = metadataOutputPath(route.servedUrl);
+    // scanMetadataFiles controls servedUrl; this remains defensive against malformed route data.
+    if (!outputPath) continue;
+
+    const namespacedOutputPath = outputPrefix ? `${outputPrefix}/${outputPath}` : outputPath;
+    const fullPath = path.join(outDir, ...namespacedOutputPath.split("/"));
+    fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+    fs.copyFileSync(route.filePath, fullPath);
+    outputFiles.push(namespacedOutputPath);
+  }
+  return outputFiles;
+}
+
+function emitStatic404Files(outDir: string, html: string, trailingSlash: boolean): string[] {
+  const outputFiles = ["404.html"];
+  if (trailingSlash) outputFiles.push("404/index.html");
+
+  for (const outputFile of outputFiles) {
+    const fullPath = path.join(outDir, ...outputFile.split("/"));
+    fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+    fs.writeFileSync(fullPath, html, "utf-8");
+  }
+
+  return outputFiles;
+}
+
+/** Map of route patterns to generateStaticParams functions (or null/undefined). */
+export type StaticParamsMap = Record<
+  string,
+  ((opts: { params: Record<string, string | string[]> }) => Promise<unknown>) | null | undefined
+>;
+
+/**
+ * Next.js fails `output: "export"` on any generateStaticParams call that
+ * returns no params (build/static-paths/app.ts callGenerateStaticParams).
+ */
+function emptyStaticExportParamsError(pattern: string): Error {
+  return new Error(
+    `Page "${pattern}" returned an empty array from "generateStaticParams()". ` +
+      `With "output: export", at least one route must be generated. ` +
+      `See more info here: https://nextjs.org/docs/messages/generate-static-params`,
+  );
+}
+
+/**
+ * Resolve the params a route's layouts above its own pattern generate.
+ * Handles top-down generateStaticParams resolution for nested dynamic routes.
+ *
+ * Uses the `staticParamsMap` (pattern → generateStaticParams) exported from
+ * the production bundle. As in Next.js, which walks every segment of the
+ * route's own loader tree top-down and passes each parent param set to the
+ * next generateStaticParams (build/static-paths/app.ts
+ * generateRouteStaticParams), every layout of the route contributes, including
+ * one at the last dynamic segment when static segments follow it. The layouts
+ * at the route's full pattern compose with its page under
+ * `staticParamsMap[route.pattern]`, so they're left to the caller. A page or a
+ * route group's layout at the same prefix belongs to a sibling route and never
+ * supplies params.
+ *
+ * An App Route handler inherits no layouts: Next.js builds its segments from
+ * the route module alone (build/segment-config/app/app-segments.ts
+ * collectAppRouteSegments), so it has no parent params. A layout that returns
+ * no params passes each parent set through unchanged, as Next.js does outside
+ * Cache Components, except under `output: "export"`, where Next.js rejects any
+ * generateStaticParams that returns no params (build/static-paths/app.ts
+ * callGenerateStaticParams).
+ */
+export async function resolveParentParams(
+  childRoute: AppRoute,
+  staticParamsMap: StaticParamsMap,
+  options: { staticExport?: boolean } = {},
+): Promise<Record<string, string | string[]>[]> {
+  type GenerateStaticParamsFn = (opts: {
+    params: Record<string, string | string[]>;
+  }) => Promise<unknown>;
+
+  if (childRoute.routePath && !childRoute.pagePath) return [];
+
+  const parentSegments: GenerateStaticParamsFn[] = [];
+  for (const group of appRouteLayoutStaticParamsGroups(childRoute)) {
+    if (group.pattern === childRoute.pattern) continue;
+    const fn = staticParamsMap[group.key];
+    if (typeof fn === "function") {
+      parentSegments.push(fn);
+    }
+  }
+
+  if (parentSegments.length === 0) return [];
+
+  let currentParams: Record<string, string | string[]>[] = [];
+
+  for (const generateStaticParams of parentSegments) {
+    const nextParams: Record<string, string | string[]>[] = [];
+    let resolvedThisParent = false;
+    // With no parent sets yet (no earlier provider, or every earlier one
+    // returned []), Next.js calls the next generateStaticParams once with `{}`
+    // (build/static-paths/app.ts generateRouteStaticParams).
+    const hasParentSets = currentParams.length > 0;
+
+    for (const parentParams of hasParentSets ? currentParams : [{}]) {
+      const results = await generateStaticParams({ params: parentParams });
+      // `null` is the CF Workers Proxy sentinel: the proxy has no
+      // generateStaticParams for this pattern. Skip and let later providers run.
+      if (results === null) continue;
+      if (!Array.isArray(results)) return [];
+      if (options.staticExport && results.length === 0) {
+        throw emptyStaticExportParamsError(childRoute.pattern);
+      }
+
+      resolvedThisParent = true;
+      if (results.length === 0 && hasParentSets) {
+        nextParams.push(parentParams);
+        continue;
+      }
+      for (const result of results) {
+        nextParams.push({ ...parentParams, ...result });
+      }
+    }
+
+    if (resolvedThisParent) {
+      currentParams = nextParams;
+    }
+  }
+
+  return currentParams;
+}
+
+type DynamicPatternParam = { name: string; optional: boolean; repeat: boolean };
+
+function getDynamicPatternParams(pattern: string): DynamicPatternParam[] {
+  return pattern
+    .split("/")
+    .filter((segment) => segment.startsWith(":"))
+    .map((segment) => ({
+      name: segment.slice(1, segment.endsWith("+") || segment.endsWith("*") ? -1 : undefined),
+      optional: segment.endsWith("*"),
+      repeat: segment.endsWith("+") || segment.endsWith("*"),
+    }));
+}
+
+export function validateDiscoveredParams(
+  value: unknown,
+  pattern: string,
+  source: "generateStaticParams" | "getStaticPaths",
+): Record<string, string | string[]> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new InvalidStaticParamsError(`${source} must return parameter objects for ${pattern}.`);
+  }
+
+  const params = { ...(value as Record<string, unknown>) };
+  for (const { name, optional, repeat } of getDynamicPatternParams(pattern)) {
+    const hasValue = Object.prototype.hasOwnProperty.call(params, name);
+    let paramValue = params[name];
+    if (
+      optional &&
+      hasValue &&
+      (paramValue === null || paramValue === undefined || paramValue === false)
+    ) {
+      paramValue = [];
+      params[name] = paramValue;
+    }
+    const valid = repeat
+      ? Array.isArray(paramValue) && paramValue.every((entry) => typeof entry === "string")
+      : typeof paramValue === "string";
+    if (!valid) {
+      throw new InvalidStaticParamsError(
+        `Parameter ${name} from ${source} for ${pattern} must be ${repeat ? "an array of strings" : "a string"}.`,
+      );
+    }
+    const values = Array.isArray(paramValue) ? paramValue : [paramValue];
+    if (values.some((entry) => entry === "." || entry === "..")) {
+      throw new InvalidStaticParamsError(
+        `Parameter ${name} from ${source} for ${pattern} must not contain dot path segments.`,
+      );
+    }
+  }
+  return params as Record<string, string | string[]>;
+}
+
+/**
+ * The param sets of an App route that become concrete paths, following
+ * Next.js's buildAppStaticPaths (build/static-paths/app.ts). Unless every set
+ * names every pathname param (hadAllParamsGenerated), none is prerendered.
+ * Otherwise every set is checked against the route's pathname params
+ * (validateParams), and, outside a partial prerender, a set with an empty
+ * required value is skipped rather than built into a path with an empty
+ * segment. An array, including an optional catch-all's empty one, is never
+ * empty in that sense. Under `output: "export"` incomplete sets fail the
+ * build instead, as Next.js requires every export path to be generated.
+ */
+export function routeStaticParamSets(
+  route: Pick<AppRoute, "pattern">,
+  paramSets: readonly unknown[],
+  options: { staticExport?: boolean } = {},
+): Record<string, string | string[]>[] {
+  const patternParams = getDynamicPatternParams(route.pattern);
+  const objects = paramSets.map((value) => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      throw new InvalidStaticParamsError(
+        `generateStaticParams must return parameter objects for ${route.pattern}.`,
+      );
+    }
+    return value;
+  });
+  const missingParamNames = patternParams
+    .filter(({ name }) => objects.some((params) => !(name in params)))
+    .map(({ name }) => name);
+  if (missingParamNames.length > 0) {
+    if (options.staticExport && objects.length > 0) {
+      throw new InvalidStaticParamsError(
+        `Page "${route.pattern}" returned incomplete params from "generateStaticParams()". With "output: export", every params object must include all dynamic route parameters. Missing: ${missingParamNames.map((name) => `"${name}"`).join(", ")}. See more info here: https://nextjs.org/docs/messages/generate-static-params`,
+      );
+    }
+    return [];
+  }
+
+  const materializable: Record<string, string | string[]>[] = [];
+  for (const value of objects) {
+    const params = validateDiscoveredParams(value, route.pattern, "generateStaticParams");
+    if (patternParams.some(({ name, repeat }) => !repeat && params[name] === "")) continue;
+    materializable.push(params);
+  }
+  return materializable;
+}
+
+/**
+ * The param sets a route's layouts generate, standing in for the route's own
+ * when none of the segments at its full pattern has generateStaticParams.
+ * Next.js prerenders none of a route's paths unless every set fills every
+ * pathname param (build/static-paths/app.ts hadAllParamsGenerated), so
+ * incomplete sets leave the route without static params (`null`). Complete
+ * sets still go through routeStaticParamSets.
+ */
+export function layoutOnlyParamSets(
+  route: Pick<AppRoute, "params" | "pattern">,
+  parentParamSets: Record<string, string | string[]>[],
+): Record<string, string | string[]>[] | null {
+  const complete =
+    parentParamSets.length > 0 &&
+    parentParamSets.every((params) => route.params.every((name) => name in params));
+  return complete ? parentParamSets : null;
+}
+
+// ─── Pages Router Prerender ───────────────────────────────────────────────────
+
+export function localizePagesPath(
+  pathname: string,
+  locale: string | undefined,
+  i18n: ResolvedNextConfig["i18n"],
+): string {
+  if (!i18n || !locale) return pathname;
+  if (locale === i18n.defaultLocale) {
+    // Keep the canonical public URL unless its first segment names a locale:
+    // /fr is French home, whereas /en/fr is the English page named fr.
+    const firstSegment = pathname.split("/")[1]?.toLowerCase();
+    if (!i18n.locales.some((candidate) => candidate.toLowerCase() === firstSegment)) {
+      return pathname;
+    }
+  }
+  return pathname === "/" ? `/${locale}` : `/${locale}${pathname}`;
+}
+
+/**
+ * Run the prerender phase for Pages Router.
+ *
+ * Rendering is done via HTTP through a locally-spawned production server.
+ * Works for both plain Node and Cloudflare Workers builds.
+ * Route classification uses static file analysis (classifyPagesRoute);
+ * getStaticPaths is fetched via a dedicated
+ * `/__vinext/prerender/pages-static-paths?pattern=…` endpoint on the server.
+ *
+ * Returns structured results for every route (rendered, skipped, or error).
+ * Writes HTML files to `outDir`. If `manifestDir` is set, writes
+ * `vinext-prerender.json` there; otherwise writes it to `outDir`.
+ */
+export async function prerenderPages({
+  routes,
+  apiRoutes,
+  pagesDir,
+  outDir,
+  config,
+  mode,
+  ...options
+}: PrerenderPagesOptionsInternal): Promise<PrerenderResult> {
+  const pagesBundlePath = options.pagesBundlePath;
+  const manifestDir = options.manifestDir ?? outDir;
+  const concurrency = options.concurrency ?? DEFAULT_CONCURRENCY;
+  const onProgress = options.onProgress;
+  const skipManifest = options.skipManifest ?? false;
+  const fileMatcher = createValidFileMatcher(config.pageExtensions);
+  const results: PrerenderRouteResult[] = [];
+
+  if (!pagesBundlePath && !options._prodServer) {
+    throw new Error(
+      "[vinext] prerenderPages: either pagesBundlePath or _prodServer must be provided.",
+    );
+  }
+
+  fs.mkdirSync(outDir, { recursive: true });
+
+  // ── API routes: always skipped ────────────────────────────────────────────
+  for (const apiRoute of apiRoutes) {
+    results.push({ route: apiRoute.pattern, status: "skipped", reason: "api" });
+  }
+
+  const previousHandler = getCacheHandler();
+  setCacheHandler(new NoOpCacheHandler());
+  const restorePrerenderPhase = enterPrerenderPhase();
+  // ownedProdServerHandle: a prod server we started ourselves and must close in finally.
+  // When the caller passes options._prodServer we use that and do NOT close it.
+  let ownedProdServerHandle: { server: HttpServer; port: number } | null = null;
+  // Forked render-server pool (declared out here so the finally can close it).
+  let renderPool: PrerenderServerPool | null = null;
+  try {
+    // Read the prerender secret written at build time by vinext:server-manifest.
+    // When _prerenderSecret is provided by the caller (hybrid builds where
+    // pagesBundlePath is absent), use it directly. Otherwise derive serverDir
+    // from pagesBundlePath and read the manifest from disk.
+    let prerenderSecret: string | undefined = options._prerenderSecret;
+    if (!prerenderSecret && pagesBundlePath) {
+      prerenderSecret = readPrerenderSecret(path.dirname(pagesBundlePath));
+    }
+    if (!prerenderSecret) {
+      console.warn(
+        "[vinext] Warning: prerender secret not found. " +
+          "/__vinext/prerender/* endpoints will return 403 and dynamic routes will produce no paths. " +
+          "Run `vite build` to regenerate the secret.",
+      );
+    }
+
+    // Use caller-provided prod server if available; otherwise start our own.
+    const prodServer: { server: HttpServer; port: number } = options._prodServer
+      ? options._prodServer
+      : await (async () => {
+          const srv = await startProdServer({
+            port: 0,
+            host: "127.0.0.1",
+            // pagesBundlePath is guaranteed non-null: the guard above ensures
+            // either _prodServer or pagesBundlePath is provided.
+            outDir: path.dirname(path.dirname(pagesBundlePath!)),
+            serverDir: path.dirname(pagesBundlePath!),
+            serverEntryPath: pagesBundlePath,
+            noCompression: true,
+            purpose: "prerender",
+          });
+          ownedProdServerHandle = srv;
+          return srv;
+        })();
+
+    const baseUrl = `http://127.0.0.1:${prodServer.port}`;
+    const secretHeaders: Record<string, string> = prerenderSecret
+      ? { [VINEXT_PRERENDER_SECRET_HEADER]: prerenderSecret }
+      : {};
+
+    // Next.js allows `paths` to be either a list of strings or a list of
+    // { params, locale? } objects. The `StaticPathsEntry` type and the
+    // `normalizeStaticPathsEntry` helper live in `../routing/route-pattern.ts`
+    // — see that file's doc comments for the Next.js references.
+    type BundleRoute = {
+      pattern: string;
+      isDynamic: boolean;
+      params: Record<string, string>;
+      module: {
+        getStaticPaths?: (opts: { locales: string[]; defaultLocale: string }) => Promise<{
+          paths: Array<StaticPathsEntry>;
+          fallback: unknown;
+        }>;
+        getStaticProps?: unknown;
+        getServerSideProps?: unknown;
+      };
+      filePath: string;
+    };
+
+    // Render servers the per-route fetches are load-balanced across. Starts as
+    // the single in-process server (`baseUrl`); when there are enough routes
+    // (and we started our own server, i.e. not a hybrid shared server) we fork
+    // a pool of production servers below and repoint these ports at them so
+    // rendering — which is CPU-bound and otherwise serialized on one core —
+    // spreads across cores. getStaticPaths/secret endpoints keep using
+    // `baseUrl` (the in-process server).
+    let renderPorts: number[] = [prodServer.port];
+    let renderRoundRobin = 0;
+    const renderPage = (urlPath: string) => {
+      const port = renderPorts[renderRoundRobin++ % renderPorts.length];
+      // The manual redirect mode below is needed to export redirects returned
+      // by getStaticProps. Avoid confusing the framework's own canonical 308
+      // with one of those application redirects by requesting the configured
+      // trailing-slash form up front, as Next.js's export worker does.
+      const routeRequestPath =
+        config.trailingSlash && !urlPath.endsWith("/") ? `${urlPath}/` : urlPath;
+      const requestPath =
+        config.basePath && routeRequestPath === "/" && !config.trailingSlash
+          ? config.basePath
+          : `${config.basePath ?? ""}${routeRequestPath}`;
+      return fetch(`http://127.0.0.1:${port}${requestPath}`, {
+        headers: secretHeaders,
+        redirect: "manual",
+      });
+    };
+
+    // Build the bundlePageRoutes list from static file analysis + route info.
+    // getStaticPaths is fetched from the prod server via a prerender endpoint.
+    const bundlePageRoutes: BundleRoute[] = routes.map((r) => ({
+      pattern: r.pattern,
+      isDynamic: r.isDynamic ?? false,
+      params: {},
+      filePath: r.filePath,
+      module: {
+        getStaticPaths: r.isDynamic
+          ? async ({ locales, defaultLocale }: { locales: string[]; defaultLocale: string }) => {
+              const search = new URLSearchParams({ pattern: r.pattern });
+              if (locales.length > 0) search.set("locales", JSON.stringify(locales));
+              if (defaultLocale) search.set("defaultLocale", defaultLocale);
+              const res = await fetch(
+                `${baseUrl}/__vinext/prerender/pages-static-paths?${search}`,
+                { headers: secretHeaders },
+              );
+              const text = await res.text();
+              if (!res.ok) {
+                // A 500 carries the real error thrown by the user's getStaticPaths
+                // in the JSON body (app-prerender-endpoints.ts). Surface it so the
+                // route fails with the genuine message, matching Next.js — rather
+                // than swallowing it into a misleading no-static-params skip. Other
+                // statuses (e.g. 404 = disabled/stale secret) keep the warn-and-skip
+                // behavior. Refs cloudflare/vinext#1982
+                if (res.status === 500) {
+                  throw new PrerenderUserFunctionError(parsePrerenderEndpointError(text));
+                }
+                console.warn(
+                  `[vinext] Warning: /__vinext/prerender/pages-static-paths returned ${res.status} for ${r.pattern}. ` +
+                    `Dynamic paths will be skipped. This may indicate a stale or missing prerender secret.`,
+                );
+                return { paths: [], fallback: false };
+              }
+              if (res.status === 204 || text === "null") return { paths: [], fallback: false };
+              return JSON.parse(text) as {
+                paths: Array<StaticPathsEntry>;
+                fallback: unknown;
+              };
+            }
+          : undefined,
+      },
+    }));
+
+    // ── Gather pages to render ──────────────────────────────────────────────
+    type PageToRender = {
+      route: BundleRoute;
+      urlPath: string;
+      params: Record<string, string | string[]>;
+      revalidate: number | false;
+      hasStaticProps: boolean;
+      locale?: string;
+    };
+    const pagesToRender: PageToRender[] = [];
+
+    for (const route of bundlePageRoutes) {
+      // Skip Next.js special pages (_app, _document, _error)
+      if (BLOCKED_PAGES.includes(route.pattern)) continue;
+      // `/404` is rendered by the dedicated 404 block below. Production serves
+      // it with a 404 status, so the generic static-page loop must not treat
+      // that non-2xx response as a prerender failure.
+      if (route.pattern === "/404") continue;
+
+      const {
+        type,
+        revalidate: classifiedRevalidate,
+        hasStaticProps = false,
+      } = classifyPagesRoute(route.filePath);
+
+      // Route type detection uses static file analysis (classifyPagesRoute).
+      // Rendering is always done via HTTP through a local prod server, so we
+      // don't have direct access to module exports at prerender time.
+      const effectiveType = type;
+
+      if (effectiveType === "ssr") {
+        if (mode === "export") {
+          results.push({
+            route: route.pattern,
+            status: "error",
+            error: `Page uses getServerSideProps which is not supported with output: 'export'. Use getStaticProps instead.`,
+          });
+        } else {
+          results.push({ route: route.pattern, status: "skipped", reason: "ssr" });
+        }
+        continue;
+      }
+
+      const revalidate: number | false =
+        mode === "export"
+          ? false
+          : typeof classifiedRevalidate === "number"
+            ? classifiedRevalidate
+            : false;
+
+      if (route.isDynamic) {
+        if (typeof route.module.getStaticPaths !== "function") {
+          if (mode === "export") {
+            results.push({
+              route: route.pattern,
+              status: "error",
+              error: `Dynamic route requires getStaticPaths with output: 'export'`,
+            });
+          } else {
+            results.push({ route: route.pattern, status: "skipped", reason: "no-static-params" });
+          }
+          continue;
+        }
+
+        // A throwing getStaticPaths (surfaced as a 500 by the proxy above)
+        // becomes a per-route 'error' with the real message instead of crashing
+        // the whole prerender, matching Next.js. Refs cloudflare/vinext#1982
+        let pathsResult: { paths?: Array<StaticPathsEntry>; fallback?: unknown } | undefined;
+        try {
+          pathsResult = await route.module.getStaticPaths({
+            locales: [...(config.i18n?.locales ?? [])],
+            defaultLocale: config.i18n?.defaultLocale ?? "",
+          });
+        } catch (e) {
+          results.push({
+            route: route.pattern,
+            status: "error",
+            error: `Failed to call getStaticPaths(): ${(e as Error).message}`,
+            // Only a thrown user getStaticPaths (a 500 from the endpoint) is fatal
+            // to the build; transport/fetch failures stay non-fatal. #1982
+            ...(e instanceof PrerenderUserFunctionError ? { fatal: true as const } : {}),
+          });
+          continue;
+        }
+        const fallback = pathsResult?.fallback ?? false;
+
+        if (mode === "export" && fallback !== false) {
+          results.push({
+            route: route.pattern,
+            status: "error",
+            error: `getStaticPaths must return fallback: false with output: 'export' (got: ${JSON.stringify(fallback)})`,
+          });
+          continue;
+        }
+
+        // `paths` may be `Array<string | { params, locale? }>` — normalize
+        // each entry into a params object via the shared helper, surfacing any
+        // per-entry problem as a per-route error result instead of crashing
+        // the whole prerender.
+        const paths: Array<StaticPathsEntry> = pathsResult?.paths ?? [];
+        let entryError: string | null = null;
+        let entryFatal = false;
+        const seenPaths = new Set<string>();
+        for (const item of paths) {
+          let locale = config.i18n?.defaultLocale;
+          let pathEntry = item;
+          if (config.i18n && typeof item === "string") {
+            const localized = extractLocaleFromUrl(item, config.i18n);
+            locale = localized.locale;
+            pathEntry = localized.url;
+          } else if (item && typeof item === "object" && item.locale !== undefined) {
+            locale = item.locale;
+          }
+          try {
+            // A string path is already encoded, so `%2E%2E` is a `..` segment
+            // too. Next.js fails the build on one even when it matches no route.
+            // Like its escapePathDelimiters, a decoded `/` stays in its segment.
+            if (typeof pathEntry === "string") {
+              assertNormalizedPagePath(
+                normalizeStaticPathname(pathEntry)
+                  .split("/")
+                  .map((segment) => {
+                    try {
+                      return decodeURIComponent(segment).replaceAll("/", "%2F");
+                    } catch {
+                      return segment;
+                    }
+                  })
+                  .join("/"),
+              );
+            }
+            const normalized = normalizeStaticPathsEntry(pathEntry, route.pattern);
+            if ("error" in normalized) throw new Error(normalized.error);
+            if (locale !== undefined && !config.i18n?.locales.includes(locale)) {
+              throw new Error(
+                `Invalid locale returned from getStaticPaths for ${route.pattern}: ${locale}`,
+              );
+            }
+            const { params } = normalized;
+            const urlPath = localizePagesPath(
+              buildUrlFromParams(route.pattern, params),
+              locale,
+              config.i18n,
+            );
+            // A `.` or `..` param resolves this page to another path, and `..`
+            // can climb out of the output directory. Next.js's normalizePagePath
+            // fails the build on it.
+            assertNormalizedPagePath(urlPath);
+            if (!seenPaths.has(urlPath)) {
+              seenPaths.add(urlPath);
+              pagesToRender.push({ route, urlPath, params, revalidate, hasStaticProps, locale });
+            }
+          } catch (e) {
+            entryError = (e as Error).message;
+            entryFatal = e instanceof PagePathMismatchError;
+            break;
+          }
+        }
+        if (entryError) {
+          results.push({
+            route: route.pattern,
+            status: "error",
+            error: entryError,
+            ...(entryFatal ? { fatal: true as const } : {}),
+          });
+          continue;
+        }
+      } else {
+        for (const locale of config.i18n?.locales ?? [undefined]) {
+          pagesToRender.push({
+            route,
+            urlPath: localizePagesPath(route.pattern, locale, config.i18n),
+            params: {},
+            revalidate,
+            hasStaticProps,
+            locale,
+          });
+        }
+      }
+    }
+
+    // ── Spread rendering across a pool of production servers ──────────────
+    // Only when we own the server (not a hybrid shared server) and there are
+    // enough routes to outweigh the fork/startup cost. The main thread keeps
+    // doing the per-route fetch + file write; the forked servers do the
+    // CPU-bound rendering on their own cores.
+    if (!options._prodServer && pagesBundlePath && prerenderPoolAvailable()) {
+      const poolSize = resolvePrerenderPoolSize(pagesToRender.length, concurrency);
+      if (poolSize > 1) {
+        const poolOutDir = path.dirname(path.dirname(pagesBundlePath));
+        renderPool = await startOptionalPrerenderServerPool(
+          poolOutDir,
+          poolSize,
+          undefined,
+          path.dirname(pagesBundlePath),
+        );
+        if (renderPool) renderPorts = renderPool.ports;
+      }
+    }
+
+    // ── Render each page ──────────────────────────────────────────────────
+    let completed = 0;
+    const pageResults = await runWithConcurrency(
+      pagesToRender,
+      concurrency,
+      async ({ route, urlPath, revalidate, hasStaticProps, locale }) => {
+        let result: PrerenderRouteResult;
+        try {
+          const response = await renderPage(urlPath);
+          // Only the page render for this exact URL confirms "0". Rewrites to other
+          // pages, files, API routes, or proxies may be request-conditional, so
+          // leave those paths to runtime rather than freezing the build result.
+          if (
+            mode === "default" &&
+            response.headers.get(VINEXT_PRERENDER_REWRITTEN_HEADER) !== "0"
+          ) {
+            void response.body?.cancel().catch(() => {});
+            const skipped: PrerenderRouteResult = {
+              route: route.pattern,
+              status: "skipped",
+              reason: "dynamic",
+            };
+            onProgress?.({
+              completed: ++completed,
+              total: pagesToRender.length,
+              route: urlPath,
+              status: skipped.status,
+            });
+            return skipped;
+          }
+          const contentType = response.headers.get("content-type");
+          // getStaticProps terminal responses carry the framework's MISS marker.
+          // A middleware/config/_app early response must not become a snapshot.
+          const isStaticPropsResponse =
+            mode === "default" &&
+            hasStaticProps &&
+            response.headers.get(VINEXT_CACHE_HEADER) === "MISS";
+          const notFound = isStaticPropsResponse && response.status === 404;
+          const redirect =
+            isStaticPropsResponse && [301, 302, 303, 307, 308].includes(response.status);
+          // A custom `/500` answers with status 500, like Next.js, but is still
+          // a rendered page. A marked render error means `/500` itself failed.
+          const renderedOk =
+            response.ok ||
+            (route.pattern === "/500" &&
+              response.status === 500 &&
+              response.headers.get(VINEXT_PRERENDER_RENDER_ERROR_HEADER) !== "1");
+          let redirectProps: object | undefined;
+          if (redirect) {
+            const props: unknown = await response.json();
+            if (
+              !isUnknownRecord(props) ||
+              !isUnknownRecord(props.pageProps) ||
+              typeof props.pageProps.__N_REDIRECT !== "string" ||
+              props.pageProps.__N_REDIRECT_STATUS !== response.status ||
+              (props.pageProps.__N_REDIRECT_BASE_PATH !== undefined &&
+                typeof props.pageProps.__N_REDIRECT_BASE_PATH !== "boolean")
+            ) {
+              throw new Error(`Invalid prerendered Pages redirect props for ${urlPath}`);
+            }
+            redirectProps = props;
+          }
+          const outputFiles: string[] = [];
+          const htmlOutputPath = getOutputPath(
+            urlPath,
+            config.trailingSlash,
+            mode === "export" ? config.basePath : "",
+          );
+          const htmlFullPath = path.join(outDir, htmlOutputPath);
+
+          if (response.status >= 300 && response.status < 400) {
+            // getStaticProps returned a redirect — emit a meta-refresh HTML page
+            // so the static export can represent the redirect without a server.
+            const dest = response.headers.get("location") ?? "/";
+            const escapedDest = dest
+              .replace(/&/g, "&amp;")
+              .replace(/"/g, "&quot;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;");
+            const html = `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=${escapedDest}" /></head><body></body></html>`;
+            fs.mkdirSync(path.dirname(htmlFullPath), { recursive: true });
+            fs.writeFileSync(htmlFullPath, html, "utf-8");
+            outputFiles.push(htmlOutputPath);
+          } else {
+            if (!renderedOk && !notFound) {
+              throw new Error(`renderPage returned ${response.status} for ${urlPath}`);
+            }
+            const html = await response.text();
+            fs.mkdirSync(path.dirname(htmlFullPath), { recursive: true });
+            fs.writeFileSync(htmlFullPath, html, "utf-8");
+            outputFiles.push(htmlOutputPath);
+          }
+
+          // A getStaticProps render reports the revalidate it returned; no
+          // report means `false`. Other responses keep the source classification.
+          const renderedRevalidate = isStaticPropsResponse
+            ? (readPrerenderCacheLifeHeader(response.headers)?.revalidate ?? false)
+            : revalidate;
+
+          result = {
+            route: route.pattern,
+            status: "rendered",
+            outputFiles,
+            revalidate: renderedRevalidate,
+            // Pages Router cache metadata comes only from getStaticProps.revalidate;
+            // Next.js applies expireTime as the fallback when no route expire exists.
+            ...(typeof renderedRevalidate === "number" ? { expire: config.expireTime } : {}),
+            router: "pages",
+            ...(urlPath !== route.pattern ? { path: urlPath } : {}),
+            ...(locale ? { locale } : {}),
+            ...(renderedOk ? { responseStatus: response.status } : {}),
+            ...(renderedOk && contentType ? { headers: { "content-type": contentType } } : {}),
+            ...(notFound ? { notFound: true, responseStatus: 404 } : {}),
+            ...(redirect
+              ? {
+                  responseStatus: response.status,
+                  redirectProps,
+                  headers: { location: response.headers.get("location") ?? "/" },
+                }
+              : {}),
+          };
+        } catch (e) {
+          renderPool?.recordRenderError(e);
+          const err = e as Error;
+          result = {
+            route: route.pattern,
+            status: "error",
+            error: config.enablePrerenderSourceMaps ? getErrorMessageWithStack(err) : err.message,
+          };
+        }
+        onProgress?.({
+          completed: ++completed,
+          total: pagesToRender.length,
+          route: urlPath,
+          status: result.status,
+        });
+        return result;
+      },
+    );
+    results.push(...pageResults);
+
+    // A worker that crashed mid-render makes its routes fail with connection
+    // errors that are otherwise recorded as non-fatal — fail the build loudly
+    // instead of shipping partial output.
+    renderPool?.assertHealthy();
+
+    // ── Render 404 page ───────────────────────────────────────────────────
+    const hasCustom404 = findFileWithExtensions(path.join(pagesDir, "404"), fileMatcher);
+    const hasErrorPage = findFileWithExtensions(path.join(pagesDir, "_error"), fileMatcher);
+    for (const locale of config.i18n?.locales ?? [undefined]) {
+      if (!hasCustom404 && !hasErrorPage) break;
+      try {
+        const notFoundRes = await renderPage(
+          localizePagesPath(hasCustom404 ? "/404" : NOT_FOUND_SENTINEL_PATH, locale, config.i18n),
+        );
+        // Same rule as the page loop: a conditional rewrite of the 404 path to
+        // another file, API, or page must not become the deployment-wide 404.
+        if (
+          mode === "default" &&
+          notFoundRes.headers.get(VINEXT_PRERENDER_REWRITTEN_HEADER) !== "0"
+        ) {
+          void notFoundRes.body?.cancel().catch(() => {});
+          continue;
+        }
+        const contentType = notFoundRes.headers.get("content-type") ?? "";
+        if (notFoundRes.status === 404 && contentType.includes("text/html")) {
+          const html404 = await notFoundRes.text();
+          const pathname = localizePagesPath("/404", locale, config.i18n);
+          let outputFiles: string[];
+          if (pathname === "/404") {
+            outputFiles = emitStatic404Files(outDir, html404, config.trailingSlash);
+          } else {
+            const outputPath = getOutputPath(pathname, config.trailingSlash);
+            const fullPath = path.join(outDir, outputPath);
+            fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+            fs.writeFileSync(fullPath, html404, "utf8");
+            outputFiles = [outputPath];
+          }
+          results.push({
+            route: "/404",
+            status: "rendered",
+            outputFiles,
+            revalidate: false,
+            router: "pages",
+            headers: { "content-type": contentType },
+            ...(pathname !== "/404" ? { path: pathname } : {}),
+            ...(locale ? { locale } : {}),
+          });
+        }
+      } catch (e) {
+        // No custom 404. When the render-worker pool is active, a transport
+        // failure here is still captured by assertHealthy() below so a crashed
+        // worker cannot silently skip an existing custom 404.
+        renderPool?.recordRenderError(e);
+      }
+    }
+    renderPool?.assertHealthy();
+
+    // ── Write vinext-prerender.json ───────────────────────────────────────────
+    if (!skipManifest)
+      writePrerenderIndex(results, manifestDir, {
+        buildId: config.buildId,
+        trailingSlash: config.trailingSlash,
+      });
+
+    return { routes: results };
+  } finally {
+    try {
+      if (renderPool) await renderPool.close();
+      setCacheHandler(previousHandler);
+      if (ownedProdServerHandle) {
+        await new Promise<void>((resolve) => ownedProdServerHandle!.server.close(() => resolve()));
+      }
+    } finally {
+      restorePrerenderPhase();
+    }
+  }
+}
+
+/**
+ * Run the prerender phase for App Router.
+ *
+ * Starts a local production server and fetches every static/ISR route via HTTP.
+ * Works for both plain Node and Cloudflare Workers builds — the CF Workers bundle
+ * (`dist/server/index.js`) is a standard Node-compatible server entry, so no
+ * wrangler/miniflare is needed. Writes HTML files, Flight payloads, and
+ * `vinext-prerender.json` to `outDir`.
+ *
+ * If the bundle does not exist, an error is thrown directing the user to run
+ * `vite build` first.
+ *
+ * Speculative static rendering: routes classified as 'unknown' (no explicit
+ * config, non-dynamic URL) are attempted with an empty headers/cookies context.
+ * If they succeed, they are marked as rendered. If they throw a DynamicUsageError
+ * or fail, they are marked as skipped with reason 'dynamic'.
+ */
+export async function prerenderApp({
+  routes,
+  metadataRoutes = [],
+  outDir,
+  config,
+  mode,
+  rscBundlePath,
+  serverDir = path.dirname(rscBundlePath),
+  buildOutDir = path.dirname(serverDir),
+  ...options
+}: PrerenderAppOptionsInternal): Promise<PrerenderResult> {
+  const manifestDir = options.manifestDir ?? outDir;
+  const concurrency = options.concurrency ?? DEFAULT_CONCURRENCY;
+  const onProgress = options.onProgress;
+  const skipManifest = options.skipManifest ?? false;
+  const results: PrerenderRouteResult[] = [];
+
+  fs.mkdirSync(outDir, { recursive: true });
+
+  const previousHandler = getCacheHandler();
+  setCacheHandler(new NoOpCacheHandler());
+  // VINEXT_PRERENDER=1 tells the prod server to skip instrumentation.register()
+  // and enable prerender-only endpoints (/__vinext/prerender/*), while
+  // NEXT_PHASE matches Next's static-worker contract for application code.
+  // The scope is nest-safe because run-prerender.ts also enters it around a
+  // shared hybrid server.
+  const restorePrerenderPhase = enterPrerenderPhase();
+
+  let rscHandler: (request: Request) => Promise<Response>;
+  let staticParamsMap: StaticParamsMap = {};
+  // ownedProdServer: a prod server we started ourselves and must close in finally.
+  // When the caller passes options._prodServer we use that and do NOT close it.
+  let ownedProdServerHandle: { server: HttpServer; port: number } | null = null;
+  // Forked render-server pool (declared out here so the finally can close it).
+  let renderPool: PrerenderServerPool | null = null;
+  // Render servers the per-route fetches are load-balanced across. Starts as the
+  // single in-process server; repointed at the forked pool below for large apps.
+  let renderPorts: number[] = [];
+  let renderRoundRobin = 0;
+
+  try {
+    // Start a local prod server and fetch via HTTP.
+    // This works for both plain Node and Cloudflare Workers builds — the CF
+    // Workers bundle outputs dist/server/index.js which is a standard Node
+    // server entry. No wrangler/miniflare needed.
+
+    // Read the prerender secret written at build time by vinext:server-manifest.
+    const prerenderSecret = readPrerenderSecret(serverDir);
+    if (!prerenderSecret) {
+      console.warn(
+        "[vinext] Warning: prerender secret not found. " +
+          "/__vinext/prerender/* endpoints will return 403 and generateStaticParams will not be called. " +
+          "Run `vite build` to regenerate the secret.",
+      );
+    }
+
+    // Use caller-provided prod server if available; otherwise start our own.
+    const prodServer: { server: HttpServer; port: number } = options._prodServer
+      ? options._prodServer
+      : await (async () => {
+          const srv = await startProdServer({
+            port: 0,
+            host: "127.0.0.1",
+            outDir: buildOutDir,
+            rscEntryPath: rscBundlePath,
+            serverDir,
+            noCompression: true,
+            purpose: "prerender",
+          });
+          ownedProdServerHandle = srv;
+          return srv;
+        })();
+
+    const baseUrl = `http://127.0.0.1:${prodServer.port}`;
+    renderPorts = [prodServer.port];
+    const secretHeaders: Record<string, string> = prerenderSecret
+      ? { [VINEXT_PRERENDER_SECRET_HEADER]: prerenderSecret }
+      : {};
+
+    rscHandler = (req: Request) => {
+      // Forward the request to a prod server (round-robin across the render
+      // pool when one was forked; otherwise the single in-process server).
+      // `redirect: "manual"` ensures pages that call `redirect()` surface as
+      // their original 3xx response — otherwise fetch follows the Location
+      // header server-side, the prerender harness sees a 200 for the
+      // destination page, and that destination HTML gets written under the
+      // redirecting route's filename. At runtime the prod server then serves
+      // the cached HTML with status 200 instead of emitting a 307 for the
+      // document load. Mirrors the pages-prerender `renderPage` helper above.
+      // See: https://github.com/cloudflare/vinext/issues/1530
+      const parsed = new URL(req.url);
+      const port = renderPorts[renderRoundRobin++ % renderPorts.length];
+      const url = `http://127.0.0.1:${port}${parsed.pathname}${parsed.search}`;
+      return fetch(url, {
+        method: req.method,
+        headers: { ...secretHeaders, ...Object.fromEntries(req.headers.entries()) },
+        body: req.method !== "GET" && req.method !== "HEAD" ? req.body : undefined,
+        redirect: "manual",
+      });
+    };
+
+    // staticParamsMap: resolved lazily via the HTTP prerender endpoint.
+    //
+    // The `get` trap always returns a function — we can't know ahead of time
+    // which routes export generateStaticParams. When a route has no
+    // generateStaticParams the endpoint returns "null"; the function returns
+    // null and the caller treats that as "no-static-params".
+    //
+    // The `has` trap intentionally returns false so `pattern in staticParamsMap`
+    // checks correctly fall through to the null-return path above rather than
+    // being short-circuited at the property-existence level.
+    //
+    // A request-level cache keyed on `pattern + parentParams JSON` deduplicates
+    // repeated calls for the same route/params combo. This matters for deeply
+    // nested dynamic routes where resolveParentParams may call the same parent
+    // route's generateStaticParams multiple times across different children.
+    const staticParamsCache = new Map<
+      string,
+      Promise<Record<string, string | string[]>[] | null>
+    >();
+    staticParamsMap = new Proxy({} as typeof staticParamsMap, {
+      get(_target, pattern: string) {
+        return async ({ params }: { params: Record<string, string | string[]> }) => {
+          const cacheKey = `${pattern}\0${JSON.stringify(params)}`;
+          const cached = staticParamsCache.get(cacheKey);
+          if (cached !== undefined) return cached;
+          const request = (async () => {
+            const search = new URLSearchParams({ pattern });
+            if (Object.keys(params).length > 0) {
+              search.set("parentParams", JSON.stringify(params));
+            }
+            // Next.js fails an export on any empty generateStaticParams result,
+            // so a composed resolver must not pass parents through one.
+            if (mode === "export") search.set("rejectEmptyResults", "1");
+            const res = await fetch(`${baseUrl}/__vinext/prerender/static-params?${search}`, {
+              headers: secretHeaders,
+            });
+            const text = await res.text();
+            if (!res.ok) {
+              // A 500 carries the real error thrown by the user's
+              // generateStaticParams in the JSON body (app-prerender-endpoints.ts).
+              // Surface it so prerenderApp's catch records a per-route 'error' and
+              // the build fails with the genuine message, matching Next.js — rather
+              // than swallowing it into a misleading no-static-params skip. Other
+              // statuses (e.g. 404 = disabled/stale secret) keep the warn-and-skip
+              // behavior. Refs cloudflare/vinext#1982
+              if (res.status === 500) {
+                throw new PrerenderUserFunctionError(parsePrerenderEndpointError(text));
+              }
+              console.warn(
+                `[vinext] Warning: /__vinext/prerender/static-params returned ${res.status} for ${pattern}. ` +
+                  `Static params will be skipped. This may indicate a stale or missing prerender secret.`,
+              );
+              return null;
+            }
+            if (res.status === 204 || text === "null") return null;
+            return JSON.parse(text) as Record<string, string | string[]>[];
+          })();
+          // Only cache on success — a rejected or error promise must not poison
+          // subsequent lookups for the same route/params combo.
+          void request.catch(() => staticParamsCache.delete(cacheKey));
+          staticParamsCache.set(cacheKey, request);
+          return request;
+        };
+      },
+      has(_target, _pattern) {
+        return false;
+      },
+    });
+
+    // ── Collect URLs to render ────────────────────────────────────────────────
+    type UrlToRender = {
+      kind?: "page" | "metadata";
+      metadataRouteSegments?: string[];
+      urlPath: string;
+      /** The file-system route pattern this URL was expanded from (e.g. `/blog/:slug`). */
+      routePattern: string;
+      prerenderRouteParams: PrerenderRouteParamsPayload | null;
+      revalidate: number | false;
+      isSpeculative: boolean; // 'unknown' route — mark skipped if render fails
+      isFallback?: boolean;
+    };
+    const urlsToRender: UrlToRender[] = [];
+
+    for (const route of routes) {
+      const renderEntryPath = getAppRouteRenderEntryPath(route);
+
+      if (!renderEntryPath && route.routePath) {
+        results.push({ route: route.pattern, status: "skipped", reason: "api" });
+        continue;
+      }
+
+      if (!renderEntryPath) continue;
+
+      // Use static analysis classification, but note its limitations for dynamic URLs:
+      // classifyAppRoute() returns 'ssr' for dynamic URLs with no explicit config,
+      // meaning "unknown — could have generateStaticParams". We must check
+      // generateStaticParams first before applying the ssr skip/error logic.
+      const { type, revalidate: classifiedRevalidate } = classifyAppRoute(
+        renderEntryPath,
+        route.routePath,
+        route.isDynamic,
+      );
+      if (type === "api") {
+        results.push({ route: route.pattern, status: "skipped", reason: "api" });
+        continue;
+      }
+
+      // 'ssr' from explicit config (force-dynamic, revalidate=0) — truly dynamic,
+      // no point checking generateStaticParams.
+      // BUT: if isDynamic=true and there's no explicit dynamic/revalidate config,
+      // classifyAppRoute also returns 'ssr'. In that case we must still check
+      // generateStaticParams before giving up.
+      const isConfiguredDynamic = type === "ssr" && !route.isDynamic;
+
+      if (isConfiguredDynamic) {
+        if (mode === "export") {
+          results.push({
+            route: route.pattern,
+            status: "error",
+            error: `Route uses dynamic rendering (force-dynamic or revalidate=0) which is not supported with output: 'export'`,
+          });
+        } else {
+          results.push({ route: route.pattern, status: "skipped", reason: "dynamic" });
+        }
+        continue;
+      }
+
+      const revalidate: number | false =
+        mode === "export"
+          ? false
+          : typeof classifiedRevalidate === "number"
+            ? classifiedRevalidate
+            : false;
+
+      if (route.isDynamic) {
+        // Dynamic URL — needs generateStaticParams
+        // (also handles isImplicitlyDynamic case: dynamic URL with no explicit config)
+        try {
+          // Get generateStaticParams from the static params map (production bundle).
+          // For CF Workers builds the map is a Proxy that always returns a function;
+          // the function itself returns null when the route has no generateStaticParams.
+          const generateStaticParamsFn = staticParamsMap[route.pattern];
+
+          // Check: no function at all (Node build where map is populated from bundle exports)
+          if (typeof generateStaticParamsFn !== "function") {
+            if (mode === "export") {
+              results.push({
+                route: route.pattern,
+                status: "error",
+                error: `Dynamic route requires generateStaticParams() with output: 'export'`,
+              });
+            } else {
+              results.push({ route: route.pattern, status: "skipped", reason: "no-static-params" });
+            }
+            continue;
+          }
+
+          const parentParamSets = await resolveParentParams(route, staticParamsMap, {
+            staticExport: mode === "export",
+          });
+          let paramSets: Record<string, string | string[]>[] | null;
+
+          if (parentParamSets.length > 0) {
+            paramSets = [];
+            for (const parentParams of parentParamSets) {
+              const childResults = await generateStaticParamsFn({ params: parentParams });
+              // null means the route's own segments have no generateStaticParams
+              // (CF Workers Proxy case), so its layouts' params stand alone.
+              if (childResults === null) {
+                paramSets = layoutOnlyParamSets(route, parentParamSets);
+                break;
+              }
+              if (Array.isArray(childResults)) {
+                if (mode === "export" && childResults.length === 0) {
+                  throw emptyStaticExportParamsError(route.pattern);
+                }
+                // As for a layout, an empty own result passes the parent set
+                // through (build/static-paths/app.ts generateRouteStaticParams);
+                // routeStaticParamSets below still drops it if incomplete.
+                if (childResults.length === 0) {
+                  (paramSets as Record<string, string | string[]>[]).push(parentParams);
+                  continue;
+                }
+                for (const childParams of childResults) {
+                  (paramSets as Record<string, string | string[]>[]).push({
+                    ...parentParams,
+                    ...childParams,
+                  });
+                }
+              } else {
+                paramSets = [];
+                break;
+              }
+            }
+            // Check every final set, layout-only or composed with the page,
+            // against the route before building its URL.
+            if (paramSets !== null) {
+              paramSets = routeStaticParamSets(route, paramSets, {
+                staticExport: mode === "export",
+              });
+            }
+          } else {
+            const results = await generateStaticParamsFn({ params: {} });
+            if (mode === "export" && Array.isArray(results) && results.length === 0) {
+              throw emptyStaticExportParamsError(route.pattern);
+            }
+            // The resolver can reach the page after an empty layout result at
+            // the same pattern, so check these sets against the route too.
+            paramSets =
+              results === null
+                ? null
+                : routeStaticParamSets(route, Array.isArray(results) ? results : [], {
+                    staticExport: mode === "export",
+                  });
+          }
+
+          // null: route has no generateStaticParams (CF Workers Proxy returned null)
+          if (paramSets === null) {
+            if (mode === "export") {
+              results.push({
+                route: route.pattern,
+                status: "error",
+                error: `Dynamic route requires generateStaticParams() with output: 'export'`,
+              });
+            } else {
+              results.push({ route: route.pattern, status: "skipped", reason: "no-static-params" });
+            }
+            continue;
+          }
+
+          if (paramSets.length === 0) {
+            // No concrete artifact is emitted, but the route remains SSG and
+            // may be generated on demand at runtime.
+            results.push({
+              route: route.pattern,
+              status: "skipped",
+              reason: "empty-static-params",
+            });
+            continue;
+          }
+
+          const queuedRouteUrls = new Set<string>();
+          for (const params of paramSets) {
+            // Defensively guard against a generateStaticParams() that returns
+            // entries with no params object. Next.js's app static-paths code
+            // validates each required key per repeat/optional (see
+            // .nextjs-ref/packages/next/src/build/static-paths/app.ts around
+            // line 383) and throws a clear error; mirror that here instead of
+            // bubbling up a TypeError from buildUrlFromParams.
+            if (params === null || params === undefined) {
+              throw new Error(
+                `generateStaticParams() for ${route.pattern} returned an entry with no params object.`,
+              );
+            }
+            const urlPath = buildUrlFromParams(route.pattern, params);
+            // Dedup concrete URLs from duplicate generateStaticParams entries.
+            // (see https://github.com/vercel/next.js/blob/canary/packages/next/src/build/static-paths/app.ts
+            // filterUniqueParams + prerenderedRoutesByPathname).
+            // Without this, e.g. [{slug:'a'},{slug:'a'}] renders twice and
+            // writes a duplicate vinext-prerender.json entry.
+            if (queuedRouteUrls.has(urlPath)) continue;
+            queuedRouteUrls.add(urlPath);
+            urlsToRender.push({
+              urlPath,
+              routePattern: route.pattern,
+              prerenderRouteParams: encodePrerenderRouteParams(route.pattern, params),
+              revalidate,
+              isSpeculative: false,
+            });
+
+            // These artifacts contain a partial HTML/RSC shell that requires
+            // request-time resume. Keep generation internal-only until vinext
+            // implements that resume lifecycle; serving one as complete HTML
+            // causes hydration to fall into the global error boundary.
+            if (
+              config.cacheComponents === true &&
+              isExperimentalPprFallbackShellGenerationEnabled()
+            ) {
+              for (const fallbackShell of createAppPprFallbackShells(route, params)) {
+                if (queuedRouteUrls.has(fallbackShell.pathname)) continue;
+                queuedRouteUrls.add(fallbackShell.pathname);
+                urlsToRender.push({
+                  urlPath: fallbackShell.pathname,
+                  routePattern: route.pattern,
+                  prerenderRouteParams: encodePrerenderRouteParams(
+                    route.pattern,
+                    fallbackShell.params,
+                    fallbackShell.fallbackParamNames,
+                  ),
+                  revalidate,
+                  isSpeculative: false,
+                  isFallback: true,
+                });
+              }
+            }
+          }
+        } catch (e) {
+          const err = e as Error;
+          const detail = config.enablePrerenderSourceMaps
+            ? getErrorMessageWithStack(err)
+            : err.message;
+          results.push({
+            route: route.pattern,
+            status: "error",
+            error: `Failed to call generateStaticParams(): ${detail}`,
+            // Only a thrown user generateStaticParams (a 500 from the endpoint) or
+            // a result that breaks the route's param contract is fatal to the
+            // build; transport/fetch failures stay non-fatal. #1982
+            ...(e instanceof PrerenderUserFunctionError || e instanceof InvalidStaticParamsError
+              ? { fatal: true as const }
+              : {}),
+          });
+        }
+      } else if (type === "unknown") {
+        // No explicit config, non-dynamic URL — attempt speculative static render
+        urlsToRender.push({
+          urlPath: route.pattern,
+          routePattern: route.pattern,
+          prerenderRouteParams: null,
+          revalidate: false,
+          isSpeculative: true,
+        });
+      } else {
+        // Static or ISR
+        urlsToRender.push({
+          urlPath: route.pattern,
+          routePattern: route.pattern,
+          prerenderRouteParams: null,
+          revalidate,
+          isSpeculative: false,
+        });
+      }
+    }
+
+    if (metadataRoutes.length > 0) {
+      const response = await fetch(`${baseUrl}${VINEXT_PRERENDER_METADATA_ROUTES_PATH}`, {
+        headers: secretHeaders,
+      });
+      const text = await response.text();
+      if (!response.ok) {
+        throw new Error(
+          `[vinext] Failed to enumerate prerenderable metadata routes: ${parsePrerenderEndpointError(text)}`,
+        );
+      }
+      const metadataEntries = JSON.parse(text) as unknown;
+      if (!Array.isArray(metadataEntries)) {
+        throw new Error("[vinext] Invalid prerender metadata route response");
+      }
+      const queuedMetadataPaths = new Set<string>();
+      for (const metadataEntry of metadataEntries) {
+        if (
+          typeof metadataEntry !== "object" ||
+          metadataEntry === null ||
+          typeof Reflect.get(metadataEntry, "path") !== "string" ||
+          typeof Reflect.get(metadataEntry, "routePattern") !== "string" ||
+          !Array.isArray(Reflect.get(metadataEntry, "routeSegments"))
+        ) {
+          continue;
+        }
+        const {
+          path: metadataPath,
+          routePattern,
+          routeSegments,
+        } = metadataEntry as PrerenderableMetadataRoute;
+        if (
+          !metadataPath.startsWith("/") ||
+          !routePattern.startsWith("/") ||
+          routeSegments.some((segment) => typeof segment !== "string") ||
+          queuedMetadataPaths.has(metadataPath)
+        ) {
+          continue;
+        }
+        queuedMetadataPaths.add(metadataPath);
+        urlsToRender.push({
+          kind: "metadata",
+          metadataRouteSegments: routeSegments,
+          urlPath: metadataPath,
+          routePattern,
+          prerenderRouteParams: null,
+          revalidate: false,
+          isSpeculative: false,
+        });
+      }
+    }
+
+    // ── Render each URL via direct RSC handler invocation ─────────────────────
+
+    /**
+     * Render a single URL and return its result.
+     * `onProgress` is intentionally not called here; the outer loop calls it
+     * exactly once per URL after this function returns, keeping the callback
+     * at a single, predictable call site.
+     */
+    async function renderUrl({
+      kind,
+      metadataRouteSegments,
+      urlPath,
+      routePattern,
+      prerenderRouteParams,
+      revalidate,
+      isSpeculative,
+      isFallback,
+    }: UrlToRender): Promise<PrerenderRouteResult> {
+      try {
+        if (kind === "metadata") {
+          const request = new Request(`http://localhost${config.basePath ?? ""}${urlPath}`);
+          const response = await runWithHeadersContext(headersContextFromRequest(request), () =>
+            rscHandler(request),
+          );
+          if (!response.ok) {
+            const fatal = response.headers.get(VINEXT_PRERENDER_RENDER_ERROR_HEADER) === "1";
+            await response.body?.cancel();
+            return {
+              route: routePattern,
+              status: "error",
+              error: `Metadata route returned ${response.status}`,
+              ...(fatal ? { fatal: true as const } : {}),
+            };
+          }
+          const cacheControl = response.headers.get("cache-control") ?? "";
+          const requestCacheLife = readPrerenderCacheLifeHeader(response.headers);
+          if (requestCacheLife?.revalidate === 0) {
+            await response.body?.cancel();
+            return { route: routePattern, status: "skipped", reason: "dynamic" };
+          }
+
+          const collectedTags = readPrerenderCacheTagsHeader(response.headers);
+          const cacheValue = await buildAppRouteCacheValue(response, cacheControl);
+          cacheValue.headers[VINEXT_METADATA_ROUTE_CACHE_HEADER] = "1";
+          const outputPath = getAppRouteOutputPath(urlPath);
+          const fullPath = path.join(outDir, outputPath);
+          fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+          fs.writeFileSync(fullPath, new Uint8Array(cacheValue.body));
+
+          const renderedCacheControl = resolveRenderedCacheControl(
+            requestCacheLife ?? {},
+            "",
+            config.expireTime,
+          );
+          const renderedRevalidate = renderedCacheControl.revalidate ?? false;
+          const renderedStale = resolveClientStaleTimeSeconds(requestCacheLife ?? undefined);
+
+          return {
+            route: routePattern,
+            ...(urlPath === routePattern ? {} : { path: urlPath }),
+            status: "rendered",
+            outputFiles: [outputPath],
+            revalidate: renderedRevalidate,
+            ...(typeof renderedRevalidate === "number"
+              ? { expire: renderedCacheControl.expire }
+              : {}),
+            ...(renderedStale === undefined ? {} : { stale: renderedStale }),
+            router: "metadata",
+            headers: cacheValue.headers,
+            responseStatus: cacheValue.status,
+            routeSegments: metadataRouteSegments ?? [],
+            tags: collectedTags,
+          };
+        }
+
+        // Invoke RSC handler directly with a synthetic Request.
+        // Each request is wrapped in its own ALS context via runWithHeadersContext
+        // so per-request state (dynamicUsageDetected, headersContext, etc.) is
+        // isolated and never bleeds into other renders or into _fallbackState.
+        //
+        // NOTE: for Cloudflare Workers builds `rscHandler` is a thin HTTP proxy
+        // (devWorker.fetch) so the ALS context set up here on the Node side never
+        // reaches the worker isolate. The wrapping is a no-op for the CF path but
+        // harmless — and it keeps renderUrl() shape-compatible across both modes.
+        const prerenderRouteParamsHeader =
+          serializePrerenderRouteParamsHeader(prerenderRouteParams);
+        const htmlHeaders = new Headers();
+        if (prerenderRouteParamsHeader !== null) {
+          htmlHeaders.set(VINEXT_PRERENDER_ROUTE_PARAMS_HEADER, prerenderRouteParamsHeader);
+        }
+        if (isSpeculative) {
+          htmlHeaders.set(VINEXT_PRERENDER_SPECULATIVE_HEADER, "1");
+        }
+        // Match Next.js's export worker: when trailingSlash is enabled, render
+        // the canonical slash form instead of letting the request pipeline
+        // return a 308 that the exporter would misclassify as a failed route.
+        // Keep urlPath unchanged for route and manifest identity. Exported
+        // artifacts are rooted under basePath alongside the client assets so
+        // an ordinary static host can serve the output tree verbatim.
+        // Ported from Next.js: packages/next/src/export/worker.ts
+        // https://github.com/vercel/next.js/blob/canary/packages/next/src/export/worker.ts
+        const routeRequestPath =
+          config.trailingSlash && !urlPath.endsWith("/") ? `${urlPath}/` : urlPath;
+        const requestPath =
+          config.basePath && routeRequestPath === "/" && !config.trailingSlash
+            ? config.basePath
+            : `${config.basePath ?? ""}${routeRequestPath}`;
+        const htmlRequest = new Request(`http://localhost${requestPath}`, {
+          headers: htmlHeaders,
+        });
+        const htmlRender = await runWithHeadersContext(
+          headersContextFromRequest(htmlRequest),
+          async () => {
+            const response = await rscHandler(htmlRequest);
+            const cacheControl = response.headers.get("cache-control") ?? "";
+            const linkHeader = response.headers.get("link");
+            const responseCacheLife = readPrerenderCacheLifeHeader(response.headers);
+            const cacheTags = readPrerenderCacheTagsHeader(response.headers);
+            const fatal = response.headers.get(VINEXT_PRERENDER_RENDER_ERROR_HEADER) === "1";
+            // As in Next.js's build, the page's own special error that
+            // escaped the shell is written with its status and location.
+            const specialError =
+              mode === "export" ? null : readPrerenderSpecialErrorHeader(response.headers);
+            const isSpecialError = specialError !== null;
+            const ok = response.ok || isSpecialError;
+            if (!ok || cacheControl.includes("no-store")) {
+              await response.body?.cancel();
+              return {
+                cacheControl,
+                linkHeader,
+                html: null,
+                ok,
+                requestCacheLife: null,
+                tags: [],
+                status: response.status,
+                fatal,
+                specialErrorLocation: null,
+                isSpecialError,
+              };
+            }
+
+            const html = await response.text();
+            // Prefer the response side channel so single-process and pooled
+            // prerender record the same cache-life metadata; still consume the
+            // process-local value to drain/fallback when no header exists.
+            const processCacheLife = _consumeRequestScopedCacheLife();
+            return {
+              cacheControl,
+              linkHeader,
+              html,
+              ok: true,
+              requestCacheLife: responseCacheLife ?? processCacheLife,
+              status: response.status,
+              tags: cacheTags,
+              fatal: false,
+              specialErrorLocation: specialError?.location ?? null,
+              isSpecialError,
+            };
+          },
+        );
+        const htmlCacheControl = htmlRender.cacheControl;
+        if (!htmlRender.ok) {
+          if (isSpeculative && !htmlRender.fatal) {
+            return { route: routePattern, status: "skipped", reason: "dynamic" };
+          }
+          return {
+            route: routePattern,
+            status: "error",
+            error: `RSC handler returned ${htmlRender.status}`,
+            ...(htmlRender.fatal ? { fatal: true as const } : {}),
+          };
+        }
+
+        // Detect dynamic usage via Cache-Control header. When headers(),
+        // cookies(), connection(), noStore(), or a no-store fetch are called
+        // during render, the server sets Cache-Control: no-store. Treat that
+        // as a dynamic skip even for concrete generateStaticParams paths: a
+        // generated param decides which URLs are admissible, not that the
+        // render output is reusable.
+        if (htmlCacheControl.includes("no-store")) {
+          return { route: routePattern, status: "skipped", reason: "dynamic" };
+        }
+
+        if (htmlRender.html === null) {
+          return {
+            route: routePattern,
+            status: "error",
+            error: "RSC handler returned no prerender HTML",
+          };
+        }
+        const html = isFallback
+          ? markAppPprDynamicFallbackShellHtml(htmlRender.html)
+          : htmlRender.html;
+
+        // Reconstruct the RSC payload from the inline bootstrap chunks already
+        // streamed into the HTML body. The embedded chunks rebuild React's
+        // stream byte for byte, so the resulting Flight artifact contains the
+        // same bytes.
+        //
+        // Falls back to a second invocation with `RSC: 1` when the HTML has
+        // no chunk scripts at all — covers cases where middleware
+        // short-circuits the App Router pipeline with a custom 200 HTML
+        // response that never went through createRscEmbedTransform.
+        // A special error's document embeds its boundary's payload, not the
+        // page's, so the page's comes from an RSC request, as on a runtime miss.
+        let rscData = htmlRender.isSpecialError ? null : extractRscPayloadFromPrerenderedHtml(html);
+        if (rscData === null) {
+          const rscHeaders = new Headers({ Accept: "text/x-component", RSC: "1" });
+          if (prerenderRouteParamsHeader !== null) {
+            rscHeaders.set(VINEXT_PRERENDER_ROUTE_PARAMS_HEADER, prerenderRouteParamsHeader);
+          }
+          if (isSpeculative) {
+            rscHeaders.set(VINEXT_PRERENDER_SPECULATIVE_HEADER, "1");
+          }
+          // The RSC request carries its cache-busting `_rsc` param, which an
+          // App page's RSC request otherwise redirects to add.
+          const rscRequest = new Request(
+            `http://localhost${await createRscRequestUrl(requestPath, rscHeaders)}`,
+            { headers: rscHeaders },
+          );
+          const rscRes = await runWithHeadersContext(headersContextFromRequest(rscRequest), () =>
+            rscHandler(rscRequest),
+          );
+          if (!rscRes.ok) {
+            await rscRes.body?.cancel();
+            throw new Error(
+              `[vinext] prerenderApp: RSC fallback returned ${rscRes.status} for ${urlPath}`,
+            );
+          }
+          rscData = new Uint8Array(await rscRes.arrayBuffer());
+        }
+
+        const outputFiles: string[] = [];
+
+        // Write HTML
+        const htmlOutputPath = getOutputPath(
+          urlPath,
+          config.trailingSlash,
+          mode === "export" ? config.basePath : "",
+        );
+        const htmlFullPath = path.join(outDir, htmlOutputPath);
+        fs.mkdirSync(path.dirname(htmlFullPath), { recursive: true });
+        fs.writeFileSync(htmlFullPath, html, "utf-8");
+        outputFiles.push(htmlOutputPath);
+
+        // Next.js writes export-mode Flight payloads as `.txt` so a plain
+        // static host serves a portable `text/plain` content type. Normal
+        // server prerenders retain vinext's internal `.rsc` artifact shape.
+        const rscOutputPath = getRscOutputPath(urlPath, {
+          mode,
+          trailingSlash: config.trailingSlash,
+          basePath: mode === "export" ? config.basePath : "",
+        });
+        const rscFullPath = path.join(outDir, rscOutputPath);
+        fs.mkdirSync(path.dirname(rscFullPath), { recursive: true });
+        fs.writeFileSync(rscFullPath, rscData);
+        outputFiles.push(rscOutputPath);
+
+        const renderedCacheControl = resolveRenderedCacheControl(
+          htmlRender.requestCacheLife ?? {},
+          htmlCacheControl,
+          config.expireTime,
+        );
+        const renderedRevalidate =
+          typeof revalidate === "number"
+            ? renderedCacheControl.revalidate === undefined
+              ? revalidate
+              : Math.min(revalidate, renderedCacheControl.revalidate)
+            : (renderedCacheControl.revalidate ?? revalidate);
+
+        // Seed the same unclamped claim the runtime write path persists.
+        const renderedStale = resolveClientStaleTimeSeconds(htmlRender.requestCacheLife);
+
+        return {
+          route: routePattern,
+          status: "rendered",
+          outputFiles,
+          revalidate: renderedRevalidate,
+          ...(typeof renderedRevalidate === "number"
+            ? { expire: renderedCacheControl.expire }
+            : {}),
+          ...(renderedStale === undefined ? {} : { stale: renderedStale }),
+          router: "app",
+          ...(htmlRender.tags.length > 0 ? { tags: htmlRender.tags } : {}),
+          ...(htmlRender.linkHeader || htmlRender.specialErrorLocation !== null
+            ? {
+                headers: {
+                  ...(htmlRender.linkHeader ? { link: htmlRender.linkHeader } : {}),
+                  ...(htmlRender.specialErrorLocation !== null
+                    ? { location: htmlRender.specialErrorLocation }
+                    : {}),
+                },
+              }
+            : {}),
+          ...(htmlRender.isSpecialError ? { responseStatus: htmlRender.status } : {}),
+          ...(urlPath !== routePattern ? { path: urlPath } : {}),
+          ...(isFallback ? { fallback: true } : {}),
+        };
+      } catch (e) {
+        renderPool?.recordRenderError(e);
+        if (isSpeculative) {
+          return { route: routePattern, status: "skipped", reason: "dynamic" };
+        }
+        const err = e as Error & { digest?: string };
+        const base = config.enablePrerenderSourceMaps ? getErrorMessageWithStack(err) : err.message;
+        const msg = err.digest ? `${base} (digest: ${err.digest})` : base;
+        return { route: routePattern, status: "error", error: msg };
+      }
+    }
+
+    // ── Spread rendering across a pool of production servers ──────────────
+    // Only when we own the server (not a hybrid shared server) and there are
+    // enough routes to outweigh the fork/startup cost. The main thread keeps
+    // collecting HTML/RSC and writing files; the forked servers render on
+    // their own cores.
+    if (!options._prodServer && prerenderPoolAvailable()) {
+      const poolSize = resolvePrerenderPoolSize(urlsToRender.length, concurrency);
+      if (poolSize > 1) {
+        renderPool = await startOptionalPrerenderServerPool(
+          buildOutDir,
+          poolSize,
+          rscBundlePath,
+          serverDir,
+        );
+        if (renderPool) renderPorts = renderPool.ports;
+      }
+    }
+
+    let completedApp = 0;
+    const appResults = await runWithConcurrency(urlsToRender, concurrency, async (urlToRender) => {
+      const result = await renderUrl(urlToRender);
+      onProgress?.({
+        completed: ++completedApp,
+        total: urlsToRender.length,
+        route: urlToRender.urlPath,
+        status: result.status,
+      });
+      return result;
+    });
+    results.push(...appResults);
+
+    // Fail loudly if a render worker crashed mid-build (otherwise its routes
+    // fail with connection errors recorded as non-fatal → partial output).
+    renderPool?.assertHealthy();
+
+    const outputFiles =
+      mode === "export" && metadataRoutes.length > 0
+        ? emitStaticMetadataFiles(metadataRoutes, outDir, config.basePath)
+        : [];
+
+    // ── Render 404 page ───────────────────────────────────────────────────────
+    // Fetch a known-nonexistent URL to get the App Router's not-found response.
+    // The RSC handler returns 404 with full HTML for the not-found.tsx page (or
+    // the default Next.js 404). Write it to 404.html for static deployment.
+    try {
+      const notFoundPath =
+        config.trailingSlash && !NOT_FOUND_SENTINEL_PATH.endsWith("/")
+          ? `${NOT_FOUND_SENTINEL_PATH}/`
+          : NOT_FOUND_SENTINEL_PATH;
+      const notFoundRequest = new Request(
+        `http://localhost${config.basePath ?? ""}${notFoundPath}`,
+      );
+      const notFoundRes = await runWithHeadersContext(
+        headersContextFromRequest(notFoundRequest),
+        () => rscHandler(notFoundRequest),
+      );
+      if (notFoundRes.status === 404) {
+        const html404 = await notFoundRes.text();
+        results.push({
+          route: "/404",
+          status: "rendered",
+          outputFiles: emitStatic404Files(outDir, html404, config.trailingSlash),
+          revalidate: false,
+          router: "app",
+        });
+      }
+    } catch (e) {
+      // No custom 404. When the render-worker pool is active, a transport
+      // failure here is still captured by assertHealthy() below so a crashed
+      // worker cannot silently skip an existing custom 404 (mirrors the
+      // Pages Router 404 path).
+      renderPool?.recordRenderError(e);
+    }
+    renderPool?.assertHealthy();
+
+    // ── Write vinext-prerender.json ───────────────────────────────────────────
+    if (!skipManifest)
+      writePrerenderIndex(results, manifestDir, {
+        buildId: config.buildId,
+        trailingSlash: config.trailingSlash,
+      });
+
+    return {
+      routes: results,
+      ...(outputFiles.length > 0 ? { outputFiles } : {}),
+    };
+  } finally {
+    try {
+      if (renderPool) await renderPool.close();
+      setCacheHandler(previousHandler);
+      if (ownedProdServerHandle) {
+        await new Promise<void>((resolve) => ownedProdServerHandle!.server.close(() => resolve()));
+      }
+    } finally {
+      restorePrerenderPhase();
+    }
+  }
+}
+
+/** Cache life recovered from a prerendered response; `stale` seeds the ISR entry. */
+type PrerenderCacheLife = { expire?: number; revalidate?: number; stale?: number };
+
+function resolveRenderedCacheControl(
+  requestCacheLife: PrerenderCacheLife,
+  cacheControl: string,
+  fallbackExpireSeconds: number,
+): { expire: number; revalidate?: number } {
+  const sMaxage = parseCacheControlSeconds(cacheControl, "s-maxage");
+  const staleWhileRevalidate = parseCacheControlSeconds(cacheControl, "stale-while-revalidate");
+  const revalidate =
+    requestCacheLife.revalidate ?? (staleWhileRevalidate === undefined ? undefined : sMaxage);
+  return {
+    expire:
+      requestCacheLife.expire ??
+      resolveRenderedExpireSeconds({
+        fallbackExpireSeconds,
+        sMaxage,
+        staleWhileRevalidate,
+      }),
+    ...(revalidate === undefined ? {} : { revalidate }),
+  };
+}
+
+function readPrerenderCacheLifeHeader(headers: Headers): PrerenderCacheLife | null {
+  const value = headers.get(VINEXT_PRERENDER_CACHE_LIFE_HEADER);
+  if (!value) return null;
+
+  try {
+    const parsed = JSON.parse(value) as {
+      expire?: unknown;
+      revalidate?: unknown;
+      stale?: unknown;
+    };
+    const cacheLife: PrerenderCacheLife = {};
+    if (typeof parsed.revalidate === "number" && Number.isFinite(parsed.revalidate)) {
+      cacheLife.revalidate = parsed.revalidate;
+    }
+    if (typeof parsed.expire === "number" && Number.isFinite(parsed.expire)) {
+      cacheLife.expire = parsed.expire;
+    }
+    if (typeof parsed.stale === "number" && Number.isFinite(parsed.stale) && parsed.stale >= 0) {
+      cacheLife.stale = parsed.stale;
+    }
+    return cacheLife.revalidate === undefined &&
+      cacheLife.expire === undefined &&
+      cacheLife.stale === undefined
+      ? null
+      : cacheLife;
+  } catch {
+    return null;
+  }
+}
+
+/** Reads the special-error marker: the page's stored headers, or null. */
+function readPrerenderSpecialErrorHeader(headers: Headers): { location: string | null } | null {
+  const value = headers.get(VINEXT_PRERENDER_SPECIAL_ERROR_HEADER);
+  if (!value) return null;
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (typeof parsed !== "object" || parsed === null) return null;
+    const location = (parsed as { location?: unknown }).location;
+    return { location: typeof location === "string" ? location : null };
+  } catch {
+    return null;
+  }
+}
+
+function readPrerenderCacheTagsHeader(headers: Headers): string[] {
+  const value = headers.get(NEXT_CACHE_TAGS_HEADER);
+  if (!value) return [];
+  return [...new Set(value.split(",").filter(Boolean))];
+}
+
+function resolveRenderedExpireSeconds(options: {
+  fallbackExpireSeconds: number;
+  sMaxage?: number;
+  staleWhileRevalidate?: number;
+}): number {
+  const { fallbackExpireSeconds, sMaxage, staleWhileRevalidate } = options;
+  if (sMaxage === undefined || staleWhileRevalidate === undefined) {
+    return fallbackExpireSeconds;
+  }
+
+  return sMaxage + staleWhileRevalidate;
+}
+
+function parseCacheControlSeconds(cacheControl: string, directive: string): number | undefined {
+  for (const part of cacheControl.split(",")) {
+    const [rawName, rawValue] = part.trim().split("=", 2);
+    if (rawName.trim().toLowerCase() !== directive) continue;
+    if (rawValue === undefined) return undefined;
+
+    const value = Number(rawValue.trim());
+    if (!Number.isFinite(value) || value < 0) return undefined;
+
+    return value;
+  }
+
+  return undefined;
+}
+
+// ─── Build index ──────────────────────────────────────────────────────────────
+
+/**
+ * Write `vinext-prerender.json` to `outDir`.
+ *
+ * Contains a flat list of route results used during testing and as a seed for
+ * ISR cache population at production startup. The `buildId` is included so
+ * the seeding function can construct matching cache keys.
+ */
+export function writePrerenderIndex(
+  routes: PrerenderRouteResult[],
+  outDir: string,
+  options?: { buildId?: string; trailingSlash?: boolean },
+): void {
+  const { buildId, trailingSlash } = options ?? {};
+  // Produce a stripped-down version for the index (omit outputFiles detail)
+  const indexRoutes = routes.map((r) => {
+    if (r.status === "rendered") {
+      return {
+        route: r.route,
+        status: r.status,
+        revalidate: r.revalidate,
+        ...(typeof r.revalidate === "number" ? { expire: r.expire } : {}),
+        ...(typeof r.stale === "number" ? { stale: r.stale } : {}),
+        router: r.router,
+        ...(r.tags && r.tags.length > 0 ? { tags: r.tags } : {}),
+        ...(r.routeSegments ? { routeSegments: r.routeSegments } : {}),
+        ...(r.headers ? { headers: r.headers } : {}),
+        ...(typeof r.responseStatus === "number" ? { responseStatus: r.responseStatus } : {}),
+        ...(r.notFound ? { notFound: true as const } : {}),
+        ...(r.redirectProps ? { redirectProps: r.redirectProps } : {}),
+        ...(r.locale ? { locale: r.locale } : {}),
+        ...(r.path ? { path: r.path } : {}),
+        ...(r.fallback ? { fallback: true } : {}),
+      };
+    }
+    if (r.status === "skipped") {
+      return { route: r.route, status: r.status, reason: r.reason };
+    }
+    return { route: r.route, status: r.status, error: r.error };
+  });
+
+  const index = {
+    ...(buildId ? { buildId } : {}),
+    ...(typeof trailingSlash === "boolean" ? { trailingSlash } : {}),
+    routes: indexRoutes,
+    pregeneratedConcretePaths: buildPregeneratedConcretePathTable({ routes: indexRoutes }),
+  };
+  fs.writeFileSync(
+    path.join(outDir, "vinext-prerender.json"),
+    JSON.stringify(index, null, 2),
+    "utf-8",
+  );
+}

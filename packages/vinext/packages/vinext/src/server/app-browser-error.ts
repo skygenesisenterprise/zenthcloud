@@ -1,0 +1,129 @@
+import { isBailoutToCSRError } from "vinext/shims/navigation-errors";
+import { isNavigationSignalError } from "../utils/navigation-signal.js";
+import { isUnknownRecord } from "../utils/record.js";
+
+type VinextHydrateRootErrorInfo = {
+  componentStack?: string;
+  errorBoundary?: unknown;
+};
+
+type HydrateRootErrorHandler = (error: unknown, errorInfo: VinextHydrateRootErrorInfo) => void;
+
+function getErrorBoundaryProps(errorInfo: VinextHydrateRootErrorInfo): Record<string, unknown> {
+  if (!isUnknownRecord(errorInfo.errorBoundary)) return {};
+  const props = errorInfo.errorBoundary.props;
+  return isUnknownRecord(props) ? props : {};
+}
+
+function isImplicitRootErrorBoundary(errorInfo: VinextHydrateRootErrorInfo): boolean {
+  return getErrorBoundaryProps(errorInfo).isImplicitRootErrorBoundary === true;
+}
+
+// The implicit root boundary or a global-error boundary: the boundaries that
+// stand in for Next.js's dev overlay boundary, which holds the whole page. An
+// implicit root boundary around the user's global-error boundary only catches
+// what that boundary's fallback threw, which React reports in place of the
+// page's error, so it doesn't count.
+function isRootErrorBoundary(errorInfo: VinextHydrateRootErrorInfo): boolean {
+  const props = getErrorBoundaryProps(errorInfo);
+  if (props.isGlobalErrorBoundary === true) return true;
+  return props.isImplicitRootErrorBoundary === true && props.wrapsGlobalErrorBoundary !== true;
+}
+
+function logCaughtError(error: unknown, errorInfo: VinextHydrateRootErrorInfo): void {
+  console.error(error);
+  if (errorInfo?.componentStack) {
+    console.error("The above error occurred in a React component:\n" + errorInfo.componentStack);
+  }
+}
+
+function reportGlobalError(error: unknown): void {
+  if (typeof globalThis.reportError === "function") {
+    globalThis.reportError(error);
+    return;
+  }
+
+  console.error(error);
+}
+
+// Ported from Next.js's next-devtools coerceError/isError. The dev overlay only
+// reports window error events that carry a value, so dev wraps non-Error
+// values (e.g. `throw undefined` from a crashing global-error.tsx) before
+// reporting them.
+// Navigation signals pass through untouched so their digest stays readable.
+function coerceError(value: unknown): unknown {
+  if (isNavigationSignalError(value)) return value;
+  if (typeof value === "object" && value !== null && "name" in value && "message" in value) {
+    return value;
+  }
+  return new Error(String(value));
+}
+
+// Match Next.js's root callback: report the error globally. The optional
+// navigation-failure listener handles the resulting error event when enabled.
+// Dev coerces non-Error values first, like Next.js's decorateDevError.
+export function createOnUncaughtError(
+  options: { coerceToError?: boolean } = {},
+): HydrateRootErrorHandler {
+  return (error) => {
+    reportGlobalError(options.coerceToError ? coerceError(error) : error);
+  };
+}
+
+// Production onCaughtError handler for hydrateRoot. React calls this for
+// every error caught by an error boundary. Navigation sentinel errors
+// (redirect(), notFound(), forbidden(), unauthorized()) are intentionally
+// thrown as control flow and MUST be caught by their dedicated boundaries;
+// logging them to the console would produce spurious browser console errors
+// that break the "no console errors" assertion in Next.js compat tests
+// (e.g. root-layout-redirect). Filter them out silently — the boundary has
+// already consumed the error and triggered the appropriate navigation.
+//
+// All other caught errors are logged to console.error, preserving React's
+// default behavior.
+export function createProdOnCaughtError(
+  onImplicitRootError: HydrateRootErrorHandler,
+): HydrateRootErrorHandler {
+  return (error, errorInfo) => {
+    if (isNavigationSignalError(error)) return;
+    if (isImplicitRootErrorBoundary(errorInfo)) {
+      onImplicitRootError(error, errorInfo);
+      return;
+    }
+    logCaughtError(error, errorInfo);
+  };
+}
+
+export function createDevOnCaughtError(
+  onCaughtError: HydrateRootErrorHandler,
+  onImplicitRootError: HydrateRootErrorHandler,
+  onRootErrorBoundaryCatch?: () => void,
+): HydrateRootErrorHandler {
+  return (error, errorInfo) => {
+    if (!isNavigationSignalError(error) && isRootErrorBoundary(errorInfo)) {
+      onRootErrorBoundaryCatch?.();
+    }
+    if (isImplicitRootErrorBoundary(errorInfo)) {
+      onImplicitRootError(error, errorInfo);
+      return;
+    }
+    onCaughtError(error, errorInfo);
+  };
+}
+
+// Production onRecoverableError handler for hydrateRoot. Ported from Next.js's
+// react-client-callbacks/on-recoverable-error: a useSearchParams() bail-out
+// leaves its Suspense boundary for the browser to client-render, which React
+// reports as a recoverable error carrying the bail-out digest. That switch is
+// the intended render, not a failure, so it is neither reported nor passed to
+// onReportedError.
+export function createProdOnRecoverableError(
+  onReportedError: () => void,
+): (error: unknown) => void {
+  return (error) => {
+    const cause = error instanceof Error && error.cause !== undefined ? error.cause : error;
+    if (isBailoutToCSRError(cause)) return;
+    onReportedError();
+    reportGlobalError(cause);
+  };
+}

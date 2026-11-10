@@ -1,0 +1,576 @@
+/**
+ * API route handler for Pages Router (pages/api/*).
+ *
+ * Next.js API routes export a default handler function:
+ *   export default function handler(req, res) { ... }
+ *
+ * The req/res objects are Node.js IncomingMessage/ServerResponse with
+ * Next.js extensions: req.query, req.body, res.json(), res.status(), etc.
+ */
+import "./server-globals.js";
+import type { IncomingMessage, ServerResponse } from "node:http";
+import { Stream } from "node:stream";
+import type { NextI18nConfig } from "../config/next-config.js";
+import { decode as decodeQueryString } from "node:querystring";
+import { Buffer } from "node:buffer";
+import { type Route, matchRoute } from "../routing/pages-router.js";
+import { reportRequestError, importModule, type ModuleImporter } from "./instrumentation.js";
+import {
+  mergeRouteParamsIntoQuery,
+  parseQueryString,
+  urlQueryToSearchParams,
+} from "../utils/query.js";
+import {
+  PagesBodyParseError,
+  createPagesBodyDecoder,
+  isJsonMediaType,
+} from "./pages-media-type.js";
+import { finalizeEdgeApiResponse, isEdgeApiRuntime } from "./edge-api-runtime.js";
+import {
+  DEFAULT_PAGES_API_BODY_SIZE_LIMIT,
+  resolveBodyParserConfig,
+} from "./pages-body-parser-config.js";
+import { resolveRequestProtocol, resolveRequestHost } from "./proxy-trust.js";
+import { performOnDemandRevalidate, type RevalidateOptions } from "./pages-revalidate.js";
+import { NextRequest } from "vinext/shims/server";
+import { signalFromNodeResponse } from "./node-response-signal.js";
+import {
+  attachPagesPreviewApi,
+  attachPagesRequestCookies,
+  type PagesReqResRequest,
+  type PagesReqResResponse,
+} from "./pages-node-compat.js";
+import { tracePagesApiHandler } from "./pages-execution-tracing.js";
+import { logRequestError } from "./request-error-log.js";
+
+/**
+ * Extend the Node.js request with Next.js-style helpers.
+ */
+type NextApiRequest = {
+  query: Record<string, string | string[]>;
+  body: unknown;
+  cookies: Record<string, string>;
+  preview?: true;
+  draftMode?: true;
+  previewData: object | string | false;
+} & IncomingMessage;
+
+/**
+ * Extend the Node.js response with Next.js-style helpers.
+ */
+type NextApiResponse = {
+  status(code: number): NextApiResponse;
+  json(data: unknown): void;
+  send(data: unknown): void;
+  redirect(statusOrUrl: number | string, url?: string): NextApiResponse;
+  revalidate(urlPath: string, opts?: RevalidateOptions): Promise<void>;
+  setPreviewData(
+    data: object | string,
+    options?: { maxAge?: number; path?: string },
+  ): NextApiResponse;
+  clearPreviewData(options?: { path?: string }): NextApiResponse;
+  setDraftMode(options?: { enable?: boolean }): NextApiResponse;
+} & ServerResponse;
+
+type EdgeApiRouteModule = {
+  /**
+   * `export const config = { runtime: 'edge' }` — historical Pages Router form.
+   */
+  config?: {
+    runtime?: string;
+  };
+  /**
+   * `export const runtime = 'edge'` — bare export form. Next.js resolves the
+   * effective runtime as `config.runtime ?? config.config?.runtime`, so a
+   * top-level `runtime` export takes precedence over the nested config form.
+   */
+  runtime?: string;
+  default: (request: Request) => Response | Promise<Response>;
+};
+
+/**
+ * Default request body size (1 MB). Matches Next.js default bodyParser sizeLimit.
+ * @see https://nextjs.org/docs/pages/building-your-application/routing/api-routes#custom-config
+ * Prevents denial-of-service via unbounded request body buffering.
+ */
+const MAX_BODY_SIZE = DEFAULT_PAGES_API_BODY_SIZE_LIMIT;
+
+/**
+ * Parse the request body based on content-type.
+ * Enforces a size limit to prevent memory exhaustion attacks.
+ *
+ * The `sizeLimit` argument honours `export const config = { api: { bodyParser:
+ * { sizeLimit: '4mb' } } }` on the route module. To opt out of parsing
+ * entirely (`bodyParser: false`), callers must skip this function so the
+ * underlying readable stream stays intact on `req` (critical for webhook
+ * HMAC signature verification).
+ */
+async function parseBody(
+  req: IncomingMessage,
+  sizeLimit: number = MAX_BODY_SIZE,
+): Promise<unknown> {
+  const { mediaType, decoder } = await createPagesBodyDecoder(req.headers["content-type"]);
+  // A client that disconnected while the decoder loaded has already emitted
+  // its error/close events, which the listeners below would never see.
+  if (req.destroyed) throw req.errored ?? new Error("Request aborted");
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    let totalSize = 0;
+    let settled = false;
+    req.on("data", (chunk: Buffer) => {
+      totalSize += chunk.length;
+      if (totalSize > sizeLimit) {
+        settled = true;
+        req.destroy();
+        reject(new PagesBodyParseError("Request body too large", 413));
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on("error", (err) => {
+      if (!settled) {
+        settled = true;
+        reject(err);
+      }
+    });
+    req.on("end", () => {
+      if (settled) return;
+      settled = true;
+      const body = Buffer.concat(chunks);
+      const raw = decoder.decode(body);
+      if (!raw) {
+        // A body that decodes to nothing, such as a lone BOM, stays "" like
+        // in Next.js; only a request without body bytes gets undefined.
+        resolve(
+          isJsonMediaType(mediaType)
+            ? {}
+            : mediaType === "application/x-www-form-urlencoded"
+              ? decodeQueryString(raw)
+              : body.length > 0
+                ? raw
+                : undefined,
+        );
+        return;
+      }
+      if (isJsonMediaType(mediaType)) {
+        try {
+          resolve(JSON.parse(raw));
+        } catch {
+          reject(new PagesBodyParseError("Invalid JSON", 400));
+        }
+      } else if (mediaType === "application/x-www-form-urlencoded") {
+        resolve(decodeQueryString(raw));
+      } else {
+        resolve(raw);
+      }
+    });
+  });
+}
+
+function isEdgeApiRouteModule(module: Record<string, unknown>): module is EdgeApiRouteModule {
+  if (typeof module.default !== "function") return false;
+  // Bare `export const runtime = 'edge'` takes precedence over the nested config
+  // form, matching Next.js (`config.runtime ?? config.config?.runtime` in
+  // packages/next/src/build/analysis/get-page-static-info.ts).
+  const bare = module.runtime;
+  if (typeof bare === "string") return isEdgeApiRuntime(bare);
+  const config = module.config;
+  if (!config || typeof config !== "object") return false;
+  const runtime = "runtime" in config ? (config as { runtime?: unknown }).runtime : undefined;
+  return typeof runtime === "string" && isEdgeApiRuntime(runtime);
+}
+
+function readEdgeRequestBody(req: IncomingMessage): ReadableStream<Uint8Array> | undefined {
+  if (req.method === "GET" || req.method === "HEAD") return undefined;
+  return new ReadableStream<Uint8Array>({
+    start(controller) {
+      req.on("data", (chunk: Buffer | string) => {
+        controller.enqueue(typeof chunk === "string" ? Buffer.from(chunk) : new Uint8Array(chunk));
+      });
+      req.on("end", () => controller.close());
+      req.on("error", (error) => controller.error(error));
+    },
+  });
+}
+
+function createEdgeApiRequest(
+  req: IncomingMessage,
+  res: ServerResponse,
+  url: string,
+  params: Record<string, string | string[]>,
+  requestPathname: string | undefined,
+): Request {
+  const headers = new Headers();
+  for (const [name, value] of Object.entries(req.headers)) {
+    // Skip HTTP/2 pseudo-headers (`:method`/`:authority`/`:path`/`:scheme`,
+    // RFC 7540 §8.1.2.1) — WHATWG `Headers` rejects `:`-prefixed names.
+    // See: https://github.com/cloudflare/vinext/issues/2013
+    if (name.startsWith(":")) continue;
+    if (Array.isArray(value)) {
+      for (const item of value) headers.append(name, item);
+    } else if (value !== undefined) {
+      headers.set(name, value);
+    }
+  }
+
+  // Honor `X-Forwarded-Proto` / `X-Forwarded-Host` only when running behind
+  // a trusted proxy (gated on `VINEXT_TRUST_PROXY` / `VINEXT_TRUSTED_HOSTS`).
+  // Without this gate a client could send `X-Forwarded-Proto: https` and
+  // trick edge API handlers that check `request.url.startsWith("https")`
+  // (e.g. to gate Secure-cookie issuance) into believing the request was
+  // TLS-terminated. See: Finding F-PROD-7 in SECURITY-AUDIT-2026-05.md.
+  const proto = resolveRequestProtocol(req);
+  const host = resolveRequestHost(req, "localhost");
+  // Keep this in sync with pages-api-route.ts: preserve the visible incoming
+  // pathname while replacing only the resolved query and dynamic params.
+  // Vite has stripped its configured basePath from req.url, so the dev server
+  // passes the pathname with that basePath restored, as prod/Workers do in
+  // pages-request-pipeline.ts from the adapter's hadBasePath state.
+  const requestUrl = new URL(req.url ?? url, `${proto}://${host}`);
+  if (requestPathname !== undefined) requestUrl.pathname = requestPathname;
+  const query = mergeRouteParamsIntoQuery(parseQueryString(url), params);
+  requestUrl.search = urlQueryToSearchParams(query).toString();
+  // Match prod/Next.js: edge API handlers observe client disconnects, and an
+  // already-aborted request carries no body.
+  const signal = signalFromNodeResponse(res);
+  const body = signal.aborted ? undefined : readEdgeRequestBody(req);
+
+  const init: RequestInit & { duplex?: "half" } = {
+    headers,
+    method: req.method,
+    signal,
+  };
+
+  if (body) {
+    init.body = body;
+    init.duplex = "half";
+  }
+
+  return new Request(requestUrl, init);
+}
+
+function waitForWritableDrain(res: ServerResponse): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const cleanup = () => {
+      res.off("drain", onDrain);
+      res.off("error", onError);
+      res.off("close", onClose);
+    };
+    const onDrain = () => {
+      cleanup();
+      resolve();
+    };
+    const onError = (error: Error) => {
+      cleanup();
+      reject(error);
+    };
+    const onClose = () => {
+      cleanup();
+      reject(new Error("Response closed before writable drain"));
+    };
+    res.once("drain", onDrain);
+    res.once("error", onError);
+    res.once("close", onClose);
+  });
+}
+
+async function writeEdgeApiResponseBody(
+  res: ServerResponse,
+  body: ReadableStream<Uint8Array> | null,
+  signal: AbortSignal,
+): Promise<void> {
+  if (!body) {
+    res.end();
+    return;
+  }
+
+  const reader = body.getReader();
+  // A stalled body would otherwise keep the read pending after the client left.
+  const cancel = () => {
+    reader.cancel(signal.reason).catch(() => {
+      /* ignore cancellation failures on discarded bodies */
+    });
+  };
+  if (signal.aborted) cancel();
+  else signal.addEventListener("abort", cancel, { once: true });
+  try {
+    while (true) {
+      const result = await reader.read();
+      if (result.done) break;
+      if (result.value.byteLength === 0) continue;
+      if (!res.write(Buffer.from(result.value))) {
+        await waitForWritableDrain(res);
+      }
+    }
+    if (!signal.aborted) res.end();
+  } catch (error) {
+    // A client disconnect is not a route error.
+    if (signal.aborted) return;
+    res.destroy(error instanceof Error ? error : new Error(String(error)));
+    throw error;
+  } finally {
+    signal.removeEventListener("abort", cancel);
+    reader.releaseLock();
+  }
+}
+
+/**
+ * Enhance a Node.js req/res pair with Next.js API route helpers.
+ */
+function enhanceApiObjects(
+  req: IncomingMessage,
+  res: ServerResponse,
+  query: Record<string, string | string[]>,
+  body: unknown,
+  trustedRevalidateOrigin?: string,
+  allowedRevalidateHeaderKeys: readonly string[] = [],
+  dev = false,
+): { apiReq: NextApiRequest; apiRes: NextApiResponse } {
+  const apiReq = Object.assign(req, {
+    body,
+    query,
+  }) as NextApiRequest;
+  attachPagesRequestCookies(apiReq);
+
+  const apiRes = Object.assign(res, {
+    status(this: NextApiResponse, code: number) {
+      this.statusCode = code;
+      return this;
+    },
+
+    json(this: NextApiResponse, data: unknown) {
+      this.setHeader("Content-Type", "application/json; charset=utf-8");
+      this.end(JSON.stringify(data));
+    },
+
+    send(this: NextApiResponse, data: unknown) {
+      // Next.js ends a nullish send without a body.
+      if (data === null || data === undefined) {
+        this.end();
+        return;
+      }
+
+      // Next.js's sendData() ends 204/304 responses before it inspects the
+      // data, so a stream is never piped into them.
+      if (this.statusCode === 204 || this.statusCode === 304) {
+        this.removeHeader("Content-Type");
+        this.removeHeader("Content-Length");
+        this.removeHeader("Transfer-Encoding");
+        this.end();
+        return;
+      }
+
+      if (data instanceof Stream) {
+        if (!this.getHeader("Content-Type")) {
+          this.setHeader("Content-Type", "application/octet-stream");
+        }
+        data.pipe(this);
+        return;
+      }
+
+      if (Buffer.isBuffer(data)) {
+        if (!this.getHeader("Content-Type")) {
+          this.setHeader("Content-Type", "application/octet-stream");
+        }
+        this.setHeader("Content-Length", String(data.length));
+        this.end(data);
+        return;
+      }
+
+      if (typeof data === "object" || typeof data === "number" || typeof data === "boolean") {
+        this.setHeader("Content-Type", "application/json; charset=utf-8");
+        this.end(JSON.stringify(data));
+      } else {
+        if (!this.getHeader("Content-Type")) {
+          this.setHeader("Content-Type", "text/plain");
+        }
+        this.end(String(data as unknown));
+      }
+    },
+
+    redirect(this: NextApiResponse, statusOrUrl: number | string, url?: string) {
+      if (typeof statusOrUrl === "string") {
+        url = statusOrUrl;
+        statusOrUrl = 307;
+      }
+      if (typeof statusOrUrl !== "number" || typeof url !== "string") {
+        throw new Error(
+          "Invalid redirect arguments. Please use a single argument URL, e.g. res.redirect('/destination') or use a status code and URL, e.g. res.redirect(307, '/destination').",
+        );
+      }
+      this.writeHead(statusOrUrl, { Location: url });
+      this.write(url);
+      this.end();
+      return this;
+    },
+
+    // `res.revalidate(urlPath)` triggers on-demand ISR regeneration of a Pages
+    // Router route. Delegates to the shared helper so the secret wiring and
+    // success detection stay identical to the dev/Node-compat path. See
+    // `pages-revalidate.ts`.
+    async revalidate(this: NextApiResponse, urlPath: string, opts?: RevalidateOptions) {
+      await performOnDemandRevalidate(
+        req,
+        urlPath,
+        opts,
+        trustedRevalidateOrigin,
+        allowedRevalidateHeaderKeys,
+        dev,
+      );
+    },
+  }) as NextApiResponse;
+  attachPagesPreviewApi(
+    apiReq as unknown as PagesReqResRequest,
+    apiRes as unknown as PagesReqResResponse,
+  );
+
+  return { apiReq, apiRes };
+}
+
+/**
+ * Handle an API route request.
+ * Returns true if the request was handled, false if no API route matched.
+ */
+export async function handleApiRoute(
+  runner: ModuleImporter,
+  req: IncomingMessage,
+  res: ServerResponse,
+  url: string,
+  apiRoutes: Route[],
+  nextConfig?: {
+    basePath?: string;
+    i18n?: NextI18nConfig | null;
+    trustedRevalidateOrigin?: string;
+    allowedRevalidateHeaderKeys?: readonly string[];
+    trailingSlash?: boolean;
+    skipTrailingSlashRedirect?: boolean;
+    /** Edge API request pathname, with any basePath the dev server stripped restored. */
+    requestPathname?: string;
+  },
+): Promise<boolean> {
+  const match = matchRoute(url, apiRoutes);
+  if (!match) return false;
+
+  const { route, params } = match;
+
+  try {
+    // Load the API route module through the ModuleRunner
+    const apiModule = await importModule(runner, route.filePath);
+    if (isEdgeApiRouteModule(apiModule)) {
+      // Next.js wraps the incoming Request in a NextRequest before invoking
+      // edge API handlers, so handlers can use `req.nextUrl.searchParams`,
+      // `req.cookies`, etc. (Cf. NextRequestHint in next/src/server/web/adapter.ts.)
+      const nextRequest = new NextRequest(
+        createEdgeApiRequest(req, res, url, params, nextConfig?.requestPathname),
+        nextConfig
+          ? {
+              nextConfig: {
+                basePath: nextConfig.basePath,
+                i18n: nextConfig.i18n ?? undefined,
+                trailingSlash: nextConfig.trailingSlash,
+                skipTrailingSlashRedirect: nextConfig.skipTrailingSlashRedirect,
+              },
+            }
+          : undefined,
+      );
+      const handlerResponse = await tracePagesApiHandler(route.pattern, () =>
+        apiModule.default(nextRequest),
+      );
+      if (!(handlerResponse instanceof Response)) {
+        throw new Error("Edge API route did not return a Response");
+      }
+      const response = finalizeEdgeApiResponse(handlerResponse, "node");
+
+      res.statusCode = response.status;
+      res.statusMessage = response.statusText;
+      response.headers.forEach((value, name) => {
+        if (name !== "set-cookie") res.setHeader(name, value);
+      });
+      // Append after any cookies middleware already staged on `res`, as
+      // Next.js's send-response does.
+      for (const cookie of response.headers.getSetCookie()) {
+        res.appendHeader("set-cookie", cookie);
+      }
+      await writeEdgeApiResponseBody(res, response.body, nextRequest.signal);
+      return true;
+    }
+
+    const handler = apiModule.default;
+    if (typeof handler !== "function") {
+      console.error(`[vinext] API route ${route.filePath} does not export a default function`);
+      res.statusCode = 500;
+      res.end("API route does not export a default function");
+      return true;
+    }
+
+    // Parse query from URL + route params. Path params win over same-key search
+    // params so a query string cannot change the dynamic route value.
+    const query = mergeRouteParamsIntoQuery(parseQueryString(url), params);
+
+    // Honour `export const config = { api: { bodyParser: ... } }` on the
+    // route module. When the handler opts out (`bodyParser: false`) we must
+    // not consume the stream — leave `req` intact so user code (e.g. a
+    // Stripe/GitHub webhook) can read the raw bytes for HMAC verification.
+    const bodyParserConfig = resolveBodyParserConfig(
+      (apiModule as { config?: { api?: { bodyParser?: unknown } } }).config as
+        | { api?: { bodyParser?: boolean | { sizeLimit?: string | number } } }
+        | undefined,
+    );
+
+    const body = bodyParserConfig.enabled
+      ? await parseBody(req, bodyParserConfig.sizeLimit)
+      : undefined;
+
+    // Enhance req/res with Next.js helpers
+    const { apiReq, apiRes } = enhanceApiObjects(
+      req,
+      res,
+      query,
+      body,
+      nextConfig?.trustedRevalidateOrigin,
+      nextConfig?.allowedRevalidateHeaderKeys,
+      true,
+    );
+
+    // Call the handler
+    await tracePagesApiHandler(route.pattern, () => handler(apiReq, apiRes));
+    return true;
+  } catch (e) {
+    if (e instanceof PagesBodyParseError) {
+      res.statusCode = e.statusCode;
+      res.statusMessage = e.message;
+      res.end(e.message);
+      return true;
+    }
+
+    // ssrFixStacktrace() is specific to ssrLoadModule and is not applicable
+    // when using ModuleRunner — no stack trace fixup is needed here.
+    logRequestError(e);
+    await reportRequestError(
+      e,
+      {
+        path: url,
+        method: req.method ?? "GET",
+        headers: Object.fromEntries(
+          Object.entries(req.headers)
+            // Exclude HTTP/2 pseudo-headers (RFC 7540 §8.1.2.1) — they are not
+            // real request headers. See: cloudflare/vinext#2013
+            .filter(([k]) => !k.startsWith(":")),
+        ),
+      },
+      {
+        routerKind: "Pages Router",
+        routePath: match.route.pattern,
+        routeType: "route",
+        revalidateReason: undefined,
+      },
+    );
+    if (!res.headersSent) {
+      res.statusCode = 500;
+      res.end("Internal Server Error");
+    } else if (!res.writableEnded) {
+      res.end();
+    }
+    return true;
+  }
+}

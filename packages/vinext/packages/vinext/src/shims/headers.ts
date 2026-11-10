@@ -1,0 +1,1336 @@
+/**
+ * next/headers shim
+ *
+ * Provides cookies() and headers() functions for App Router Server Components.
+ * These read from a request context set by the RSC handler before rendering.
+ *
+ * In Next.js 15+, cookies() and headers() return Promises (async).
+ * We support both the sync (legacy) and async patterns.
+ */
+
+import {
+  FLIGHT_HEADERS,
+  MIDDLEWARE_SET_COOKIE_HEADER,
+  NEXT_HTML_REQUEST_ID_HEADER,
+  NEXT_REQUEST_ID_HEADER,
+} from "../server/headers.js";
+import { buildRequestHeadersFromMiddlewareResponse } from "../utils/middleware-request-headers.js";
+import { serializeSetCookie, validateCookieName } from "./internal/cookie-serialize.js";
+import { parseEdgeRequestCookieHeader } from "../utils/parse-cookie.js";
+import {
+  ensureRenderDynamicLatch,
+  getRequestContext,
+  isInsideUnifiedScope,
+  runWithUnifiedStateMutation,
+} from "./unified-request-context.js";
+import { createPprFallbackShellSuspensePromise } from "./ppr-fallback-shell.js";
+import type { RenderRequestApiKind } from "../server/cache-proof.js";
+import type { ReadonlyRequestCookies } from "@vinext/types/next/upstream/dist/server/web/spec-extension/adapters/request-cookies";
+import type { ResponseCookie } from "@vinext/types/next/upstream/dist/compiled/@edge-runtime/cookies/index";
+import {
+  createRenderDynamicLatch,
+  getHeadersShimState as _getState,
+  headersShimAls as _als,
+  isInsideAnyCacheScope,
+  markDynamicUsage,
+  markRenderRequestApiUsage,
+  throwIfInsideCacheScope,
+  type ConnectionProbeResult,
+  type ConnectionProbeState,
+  type HeadersAccessPhase,
+  type VinextHeadersShimState,
+} from "./internal/headers-state.js";
+
+export {
+  createRenderDynamicLatch,
+  getHeadersAccessPhase,
+  isInsideAnyCacheScope,
+  isRenderDynamicLatched,
+  markDynamicUsage,
+  markRenderRequestApiUsage,
+  onRenderDynamicLatched,
+  throwIfInsideCacheScope,
+  throwIfStaticGenerationAccessError,
+  type HeadersAccessPhase,
+  type RenderDynamicLatch,
+  type VinextHeadersShimState,
+} from "./internal/headers-state.js";
+
+// ---------------------------------------------------------------------------
+// Request context
+// ---------------------------------------------------------------------------
+
+export type HeadersContext = {
+  headers: Headers;
+  cookies: Map<string, string>;
+  accessError?: Error;
+  /**
+   * The route whose `generateStaticParams` runs. There is no HTTP request, so
+   * `connection()` and `draftMode()` reject with `accessError` too, and
+   * revalidation throws, also from a cached function the generator calls.
+   */
+  staticParamsRoute?: string;
+  draftModeEnabled?: boolean;
+  forceStatic?: boolean;
+  mutableCookies?: RequestCookies;
+  readonlyCookies?: RequestCookies;
+  readonlyHeaders?: Headers;
+  draftModeSecret?: string;
+};
+
+type HeadersContextFromRequestOptions = {
+  draftModeSecret?: string;
+};
+
+function splitMiddlewareSetCookieHeader(value: string): string[] {
+  const cookies: string[] = [];
+  let start = 0;
+  let inExpires = false;
+  let expiresCommaSeen = false;
+
+  for (let i = 0; i < value.length; i++) {
+    if (value.slice(i, i + 8).toLowerCase() === "expires=") {
+      inExpires = true;
+      expiresCommaSeen = false;
+      i += 7;
+      continue;
+    }
+
+    const ch = value[i];
+    if (inExpires && ch === ";") {
+      inExpires = false;
+      expiresCommaSeen = false;
+      continue;
+    }
+
+    if (ch !== ",") continue;
+    if (inExpires && !expiresCommaSeen) {
+      expiresCommaSeen = true;
+      continue;
+    }
+
+    const cookie = value.slice(start, i).trim();
+    if (cookie) cookies.push(cookie);
+    start = i + 1;
+    inExpires = false;
+    expiresCommaSeen = false;
+  }
+
+  const cookie = value.slice(start).trim();
+  if (cookie) cookies.push(cookie);
+  return cookies;
+}
+
+function setCookieNameValue(setCookie: string): { name: string; value: string } | null {
+  const equalsIndex = setCookie.indexOf("=");
+  if (equalsIndex <= 0) return null;
+
+  const name = setCookie.slice(0, equalsIndex).trim();
+  const valueEnd = setCookie.indexOf(";", equalsIndex + 1);
+  const encodedValue = setCookie.slice(equalsIndex + 1, valueEnd === -1 ? undefined : valueEnd);
+  let value: string;
+  try {
+    value = decodeURIComponent(encodedValue);
+  } catch {
+    value = encodedValue;
+  }
+
+  return { name, value };
+}
+
+function rebuildCookiesFromHeader(ctx: HeadersContext, cookieHeader: string | null): void {
+  ctx.cookies.clear();
+  if (cookieHeader === null) return;
+
+  const nextCookies = parseEdgeRequestCookieHeader(cookieHeader);
+  for (const [name, value] of nextCookies) {
+    ctx.cookies.set(name, value);
+  }
+}
+
+function mergeMiddlewareSetCookies(ctx: HeadersContext, rawHeader: string | null): boolean {
+  if (rawHeader === null) return false;
+
+  let merged = false;
+  for (const setCookie of splitMiddlewareSetCookieHeader(rawHeader)) {
+    const entry = setCookieNameValue(setCookie);
+    if (!entry) continue;
+    ctx.cookies.set(entry.name, entry.value);
+    merged = true;
+  }
+
+  return merged;
+}
+
+/**
+ * Run a layout probe without letting its dynamic API usage, fetch tags or
+ * cacheLife reach the request. Next.js has no probe: only the render decides
+ * whether a page is dynamic and how long it is cached.
+ */
+export async function runWithDetachedDynamicUsage<T>(fn: () => T | Promise<T>): Promise<T> {
+  if (isInsideUnifiedScope()) {
+    return await runWithUnifiedStateMutation((context) => {
+      context.dynamicUsageDetected = false;
+      context.renderDynamicLatch = createRenderDynamicLatch();
+      context.renderRequestApiUsage = new Set();
+      // cacheForRequest() values would hand the probe's result to the render
+      // without the dynamic API calls that produced it.
+      context.requestCache = new WeakMap();
+      // The render records its own fetches, tags and cacheLife.
+      context.currentRequestTags = [];
+      context.dynamicFetchUrls = new Set();
+      context.requestScopedCacheLife = null;
+    }, fn);
+  }
+
+  const childState: VinextHeadersShimState = {
+    ..._getState(),
+    dynamicUsageDetected: false,
+    renderDynamicLatch: createRenderDynamicLatch(),
+    renderRequestApiUsage: new Set(),
+  };
+  return await _als.run(childState, fn);
+}
+
+/**
+ * Run a `dynamicParams` check's `generateStaticParams` apart from the request,
+ * as Next.js runs it in a work store of its own. Unlike a layout probe, it
+ * also memoizes its own fetches, so the render that follows fetches anew, and
+ * reads cached data even during an on-demand revalidation.
+ */
+export async function runStaticParamsCheckDetached<T>(fn: () => Promise<T>): Promise<T> {
+  return await runWithDetachedDynamicUsage(() => {
+    if (!isInsideUnifiedScope()) return fn();
+    return runWithUnifiedStateMutation((context) => {
+      context.currentFetchDedupeEntries = new Map();
+      context.nextFetchId = 1;
+      context.isOnDemandRevalidate = false;
+    }, fn);
+  });
+}
+
+export async function runWithConnectionProbe<T>(
+  fn: () => T | Promise<T>,
+): Promise<ConnectionProbeResult<T>> {
+  const parentState = _getState();
+  const parentInvalidDynamicUsageError = parentState.invalidDynamicUsageError;
+  let interruptProbe: () => void = () => {};
+  const interrupted = new Promise<ConnectionProbeResult<T>>((resolve) => {
+    interruptProbe = () => resolve({ completed: false });
+  });
+
+  const probe: ConnectionProbeState = {
+    active: true,
+    dynamicUsageTarget: parentState,
+    interrupted: false,
+    interrupt() {
+      if (probe.interrupted) return;
+      probe.interrupted = true;
+      interruptProbe();
+    },
+  };
+
+  const runInChildState = async (childState: VinextHeadersShimState) => {
+    try {
+      const completed = Promise.resolve()
+        .then(fn)
+        .then<ConnectionProbeResult<T>>((result) => ({ completed: true, result }));
+      return await Promise.race([completed, interrupted]);
+    } finally {
+      probe.active = false;
+      // Async resources created inside this ALS scope retain `childState`, and
+      // through it this probe, after the probe returns. A completed probe would
+      // otherwise leave `interrupted` pending forever, holding Promise.race's
+      // reaction, which captured the caller's async context. workerd holds
+      // async context values through strong handles, so that cycle is never
+      // collected and retained every request's context. The race is already
+      // decided here, so settling `interrupted` only drops the reaction.
+      interruptProbe();
+      // Restore the inherited probe when nested; otherwise retain this inactive
+      // probe so late dynamic usage can still propagate to its parent without
+      // suspending. Reading the parent at cleanup time preserves the right
+      // lifecycle if an outer probe completed separately.
+      childState.connectionProbe = parentState.connectionProbe ?? probe;
+
+      // Dynamic usage discovered by a speculative probe still classifies the
+      // request, but the probe itself must remain branch-local. In particular,
+      // metadata resolution can already be running in a sibling async branch;
+      // sharing `connectionProbe` would make its connection() call suspend on
+      // a probe it does not belong to.
+      if (childState.dynamicUsageDetected) {
+        parentState.dynamicUsageDetected = true;
+      }
+      if (
+        childState.invalidDynamicUsageError !== parentInvalidDynamicUsageError &&
+        parentState.invalidDynamicUsageError === parentInvalidDynamicUsageError
+      ) {
+        parentState.invalidDynamicUsageError = childState.invalidDynamicUsageError;
+      }
+    }
+  };
+
+  if (isInsideUnifiedScope()) {
+    let childState: VinextHeadersShimState | null = null;
+    return await runWithUnifiedStateMutation(
+      (context) => {
+        context.connectionProbe = probe;
+        childState = context;
+      },
+      () => {
+        if (!childState) {
+          throw new Error("Connection probe scope was not initialized");
+        }
+        return runInChildState(childState);
+      },
+    );
+  }
+
+  const childState: VinextHeadersShimState = {
+    ...parentState,
+    // Share the parent's latch, creating it first on a stale fallback state.
+    renderDynamicLatch: ensureRenderDynamicLatch(parentState),
+    connectionProbe: probe,
+  };
+  return await _als.run(childState, () => runInChildState(childState));
+}
+
+export function suspendConnectionProbe(): Promise<never> | null {
+  const probe = _getState().connectionProbe;
+  if (!probe?.active) return null;
+
+  probe.interrupt();
+  // `connection()` suspends forever inside speculative probes, matching
+  // Next.js's prerender/probe contract: code after `await connection()` must
+  // not run while classifying a route. Each call gets its own promise that
+  // the probe does not keep, so the suspended code (and the async context its
+  // continuation captured) is collected with the request.
+  return new Promise<never>(() => {});
+}
+
+export function peekRenderRequestApiUsage(): RenderRequestApiKind[] {
+  return [..._getState().renderRequestApiUsage].sort();
+}
+
+export function consumeRenderRequestApiUsage(): RenderRequestApiKind[] {
+  const state = _getState();
+  const observed = [...state.renderRequestApiUsage].sort();
+  state.renderRequestApiUsage = new Set<RenderRequestApiKind>();
+  return observed;
+}
+
+/**
+ * Check, consume, and return any invalid dynamic usage error recorded during
+ * the render (e.g. cookies() called inside "use cache"). This error persists
+ * even if the throw was caught by user-code try/catch, so it can surface on
+ * client-side navigations where the static shell validation is skipped.
+ * Ported from Next.js: workStore.invalidDynamicUsageError in
+ * packages/next/src/server/app-render/app-render.tsx
+ * https://github.com/vercel/next.js/commit/f5e54c06726b571a042fce67417e40a29f6b8689
+ */
+export function consumeInvalidDynamicUsageError(): unknown {
+  const state = _getState();
+  const err = state.invalidDynamicUsageError;
+  state.invalidDynamicUsageError = null;
+  return err;
+}
+
+/**
+ * Check and reset the dynamic usage flag.
+ * Called by the server after rendering to decide on caching.
+ */
+export function consumeDynamicUsage(): boolean {
+  const state = _getState();
+  const used = state.dynamicUsageDetected;
+  state.dynamicUsageDetected = false;
+  return used;
+}
+
+/**
+ * Read the dynamic usage flag without resetting it.
+ * Used by the layout probe to fold a probe-scoped `markDynamicUsage()` into the
+ * per-layout observation before the isolated probe scope is discarded, so the
+ * observation captures `markDynamicUsage()` paths (e.g. `"use cache: private"`)
+ * that leave no other observable trace.
+ */
+export function peekDynamicUsage(): boolean {
+  return _getState().dynamicUsageDetected;
+}
+
+function _setStatePhase(
+  state: VinextHeadersShimState,
+  phase: HeadersAccessPhase,
+): HeadersAccessPhase {
+  const previous = state.phase;
+  if (previous === "action" && phase === "render") {
+    state.headersContext?.mutableCookies?.[SYNCHRONIZE_REQUEST_COOKIES]();
+  }
+  state.phase = phase;
+  return previous;
+}
+
+function _areCookiesMutableInCurrentPhase(): boolean {
+  const phase = _getState().phase;
+  return phase === "action" || phase === "route-handler";
+}
+
+export function setHeadersAccessPhase(phase: HeadersAccessPhase): HeadersAccessPhase {
+  return _setStatePhase(_getState(), phase);
+}
+
+/**
+ * Set the headers/cookies context for the current RSC render.
+ * Called by the framework's RSC entry before rendering each request.
+ *
+ * @deprecated Prefer runWithHeadersContext() which uses als.run() for
+ * proper per-request isolation. This function mutates the ALS store
+ * in-place and is only safe for cleanup (ctx=null) within an existing
+ * als.run() scope.
+ */
+/**
+ * Returns the current live HeadersContext from ALS (or the fallback).
+ * Used after applyMiddlewareRequestHeaders() to build a post-middleware
+ * request context for afterFiles/fallback rewrite has/missing evaluation.
+ */
+export function getHeadersContext(): HeadersContext | null {
+  return _getState().headersContext;
+}
+
+/** Serialize the effective request-cookie view, including middleware Set-Cookie overlays. */
+export function getEffectiveRequestCookieHeader(): string | null {
+  const context = getHeadersContext();
+  if (!context || context.cookies.size === 0) return null;
+  return [...context.cookies]
+    .map(([name, value]) => `${name}=${encodeURIComponent(value)}`)
+    .join("; ");
+}
+
+export function hasEffectiveRequestCookieChanges(cookieHeader: string | null): boolean {
+  const effective = getHeadersContext()?.cookies;
+  if (!effective) return false;
+  const original = parseEdgeRequestCookieHeader(cookieHeader ?? "");
+  if (effective.size !== original.size) return true;
+  for (const [name, value] of effective) {
+    if (original.get(name) !== value) return true;
+  }
+  return false;
+}
+
+/**
+ * Replace only the request-cookie view for the active request scope.
+ *
+ * Middleware Set-Cookie mutations are visible through `cookies()` during the
+ * same request in Next.js, but they do not rewrite the raw `Cookie` value
+ * returned by `headers()`. The staged App renderer uses this seam to restore
+ * that split view without changing the request Headers object.
+ */
+export function applyEffectiveRequestCookieHeader(cookieHeader: string): void {
+  const state = _getState();
+  const context = state.headersContext;
+  if (!context) return;
+  rebuildCookiesFromHeader(context, cookieHeader);
+  context.readonlyCookies = undefined;
+  context.mutableCookies = undefined;
+}
+
+/** Restore a middleware draft-mode transition inside a staged render scope. */
+export function restoreDraftModeTransition(cookieHeader: string): void {
+  const state = _getState();
+  const context = state.headersContext;
+  if (!context) return;
+  const entry = setCookieNameValue(cookieHeader);
+  if (!entry || entry.name !== DRAFT_MODE_COOKIE) return;
+  context.cookies.set(entry.name, entry.value);
+  context.readonlyCookies = undefined;
+  context.mutableCookies = undefined;
+  context.draftModeEnabled = entry.value === validateDraftModeSecret(context.draftModeSecret ?? "");
+  state.draftModeCookieHeader = cookieHeader;
+}
+
+/** Replace request API inputs while retaining dynamic usage and pending mutations. */
+export function replaceHeadersContext(ctx: HeadersContext): void {
+  _getState().headersContext = ctx;
+}
+
+export function setHeadersContext(ctx: HeadersContext | null): void {
+  const state = _getState();
+  if (ctx !== null) {
+    state.headersContext = ctx;
+    state.dynamicUsageDetected = false;
+    state.renderDynamicLatch = createRenderDynamicLatch();
+    state.renderRequestApiUsage = new Set();
+    state.pendingSetCookies = [];
+    state.draftModeCookieHeader = null;
+    state.phase = "render";
+  } else {
+    // Clearing the context does not end the request: its render can still
+    // be running and its after() callbacks are yet to run, and both must
+    // keep the request's draft-mode cache bypass.
+    if (state.headersContext && isInsideUnifiedScope()) {
+      getRequestContext().draftModeAtHeadersClear = getActiveDraftModeState() === true;
+    }
+    state.headersContext = null;
+    state.phase = "render";
+  }
+}
+
+/**
+ * Run a function with headers context, ensuring the context propagates
+ * through all async operations (including RSC streaming).
+ *
+ * Uses AsyncLocalStorage.run() to guarantee per-request isolation.
+ * The ALS store propagates through all async continuations including
+ * ReadableStream consumption, setTimeout callbacks, and Promise chains,
+ * so RSC streaming works correctly — components that render when the
+ * stream is consumed still see the correct request's context.
+ */
+export function runWithHeadersContext<T>(ctx: HeadersContext, fn: () => Promise<T>): Promise<T>;
+export function runWithHeadersContext<T>(
+  ctx: HeadersContext,
+  fn: () => T | Promise<T>,
+): T | Promise<T>;
+export function runWithHeadersContext<T>(
+  ctx: HeadersContext,
+  fn: () => T | Promise<T>,
+): T | Promise<T> {
+  if (isInsideUnifiedScope()) {
+    return runWithUnifiedStateMutation((uCtx) => {
+      uCtx.headersContext = ctx;
+      uCtx.dynamicUsageDetected = false;
+      uCtx.renderDynamicLatch = createRenderDynamicLatch();
+      uCtx.renderRequestApiUsage = new Set();
+      uCtx.connectionProbe = null;
+      uCtx.pendingSetCookies = [];
+      uCtx.draftModeCookieHeader = null;
+      uCtx.phase = "render";
+    }, fn);
+  }
+
+  const state: VinextHeadersShimState = {
+    headersContext: ctx,
+    dynamicUsageDetected: false,
+    renderDynamicLatch: createRenderDynamicLatch(),
+    renderRequestApiUsage: new Set(),
+    connectionProbe: null,
+    invalidDynamicUsageError: null,
+    pendingSetCookies: [],
+    draftModeCookieHeader: null,
+    phase: "render",
+  };
+
+  return _als.run(state, fn);
+}
+
+/**
+ * Apply middleware-forwarded request headers to the current headers context.
+ *
+ * When Next.js middleware calls `NextResponse.next()` or `NextResponse.rewrite()`
+ * with `{ request: { headers } }`, the modified headers are encoded on the
+ * middleware response. This function decodes that protocol and applies the
+ * resulting request header set to the live `HeadersContext`. When an override
+ * list is present, omitted headers are deleted as part of the rebuild.
+ *
+ * Cached `readonlyHeaders` and `readonlyCookies` snapshots on the
+ * HeadersContext must be invalidated whenever this function rebuilds the
+ * underlying `headers`/`cookies`. Otherwise a middleware that reads
+ * `headers()` (or `cookies()`) before returning a request-header override —
+ * for example `@clerk/nextjs`, whose `clerkClient()` reads `headers()` via
+ * `buildRequestLike()` during middleware execution — primes a sealed snapshot
+ * built from the *pre*-override request, and any subsequent `headers()` call
+ * from a Server Component would return that stale snapshot instead of the
+ * middleware-modified view.
+ */
+export function applyMiddlewareRequestHeaders(middlewareResponseHeaders: Headers): void {
+  const state = _getState();
+  if (!state.headersContext) return;
+
+  const ctx = state.headersContext;
+  const previousCookieHeader = ctx.headers.get("cookie");
+  const middlewareSetCookieHeader = middlewareResponseHeaders.get(MIDDLEWARE_SET_COOKIE_HEADER);
+  const nextHeaders = buildRequestHeadersFromMiddlewareResponse(
+    ctx.headers,
+    middlewareResponseHeaders,
+  );
+
+  if (!nextHeaders && middlewareSetCookieHeader === null) return;
+
+  if (nextHeaders) {
+    ctx.headers = nextHeaders;
+    // Invalidate any sealed snapshot of the pre-override headers. A middleware
+    // that read `headers()` before returning the override (e.g. clerkMiddleware)
+    // would otherwise leak the pre-override view into the Server Component.
+    ctx.readonlyHeaders = undefined;
+    const nextCookieHeader = nextHeaders.get("cookie");
+    if (previousCookieHeader !== nextCookieHeader) {
+      rebuildCookiesFromHeader(ctx, nextCookieHeader);
+      ctx.readonlyCookies = undefined;
+      ctx.mutableCookies = undefined;
+    }
+  }
+
+  if (mergeMiddlewareSetCookies(ctx, middlewareSetCookieHeader)) {
+    ctx.readonlyCookies = undefined;
+    ctx.mutableCookies = undefined;
+  }
+}
+
+/** Methods on `Headers` that mutate state. Hoisted to module scope — static. */
+const _HEADERS_MUTATING_METHODS = new Set(["set", "delete", "append"]);
+
+class ReadonlyHeadersError extends Error {
+  constructor() {
+    super(
+      "Headers cannot be modified. Read more: https://nextjs.org/docs/app/api-reference/functions/headers",
+    );
+  }
+
+  static callable(this: void): never {
+    throw new ReadonlyHeadersError();
+  }
+}
+
+// Keep this error message in sync with server.ts. The two RequestCookies
+// adapters are separate until the next/headers and NextRequest cookie paths
+// share one implementation.
+class ReadonlyRequestCookiesError extends Error {
+  constructor() {
+    super(
+      "Cookies can only be modified in a Server Action or Route Handler. Read more: https://nextjs.org/docs/app/api-reference/functions/cookies#options",
+    );
+  }
+
+  static callable(this: void): never {
+    throw new ReadonlyRequestCookiesError();
+  }
+}
+
+function _decorateRequestApiPromise<T extends object>(
+  promise: Promise<T>,
+  target: T,
+): Promise<T> & T {
+  return new Proxy(promise as Promise<T> & T, {
+    get(promiseTarget, prop) {
+      if (prop in promiseTarget) {
+        const value = Reflect.get(promiseTarget, prop, promiseTarget);
+        return typeof value === "function" ? value.bind(promiseTarget) : value;
+      }
+
+      const value = Reflect.get(target, prop, target);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+    has(promiseTarget, prop) {
+      return prop in promiseTarget || prop in target;
+    },
+    ownKeys(promiseTarget) {
+      return Array.from(new Set([...Reflect.ownKeys(promiseTarget), ...Reflect.ownKeys(target)]));
+    },
+    getOwnPropertyDescriptor(promiseTarget, prop) {
+      return (
+        Reflect.getOwnPropertyDescriptor(promiseTarget, prop) ??
+        Reflect.getOwnPropertyDescriptor(target, prop)
+      );
+    },
+  });
+}
+
+// React.use() tracks thenables by identity, so request APIs must reuse the
+// same decorated promise for the same underlying request view.
+const _decoratedHeadersPromises = new WeakMap<Headers, Promise<Headers> & Headers>();
+const _decoratedCookiesPromises = new WeakMap<
+  RequestCookies,
+  Promise<RequestCookies> & RequestCookies
+>();
+
+function _getOrCreateDecoratedRequestApiPromise<T extends object>(
+  cache: WeakMap<T, Promise<T> & T>,
+  target: T,
+): Promise<T> & T {
+  const cached = cache.get(target);
+  if (cached) return cached;
+
+  const promise = _decorateRequestApiPromise(Promise.resolve(target), target);
+  cache.set(target, promise);
+  return promise;
+}
+
+function _decorateRejectedRequestApiPromise<T extends object>(error: unknown): Promise<T> & T {
+  const normalizedError = error instanceof Error ? error : new Error(String(error));
+  const promise = Promise.reject(normalizedError) as Promise<T>;
+  // Mark the rejection as handled so legacy sync access does not trigger
+  // spurious unhandled rejection noise before callers await/catch it.
+  promise.catch(() => {});
+
+  const throwingTarget = new Proxy({} as T, {
+    get(_target, prop) {
+      if (prop === "then" || prop === "catch" || prop === "finally") {
+        return undefined;
+      }
+      throw normalizedError;
+    },
+  });
+
+  return _decorateRequestApiPromise(promise, throwingTarget);
+}
+
+function _decorateSuspendingRequestApiPromise<T extends object>(
+  promise: Promise<T>,
+): Promise<T> & T {
+  return new Proxy(promise as Promise<T> & T, {
+    get(promiseTarget, prop) {
+      if (prop === "then" || prop === "catch" || prop === "finally") {
+        const value = Reflect.get(promiseTarget, prop, promiseTarget);
+        return typeof value === "function" ? value.bind(promiseTarget) : value;
+      }
+
+      throw promise;
+    },
+    getOwnPropertyDescriptor() {
+      throw promise;
+    },
+    has() {
+      throw promise;
+    },
+    ownKeys() {
+      throw promise;
+    },
+  });
+}
+
+function _sealHeaders(headers: Headers): Headers {
+  return new Proxy(headers, {
+    get(target, prop) {
+      if (typeof prop === "string" && _HEADERS_MUTATING_METHODS.has(prop)) {
+        throw new ReadonlyHeadersError();
+      }
+
+      const value = Reflect.get(target, prop, target);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  }) as Headers;
+}
+
+function _wrapMutableCookies(cookies: RequestCookies): RequestCookies {
+  return new Proxy(cookies, {
+    get(target, prop) {
+      if (prop === "set" || prop === "delete") {
+        return (...args: unknown[]) => {
+          if (!_areCookiesMutableInCurrentPhase()) {
+            throw new ReadonlyRequestCookiesError();
+          }
+
+          return (Reflect.get(target, prop, target) as (...callArgs: unknown[]) => unknown).apply(
+            target,
+            args,
+          );
+        };
+      }
+
+      const value = Reflect.get(target, prop, target);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  }) as RequestCookies;
+}
+
+function _sealCookies(cookies: RequestCookies): RequestCookies {
+  // Like Next.js's RequestCookiesAdapter.seal, the mutating methods throw when
+  // called, not when read.
+  return new Proxy(cookies, {
+    get(target, prop) {
+      if (prop === "set" || prop === "delete" || prop === "clear") {
+        return ReadonlyRequestCookiesError.callable;
+      }
+
+      const value = Reflect.get(target, prop, target);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  }) as RequestCookies;
+}
+
+function _getMutableCookies(ctx: HeadersContext): RequestCookies {
+  if (!ctx.mutableCookies) {
+    ctx.mutableCookies = _wrapMutableCookies(new RequestCookies(ctx.cookies, true));
+  }
+
+  return ctx.mutableCookies;
+}
+
+function _getReadonlyCookies(ctx: HeadersContext): RequestCookies {
+  if (!ctx.readonlyCookies) {
+    // Keep a separate readonly wrapper so render-path reads avoid the
+    // mutable phase-checking proxy while still reflecting the shared cookie map.
+    ctx.readonlyCookies = _sealCookies(new RequestCookies(ctx.cookies));
+  }
+
+  return ctx.readonlyCookies;
+}
+
+function _getReadonlyHeaders(ctx: HeadersContext): Headers {
+  if (!ctx.readonlyHeaders) {
+    const cleaned = new Headers(ctx.headers);
+    for (const header of FLIGHT_HEADERS) {
+      cleaned.delete(header);
+    }
+    cleaned.delete(NEXT_REQUEST_ID_HEADER);
+    cleaned.delete(NEXT_HTML_REQUEST_ID_HEADER);
+    ctx.readonlyHeaders = _sealHeaders(cleaned);
+  }
+
+  return ctx.readonlyHeaders;
+}
+
+/**
+ * Create a HeadersContext from a standard Request object.
+ *
+ * Performance note: In Workerd (Cloudflare Workers), `new Headers(request.headers)`
+ * copies the entire header map across the V8/C++ boundary, which shows up as
+ * ~815 ms self-time in production profiles when requests carry many headers.
+ * We defer this copy with a lazy proxy:
+ *
+ * - Reads (`get`, `has`, `entries`, …) are forwarded directly to the original
+ *   immutable `request.headers` — zero copy cost on the hot path.
+ * - The first mutating call (`set`, `delete`, `append`) materialises
+ *   `new Headers(request.headers)` once, then applies the mutation to the copy.
+ *   All subsequent operations go to the copy.
+ *
+ * This means the ~815 ms copy only occurs when middleware actually rewrites
+ * request headers via `NextResponse.next({ request: { headers } })`, which is
+ * uncommon.  Pure read requests (the vast majority) pay zero copy cost.
+ *
+ * Cookie parsing is also deferred: the `cookie` header string is not split
+ * until the first call to `cookies()` or `draftMode()`.
+ */
+export function headersContextFromRequest(
+  request: Request,
+  options?: HeadersContextFromRequestOptions,
+): HeadersContext {
+  // ---------------------------------------------------------------------------
+  // Lazy mutable Headers proxy
+  // ---------------------------------------------------------------------------
+  // `_mutable` holds the materialised copy once a write is needed.
+  let _mutable: Headers | null = null;
+
+  const headersProxy = new Proxy(request.headers, {
+    get(target, prop: string | symbol) {
+      // Route to the materialised copy if it exists.
+      const src = _mutable ?? target;
+
+      // Intercept mutating methods: materialise on first write.
+      if (typeof prop === "string" && _HEADERS_MUTATING_METHODS.has(prop)) {
+        return (...args: unknown[]) => {
+          if (!_mutable) {
+            _mutable = new Headers(target);
+          }
+          return (_mutable[prop as "set" | "delete" | "append"] as (...a: unknown[]) => unknown)(
+            ...args,
+          );
+        };
+      }
+
+      // Non-mutating method or property: bind to current source.
+      const value = Reflect.get(src, prop, src);
+      return typeof value === "function" ? value.bind(src) : value;
+    },
+  }) as Headers;
+
+  // ---------------------------------------------------------------------------
+  // Lazy cookie map
+  // ---------------------------------------------------------------------------
+  // Parsing cookies requires splitting on `;` and `=`, which is cheap but
+  // still unnecessary overhead if `cookies()` is never called for this request.
+  let _cookies: Map<string, string> | null = null;
+
+  function getCookies(): Map<string, string> {
+    if (_cookies) return _cookies;
+    // Read from the proxy so middleware-modified cookie headers are respected.
+    const cookieHeader = headersProxy.get("cookie") || "";
+    _cookies = parseEdgeRequestCookieHeader(cookieHeader);
+    return _cookies;
+  }
+
+  // Expose cookies as a lazy getter that memoises on first access.
+  const ctx = {
+    headers: headersProxy,
+    get cookies(): Map<string, string> {
+      return getCookies();
+    },
+    draftModeSecret: options?.draftModeSecret,
+  } satisfies HeadersContext;
+
+  return ctx;
+}
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
+/**
+ * Read-only Headers instance from the incoming request.
+ * Returns a Promise in Next.js 15+ style (but resolves synchronously since
+ * the context is already available).
+ */
+export function headers(): Promise<Headers> & Headers {
+  markRenderRequestApiUsage("headers");
+  try {
+    throwIfInsideCacheScope("headers()");
+  } catch (error) {
+    return _decorateRejectedRequestApiPromise<Headers>(error);
+  }
+
+  const state = _getState();
+  if (!state.headersContext) {
+    return _decorateRejectedRequestApiPromise<Headers>(
+      new Error(
+        "headers() can only be called from a Server Component, Route Handler, " +
+          "or Server Action. Make sure you're not calling it from a Client Component.",
+      ),
+    );
+  }
+
+  if (state.headersContext.accessError) {
+    return _decorateRejectedRequestApiPromise<Headers>(state.headersContext.accessError);
+  }
+
+  markDynamicUsage();
+  const fallbackShellPromise = createPprFallbackShellSuspensePromise<Headers>("`headers()`");
+  if (fallbackShellPromise) {
+    return _decorateSuspendingRequestApiPromise(fallbackShellPromise);
+  }
+
+  const readonlyHeaders = _getReadonlyHeaders(state.headersContext);
+  return _getOrCreateDecoratedRequestApiPromise(_decoratedHeadersPromises, readonlyHeaders);
+}
+
+/**
+ * Cookie jar from the incoming request.
+ * Returns a ReadonlyRequestCookies-like object.
+ */
+function cookiesImpl(): Promise<RequestCookies> & RequestCookies {
+  markRenderRequestApiUsage("cookies");
+  try {
+    throwIfInsideCacheScope("cookies()");
+  } catch (error) {
+    return _decorateRejectedRequestApiPromise<RequestCookies>(error);
+  }
+
+  const state = _getState();
+  if (!state.headersContext) {
+    return _decorateRejectedRequestApiPromise<RequestCookies>(
+      new Error(
+        "cookies() can only be called from a Server Component, Route Handler, or Server Action.",
+      ),
+    );
+  }
+
+  if (state.headersContext.accessError) {
+    return _decorateRejectedRequestApiPromise<RequestCookies>(state.headersContext.accessError);
+  }
+
+  markDynamicUsage();
+  const fallbackShellPromise = createPprFallbackShellSuspensePromise<RequestCookies>("`cookies()`");
+  if (fallbackShellPromise) {
+    return _decorateSuspendingRequestApiPromise(fallbackShellPromise);
+  }
+
+  const cookieStore = _areCookiesMutableInCurrentPhase()
+    ? _getMutableCookies(state.headersContext)
+    : _getReadonlyCookies(state.headersContext);
+
+  return _getOrCreateDecoratedRequestApiPromise(_decoratedCookiesPromises, cookieStore);
+}
+
+type VinextReadonlyRequestCookies = Omit<ReadonlyRequestCookies, keyof RequestCookies> &
+  RequestCookies;
+
+export function cookies(): Promise<VinextReadonlyRequestCookies> & VinextReadonlyRequestCookies {
+  return cookiesImpl();
+}
+
+// ---------------------------------------------------------------------------
+// Writable cookie accumulator for Route Handlers / Server Actions
+// ---------------------------------------------------------------------------
+
+/** Accumulated Set-Cookie headers from cookies().set() / .delete() calls */
+// (stored on _state)
+
+/**
+ * Get and clear all pending Set-Cookie headers generated by cookies().set()/delete().
+ * Called by the framework after rendering to attach headers to the response.
+ */
+export function getAndClearPendingCookies(): string[] {
+  const state = _getState();
+  const cookies = state.pendingSetCookies;
+  state.pendingSetCookies = [];
+  return cookies;
+}
+
+// Draft mode cookie name (matches Next.js convention)
+const DRAFT_MODE_COOKIE = "__prerender_bypass";
+
+// Store for Set-Cookie headers generated by draftMode().enable()/disable()
+// (stored on _state)
+
+/**
+ * Get any Set-Cookie header generated by draftMode().enable()/disable().
+ * Called by the framework after rendering to attach the header to the response.
+ */
+/** Check a pending draft transition without consuming its outgoing cookie. */
+export function hasDraftModeCookieHeader(): boolean {
+  return _getState().draftModeCookieHeader !== null;
+}
+
+export function getDraftModeCookieHeader(): string | null {
+  const state = _getState();
+  const header = state.draftModeCookieHeader;
+  state.draftModeCookieHeader = null;
+  return header;
+}
+
+/** Put back a draft-mode `Set-Cookie` header a dispatch took for a response it won't send. */
+export function restoreDraftModeCookieHeader(header: string): void {
+  _getState().draftModeCookieHeader = header;
+}
+
+function validateDraftModeSecret(secret: string): string {
+  if (secret.length === 0) {
+    throw new Error("[vinext] draft mode secret must be a non-empty string.");
+  }
+  return secret;
+}
+
+function createDraftModeSecret(): string {
+  const crypto = globalThis.crypto;
+  if (crypto && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  throw new Error(
+    "[vinext] draft mode secret is not initialized. " +
+      "This should be initialized by the server entry before handling requests.",
+  );
+}
+
+function ensureContextDraftModeSecret(ctx: HeadersContext): string {
+  if (ctx.draftModeSecret !== undefined) {
+    return validateDraftModeSecret(ctx.draftModeSecret);
+  }
+
+  const secret = createDraftModeSecret();
+  ctx.draftModeSecret = secret;
+  return secret;
+}
+
+export function isDraftModeRequest(request: Request, draftModeSecret: string): boolean {
+  const cookieHeader = request.headers.get("cookie");
+  if (!cookieHeader) return false;
+  return (
+    parseEdgeRequestCookieHeader(cookieHeader).get(DRAFT_MODE_COOKIE) ===
+    validateDraftModeSecret(draftModeSecret)
+  );
+}
+
+/**
+ * Read draft mode from the live request context without recording request API
+ * usage. `null` means there is no active request context, which lets framework
+ * callers fall back to an explicitly supplied request when needed.
+ */
+export function getActiveDraftModeState(): boolean | null {
+  const context = _getState().headersContext;
+  if (!context) return null;
+  if (context.draftModeEnabled !== undefined) return context.draftModeEnabled;
+  const secret = context.draftModeSecret;
+  if (secret === undefined) return false;
+  return context.cookies.get(DRAFT_MODE_COOKIE) === validateDraftModeSecret(secret);
+}
+
+/**
+ * Read the active request's draft-mode state without recording request API usage.
+ * Internal cache implementations use this to bypass persistent reads and writes,
+ * matching Next.js's request-level `workStore.isDraftMode` guard. Once the
+ * headers context is cleared, the request keeps the state it had then.
+ */
+export function isDraftModeEnabled(): boolean {
+  return (
+    getActiveDraftModeState() ??
+    (isInsideUnifiedScope() && getRequestContext().draftModeAtHeadersClear === true)
+  );
+}
+
+type DraftModeResult = {
+  readonly isEnabled: boolean;
+  enable(): void;
+  disable(): void;
+};
+
+function createDraftModeScopeError(expression: string): Error {
+  return new Error(
+    `${expression} can only be called from a Server Component, Route Handler, or Server Action.`,
+  );
+}
+
+function requireActiveDraftModeContext(
+  state: VinextHeadersShimState,
+  expectedContext: HeadersContext,
+  expression: string,
+): HeadersContext {
+  const currentContext = state.headersContext;
+  if (currentContext !== expectedContext) {
+    throw createDraftModeScopeError(expression);
+  }
+  if (currentContext.accessError) {
+    throw currentContext.accessError;
+  }
+  return currentContext;
+}
+
+/**
+ * Draft mode — check/toggle via a `__prerender_bypass` cookie.
+ *
+ * - `isEnabled`: true if the bypass cookie is present in the request
+ * - `enable()`: sets the bypass cookie (for Route Handlers)
+ * - `disable()`: clears the bypass cookie
+ *
+ * Unlike `headers()` / `cookies()`, calling `draftMode()` itself is allowed
+ * inside `"use cache"` and `unstable_cache()` scopes — reads of `isEnabled`
+ * are non-dynamic and supported in cached functions. Only the mutating
+ * `enable()` / `disable()` methods throw when invoked inside a cache scope.
+ * Ported from Next.js: packages/next/src/server/request/draft-mode.ts
+ * (`getDraftModeProviderForCacheScope` + `trackDynamicDraftMode`).
+ */
+export async function draftMode(): Promise<DraftModeResult> {
+  markRenderRequestApiUsage("draftMode");
+
+  const state = _getState();
+  const context = state.headersContext;
+  if (!context) {
+    throw createDraftModeScopeError("draftMode()");
+  }
+  // A cache scope reads disabled draft mode, even in generateStaticParams.
+  if (context.staticParamsRoute !== undefined && context.accessError && !isInsideAnyCacheScope()) {
+    throw context.accessError;
+  }
+  // Reading `draftMode()` itself is not dynamic — `isEnabled` is a plain
+  // getter and merely calling `draftMode()` does not require bailing out
+  // of static prerendering. Only `enable()`/`disable()` mutate state and
+  // must be tracked as dynamic, mirroring Next.js's `trackDynamicDraftMode`
+  // (see .nextjs-ref/packages/next/src/server/request/draft-mode.ts:152-165).
+  const secret = ensureContextDraftModeSecret(context);
+
+  return {
+    get isEnabled(): boolean {
+      return context.draftModeEnabled ?? context.cookies.get(DRAFT_MODE_COOKIE) === secret;
+    },
+    enable(): void {
+      // Mutating draft mode inside a cache scope would freeze a Set-Cookie
+      // side-effect into the cached entry, so Next.js throws here. Match that.
+      throwIfInsideCacheScope("draftMode().enable()");
+      const activeContext = requireActiveDraftModeContext(state, context, "draftMode().enable()");
+      markDynamicUsage();
+      const cookie = createDraftModeCookie(secret);
+      const serialized = serializeMutableCookie(cookie);
+      _getMutableCookies(activeContext)[APPLY_RESPONSE_COOKIE](cookie);
+      activeContext.draftModeEnabled = true;
+      state.draftModeCookieHeader = serialized;
+    },
+    disable(): void {
+      throwIfInsideCacheScope("draftMode().disable()");
+      const activeContext = requireActiveDraftModeContext(state, context, "draftMode().disable()");
+      markDynamicUsage();
+      const cookie = createDraftModeCookie("", new Date(0));
+      const serialized = serializeMutableCookie(cookie);
+      _getMutableCookies(activeContext)[APPLY_RESPONSE_COOKIE](cookie);
+      activeContext.draftModeEnabled = false;
+      state.draftModeCookieHeader = serialized;
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// RequestCookies implementation
+// ---------------------------------------------------------------------------
+
+// Registered symbols: the request context (and its RequestCookies) is shared
+// through globalThis, so another headers module instance — e.g. Vite's
+// prebundled `next/headers` in dev — must be able to call these methods.
+const APPLY_RESPONSE_COOKIE = Symbol.for("vinext.apply-response-cookie");
+const SYNCHRONIZE_REQUEST_COOKIES = Symbol.for("vinext.synchronize-request-cookies");
+
+class RequestCookies {
+  private _cookies: Map<string, string>;
+  private _responseCookies: Map<string, ResponseCookie> | null;
+
+  constructor(cookies: Map<string, string>, mutable = false) {
+    this._cookies = cookies;
+    this._responseCookies = mutable
+      ? new Map(
+          Array.from(cookies, ([name, value]) => [name, normalizeMutableCookie({ name, value })]),
+        )
+      : null;
+  }
+
+  get(nameOrOptions: string | { name: string }): ResponseCookie | undefined {
+    const name = typeof nameOrOptions === "string" ? nameOrOptions : nameOrOptions.name;
+    if (this._responseCookies) return this._responseCookies.get(name);
+    const value = this._cookies.get(name);
+    if (value === undefined) return undefined;
+    return { name, value };
+  }
+
+  getAll(nameOrOptions?: string | { name: string }): ResponseCookie[] {
+    const name = typeof nameOrOptions === "string" ? nameOrOptions : nameOrOptions?.name;
+    if (this._responseCookies) {
+      const responseCookies = [...this._responseCookies.values()];
+      return name === undefined
+        ? responseCookies
+        : responseCookies.filter((cookie) => cookie.name === name);
+    }
+
+    const result: ResponseCookie[] = [];
+    for (const [cookieName, value] of this._cookies) {
+      if (name === undefined || cookieName === name) {
+        result.push({ name: cookieName, value });
+      }
+    }
+    return result;
+  }
+
+  has(name: string): boolean {
+    return this._responseCookies?.has(name) ?? this._cookies.has(name);
+  }
+
+  /**
+   * Set a cookie. In Route Handlers and Server Actions, this produces
+   * a Set-Cookie header on the response.
+   */
+  set(options: ResponseCookie): this;
+  set(key: string, value: string, cookie?: Partial<ResponseCookie>): this;
+  set(
+    nameOrOptions: string | ResponseCookie,
+    value?: string,
+    options?: Partial<ResponseCookie>,
+  ): this {
+    let cookieName: string;
+    let cookieValue: string;
+    let opts: Partial<ResponseCookie> | undefined;
+
+    if (typeof nameOrOptions === "string") {
+      cookieName = nameOrOptions;
+      cookieValue = value ?? "";
+      opts = options;
+    } else {
+      cookieName = nameOrOptions.name;
+      cookieValue = nameOrOptions.value;
+      opts = nameOrOptions;
+    }
+
+    validateCookieName(cookieName);
+
+    const responseCookie = normalizeMutableCookie({
+      name: cookieName,
+      value: cookieValue,
+      ...opts,
+    });
+    const serialized = serializeMutableCookie(responseCookie);
+    this[APPLY_RESPONSE_COOKIE](responseCookie);
+    _getState().pendingSetCookies.push(serialized);
+    return this;
+  }
+
+  /**
+   * Delete a cookie by emitting an expired Set-Cookie header.
+   */
+  delete(name: string): this;
+  delete(options: Omit<ResponseCookie, "value" | "expires">): this;
+  delete(nameOrOptions: string | Omit<ResponseCookie, "value" | "expires">): this {
+    const name = typeof nameOrOptions === "string" ? nameOrOptions : nameOrOptions.name;
+    validateCookieName(name);
+    const responseCookie = normalizeMutableCookie({
+      ...(typeof nameOrOptions === "string" ? undefined : nameOrOptions),
+      name,
+      value: "",
+      expires: new Date(0),
+    });
+    const serialized = serializeMutableCookie(responseCookie);
+    this[APPLY_RESPONSE_COOKIE](responseCookie);
+    _getState().pendingSetCookies.push(serialized);
+    return this;
+  }
+
+  get size(): number {
+    return this._responseCookies?.size ?? this._cookies.size;
+  }
+
+  [Symbol.iterator](): MapIterator<[string, ResponseCookie]> {
+    return new Map(this.getAll().map((cookie) => [cookie.name, cookie] as const)).entries();
+  }
+
+  toString(): string {
+    if (this._responseCookies) {
+      return [...this._responseCookies.values()].map(serializeMutableCookie).join("; ");
+    }
+
+    const parts: string[] = [];
+    for (const [name, value] of this._cookies) {
+      parts.push(`${name}=${encodeURIComponent(value)}`);
+    }
+    return parts.join("; ");
+  }
+
+  private _ensureResponseCookies(): Map<string, ResponseCookie> {
+    if (!this._responseCookies) {
+      this._responseCookies = new Map(
+        Array.from(this._cookies, ([name, value]) => [
+          name,
+          normalizeMutableCookie({ name, value }),
+        ]),
+      );
+    }
+    return this._responseCookies;
+  }
+
+  [APPLY_RESPONSE_COOKIE](cookie: ResponseCookie): void {
+    this._ensureResponseCookies().set(cookie.name, cookie);
+  }
+
+  [SYNCHRONIZE_REQUEST_COOKIES](): void {
+    this._cookies.clear();
+    for (const cookie of this._ensureResponseCookies().values()) {
+      this._cookies.set(cookie.name, cookie.value);
+    }
+  }
+}
+
+function createDraftModeCookie(value: string, expires?: Date): ResponseCookie {
+  const isDevelopment = typeof process !== "undefined" && process.env?.NODE_ENV === "development";
+  return normalizeMutableCookie({
+    name: DRAFT_MODE_COOKIE,
+    value,
+    ...(expires === undefined ? {} : { expires }),
+    httpOnly: true,
+    sameSite: isDevelopment ? "lax" : "none",
+    secure: !isDevelopment,
+    path: "/",
+  });
+}
+
+function normalizeMutableCookie(cookie: ResponseCookie): ResponseCookie {
+  const normalized = { ...cookie };
+  if (typeof normalized.expires === "number") {
+    normalized.expires = new Date(normalized.expires);
+  }
+  if (normalized.maxAge) {
+    normalized.expires = new Date(Date.now() + normalized.maxAge * 1000);
+  }
+  if (normalized.path == null) {
+    normalized.path = "/";
+  }
+  return normalized;
+}
+
+function serializeMutableCookie(cookie: ResponseCookie): string {
+  return serializeSetCookie(cookie.name, cookie.value, {
+    ...cookie,
+    expires: typeof cookie.expires === "number" ? new Date(cookie.expires) : cookie.expires,
+  });
+}
+
+// Re-export types
+export type { RequestCookies };

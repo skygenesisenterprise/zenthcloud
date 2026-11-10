@@ -1,0 +1,612 @@
+import { describe, expect, it, afterEach, vi } from "vite-plus/test";
+import type { CachedRouteValue } from "../packages/vinext/src/shims/cache.js";
+import {
+  applyRouteHandlerMiddlewareContext,
+  applyRouteHandlerRevalidateHeader,
+  assertSupportedAppRouteHandlerResponse,
+  buildAppRouteCacheValue,
+  buildRouteHandlerCachedResponse,
+  finalizeRouteHandlerResponse,
+  markRouteHandlerCacheMiss,
+  stripAppRouteHandlerRouteMissMarker,
+} from "../packages/vinext/src/server/app-route-handler-response.js";
+import { VINEXT_ROUTE_MISS_HEADER } from "../packages/vinext/src/server/headers.js";
+import { setCdnCacheAdapter } from "../packages/vinext/src/shims/cdn-cache.js";
+import {
+  CloudflareCdnCacheAdapter,
+  encodeCloudflareCacheTag,
+} from "../packages/cloudflare/src/cache/cdn-adapter.runtime.js";
+import { hasPostConfigLinkHeaders } from "../packages/vinext/src/server/app-response-header-provenance.js";
+
+function buildCachedRouteValue(
+  body: string,
+  headers: Record<string, string> = {},
+): CachedRouteValue {
+  return {
+    kind: "APP_ROUTE",
+    body: new TextEncoder().encode(body).buffer,
+    status: 200,
+    headers,
+  };
+}
+
+describe("app route handler response helpers", () => {
+  it("returns the original response when no middleware context exists", () => {
+    const response = new Response("hello");
+
+    expect(
+      applyRouteHandlerMiddlewareContext(response, {
+        headers: null,
+        status: null,
+      }),
+    ).toBe(response);
+  });
+
+  it("overrides singular headers and status with middleware values", async () => {
+    const response = new Response("hello", {
+      status: 200,
+      headers: {
+        "content-type": "text/plain",
+        connection: "keep-alive",
+        "content-length": "8",
+        date: "Mon, 10 Aug 2026 00:00:00 GMT",
+        "keep-alive": "timeout=5",
+        "transfer-encoding": "chunked",
+        "cache-control": "s-maxage=60, stale-while-revalidate",
+        "x-response": "app",
+      },
+    });
+
+    const result = applyRouteHandlerMiddlewareContext(response, {
+      headers: new Headers([
+        ["cache-control", "private, max-age=5"],
+        ["x-middleware", "mw"],
+        ["x-response", "middleware-copy"],
+      ]),
+      status: 202,
+    });
+
+    expect(result.status).toBe(202);
+    expect(result.headers.get("content-type")).toBe("text/plain");
+    expect(result.headers.get("cache-control")).toBe("private, max-age=5");
+    expect(result.headers.get("x-response")).toBe("middleware-copy");
+    expect(result.headers.get("x-middleware")).toBe("mw");
+    await expect(result.text()).resolves.toBe("hello");
+  });
+
+  it("merges Vary and places middleware Set-Cookie before the response's own", async () => {
+    const response = new Response("hello", {
+      status: 200,
+      headers: [
+        ["vary", "RSC, Accept"],
+        ["set-cookie", "existing=1; Path=/"],
+      ],
+    });
+
+    const middlewareHeaders = new Headers();
+    middlewareHeaders.append("vary", "Next-Router-State-Tree");
+    middlewareHeaders.append("set-cookie", "mw=1; Path=/");
+    middlewareHeaders.append("set-cookie", "mw=2; Path=/; HttpOnly");
+
+    const result = applyRouteHandlerMiddlewareContext(response, {
+      headers: middlewareHeaders,
+      status: null,
+    });
+
+    expect(result.headers.get("vary")).toBe("RSC, Accept, Next-Router-State-Tree");
+    // Next.js sets middleware headers before the handler runs and appends the
+    // handler's Set-Cookie afterwards, so the handler's cookie is applied last.
+    expect(result.headers.getSetCookie()).toEqual([
+      "mw=1; Path=/",
+      "mw=2; Path=/; HttpOnly",
+      "existing=1; Path=/",
+    ]);
+    await expect(result.text()).resolves.toBe("hello");
+  });
+
+  it("keeps the response's authentication challenges after middleware's", () => {
+    const response = new Response(null, {
+      status: 401,
+      headers: {
+        "www-authenticate": 'Bearer realm="handler"',
+        "proxy-authenticate": 'Bearer realm="handler"',
+      },
+    });
+    const middlewareHeaders = new Headers({
+      // Next.js only stages truthy middleware values.
+      "www-authenticate": "",
+      "proxy-authenticate": 'Basic realm="middleware"',
+    });
+
+    const result = applyRouteHandlerMiddlewareContext(response, {
+      headers: middlewareHeaders,
+      status: null,
+    });
+    expect(result.headers.get("www-authenticate")).toBe('Bearer realm="handler"');
+    expect(result.headers.get("proxy-authenticate")).toBe(
+      'Basic realm="middleware", Bearer realm="handler"',
+    );
+
+    const pagesApiResult = applyRouteHandlerMiddlewareContext(
+      response,
+      { headers: middlewareHeaders, status: null },
+      { appendResponseChallenges: false },
+    );
+    expect(pagesApiResult.headers.get("proxy-authenticate")).toBe('Basic realm="middleware"');
+  });
+
+  it("appends Edge route-handler Link values after middleware", async () => {
+    const response = new Response("hello", {
+      headers: { Link: "</edge-route>; rel=alternate" },
+    });
+    const result = applyRouteHandlerMiddlewareContext(
+      response,
+      {
+        headers: new Headers({ Link: "</middleware>; rel=preload" }),
+        status: null,
+      },
+      { appendResponseLink: true },
+    );
+
+    expect(result.headers.get("link")).toBe(
+      "</middleware>; rel=preload, </edge-route>; rel=alternate",
+    );
+    expect(hasPostConfigLinkHeaders(result.headers)).toBe(true);
+    await expect(result.text()).resolves.toBe("hello");
+  });
+
+  it("builds cached HIT and STALE route handler responses", async () => {
+    const cachedValue = buildCachedRouteValue("from-cache", {
+      "content-type": "text/plain",
+    });
+
+    const hit = buildRouteHandlerCachedResponse(cachedValue, {
+      cacheState: "HIT",
+      expireSeconds: 300,
+      isHead: false,
+      revalidateSeconds: 60,
+    });
+    expect(hit.headers.get("x-vinext-cache")).toBe("HIT");
+    expect(hit.headers.get("x-nextjs-cache")).toBe("HIT");
+    expect(hit.headers.get("cache-control")).toBe("s-maxage=60, stale-while-revalidate");
+    await expect(hit.text()).resolves.toBe("from-cache");
+
+    const staleHead = buildRouteHandlerCachedResponse(cachedValue, {
+      cacheState: "STALE",
+      expireSeconds: 300,
+      isHead: true,
+      revalidateSeconds: 60,
+    });
+    expect(staleHead.headers.get("x-vinext-cache")).toBe("STALE");
+    expect(staleHead.headers.get("x-nextjs-cache")).toBe("STALE");
+    expect(staleHead.headers.get("cache-control")).toBe("s-maxage=0, stale-while-revalidate");
+    await expect(staleHead.text()).resolves.toBe("");
+  });
+
+  // Next.js's sendResponse drops these from every route handler Response, so a
+  // stored entry whose body fetch() decoded replays without them too.
+  // https://github.com/vercel/next.js/blob/canary/packages/next/src/server/send-response.ts
+  it("replays a cached route response without its stored framing headers", async () => {
+    const cachedValue = buildCachedRouteValue("decoded body", {
+      "content-type": "text/plain",
+      "content-encoding": "gzip",
+      "content-length": "4",
+      "transfer-encoding": "chunked",
+    });
+
+    const response = buildRouteHandlerCachedResponse(cachedValue, {
+      cacheState: "HIT",
+      isHead: false,
+      revalidateSeconds: 60,
+    });
+
+    expect(response.headers.get("content-type")).toBe("text/plain");
+    expect(response.headers.has("content-encoding")).toBe(false);
+    expect(response.headers.has("content-length")).toBe(false);
+    expect(response.headers.has("transfer-encoding")).toBe(false);
+    await expect(response.text()).resolves.toBe("decoded body");
+  });
+
+  it.each([204, 205, 304])("replays cached status %s without a body", async (status) => {
+    const cachedValue = { ...buildCachedRouteValue(""), status };
+    const response = buildRouteHandlerCachedResponse(cachedValue, {
+      cacheState: "HIT",
+      isHead: false,
+      revalidateSeconds: 60,
+    });
+    expect(response.status).toBe(status);
+    expect(response.body).toBeNull();
+    expect(response.headers.get("x-vinext-cache")).toBe("HIT");
+    await expect(response.text()).resolves.toBe("");
+  });
+
+  it("prefers stored cache-control metadata over caller defaults", () => {
+    const cachedValue = buildCachedRouteValue("from-cache");
+
+    const response = buildRouteHandlerCachedResponse(cachedValue, {
+      cacheControl: { revalidate: 15, expire: 300 },
+      cacheState: "HIT",
+      expireSeconds: 31_536_000,
+      isHead: false,
+      revalidateSeconds: 60,
+    });
+
+    expect(response.headers.get("cache-control")).toBe("s-maxage=15, stale-while-revalidate=285");
+  });
+
+  it("emits static cache-control for revalidateSeconds = Infinity (revalidate = false)", () => {
+    const cachedValue = buildCachedRouteValue("from-cache");
+    const response = buildRouteHandlerCachedResponse(cachedValue, {
+      cacheState: "HIT",
+      isHead: false,
+      revalidateSeconds: Infinity,
+    });
+    expect(response.headers.get("x-vinext-cache")).toBe("HIT");
+    expect(response.headers.get("cache-control")).toBe("s-maxage=31536000, stale-while-revalidate");
+  });
+
+  it("applies revalidate header for Infinity as static cache-control", () => {
+    const response = new Response("fresh");
+    applyRouteHandlerRevalidateHeader(response, Infinity);
+    expect(response.headers.get("cache-control")).toBe("s-maxage=31536000, stale-while-revalidate");
+  });
+
+  it("serializes APP_ROUTE cache values without cache bookkeeping headers", async () => {
+    const response = new Response("cache me", {
+      status: 201,
+      headers: {
+        "content-type": "text/plain",
+        "cache-control": "s-maxage=60, stale-while-revalidate",
+        "x-vinext-cache": "MISS",
+        "x-nextjs-cache": "MISS",
+        "x-next-cache-tags": "private-tag",
+        "x-vinext-metadata-route-cache": "forged",
+        "x-middleware-set-cookie": "internal=1; Path=/",
+        "x-extra": "kept",
+      },
+    });
+
+    const value = await buildAppRouteCacheValue(response);
+
+    expect(value.kind).toBe("APP_ROUTE");
+    expect(value.status).toBe(201);
+    expect(value.headers).toEqual({
+      "content-type": "text/plain",
+      "x-extra": "kept",
+    });
+    expect(new TextDecoder().decode(value.body)).toBe("cache me");
+  });
+
+  it("preserves multiple Set-Cookie headers when building cache value", async () => {
+    const response = new Response("with cookies", {
+      status: 200,
+      headers: [
+        ["content-type", "application/json"],
+        ["set-cookie", "session=abc; Path=/; HttpOnly"],
+        ["set-cookie", "theme=dark; Path=/"],
+        ["set-cookie", "lang=en; Path=/; SameSite=Lax"],
+      ],
+    });
+
+    const value = await buildAppRouteCacheValue(response);
+
+    expect(value.headers["set-cookie"]).toEqual([
+      "session=abc; Path=/; HttpOnly",
+      "theme=dark; Path=/",
+      "lang=en; Path=/; SameSite=Lax",
+    ]);
+    expect(value.headers["content-type"]).toBe("application/json");
+  });
+
+  it("omits set-cookie key when response has no Set-Cookie headers", async () => {
+    const response = new Response("no cookies", {
+      status: 200,
+      headers: { "content-type": "text/plain" },
+    });
+
+    const value = await buildAppRouteCacheValue(response);
+
+    expect(value.headers).toEqual({ "content-type": "text/plain" });
+    expect(value.headers["set-cookie"]).toBeUndefined();
+  });
+
+  it("round-trips multiple Set-Cookie headers through cache store and restore", async () => {
+    const original = new Response("round trip", {
+      status: 200,
+      headers: [
+        ["content-type", "text/plain"],
+        ["set-cookie", "a=1; Path=/"],
+        ["set-cookie", "b=2; Path=/"],
+      ],
+    });
+
+    const cached = await buildAppRouteCacheValue(original);
+    cached.headers["x-next-cache-tags"] = "private-tag";
+    cached.headers["x-vinext-metadata-route-cache"] = "1";
+    const restored = buildRouteHandlerCachedResponse(cached, {
+      cacheState: "HIT",
+      isHead: false,
+      revalidateSeconds: 60,
+    });
+
+    expect(restored.headers.getSetCookie()).toEqual(["a=1; Path=/", "b=2; Path=/"]);
+    expect(restored.headers.get("x-next-cache-tags")).toBeNull();
+    expect(restored.headers.get("x-vinext-metadata-route-cache")).toBeNull();
+    await expect(restored.text()).resolves.toBe("round trip");
+  });
+
+  it("finalizes route handler responses with cookies and auto-head semantics", async () => {
+    const response = new Response("body", {
+      status: 202,
+      statusText: "Accepted",
+      headers: {
+        "content-type": "text/plain",
+      },
+    });
+
+    const result = finalizeRouteHandlerResponse(response, {
+      pendingCookies: ["a=1; Path=/"],
+      draftCookie: "draft=1; Path=/",
+      isHead: true,
+    });
+
+    expect(result.status).toBe(202);
+    expect(result.statusText).toBe("Accepted");
+    expect(result.headers.getSetCookie?.()).toEqual(["a=1; Path=/", "draft=1; Path=/"]);
+    await expect(result.text()).resolves.toBe("");
+  });
+
+  it("drops a returned response's framing headers", async () => {
+    // Node's fetch() decodes a gzip body but keeps the upstream framing headers.
+    const response = new Response("decoded body", {
+      status: 201,
+      statusText: "Created",
+      headers: {
+        "content-type": "text/plain",
+        "content-encoding": "gzip",
+        "content-length": "4",
+      },
+    });
+
+    const result = finalizeRouteHandlerResponse(response, {
+      pendingCookies: [],
+      draftCookie: null,
+      isHead: false,
+    });
+
+    expect(result.status).toBe(201);
+    expect(result.statusText).toBe("Created");
+    expect(result.headers.get("content-type")).toBe("text/plain");
+    expect(result.headers.has("content-encoding")).toBe(false);
+    expect(result.headers.has("content-length")).toBe(false);
+    await expect(result.text()).resolves.toBe("decoded body");
+  });
+
+  it("keeps a returned response's framing headers on Workers", async () => {
+    // workerd passes a fetched body through still encoded while its
+    // Content-Encoding is kept, and frames the body itself.
+    vi.stubGlobal("WebSocketPair", class WebSocketPair {});
+    try {
+      const response = new Response("encoded body", {
+        headers: { "content-encoding": "gzip", "content-length": "4" },
+      });
+      const finalized = finalizeRouteHandlerResponse(response, {
+        pendingCookies: [],
+        draftCookie: null,
+        isHead: false,
+      });
+      expect(finalized).toBe(response);
+
+      const replayed = buildRouteHandlerCachedResponse(
+        buildCachedRouteValue("decoded body", { "content-encoding": "gzip" }),
+        { cacheState: "HIT", isHead: false, revalidateSeconds: 60 },
+      );
+      expect(replayed.headers.get("content-encoding")).toBe("gzip");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("uses mutable cookies as fallbacks and keeps returned response cookies final", async () => {
+    // Matches Next.js appendMutableCookies:
+    // packages/next/src/server/web/spec-extension/adapters/request-cookies.ts
+    // https://github.com/vercel/next.js/blob/canary/packages/next/src/server/web/spec-extension/adapters/request-cookies.ts
+    const response = new Response("body", {
+      headers: [
+        ["Set-Cookie", "session=returned; Path=/; HttpOnly"],
+        ["Set-Cookie", "response-only=1; Path=/"],
+      ],
+    });
+
+    const result = finalizeRouteHandlerResponse(response, {
+      pendingCookies: [
+        "session=mutable; Path=/",
+        "mutable-only=first; Path=/",
+        "mutable-only=final; Path=/; Secure",
+      ],
+      draftCookie: null,
+      isHead: false,
+    });
+
+    expect(result.headers.getSetCookie()).toEqual([
+      "mutable-only=final; Path=/; Secure",
+      "session=returned; Path=/; HttpOnly",
+      "response-only=1; Path=/",
+    ]);
+    await expect(result.text()).resolves.toBe("body");
+  });
+
+  it("normalizes returned response cookies when they override mutable cookie fallbacks", async () => {
+    // Ported from Next.js: test/e2e/app-dir/actions/app-action.test.ts
+    // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/actions/app-action.test.ts
+    const response = new Response("body", {
+      headers: [
+        ["Set-Cookie", "bar=bar2"],
+        ["Set-Cookie", "baz=baz2"],
+      ],
+    });
+
+    const result = finalizeRouteHandlerResponse(response, {
+      pendingCookies: [
+        "foo=foo1; Path=/",
+        "bar=bar1; Path=/",
+        "test1=value1; Path=/; Secure",
+        "test2=value2; Path=/handler; HttpOnly",
+      ],
+      draftCookie: null,
+      isHead: false,
+    });
+
+    expect(result.headers.getSetCookie()).toEqual([
+      "foo=foo1; Path=/",
+      "test1=value1; Path=/; Secure",
+      "test2=value2; Path=/handler; HttpOnly",
+      "bar=bar2; Path=/",
+      "baz=baz2; Path=/",
+    ]);
+    await expect(result.text()).resolves.toBe("body");
+  });
+
+  it("strips internal middleware headers from finalized route handler responses", async () => {
+    const response = new Response("body", {
+      headers: [
+        ["set-cookie", "session=abc; Path=/"],
+        ["x-middleware-set-cookie", "session=abc; Path=/"],
+      ],
+    });
+
+    const result = finalizeRouteHandlerResponse(response, {
+      pendingCookies: [],
+      isHead: false,
+    });
+
+    expect(result.headers.get("x-middleware-set-cookie")).toBeNull();
+    expect(result.headers.getSetCookie()).toEqual(["session=abc; Path=/"]);
+    await expect(result.text()).resolves.toBe("body");
+  });
+
+  it("applies revalidate and MISS headers separately", () => {
+    const response = new Response("hello");
+
+    applyRouteHandlerRevalidateHeader(response, 30);
+    markRouteHandlerCacheMiss(response);
+
+    expect(response.headers.get("cache-control")).toBe("s-maxage=30, stale-while-revalidate");
+    expect(response.headers.get("x-vinext-cache")).toBe("MISS");
+  });
+
+  it("only rejects the active x-middleware-next control signal", () => {
+    expect(() =>
+      assertSupportedAppRouteHandlerResponse(
+        new Response(null, {
+          headers: { "x-middleware-next": "0" },
+        }),
+      ),
+    ).not.toThrow();
+    expect(() =>
+      assertSupportedAppRouteHandlerResponse(
+        new Response(null, {
+          headers: { "x-middleware-next": "true" },
+        }),
+      ),
+    ).not.toThrow();
+    expect(() =>
+      assertSupportedAppRouteHandlerResponse(
+        new Response(null, {
+          headers: { "x-middleware-next": "1" },
+        }),
+      ),
+    ).toThrow("NextResponse.next() was used in a app route handler");
+  });
+
+  it("emits a no-store Cache-Control for revalidate = 0 route handlers", () => {
+    // A handler exporting `revalidate = 0` opts out of caching entirely.
+    // The Cache-Control must tell browsers and CDNs never to store the
+    // response. Emitting `s-maxage=0, stale-while-revalidate` (the SWR
+    // template) would still permit intermediate caches to serve stale
+    // copies, which is the exact opposite of the author's intent.
+    // The exact string matches Next.js's own cache-control helper:
+    // .nextjs-ref/packages/next/src/server/lib/cache-control.ts:29.
+    const response = new Response("no cache me");
+
+    applyRouteHandlerRevalidateHeader(response, 0);
+
+    expect(response.headers.get("cache-control")).toBe(
+      "private, no-cache, no-store, max-age=0, must-revalidate",
+    );
+  });
+});
+
+describe("stripAppRouteHandlerRouteMissMarker", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("rebuilds an immutable response from the response itself", async () => {
+    const original = new Response("proxied", {
+      headers: { [VINEXT_ROUTE_MISS_HEADER]: "1", link: "</a.css>; rel=preload" },
+      status: 203,
+      statusText: "Proxied",
+    });
+    original.headers.delete = () => {
+      throw new TypeError("immutable");
+    };
+    // Workerd copies cf, webSocket and encodeBody only from a Response init.
+    const inits: unknown[] = [];
+    const NativeResponse = Response;
+    vi.stubGlobal(
+      "Response",
+      class extends NativeResponse {
+        constructor(body?: BodyInit | null, init?: ResponseInit) {
+          inits.push(init);
+          super(body, init);
+        }
+      },
+    );
+
+    const stripped = stripAppRouteHandlerRouteMissMarker(original);
+
+    expect(inits).toEqual([original]);
+    expect(stripped.headers.has(VINEXT_ROUTE_MISS_HEADER)).toBe(false);
+    expect(stripped.headers.get("link")).toBe("</a.css>; rel=preload");
+    expect(stripped.status).toBe(203);
+    expect(stripped.statusText).toBe("Proxied");
+    await expect(stripped.text()).resolves.toBe("proxied");
+  });
+});
+
+describe("route handler responses route through the CDN cache adapter", () => {
+  const CDN_KEY = Symbol.for("vinext.cdnCacheAdapter");
+  afterEach(() => {
+    delete (globalThis as Record<PropertyKey, unknown>)[CDN_KEY];
+  });
+
+  it("emits Cloudflare-CDN-Cache-Control + Cache-Tag with an edge adapter", () => {
+    setCdnCacheAdapter(new CloudflareCdnCacheAdapter());
+    const response = new Response("fresh");
+
+    applyRouteHandlerRevalidateHeader(response, 60, 600, ["_N_T_/api/feed", "posts"]);
+
+    expect(response.headers.get("Cache-Control")).toBe("private, max-age=0, must-revalidate");
+    expect(response.headers.get("CDN-Cache-Control")).toBeNull();
+    expect(response.headers.get("Cloudflare-CDN-Cache-Control")).toBe(
+      "public, max-age=60, stale-while-revalidate=540",
+    );
+    expect(response.headers.get("Cache-Tag")).toBe(
+      ["_N_T_/api/feed", "posts"].map(encodeCloudflareCacheTag).join(","),
+    );
+  });
+
+  it("does not promote a revalidate=0 (non-cacheable) response to the edge", () => {
+    setCdnCacheAdapter(new CloudflareCdnCacheAdapter());
+    const response = new Response("dynamic");
+
+    applyRouteHandlerRevalidateHeader(response, 0);
+
+    expect(response.headers.get("Cache-Control")).toBe(
+      "private, no-cache, no-store, max-age=0, must-revalidate",
+    );
+    expect(response.headers.get("CDN-Cache-Control")).toBeNull();
+    expect(response.headers.get("Cloudflare-CDN-Cache-Control")).toBeNull();
+  });
+});

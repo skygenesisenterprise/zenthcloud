@@ -1,0 +1,127 @@
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { test } from "vite-plus/test";
+import { liveFetch } from "./live-fetch";
+
+const base =
+  process.env.LIVE_RESPONSE_STORE_SERVICE_BASE ??
+  "https://vinext-workers-response-store-service-client-poc.vinext.workers.dev";
+const EDGE_PURGE_ACCEPTED = process.env.LIVE_RESPONSE_STORE_EDGE_PURGE_MODE !== "disabled";
+
+type PutOptions = {
+  cacheControl?: string;
+  delayMs?: number;
+  regeneratedBody?: string;
+};
+
+function key(label: string): string {
+  return `service-${label}-${Date.now()}-${randomUUID().slice(0, 8)}`;
+}
+
+async function put(path: string, body: BodyInit, options: PutOptions = {}) {
+  const response = await liveFetch(`${base}/admin/put${path}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "X-Response-Cache-Control": options.cacheControl ?? "public, max-age=120",
+      "X-Revalidator-Args": JSON.stringify({
+        body: options.regeneratedBody ?? "regenerated",
+        cacheControl: "public, max-age=120",
+        delayMs: options.delayMs,
+      }),
+    },
+    body,
+  });
+  assert.equal(response.status, 200, await response.text());
+}
+
+function read(path: string) {
+  return liveFetch(`${base}/cache${path}`);
+}
+
+async function eventually(check: () => Promise<any>, timeoutMs = 30_000): Promise<any> {
+  const deadline = Date.now() + timeoutMs;
+  let last = "condition not checked";
+
+  while (Date.now() < deadline) {
+    const result = await check();
+    if (result.ok) return result.value;
+    last = result.message;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+
+  assert.fail(last);
+}
+
+test("the service-bound callback has a stable Workers Cache identity", async () => {
+  const path = `/${key("identity")}`;
+  await put(path, "stored");
+
+  const miss = await read(path);
+  assert.equal(await miss.text(), "stored");
+  assert.equal(miss.headers.get("CF-Cache-Status"), "MISS");
+
+  const hit = await read(path);
+  assert.equal(await hit.text(), "stored");
+  assert.equal(hit.headers.get("CF-Cache-Status"), "HIT");
+  assert.equal(
+    hit.headers.get("X-Workers-Response-Store-Binding-Invocation"),
+    miss.headers.get("X-Workers-Response-Store-Binding-Invocation"),
+  );
+});
+
+test("manual refresh loops back into the user Worker without a reverse binding", async () => {
+  const path = `/${key("refresh")}`;
+  await put(path, "seed", {
+    cacheControl: "public, max-age=2",
+    regeneratedBody: "refreshed",
+  });
+  await (await read(path)).arrayBuffer();
+
+  const refresh = await liveFetch(`${base}/admin/refresh`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ pathPrefixes: [path] }),
+  });
+  assert.equal(refresh.status, 200);
+  assert.deepEqual(await refresh.json(), {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: EDGE_PURGE_ACCEPTED,
+  });
+
+  const response = await eventually(async () => {
+    const candidate = await read(path);
+    const body = await candidate.clone().text();
+    return body === "refreshed"
+      ? { ok: true, value: candidate }
+      : { ok: false, message: `refresh still returned ${JSON.stringify(body)}` };
+  });
+  assert.equal(response.headers.get("X-Revalidation-Reason"), "manual");
+  assert.notEqual(response.headers.get("X-Revalidation-Version"), null);
+});
+
+test("service-bound Workers Cache SWR caches its first regenerated replacement", async () => {
+  const path = `/${key("swr")}`;
+  await put(path, "stale", {
+    cacheControl: "public, max-age=3, stale-while-revalidate=20",
+    regeneratedBody: "fresh",
+    delayMs: 1_000,
+  });
+  const initial = await read(path);
+  assert.ok(initial.headers.get("ETag"));
+  await initial.arrayBuffer();
+  await new Promise((resolve) => setTimeout(resolve, 3_800));
+
+  const startedAt = Date.now();
+  const stale = await read(path);
+  assert.equal(await stale.text(), "stale");
+  assert.equal(stale.headers.get("CF-Cache-Status"), "UPDATING");
+  assert.ok(Date.now() - startedAt < 700, "the stale response should not await regeneration");
+
+  await new Promise((resolve) => setTimeout(resolve, 3_000));
+  const fresh = await read(path);
+  assert.equal(await fresh.text(), "fresh");
+  assert.equal(fresh.headers.get("CF-Cache-Status"), "HIT");
+  assert.equal(fresh.headers.get("X-Revalidation-Reason"), "swr");
+  assert.notEqual(fresh.headers.get("X-Revalidation-Version"), null);
+});

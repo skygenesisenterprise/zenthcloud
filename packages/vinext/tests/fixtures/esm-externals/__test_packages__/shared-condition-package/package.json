@@ -1,0 +1,11 @@
+{
+  "name": "shared-condition-package",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "react-server": "./rsc.mjs",
+      "import": "./default.mjs"
+    }
+  }
+}

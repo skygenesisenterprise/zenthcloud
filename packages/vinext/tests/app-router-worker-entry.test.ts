@@ -1,0 +1,1112 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { createServer, type Plugin } from "vite";
+import { describe, expect, it, vi } from "vite-plus/test";
+import {
+  DefaultCdnCacheAdapter,
+  setCdnCacheAdapter,
+  type CdnCacheAdapter,
+} from "../packages/vinext/src/shims/cdn-cache.js";
+import {
+  VINEXT_CACHEABILITY_PROBE_HEADER,
+  VINEXT_CACHEABILITY_PROBE_ROUTE_HEADER,
+  VINEXT_PRERENDER_SECRET_HEADER,
+} from "../packages/vinext/src/server/headers.js";
+import { serializeWorkerCacheabilityProbeRoute } from "../packages/vinext/src/server/cacheability-request.js";
+import { registerDataCacheHandler } from "../packages/vinext/src/shims/cache-handler.js";
+import { setImageOptimizer } from "../packages/vinext/src/server/image-optimization.js";
+
+const CAPTURE_RSC_REQUEST = "__vinextCaptureWorkerRscRequest";
+const CAPTURE_PRERENDER_STATE = "__vinextCaptureWorkerPrerenderState";
+const REGISTER_CDN_ADAPTER = "__vinextRegisterWorkerCdnAdapter";
+const REGISTER_ALL_CACHE_ADAPTERS = "__vinextRegisterAllWorkerCacheAdapters";
+const CAPTURE_IMAGE_SOURCE = "__vinextCaptureWorkerImageSource";
+const STATIC_FILE_SIGNAL_MODULE = path.resolve(
+  import.meta.dirname,
+  "../packages/vinext/src/server/static-file-signal.ts",
+);
+const IMAGE_OPTIMIZATION_MODULE = path.resolve(
+  import.meta.dirname,
+  "../packages/vinext/src/server/image-optimization.ts",
+);
+
+function workerEntryVirtualModules(): Plugin {
+  const modules = new Map([
+    [
+      "virtual:vinext-rsc-entry",
+      `
+export const __assetPrefix = "";
+export const __basePath = "";
+export let hybridInitializationCalls = 0;
+export function __ensureHybridPagesApplication() { hybridInitializationCalls++; }
+export function __ensureInstrumentation() {}
+export const __imageAllowedWidths = [64];
+export const __imageConfig = {};
+export const __prerenderSecret = "worker-prerender-secret";
+export default async function rscHandler(request) {
+  const url = new URL(request.url);
+  if (url.pathname === "/_next/image") {
+    // Middleware or a rewrite selected this query and set these headers.
+    const { markImageOptimizationSignal } = await import(${JSON.stringify(IMAGE_OPTIMIZATION_MODULE)});
+    const middlewareHeaders = new Headers({ "x-mw": "1", "content-type": "text/plain" });
+    middlewareHeaders.append("set-cookie", "mw=1");
+    return markImageOptimizationSignal(Response.redirect("https://example.com/source", 302), {
+      middlewareHeaders,
+      // Middleware overrode the request's Accept header.
+      requestHeaders: new Headers({ accept: "image/avif" }),
+      search: "?url=" + encodeURIComponent(url.searchParams.get("source")) + "&w=64&q=75",
+    });
+  }
+  if (url.pathname === "/open.png") {
+    // Middleware set a request header for the asset fetch.
+    const { createStaticFileSignal } = await import(${JSON.stringify(STATIC_FILE_SIGNAL_MODULE)});
+    return createStaticFileSignal("/open.png", {}, new Headers({ "x-asset-auth": "1" }));
+  }
+  if (url.pathname === "/protected/private.png") {
+    // Middleware admits the source only with a cookie.
+    if (request.headers.get("cookie") !== "members=1") return new Response("blocked", { status: 403 });
+    const { createStaticFileSignal } = await import(${JSON.stringify(STATIC_FILE_SIGNAL_MODULE)});
+    return createStaticFileSignal("/protected/private.png", {});
+  }
+  globalThis.${CAPTURE_RSC_REQUEST}(request);
+  return new Response("ok");
+}
+`,
+    ],
+    [
+      "virtual:vinext-app-request-entry",
+      `
+export const __assetPrefix = "";
+export const __basePath = "";
+export let hybridInitializationCalls = 0;
+export function __ensureHybridPagesApplication() { hybridInitializationCalls++; }
+export function __ensureInstrumentation() {}
+export const __imageAllowedWidths = [64];
+export const __imageConfig = {};
+export const __prerenderSecret = "worker-prerender-secret";
+export default async function rscHandler(request, _ctx, dispatchResponseStage, _probeMode, _prerenderDiscovery, trustedPrerenderState) {
+  globalThis.${CAPTURE_PRERENDER_STATE}?.(trustedPrerenderState);
+  if (new URL(request.url).pathname === "/__vinext/prerender/readiness") {
+    return dispatchResponseStage(request, { kind: "readiness-test" }, { cache: "bypass" });
+  }
+  if (new URL(request.url).pathname === "/middleware-terminal") {
+    globalThis.${CAPTURE_RSC_REQUEST}(request);
+    return Response.redirect("https://example.com/login", 307);
+  }
+  if (new URL(request.url).pathname === "/_next/image") {
+    const { markImageOptimizationSignal } = await import(${JSON.stringify(IMAGE_OPTIMIZATION_MODULE)});
+    return markImageOptimizationSignal(Response.redirect(request.url, 302), {
+      middlewareHeaders: new Headers({ "x-middleware-image": "admitted" }),
+      requestHeaders: null,
+      search: new URL(request.url).search,
+    });
+  }
+  if (new URL(request.url).pathname === "/image-rewrite") {
+    const { markImageOptimizationSignal } = await import(${JSON.stringify(IMAGE_OPTIMIZATION_MODULE)});
+    return markImageOptimizationSignal(Response.redirect(request.url, 302), {
+      middlewareHeaders: new Headers(),
+      requestHeaders: null,
+      search: "?url=%2Fvisible.png&w=64&q=75",
+    });
+  }
+  if (new URL(request.url).pathname === "/members.png") {
+    globalThis.${CAPTURE_IMAGE_SOURCE}?.(request);
+    if (request.headers.get("cookie") !== "members=1") {
+      return new Response("blocked by middleware", { status: 403 });
+    }
+    const { createStaticFileSignal } = await import(${JSON.stringify(STATIC_FILE_SIGNAL_MODULE)});
+    return createStaticFileSignal("/members.png", {});
+  }
+  if (new URL(request.url).pathname === "/visible.png") {
+    const { createStaticFileSignal } = await import(${JSON.stringify(STATIC_FILE_SIGNAL_MODULE)});
+    return createStaticFileSignal("/visible.png", {});
+  }
+  if (new URL(request.url).pathname === "/page.png") {
+    return dispatchResponseStage(request, { kind: "page" }, {});
+  }
+  if (new URL(request.url).pathname === "/public-signal") {
+    const { createStaticFileSignal } = await import(${JSON.stringify(STATIC_FILE_SIGNAL_MODULE)});
+    return createStaticFileSignal("/visible.txt", {});
+  }
+  if (new URL(request.url).pathname === "/middleware-data-cache") {
+    const { getDataCacheHandler } = await import("vinext/shims/cache-handler");
+    await getDataCacheHandler().get("middleware-key");
+    return new Response("terminal middleware");
+  }
+  globalThis.${CAPTURE_RSC_REQUEST}(request);
+  return new Response("ok");
+}
+`,
+    ],
+    [
+      "virtual:vinext-cache-adapters",
+      `export function registerConfiguredCacheAdapters(env) {
+  globalThis.${REGISTER_ALL_CACHE_ADAPTERS}?.(env);
+}`,
+    ],
+    [
+      "virtual:vinext-cdn-cache-adapter",
+      `export const hasConfiguredDataCache = true;
+export function registerConfiguredCacheAdapters(env) {
+  globalThis.${REGISTER_CDN_ADAPTER}?.(env);
+}`,
+    ],
+    ["virtual:vinext-image-adapters", "export function registerConfiguredImageOptimizer() {}"],
+  ]);
+
+  return {
+    name: "app-router-worker-entry-test-virtual-modules",
+    resolveId(id) {
+      return modules.has(id) ? `\0${id}` : null;
+    },
+    load(id) {
+      return id.startsWith("\0") ? (modules.get(id.slice(1)) ?? null) : null;
+    },
+  };
+}
+
+describe("App Router Production server worker entry compatibility", () => {
+  it("loads the configured data adapter only when request-stage middleware uses it", async () => {
+    const globals = globalThis as unknown as Record<PropertyKey, unknown>;
+    for (const key of [
+      Symbol.for("vinext.cacheHandler"),
+      Symbol.for("vinext.configuredCacheHandler"),
+      Symbol.for("vinext.explicitCacheHandler"),
+      Symbol.for("vinext.lazyCacheHandler"),
+    ]) {
+      delete globals[key];
+    }
+    const get = vi.fn(async () => null);
+    Reflect.set(globalThis, REGISTER_ALL_CACHE_ADAPTERS, () =>
+      registerDataCacheHandler(() => ({ get, async set() {}, async revalidateTag() {} })),
+    );
+    let server: Awaited<ReturnType<typeof createServer>> | undefined;
+    try {
+      server = await createServer({
+        appType: "custom",
+        configFile: false,
+        logLevel: "silent",
+        plugins: [workerEntryVirtualModules()],
+        resolve: {
+          alias: {
+            "vinext/shims": path.resolve(import.meta.dirname, "../packages/vinext/src/shims"),
+          },
+        },
+        server: { middlewareMode: true },
+      });
+      const entry = (await server.ssrLoadModule(
+        path.resolve(
+          import.meta.dirname,
+          "../packages/vinext/src/server/app-request-stage-independent-entry.ts",
+        ),
+      )) as {
+        handleRequestStage(
+          request: Request,
+          env: unknown,
+          ctx: undefined,
+          dispatchResponseStage: () => Promise<Response>,
+        ): Promise<Response>;
+      };
+      const response = await entry.handleRequestStage(
+        new Request("https://example.com/middleware-data-cache"),
+        undefined,
+        undefined,
+        async () => new Response("unused"),
+      );
+
+      expect(await response.text()).toBe("terminal middleware");
+      expect(get).toHaveBeenCalledWith("middleware-key", undefined);
+    } finally {
+      await server?.close();
+      Reflect.deleteProperty(globalThis, REGISTER_ALL_CACHE_ADAPTERS);
+    }
+  });
+
+  it("authenticates prerender state in a Worker request-stage context", async () => {
+    const capturedStates: unknown[] = [];
+    Reflect.set(globalThis, CAPTURE_RSC_REQUEST, () => {});
+    Reflect.set(globalThis, CAPTURE_PRERENDER_STATE, (state: unknown) => {
+      capturedStates.push(state);
+    });
+    const previousPrerender = process.env.VINEXT_PRERENDER;
+    process.env.VINEXT_PRERENDER = "1";
+    let server: Awaited<ReturnType<typeof createServer>> | undefined;
+    try {
+      server = await createServer({
+        appType: "custom",
+        configFile: false,
+        logLevel: "silent",
+        plugins: [workerEntryVirtualModules()],
+        resolve: {
+          alias: {
+            "vinext/shims": path.resolve(import.meta.dirname, "../packages/vinext/src/shims"),
+          },
+        },
+        server: { middlewareMode: true },
+      });
+      const entry = (await server.ssrLoadModule(
+        path.resolve(
+          import.meta.dirname,
+          "../packages/vinext/src/server/app-request-stage-independent-entry.ts",
+        ),
+      )) as {
+        handleRequestStage(
+          request: Request,
+          env: unknown,
+          ctx: { hostRuntime: "worker"; waitUntil(): void },
+          dispatchResponseStage: () => Promise<Response>,
+        ): Promise<Response>;
+      };
+      const routeParams = encodeURIComponent(
+        JSON.stringify({ params: { slug: "hello" }, routePattern: "/blog/:slug" }),
+      );
+      const request = (secret: string) =>
+        new Request("https://example.com/blog/hello", {
+          headers: {
+            "x-vinext-prerender-route-params": routeParams,
+            "x-vinext-prerender-secret": secret,
+            "x-vinext-prerender-speculative": "1",
+          },
+        });
+      const ctx = { hostRuntime: "worker" as const, waitUntil() {} };
+
+      await entry.handleRequestStage(
+        request("worker-prerender-secret"),
+        undefined,
+        ctx,
+        async () => new Response("unused"),
+      );
+      await entry.handleRequestStage(
+        request("wrong-secret"),
+        undefined,
+        ctx,
+        async () => new Response("unused"),
+      );
+
+      expect(capturedStates).toEqual([
+        {
+          routeParams: { params: { slug: "hello" }, routePattern: "/blog/:slug" },
+          speculative: true,
+        },
+        null,
+      ]);
+    } finally {
+      await server?.close();
+      Reflect.deleteProperty(globalThis, CAPTURE_RSC_REQUEST);
+      Reflect.deleteProperty(globalThis, CAPTURE_PRERENDER_STATE);
+      if (previousPrerender === undefined) delete process.env.VINEXT_PRERENDER;
+      else process.env.VINEXT_PRERENDER = previousPrerender;
+    }
+  });
+
+  it("classifies a terminal middleware probe without dispatching the response stage", async () => {
+    const capturedRequests: Request[] = [];
+    Reflect.set(globalThis, CAPTURE_RSC_REQUEST, (request: Request) => {
+      capturedRequests.push(request);
+    });
+    const dispatch = vi.fn(async () => new Response("unused"));
+
+    let server: Awaited<ReturnType<typeof createServer>> | undefined;
+    try {
+      server = await createServer({
+        appType: "custom",
+        configFile: false,
+        logLevel: "silent",
+        plugins: [workerEntryVirtualModules()],
+        resolve: {
+          alias: {
+            "vinext/shims": path.resolve(import.meta.dirname, "../packages/vinext/src/shims"),
+          },
+        },
+        server: { middlewareMode: true },
+      });
+      const entry = (await server.ssrLoadModule(
+        path.resolve(
+          import.meta.dirname,
+          "../packages/vinext/src/server/app-request-stage-independent-entry.ts",
+        ),
+      )) as {
+        handleRequestStage(
+          request: Request,
+          env: unknown,
+          ctx: undefined,
+          dispatchResponseStage: typeof dispatch,
+        ): Promise<Response>;
+      };
+      const response = await entry.handleRequestStage(
+        new Request("https://example.com/middleware-terminal?__vinext_cacheability_probe=one", {
+          headers: {
+            [VINEXT_CACHEABILITY_PROBE_HEADER]: "1",
+            [VINEXT_CACHEABILITY_PROBE_ROUTE_HEADER]: serializeWorkerCacheabilityProbeRoute({
+              kind: "app-page",
+              pattern: "/middleware-terminal",
+            }),
+            [VINEXT_PRERENDER_SECRET_HEADER]: "worker-prerender-secret",
+          },
+        }),
+        undefined,
+        undefined,
+        dispatch,
+      );
+
+      expect(dispatch).not.toHaveBeenCalled();
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toMatchObject({
+        kind: "app-page",
+        pattern: "/middleware-terminal",
+        scope: "identity",
+        state: "dynamic",
+        status: 307,
+        version: 1,
+      });
+      expect(capturedRequests).toHaveLength(1);
+      expect(capturedRequests[0]?.headers.get(VINEXT_CACHEABILITY_PROBE_ROUTE_HEADER)).toBeNull();
+    } finally {
+      await server?.close();
+      Reflect.deleteProperty(globalThis, CAPTURE_RSC_REQUEST);
+    }
+  });
+
+  it("validates CDN routing and stamps build identity at the request-stage boundary", async () => {
+    // No Next.js test port applies: CDN adapter validation and staged Worker
+    // boundaries are vinext deployment contracts.
+    const capturedRequests: Request[] = [];
+    const capturedEnvs: unknown[] = [];
+    Reflect.set(globalThis, CAPTURE_RSC_REQUEST, (request: Request) => {
+      capturedRequests.push(request);
+    });
+    const adapter: CdnCacheAdapter = {
+      ownsBackgroundRevalidation: false,
+      async get() {
+        return null;
+      },
+      async set() {},
+      buildResponseHeaders() {
+        return {};
+      },
+      buildResponseIdentityHeaders() {
+        return { "X-Test-Build-Identity": "build-a" };
+      },
+      validateRequest(request) {
+        return request.headers.has("X-Reject-Stage")
+          ? new Response("retry", { status: 503 })
+          : null;
+      },
+      async revalidateTag() {},
+    };
+    Reflect.set(globalThis, REGISTER_CDN_ADAPTER, (env: unknown) => {
+      capturedEnvs.push(env);
+      setCdnCacheAdapter(adapter);
+    });
+
+    let server: Awaited<ReturnType<typeof createServer>> | undefined;
+    try {
+      server = await createServer({
+        appType: "custom",
+        configFile: false,
+        logLevel: "silent",
+        plugins: [workerEntryVirtualModules()],
+        resolve: {
+          alias: {
+            "vinext/shims": path.resolve(import.meta.dirname, "../packages/vinext/src/shims"),
+          },
+        },
+        server: { middlewareMode: true },
+      });
+      const entry = (await server.ssrLoadModule(
+        path.resolve(
+          import.meta.dirname,
+          "../packages/vinext/src/server/app-request-stage-independent-entry.ts",
+        ),
+      )) as {
+        handleRequestStage(
+          request: Request,
+          env: unknown,
+          ctx: undefined,
+          dispatchResponseStage: (
+            request: Request,
+            props: unknown,
+            options: unknown,
+          ) => Promise<Response>,
+        ): Promise<Response>;
+      };
+      const requestEntry = (await server.ssrLoadModule("virtual:vinext-app-request-entry")) as {
+        hybridInitializationCalls: number;
+      };
+      const env = { binding: "value" };
+      const rejected = await entry.handleRequestStage(
+        new Request("https://example.com/rejected", {
+          headers: { Accept: "text/html", "X-Reject-Stage": "1" },
+        }),
+        env,
+        undefined,
+        async () => new Response("unused"),
+      );
+      const accepted = await entry.handleRequestStage(
+        new Request("https://example.com/accepted", { headers: { Accept: "text/html" } }),
+        env,
+        undefined,
+        async () => new Response("unused"),
+      );
+      const readinessDispatch = vi.fn<
+        (request: Request, props: unknown, options: unknown) => Promise<Response>
+      >(
+        async () =>
+          new Response(null, {
+            status: 204,
+            headers: {
+              "Cache-Control": "no-store",
+              "X-Vinext-Prerender-Readiness": "1",
+              "X-Vinext-Trace-Route": "/application-owned",
+            },
+          }),
+      );
+      const readiness = await entry.handleRequestStage(
+        new Request("https://example.com/__vinext/prerender/readiness?attempt=request-stage", {
+          headers: {
+            "X-Vinext-Expected-Worker-Version": "version-a",
+            "X-Vinext-Prerender-Secret": "worker-prerender-secret",
+          },
+        }),
+        env,
+        undefined,
+        readinessDispatch,
+      );
+
+      expect(rejected.status).toBe(503);
+      expect(await rejected.text()).toBe("retry");
+      expect(rejected.headers.get("X-Test-Build-Identity")).toBe("build-a");
+      expect(await accepted.text()).toBe("ok");
+      expect(accepted.headers.get("X-Test-Build-Identity")).toBe("build-a");
+      expect(readiness.status).toBe(204);
+      expect(requestEntry.hybridInitializationCalls).toBe(1);
+      expect(readiness.headers.get("X-Vinext-Trace-Route")).toBe("/application-owned");
+      expect(readinessDispatch).toHaveBeenCalledWith(
+        expect.any(Request),
+        { kind: "readiness-test" },
+        { cache: "bypass" },
+      );
+      const readinessStageRequest = readinessDispatch.mock.calls[0]![0] as Request;
+      expect(readinessStageRequest.headers.get("X-Vinext-Expected-Worker-Version")).toBe(
+        "version-a",
+      );
+      expect(readinessStageRequest.headers.get("X-Vinext-Prerender-Secret")).toBeNull();
+      expect(capturedRequests).toHaveLength(1);
+      expect(capturedEnvs).toEqual([env, env, env]);
+    } finally {
+      await server?.close();
+      setCdnCacheAdapter(new DefaultCdnCacheAdapter());
+      Reflect.deleteProperty(globalThis, CAPTURE_RSC_REQUEST);
+      Reflect.deleteProperty(globalThis, REGISTER_CDN_ADAPTER);
+    }
+  });
+
+  it("resolves public-file signals through the registered adapter's assets", async () => {
+    // No Next.js test port applies: adapter-supplied asset bindings are a vinext contract.
+    const fetchAsset = vi.fn(
+      async (request: Request) => new Response(`asset ${new URL(request.url).pathname}`),
+    );
+    const adapter = Object.assign(new DefaultCdnCacheAdapter(), {
+      assets: { fetch: fetchAsset },
+    });
+    Reflect.set(globalThis, REGISTER_CDN_ADAPTER, () => setCdnCacheAdapter(adapter));
+
+    let server: Awaited<ReturnType<typeof createServer>> | undefined;
+    try {
+      server = await createServer({
+        appType: "custom",
+        configFile: false,
+        logLevel: "silent",
+        plugins: [workerEntryVirtualModules()],
+        resolve: {
+          alias: {
+            "vinext/shims": path.resolve(import.meta.dirname, "../packages/vinext/src/shims"),
+          },
+        },
+        server: { middlewareMode: true },
+      });
+      const entry = (await server.ssrLoadModule(
+        path.resolve(
+          import.meta.dirname,
+          "../packages/vinext/src/server/app-request-stage-independent-entry.ts",
+        ),
+      )) as {
+        handleRequestStage(
+          request: Request,
+          env: unknown,
+          ctx: undefined,
+          dispatchResponseStage: () => Promise<Response>,
+        ): Promise<Response>;
+      };
+      const response = await entry.handleRequestStage(
+        new Request("https://example.com/public-signal"),
+        {},
+        undefined,
+        async () => new Response("unused"),
+      );
+
+      expect(await response.text()).toBe("asset /visible.txt");
+      expect(fetchAsset).toHaveBeenCalledOnce();
+    } finally {
+      await server?.close();
+      setCdnCacheAdapter(new DefaultCdnCacheAdapter());
+      Reflect.deleteProperty(globalThis, REGISTER_CDN_ADAPTER);
+    }
+  });
+
+  it("fetches an image source through the request handler without the caller's headers", async () => {
+    // Next.js' image optimizer fetches a local source through the router as a
+    // GET without the caller's headers (fetchInternalImage in
+    // packages/next/src/server/image-optimizer.ts). The Worker e2e projects run
+    // app-router-entry, so this covers the multi-stage request stage.
+    const png = fs.readFileSync(
+      path.resolve(
+        import.meta.dirname,
+        "../examples/app-router-cloudflare/public/vinext-image.png",
+      ),
+    );
+    const fetchAsset = vi.fn(
+      async () => new Response(png, { headers: { "content-type": "image/png" } }),
+    );
+    const adapter = Object.assign(new DefaultCdnCacheAdapter(), {
+      assets: { fetch: fetchAsset },
+    });
+    Reflect.set(globalThis, REGISTER_CDN_ADAPTER, () => setCdnCacheAdapter(adapter));
+    const sourceRequests: Request[] = [];
+    Reflect.set(globalThis, CAPTURE_IMAGE_SOURCE, (request: Request) =>
+      sourceRequests.push(request),
+    );
+    setImageOptimizer({
+      transformImage: async (body) =>
+        new Response(body, { headers: { "content-type": "image/webp" } }),
+    });
+
+    let server: Awaited<ReturnType<typeof createServer>> | undefined;
+    try {
+      server = await createServer({
+        appType: "custom",
+        configFile: false,
+        logLevel: "silent",
+        plugins: [workerEntryVirtualModules()],
+        resolve: {
+          alias: {
+            "vinext/shims": path.resolve(import.meta.dirname, "../packages/vinext/src/shims"),
+          },
+        },
+        server: { middlewareMode: true },
+      });
+      const entry = (await server.ssrLoadModule(
+        path.resolve(
+          import.meta.dirname,
+          "../packages/vinext/src/server/app-request-stage-independent-entry.ts",
+        ),
+      )) as {
+        handleRequestStage(
+          request: Request,
+          env: unknown,
+          ctx: undefined,
+          dispatchResponseStage: () => Promise<Response>,
+        ): Promise<Response>;
+      };
+      const dispatchResponseStage = vi.fn(async () => new Response("page"));
+      const requestImage = (source: string) =>
+        entry.handleRequestStage(
+          new Request(
+            `https://example.com/_next/image?url=${encodeURIComponent(source)}&w=64&q=75`,
+            { headers: { accept: "image/webp", cookie: "members=1" } },
+          ),
+          {},
+          undefined,
+          dispatchResponseStage,
+        );
+
+      const denied = await requestImage("/members.png");
+      expect(denied.status).toBe(400);
+      expect(await denied.text()).toBe("The requested resource isn't a valid image.");
+      expect(sourceRequests).toHaveLength(1);
+      expect(sourceRequests[0].method).toBe("GET");
+      expect(sourceRequests[0].headers.has("cookie")).toBe(false);
+      expect(fetchAsset).not.toHaveBeenCalled();
+
+      const admitted = await requestImage("/visible.png");
+      expect(admitted.status).toBe(200);
+      expect(admitted.headers.get("content-type")).toBe("image/webp");
+      expect(admitted.headers.get("x-middleware-image")).toBe("admitted");
+      expect(fetchAsset).toHaveBeenCalledOnce();
+
+      // A source is served only as a public file; it never renders a page.
+      expect((await requestImage("/page.png")).status).toBe(400);
+      expect(dispatchResponseStage).not.toHaveBeenCalled();
+      expect(fetchAsset).toHaveBeenCalledOnce();
+
+      // A probe of a route that resolves to the image endpoint still receives
+      // its classification rather than the image.
+      const probe = await entry.handleRequestStage(
+        new Request("https://example.com/image-rewrite?__vinext_cacheability_probe=one", {
+          headers: {
+            [VINEXT_CACHEABILITY_PROBE_HEADER]: "1",
+            [VINEXT_CACHEABILITY_PROBE_ROUTE_HEADER]: serializeWorkerCacheabilityProbeRoute({
+              kind: "app-page",
+              pattern: "/image-rewrite",
+            }),
+            [VINEXT_PRERENDER_SECRET_HEADER]: "worker-prerender-secret",
+          },
+        }),
+        {},
+        undefined,
+        dispatchResponseStage,
+      );
+      await expect(probe.json()).resolves.toMatchObject({
+        kind: "app-page",
+        pattern: "/image-rewrite",
+        status: 200,
+      });
+    } finally {
+      await server?.close();
+      setImageOptimizer(null);
+      setCdnCacheAdapter(new DefaultCdnCacheAdapter());
+      Reflect.deleteProperty(globalThis, REGISTER_CDN_ADAPTER);
+      Reflect.deleteProperty(globalThis, CAPTURE_IMAGE_SOURCE);
+    }
+  });
+
+  it("restores prerender route params only for the server-owned Node context", async () => {
+    // No Next.js test port applies: these headers and this Worker boundary are vinext-specific.
+    const capturedRequests: Request[] = [];
+    Reflect.set(globalThis, CAPTURE_RSC_REQUEST, (request: Request) => {
+      capturedRequests.push(request);
+    });
+    const previousPrerender = process.env.VINEXT_PRERENDER;
+    process.env.VINEXT_PRERENDER = "1";
+
+    let server: Awaited<ReturnType<typeof createServer>> | undefined;
+    try {
+      server = await createServer({
+        appType: "custom",
+        configFile: false,
+        logLevel: "silent",
+        plugins: [workerEntryVirtualModules()],
+        resolve: {
+          alias: {
+            "vinext/shims": path.resolve(import.meta.dirname, "../packages/vinext/src/shims"),
+          },
+        },
+        server: { middlewareMode: true },
+      });
+      const entry = (await server.ssrLoadModule(
+        path.resolve(import.meta.dirname, "../packages/vinext/src/server/app-router-entry.ts"),
+      )) as {
+        default: {
+          fetch(
+            request: Request,
+            env?: unknown,
+            ctx?: {
+              waitUntil(promise: Promise<unknown>): void;
+              hostRuntime?: "node" | "worker";
+              trustedRevalidateOrigin?: string;
+            },
+          ): Promise<Response>;
+        };
+      };
+      const rscEntry = (await server.ssrLoadModule("virtual:vinext-rsc-entry")) as {
+        hybridInitializationCalls: number;
+      };
+      const routeParams = encodeURIComponent(
+        JSON.stringify({
+          fallbackParamNames: ["slug"],
+          params: { slug: "attacker" },
+          routePattern: "/blog/:slug",
+        }),
+      );
+
+      const prerenderRequest = () =>
+        new Request("https://example.com/blog/attacker", {
+          headers: {
+            "x-vinext-prerender-route-params": routeParams,
+            "x-vinext-prerender-secret": "not-the-build-secret",
+          },
+        });
+
+      // A deployed Worker receives the platform ExecutionContext, so an external
+      // caller supplying both headers must not reach the RSC handler with them.
+      await entry.default.fetch(prerenderRequest(), undefined, { waitUntil() {} });
+
+      // prod-server verified the secret in nodeToWebRequest before building this
+      // context, so the payload it re-serialized has to survive the entry filter.
+      await entry.default.fetch(prerenderRequest(), undefined, {
+        waitUntil() {},
+        hostRuntime: "node",
+        trustedRevalidateOrigin: "http://127.0.0.1:3000",
+      });
+
+      const readiness = await entry.default.fetch(
+        new Request("https://example.com/__vinext/prerender/readiness", {
+          headers: {
+            accept: "text/html",
+            "x-vinext-expected-worker-version": "version-a",
+            "x-vinext-prerender-secret": "worker-prerender-secret",
+          },
+        }),
+        undefined,
+        { waitUntil() {} },
+      );
+      const unauthorizedReadiness = await entry.default.fetch(
+        new Request("https://example.com/__vinext/prerender/readiness", {
+          headers: {
+            "x-vinext-expected-worker-version": "version-a",
+            "x-vinext-prerender-secret": "wrong-secret",
+          },
+        }),
+        undefined,
+        { waitUntil() {} },
+      );
+
+      expect(capturedRequests).toHaveLength(2);
+      expect(readiness.status).toBe(204);
+      expect(rscEntry.hybridInitializationCalls).toBe(1);
+      expect(readiness.headers.get("cache-control")).toBe("no-store");
+      expect(readiness.headers.get("x-vinext-prerender-readiness")).toBe("1");
+      expect(unauthorizedReadiness.status).toBe(404);
+      expect(unauthorizedReadiness.headers.get("cache-control")).toBe("no-store");
+      expect(rscEntry.hybridInitializationCalls).toBe(1);
+      expect(capturedRequests[0].headers.get("x-vinext-prerender-secret")).toBeNull();
+      expect(capturedRequests[0].headers.get("x-vinext-prerender-route-params")).toBeNull();
+      expect(capturedRequests[1].headers.get("x-vinext-prerender-secret")).toBeNull();
+      expect(capturedRequests[1].headers.get("x-vinext-prerender-route-params")).toBe(routeParams);
+    } finally {
+      await server?.close();
+      Reflect.deleteProperty(globalThis, CAPTURE_RSC_REQUEST);
+      if (previousPrerender === undefined) delete process.env.VINEXT_PRERENDER;
+      else process.env.VINEXT_PRERENDER = previousPrerender;
+    }
+  });
+
+  it("accepts Worker-style default exports from dist/server/index.js", async () => {
+    const outDirs: string[] = [];
+    function writeWorkerEntry(value: string): string {
+      const outDir = fs.mkdtempSync(path.join(os.tmpdir(), "vinext-prod-worker-entry-"));
+      outDirs.push(outDir);
+      const serverDir = path.join(outDir, "server");
+      fs.mkdirSync(serverDir, { recursive: true });
+      fs.mkdirSync(path.join(outDir, "client"), { recursive: true });
+      fs.writeFileSync(path.join(outDir, "package.json"), JSON.stringify({ type: "module" }));
+      fs.writeFileSync(
+        path.join(serverDir, "entry-relative.cjs"),
+        `module.exports = { value: ${JSON.stringify(value)} };\n`,
+      );
+      fs.writeFileSync(
+        path.join(serverDir, "index.js"),
+        `
+const importValue = globalThis.require("./entry-relative.cjs").value;
+
+export default {
+  async fetch(request, env, ctx) {
+    ctx?.waitUntil(Promise.resolve("background"));
+    return new Response(
+      JSON.stringify({
+        pathname: new URL(request.url).pathname,
+        hasWaitUntil: typeof ctx?.waitUntil === "function",
+        envValue: env.VINEXT_WORKER_ENTRY_TEST,
+        importValue,
+        runtimeValue: globalThis.require("./entry-relative.cjs").value,
+      }),
+      { headers: { "content-type": "application/json" } },
+    );
+  },
+};
+`,
+      );
+      return outDir;
+    }
+
+    const previousRequire = Object.getOwnPropertyDescriptor(globalThis, "require");
+    const previousEnv = process.env.VINEXT_WORKER_ENTRY_TEST;
+    Object.defineProperty(globalThis, "require", {
+      configurable: true,
+      value: () => ({ value: "wrong pre-existing resolver" }),
+      writable: true,
+    });
+    process.env.VINEXT_WORKER_ENTRY_TEST = "passed through process.env";
+    const servers: import("node:http").Server[] = [];
+
+    try {
+      const { startProdServer } = await import("../packages/vinext/src/server/prod-server.js");
+      const entries = ["first entry", "second entry"];
+      const started = await Promise.all(
+        entries.map((value) =>
+          startProdServer({ port: 0, outDir: writeWorkerEntry(value), noCompression: true }),
+        ),
+      );
+      servers.push(...started.map(({ server }) => server));
+
+      for (const [{ port }, value] of started.map(
+        (server, index) => [server, entries[index]] as const,
+      )) {
+        const res = await fetch(`http://localhost:${port}/worker-test`);
+        expect(res.status).toBe(200);
+        expect(await res.json()).toEqual({
+          pathname: "/worker-test",
+          hasWaitUntil: true,
+          envValue: "passed through process.env",
+          importValue: value,
+          runtimeValue: value,
+        });
+      }
+    } finally {
+      for (const server of servers) server.close();
+      if (previousRequire) {
+        Object.defineProperty(globalThis, "require", previousRequire);
+      } else {
+        Reflect.deleteProperty(globalThis, "require");
+      }
+      if (previousEnv === undefined) delete process.env.VINEXT_WORKER_ENTRY_TEST;
+      else process.env.VINEXT_WORKER_ENTRY_TEST = previousEnv;
+      for (const outDir of outDirs) fs.rmSync(outDir, { recursive: true, force: true });
+    }
+  });
+
+  it("honors next.config compress for Worker-style entries", async () => {
+    // Next.js skips its compression middleware for `compress: false`
+    // (server/lib/router-server.ts). The build records the setting in
+    // vinext-server.json, which the Node server reads for any entry shape.
+    const outDirs: string[] = [];
+    function writeWorkerEntry(manifest: Record<string, unknown>): string {
+      const outDir = fs.mkdtempSync(path.join(os.tmpdir(), "vinext-prod-worker-compress-"));
+      outDirs.push(outDir);
+      const serverDir = path.join(outDir, "server");
+      fs.mkdirSync(serverDir, { recursive: true });
+      fs.mkdirSync(path.join(outDir, "client"), { recursive: true });
+      fs.writeFileSync(path.join(outDir, "package.json"), JSON.stringify({ type: "module" }));
+      fs.writeFileSync(path.join(serverDir, "vinext-server.json"), JSON.stringify(manifest));
+      fs.writeFileSync(
+        path.join(serverDir, "index.js"),
+        `export default {
+  async fetch() {
+    return new Response("0:" + "x".repeat(2000) + "\\n", {
+      headers: { "content-type": "text/x-component" },
+    });
+  },
+};
+`,
+      );
+      return outDir;
+    }
+
+    const servers: import("node:http").Server[] = [];
+    try {
+      const { startProdServer } = await import("../packages/vinext/src/server/prod-server.js");
+      for (const [manifest, expectedEncoding, expectedVary] of [
+        [{ prerenderSecret: "secret", compress: false }, null, null],
+        [{ prerenderSecret: "secret", compress: true }, "gzip", "Accept-Encoding"],
+        // Builds that predate the field keep the default.
+        [{ prerenderSecret: "secret" }, "gzip", "Accept-Encoding"],
+      ] as const) {
+        const { server, port } = await startProdServer({
+          port: 0,
+          outDir: writeWorkerEntry(manifest),
+        });
+        servers.push(server);
+        const res = await fetch(`http://localhost:${port}/page`, {
+          headers: { "Accept-Encoding": "gzip", RSC: "1" },
+        });
+        expect(res.status).toBe(200);
+        expect(res.headers.get("content-encoding")).toBe(expectedEncoding);
+        expect(res.headers.get("vary")).toBe(expectedVary);
+        expect(await res.text()).toBe("0:" + "x".repeat(2000) + "\n");
+      }
+    } finally {
+      for (const server of servers) server.close();
+      for (const outDir of outDirs) fs.rmSync(outDir, { recursive: true, force: true });
+    }
+  });
+
+  it("reports a clear error for unsupported app router entry shapes", async () => {
+    const outDir = fs.mkdtempSync(path.join(os.tmpdir(), "vinext-prod-worker-invalid-"));
+    const serverDir = path.join(outDir, "server");
+    fs.mkdirSync(serverDir, { recursive: true });
+    fs.writeFileSync(path.join(outDir, "package.json"), JSON.stringify({ type: "module" }));
+    fs.writeFileSync(path.join(serverDir, "index.js"), "export default {};\n");
+
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation(((
+      code?: string | number | null,
+    ) => {
+      throw new Error(`process.exit(${code})`);
+    }) as never);
+
+    try {
+      const { startProdServer } = await import("../packages/vinext/src/server/prod-server.js");
+      await expect(startProdServer({ port: 0, outDir, noCompression: true })).rejects.toThrow(
+        "process.exit(1)",
+      );
+      expect(errorSpy).toHaveBeenCalledWith(
+        "[vinext] App Router entry must export either a default handler function or a Worker-style default export with fetch()",
+      );
+    } finally {
+      errorSpy.mockRestore();
+      exitSpy.mockRestore();
+      fs.rmSync(outDir, { recursive: true, force: true });
+    }
+  });
+
+  it("serves an image only for a source the handler admits as an anonymous request", async () => {
+    // Next.js' fetchInternalImage runs a local source through the router without
+    // the caller's cookies (packages/next/src/server/image-optimizer.ts), and
+    // sends middleware's response headers with the image.
+    setImageOptimizer({
+      transformImage: async (body, { format }) =>
+        new Response(body, { headers: { "content-type": format } }),
+    });
+    const fetchedAssets: string[] = [];
+    const fetchedAssetHeaders: (string | null)[] = [];
+    let server: Awaited<ReturnType<typeof createServer>> | undefined;
+    try {
+      server = await createServer({
+        appType: "custom",
+        configFile: false,
+        logLevel: "silent",
+        plugins: [workerEntryVirtualModules()],
+        resolve: {
+          alias: {
+            "vinext/shims": path.resolve(import.meta.dirname, "../packages/vinext/src/shims"),
+          },
+        },
+        server: { middlewareMode: true },
+      });
+      const entry = (await server.ssrLoadModule(
+        path.resolve(import.meta.dirname, "../packages/vinext/src/server/app-router-entry.ts"),
+      )) as {
+        default: {
+          fetch(request: Request, env?: unknown, ctx?: { waitUntil(): void }): Promise<Response>;
+        };
+      };
+      const env = {
+        ASSETS: {
+          fetch(request: Request) {
+            const { pathname } = new URL(request.url);
+            fetchedAssets.push(pathname);
+            fetchedAssetHeaders.push(request.headers.get("x-asset-auth"));
+            return new Response(pathname, { headers: { "content-type": "image/png" } });
+          },
+        },
+      };
+      const get = (source: string) =>
+        entry.default.fetch(
+          new Request(`https://example.com/_next/image?source=${encodeURIComponent(source)}`, {
+            headers: { accept: "image/webp", cookie: "members=1", host: "example.com" },
+          }),
+          env,
+          { waitUntil() {} },
+        );
+
+      const image = await get("/open.png");
+      expect(image.status).toBe(200);
+      // Format negotiation reads the request headers after middleware.
+      expect(image.headers.get("content-type")).toBe("image/avif");
+      expect(fetchedAssetHeaders).toEqual(["1"]);
+      expect(image.headers.get("x-mw")).toBe("1");
+      expect(image.headers.getSetCookie()).toEqual(["mw=1"]);
+      await expect(image.text()).resolves.toBe("/open.png");
+
+      const denied = await get("/protected/private.png");
+      expect(denied.status).toBe(400);
+      expect(denied.headers.get("x-mw")).toBe("1");
+      // Only an image replaces the Content-Type middleware or config set.
+      expect(denied.headers.get("content-type")).toBe("text/plain");
+      await expect(denied.text()).resolves.toBe("The requested resource isn't a valid image.");
+      expect(fetchedAssets).toEqual(["/open.png"]);
+    } finally {
+      setImageOptimizer(null);
+      await server?.close();
+    }
+  });
+
+  it("serves an admitted image source unoptimized without an image optimizer", async () => {
+    // The Pages Router Worker and the Node server pass a source through when no
+    // optimizer is configured. The App Router Worker sent the handler's
+    // internal redirect to the source instead.
+    const entryPaths = [
+      "../packages/vinext/src/server/app-router-entry.ts",
+      "../packages/vinext/src/server/app-request-stage-independent-entry.ts",
+    ];
+    let server: Awaited<ReturnType<typeof createServer>> | undefined;
+    try {
+      server = await createServer({
+        appType: "custom",
+        configFile: false,
+        logLevel: "silent",
+        plugins: [workerEntryVirtualModules()],
+        resolve: {
+          alias: {
+            "vinext/shims": path.resolve(import.meta.dirname, "../packages/vinext/src/shims"),
+          },
+        },
+        server: { middlewareMode: true },
+      });
+      const workerEntry = (await server.ssrLoadModule(
+        path.resolve(import.meta.dirname, entryPaths[0]),
+      )) as {
+        default: {
+          fetch(request: Request, env?: unknown, ctx?: { waitUntil(): void }): Promise<Response>;
+        };
+      };
+      const env = {
+        ASSETS: {
+          fetch(request: Request) {
+            const { pathname } = new URL(request.url);
+            return new Response(pathname, { headers: { "content-type": "image/png" } });
+          },
+        },
+      };
+      const image = await workerEntry.default.fetch(
+        new Request("https://example.com/_next/image?source=%2Fopen.png", {
+          headers: { accept: "image/webp", host: "example.com" },
+        }),
+        env,
+        { waitUntil() {} },
+      );
+      expect(image.status).toBe(200);
+      expect(image.headers.get("location")).toBeNull();
+      expect(image.headers.get("content-type")).toBe("image/png");
+      expect(image.headers.get("cache-control")).toBe("public, max-age=14400, must-revalidate");
+      expect(image.headers.get("x-mw")).toBe("1");
+      await expect(image.text()).resolves.toBe("/open.png");
+
+      const fetchAsset = vi.fn(
+        async () => new Response("visible", { headers: { "content-type": "image/png" } }),
+      );
+      const adapter = Object.assign(new DefaultCdnCacheAdapter(), {
+        assets: { fetch: fetchAsset },
+      });
+      Reflect.set(globalThis, REGISTER_CDN_ADAPTER, () => setCdnCacheAdapter(adapter));
+      const stageEntry = (await server.ssrLoadModule(
+        path.resolve(import.meta.dirname, entryPaths[1]),
+      )) as {
+        handleRequestStage(
+          request: Request,
+          env: unknown,
+          ctx: undefined,
+          dispatchResponseStage: () => Promise<Response>,
+        ): Promise<Response>;
+      };
+      const staged = await stageEntry.handleRequestStage(
+        new Request("https://example.com/_next/image?url=%2Fvisible.png&w=64&q=75", {
+          headers: { accept: "image/webp" },
+        }),
+        {},
+        undefined,
+        async () => new Response("page"),
+      );
+      expect(staged.status).toBe(200);
+      expect(staged.headers.get("location")).toBeNull();
+      expect(staged.headers.get("content-type")).toBe("image/png");
+      expect(staged.headers.get("x-middleware-image")).toBe("admitted");
+      await expect(staged.text()).resolves.toBe("visible");
+    } finally {
+      await server?.close();
+      setCdnCacheAdapter(new DefaultCdnCacheAdapter());
+      Reflect.deleteProperty(globalThis, REGISTER_CDN_ADAPTER);
+    }
+  });
+});

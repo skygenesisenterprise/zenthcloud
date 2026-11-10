@@ -1,0 +1,3975 @@
+import assert from "node:assert/strict";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { Miniflare } from "miniflare";
+import { afterEach, beforeEach, test, vi } from "vite-plus/test";
+
+import type {
+  ResponseStoreInvalidateOptions,
+  ResponseStorePurgeOptions,
+  ResponseStoreRefreshOptions,
+  SerializableValue,
+} from "../src/index.js";
+import { IsolateNegativeCache } from "../src/isolate-negative-cache.js";
+import { mapSettledWithR2Concurrency } from "../src/r2-concurrency.js";
+
+const workerScript = fileURLToPath(new URL("../dist/worker/worker.js", import.meta.url));
+const versionId = "poc-v2";
+const metadataName = `${versionId}:r2-v2`;
+const r2Root = `runtime-cache/${versionId}/r2-v2`;
+
+type PutOptions = {
+  age?: number;
+  bodyDelayMs?: number;
+  bodyFailure?: boolean;
+  cacheControl?: string;
+  cdnCacheControl?: string;
+  cloudflareCacheControl?: string;
+  coalesce?: boolean;
+  contentType?: string;
+  etag?: string;
+  expiryBehavior?: "regenerate" | "miss";
+  host?: string;
+  largeHeaderBytes?: number;
+  lastModified?: string;
+  noRevalidator?: boolean;
+  purgeExisting?: boolean;
+  replacesRevision?: string | null;
+  replacesTagExpiration?: { tags: string[]; expiration: number };
+  generatedAt?: number;
+  revalidator?: Record<string, SerializableValue>;
+  status?: number;
+  shards?: number;
+  tags?: string[];
+  teeBody?: boolean;
+};
+
+let mf: Miniflare;
+let worker: { fetch(...args: any[]): Promise<any> };
+
+beforeEach(async () => {
+  mf = new Miniflare({
+    compatibilityDate: "2026-04-08",
+    compatibilityFlags: ["nodejs_compat"],
+    unsafeEphemeralDurableObjects: true,
+    unsafeInspectDurableObjects: true,
+    workers: [
+      {
+        name: "user-worker",
+        compatibilityDate: "2026-04-08",
+        compatibilityFlags: ["nodejs_compat"],
+        modules: [
+          {
+            type: "ESModule",
+            path: "edge-purge-fixture.js",
+            contents: `
+              import worker, { ResponseStoreBinding as BaseBinding } from "./worker.js";
+              export { CacheMetadata, ResponseStoreRevalidator } from "./worker.js";
+              let purgeMode;
+              let exposeInvalidate = false;
+              let edgeCalls = [];
+              let failR2Write = false;
+              let delayFirstPurgeMs = 0;
+              export class ResponseStoreBinding extends BaseBinding {
+                constructor(ctx, env) {
+                  super(ctx, {
+                    ...env,
+                    CACHE_BODIES: new Proxy(env.CACHE_BODIES, {
+                      get(bucket, key) {
+                        if (key === "put" && failR2Write) return () => {
+                          failR2Write = false;
+                          throw new Error("R2 publication failed");
+                        };
+                        const value = Reflect.get(bucket, key);
+                        return typeof value === "function" ? value.bind(bucket) : value;
+                      },
+                    }),
+                  });
+                  if (purgeMode) {
+                    const edgeOperation = (operation) => (options) => {
+                      edgeCalls.push({ operation, options });
+                      if (delayFirstPurgeMs && edgeCalls.length === 1) {
+                        return new Promise((resolve) =>
+                          setTimeout(() => resolve({ success: true }), delayFirstPurgeMs),
+                        );
+                      }
+                      if (purgeMode === "throw") throw new Error("Purge unavailable");
+                      if (purgeMode === "reject") return Promise.reject(new Error("Purge unavailable"));
+                      return Promise.resolve({
+                        success: purgeMode === "success",
+                        errors: [{ code: 1134, message: "Rate limited" }],
+                      });
+                    };
+                    Object.defineProperty(ctx, "cache", { value: {
+                      purge: edgeOperation("purge"),
+                      ...(exposeInvalidate ? { invalidate: edgeOperation("invalidate") } : {}),
+                    } });
+                  }
+                }
+              }
+              export default {
+                fetch(request) {
+                  if (new URL(request.url).pathname === "/admin/edge-purge") {
+                    purgeMode = new URL(request.url).searchParams.get("mode");
+                    exposeInvalidate = new URL(request.url).searchParams.has("invalidate");
+                    failR2Write = new URL(request.url).searchParams.has("fail-r2");
+                    delayFirstPurgeMs = Number(
+                      new URL(request.url).searchParams.get("delay-first-ms") ?? 0,
+                    );
+                    edgeCalls = [];
+                    return new Response("ok");
+                  }
+                  if (new URL(request.url).pathname === "/admin/edge-calls") {
+                    return Response.json(edgeCalls);
+                  }
+                  return worker.fetch(request);
+                },
+              };
+            `,
+          },
+          { type: "ESModule", path: "worker.js", contents: await readFile(workerScript, "utf8") },
+        ],
+        durableObjects: {
+          CACHE_METADATA: { className: "CacheMetadata", useSQLite: true },
+        },
+        r2Buckets: { CACHE_BODIES: "programmatic-cache-test" },
+        serviceBindings: {
+          RESPONSE_STORE_BINDING: { name: "user-worker", entrypoint: "ResponseStoreBinding" },
+        },
+        bindings: {
+          CF_VERSION_METADATA: {
+            id: "poc-v2",
+            tag: "test",
+            timestamp: "2026-09-04T00:00:00Z",
+          },
+        },
+      },
+    ],
+  });
+  worker = { fetch: mf.dispatchFetch.bind(mf) };
+});
+
+afterEach(async () => {
+  vi.useRealTimers();
+  await mf.dispose();
+});
+
+async function put(path: string, body: BodyInit | null, options: PutOptions = {}) {
+  const headers = new Headers({
+    "Content-Type": options.contentType ?? "text/plain; charset=utf-8",
+    "X-Response-Cache-Control":
+      options.cacheControl ?? "public, max-age=60, stale-while-revalidate=60",
+  });
+  if (options.tags) headers.set("X-Response-Cache-Tag", options.tags.join(","));
+  if (options.etag) headers.set("X-Response-ETag", options.etag);
+  if (options.lastModified) headers.set("X-Response-Last-Modified", options.lastModified);
+  if (options.host) headers.set("X-Cache-Host", options.host);
+  if (options.age !== undefined) headers.set("X-Response-Age", String(options.age));
+  if (options.status !== undefined) headers.set("X-Response-Status", String(options.status));
+  if (options.cloudflareCacheControl) {
+    headers.set("X-Response-Cloudflare-CDN-Cache-Control", options.cloudflareCacheControl);
+  }
+  if (options.cdnCacheControl) {
+    headers.set("X-Response-CDN-Cache-Control", options.cdnCacheControl);
+  }
+  if (options.revalidator) {
+    headers.set("X-Revalidator-Args", JSON.stringify(options.revalidator));
+  }
+  if (options.noRevalidator) headers.set("X-No-Revalidator", "1");
+  if (options.purgeExisting) headers.set("X-Purge-Existing", "1");
+  if (options.coalesce) headers.set("X-Coalesce", "1");
+  if (options.replacesRevision) headers.set("X-Replaces-Revision", options.replacesRevision);
+  if (options.replacesTagExpiration) {
+    headers.set("X-Replaces-Tag-Expiration", JSON.stringify(options.replacesTagExpiration));
+  }
+  if (options.generatedAt !== undefined) {
+    headers.set("X-Generated-At", String(options.generatedAt));
+  }
+  if (options.expiryBehavior) headers.set("X-Expiry-Behavior", options.expiryBehavior);
+  if (options.bodyFailure) headers.set("X-Body-Failure", "1");
+  if (options.bodyDelayMs) headers.set("X-Body-Delay-Ms", String(options.bodyDelayMs));
+  if (options.teeBody) headers.set("X-Tee-Body", "1");
+  if (options.largeHeaderBytes) {
+    headers.set("X-Response-Large-Header-Bytes", String(options.largeHeaderBytes));
+  }
+  if (options.shards) headers.set("X-Response-Store-Shards", String(options.shards));
+  const response = await worker.fetch(`https://user.test/admin/put${path}`, {
+    method: "PUT",
+    headers,
+    body,
+  });
+  const text = await response.text();
+  if (response.status !== 200) {
+    throw new Error(`put fixture returned ${response.status}: ${text}`);
+  }
+  return { response, json: JSON.parse(text) };
+}
+
+async function read(
+  path: string,
+  options: { headers?: HeadersInit; host?: string; shards?: number } = {},
+) {
+  const headers = new Headers(options.headers);
+  if (options.host) headers.set("X-Cache-Host", options.host);
+  if (options.shards) headers.set("X-Response-Store-Shards", String(options.shards));
+  return worker.fetch(`https://user.test/cache${path}`, { headers });
+}
+
+// Miniflare does not run Workers Cache. Inject the header at the cache-bearing
+// entrypoint, where deployed Workers Cache adds it during revalidation.
+async function conditionalRead(path: string, header = "If-None-Match") {
+  const bindings = await mf.getBindings<{
+    RESPONSE_STORE_BINDING: Awaited<ReturnType<Miniflare["getWorker"]>>;
+  }>("user-worker");
+  return bindings.RESPONSE_STORE_BINDING.fetch(`https://cache-key.invalid${path}`, {
+    headers: {
+      [header]: header === "If-None-Match" ? 'W/"previous"' : "Tue, 29 Sep 2026 00:00:00 GMT",
+    },
+  });
+}
+
+async function refreshSelectors(options: ResponseStoreRefreshOptions, shards?: number) {
+  const response = await worker.fetch("https://user.test/admin/refresh", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(shards ? { "X-Response-Store-Shards": String(shards) } : {}),
+    },
+    body: JSON.stringify(options),
+  });
+  return { response, json: await response.json() };
+}
+
+async function invalidate(options: ResponseStoreInvalidateOptions) {
+  const response = await worker.fetch("https://user.test/admin/invalidate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(options),
+  });
+  return { response, json: await response.json() };
+}
+
+async function purge(options: ResponseStorePurgeOptions, shards?: number) {
+  const response = await worker.fetch("https://user.test/admin/purge", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(shards ? { "X-Response-Store-Shards": String(shards) } : {}),
+    },
+    body: JSON.stringify(options),
+  });
+  return { response, json: await response.json() };
+}
+
+async function tagExpiration(tags: string[], shards?: number): Promise<number> {
+  const response = await worker.fetch("https://user.test/admin/tag-expiration", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(shards ? { "X-Response-Store-Shards": String(shards) } : {}),
+    },
+    body: JSON.stringify({ tags }),
+  });
+  const body = (await response.json()) as { expiration: number };
+  assert.equal(response.status, 200, JSON.stringify(body));
+  return body.expiration;
+}
+
+async function metadataStub() {
+  const namespace = await mf.getDurableObjectNamespace("CACHE_METADATA", "user-worker");
+  return namespace.getByName(metadataName) as any;
+}
+
+async function metadata(): Promise<any[]> {
+  return (await metadataStub()).inspect();
+}
+
+async function metadataRowCount(table: string, name = metadataName): Promise<number> {
+  const storage = await mf.unsafeGetDurableObjectStorage("user-worker", "CacheMetadata", {
+    name,
+  });
+  const [row] = await storage.exec(`SELECT COUNT(*) AS count FROM ${table}`);
+  return row.count as number;
+}
+
+async function r2Objects() {
+  const bucket = await mf.getR2Bucket("CACHE_BODIES", "user-worker");
+  return bucket.list();
+}
+
+function metadataShardName(shards: number, index: number): string {
+  return `${metadataName}:metadata-shard:${index}-of-${shards}`;
+}
+
+async function cacheKeyShard(cacheKey: string, shards: number): Promise<number> {
+  const hash = await cacheKeyHash(cacheKey);
+  return Number.parseInt(hash.slice(0, 8), 16) % shards;
+}
+
+async function cacheKeyHash(cacheKey: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(cacheKey));
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function onePathPerShard(shards: number): Promise<string[]> {
+  const paths: Array<string | undefined> = Array.from({ length: shards });
+  let found = 0;
+  for (let candidate = 0; found < shards; candidate++) {
+    const path = `/sharded/${candidate}`;
+    const shard = await cacheKeyShard(path, shards);
+    if (paths[shard] === undefined) {
+      paths[shard] = path;
+      found++;
+    }
+  }
+  return paths as string[];
+}
+
+test("bounded concurrency preserves settled results", async () => {
+  let active = 0;
+  let maximumActive = 0;
+  const settled = await mapSettledWithR2Concurrency(
+    Array.from({ length: 13 }, (_, index) => index),
+    async (index) => {
+      active++;
+      maximumActive = Math.max(maximumActive, active);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      active--;
+      if (index === 7) throw new Error("expected failure");
+      return index * 2;
+    },
+  );
+
+  assert.equal(maximumActive, 6);
+  assert.deepEqual(settled[0], { status: "fulfilled", value: 0 });
+  assert.equal(settled[7]?.status, "rejected");
+  assert.deepEqual(settled[12], { status: "fulfilled", value: 24 });
+});
+
+test("isolate miss caching expires and evicts least-recently-used keys", () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(0);
+  const cache = new IsolateNegativeCache<string>(2, 1_000);
+
+  cache.add("oldest");
+  cache.add("newer");
+  assert.equal(cache.has("oldest"), true);
+  cache.add("newest");
+  assert.equal(cache.has("newer"), false);
+  assert.equal(cache.has("oldest"), true);
+  assert.equal(cache.has("newest"), true);
+
+  vi.advanceTimersByTime(1_001);
+  assert.equal(cache.has("oldest"), false);
+  assert.equal(cache.has("newest"), false);
+});
+
+test("a put after a miss is visible to the next read", async () => {
+  assert.equal((await read("/miss-then-put")).status, 404);
+  await put("/miss-then-put", "stored-after-miss");
+
+  const stored = await read("/miss-then-put");
+  assert.equal(stored.status, 200);
+  assert.equal(await stored.text(), "stored-after-miss");
+});
+
+test("purgeExisting skips first writes but still purges replacements and tombstones", async () => {
+  const first = await put("/conditional-edge-purge", "first", { purgeExisting: true });
+  assert.deepEqual(first.json, { backingStoreUpdated: true, edgePurgeAccepted: true });
+
+  const replacement = await put("/conditional-edge-purge", "replacement", {
+    purgeExisting: true,
+  });
+  assert.deepEqual(replacement.json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: false,
+  });
+
+  await purge({ pathPrefixes: ["/conditional-edge-purge"] });
+  const afterTombstone = await put("/conditional-edge-purge", "after-tombstone", {
+    purgeExisting: true,
+  });
+  assert.deepEqual(afterTombstone.json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: false,
+  });
+});
+
+test("purgeExisting skips replacing an entry without a revalidator once its edge copy expired", async () => {
+  await worker.fetch("https://user.test/admin/edge-purge?mode=rate-limit");
+  const options = {
+    cacheControl: "public, max-age=2, stale-while-revalidate=60",
+    noRevalidator: true,
+  };
+  await put("/expired-edge-copy", "first", options);
+  const fresh = await read("/expired-edge-copy");
+  // Its writer replaces it once it goes stale, so its edge copy ends there, rounded down.
+  assert.match(
+    fresh.headers.get("Cloudflare-CDN-Cache-Control") ?? "",
+    /^max-age=[12], stale-while-revalidate=0, stale-if-error=0$/,
+  );
+  await fresh.arrayBuffer();
+
+  // A replacement of a fresh entry still purges its edge copy.
+  const replacement = await put("/expired-edge-copy", "second", {
+    ...options,
+    purgeExisting: true,
+  });
+  assert.deepEqual(replacement.json, { backingStoreUpdated: true, edgePurgeAccepted: false });
+  assert.equal(
+    ((await (await worker.fetch("https://user.test/admin/edge-calls")).json()) as unknown[]).length,
+    1,
+  );
+
+  await new Promise((resolve) => setTimeout(resolve, 2100));
+  const stale = await read("/expired-edge-copy");
+  assert.equal(stale.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  assert.equal(
+    stale.headers.get("Cloudflare-CDN-Cache-Control"),
+    "max-age=0, stale-while-revalidate=0, stale-if-error=0",
+  );
+  assert.equal(await stale.text(), "second");
+  // A Workers Cache revalidation gets the stored response instead of a failed regeneration.
+  const revalidation = await conditionalRead("/expired-edge-copy");
+  assert.equal(revalidation.status, 200);
+  assert.equal(await revalidation.text(), "second");
+
+  const refill = await put("/expired-edge-copy", "third", { ...options, purgeExisting: true });
+  assert.deepEqual(refill.json, { backingStoreUpdated: true, edgePurgeAccepted: true });
+  assert.equal(
+    ((await (await worker.fetch("https://user.test/admin/edge-calls")).json()) as unknown[]).length,
+    1,
+  );
+  assert.equal(await (await read("/expired-edge-copy")).text(), "third");
+});
+
+test("replacesRevision drops a refresh of a revision another refresh already replaced", async () => {
+  const options = {
+    cacheControl: "public, max-age=1, stale-while-revalidate=60",
+    noRevalidator: true,
+    purgeExisting: true,
+  };
+  const refresh = { ...options, cacheControl: "public, max-age=60, stale-while-revalidate=60" };
+  await worker.fetch("https://user.test/admin/edge-purge?mode=rate-limit");
+  await put("/refresh-race", "first", options);
+  await new Promise((resolve) => setTimeout(resolve, 1100));
+  // Two readers find it stale and both refresh it.
+  const stale = await read("/refresh-race");
+  assert.equal(stale.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  await stale.arrayBuffer();
+  const replacesRevision = stale.headers.get("X-Workers-Response-Store-Revision");
+  assert.ok(replacesRevision);
+
+  const first = await put("/refresh-race", "second", { ...refresh, replacesRevision });
+  assert.deepEqual(first.json, { backingStoreUpdated: true, edgePurgeAccepted: true });
+  // The later refresh would replace the fresh copy and purge it: drop it instead.
+  const second = await put("/refresh-race", "third", { ...refresh, replacesRevision });
+  assert.deepEqual(second.json, { backingStoreUpdated: false, edgePurgeAccepted: false });
+  assert.deepEqual(await (await worker.fetch("https://user.test/admin/edge-calls")).json(), []);
+  assert.equal(await (await read("/refresh-race")).text(), "second");
+  // A value that isn't a revision, or a revision not reached yet, leaves a plain write.
+  for (const value of ["0", "-1", "abc", "1000000"]) {
+    const write = await put("/refresh-race", value, { ...refresh, replacesRevision: value });
+    assert.equal(write.json.backingStoreUpdated, true, value);
+    assert.equal(await (await read("/refresh-race")).text(), value);
+  }
+  // Nor is one recorded: the same future value again is another plain write.
+  const again = await put("/refresh-race", "again", { ...refresh, replacesRevision: "1000000" });
+  assert.equal(again.json.backingStoreUpdated, true);
+
+  // Like Next.js, refreshes read before invalidate() or purge() still land, last writer wins:
+  // R2 may still serve the read revision, so a duplicate can straddle the mutation.
+  for (const [path, mutate] of [
+    ["/refresh-race-invalidated", invalidate],
+    ["/refresh-race-purged", purge],
+  ] as const) {
+    const tags = [path.slice(1)];
+    const options = { ...refresh, tags };
+    await put(path, "first", options);
+    const before = await read(path);
+    assert.equal(before.headers.get("X-Workers-Response-Store"), "BLOB-FRESH", path);
+    await before.arrayBuffer();
+    const revision = before.headers.get("X-Workers-Response-Store-Revision");
+    assert.ok(revision, path);
+    await mutate({ tags });
+    for (const body of ["late", "later"]) {
+      const late = await put(path, body, { ...options, replacesRevision: revision });
+      assert.equal(late.json.backingStoreUpdated, true, `${path} ${body}`);
+      const after = await read(path);
+      assert.equal(after.headers.get("X-Workers-Response-Store"), "BLOB-FRESH", path);
+      assert.equal(await after.text(), body, path);
+    }
+  }
+
+  // Duplicate refreshes of the invalidated revision itself: the later one is dropped.
+  const tags = ["refresh-race-invalidated-twice"];
+  await put("/refresh-race-invalidated-twice", "first", { ...refresh, tags });
+  await invalidate({ tags });
+  const stale2 = await read("/refresh-race-invalidated-twice");
+  assert.equal(stale2.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  await stale2.arrayBuffer();
+  const invalidated = stale2.headers.get("X-Workers-Response-Store-Revision");
+  assert.ok(invalidated);
+  const duplicates = { ...refresh, tags, replacesRevision: invalidated };
+  const winner = await put("/refresh-race-invalidated-twice", "second", duplicates);
+  assert.equal(winner.json.backingStoreUpdated, true);
+  const duplicate = await put("/refresh-race-invalidated-twice", "third", duplicates);
+  assert.deepEqual(duplicate.json, { backingStoreUpdated: false, edgePurgeAccepted: false });
+  assert.equal(await (await read("/refresh-race-invalidated-twice")).text(), "second");
+});
+
+test("replacesRevision lets a refresh of any other revision, or after another write, land", async () => {
+  const refresh = {
+    cacheControl: "public, max-age=60, stale-while-revalidate=60",
+    noRevalidator: true,
+    purgeExisting: true,
+  };
+  const revisionOf = async (path: string) => {
+    const response = await read(path);
+    await response.arrayBuffer();
+    const revision = response.headers.get("X-Workers-Response-Store-Revision");
+    assert.ok(revision, path);
+    return revision;
+  };
+  // A refresh read before invalidate() and one read after it: either order, the last lands,
+  // as in Next.js.
+  for (const [path, order] of [
+    ["/refresh-race-before-after", ["before", "after"]],
+    ["/refresh-race-after-before", ["after", "before"]],
+  ] as const) {
+    const tags = [path.slice(1)];
+    await put(path, "first", { ...refresh, tags });
+    const revisions = { before: await revisionOf(path), after: "" };
+    await invalidate({ tags });
+    revisions.after = await revisionOf(path);
+    for (const name of order) {
+      const write = await put(path, name, { ...refresh, tags, replacesRevision: revisions[name] });
+      assert.equal(write.json.backingStoreUpdated, true, `${path} ${name}`);
+    }
+    assert.equal(await (await read(path)).text(), order[1], path);
+  }
+
+  // So does a refresh after an ordinary write, even one replacing another refresh.
+  await put("/refresh-race-ordinary", "first", refresh);
+  const revision = await revisionOf("/refresh-race-ordinary");
+  const first = await put("/refresh-race-ordinary", "refresh", {
+    ...refresh,
+    replacesRevision: revision,
+  });
+  assert.equal(first.json.backingStoreUpdated, true);
+  await put("/refresh-race-ordinary", "ordinary", refresh);
+  const late = await put("/refresh-race-ordinary", "late", {
+    ...refresh,
+    replacesRevision: revision,
+  });
+  assert.equal(late.json.backingStoreUpdated, true);
+  assert.equal(await (await read("/refresh-race-ordinary")).text(), "late");
+});
+
+test("replacesRevision drops a refresh while another refresh of its revision is fresh, even before its R2 write", async () => {
+  await worker.fetch("https://user.test/admin/edge-purge?mode=rate-limit");
+  const options = {
+    cacheControl: "public, max-age=1, stale-while-revalidate=60",
+    noRevalidator: true,
+    purgeExisting: true,
+  };
+  await put("/refresh-race-unwritten", "first", options);
+  await new Promise((resolve) => setTimeout(resolve, 1100));
+  const stale = await read("/refresh-race-unwritten");
+  assert.equal(stale.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  await stale.arrayBuffer();
+  const replacesRevision = stale.headers.get("X-Workers-Response-Store-Revision");
+  assert.ok(replacesRevision);
+
+  // Another refresh's fresh publish, committed in the metadata DO before its R2 write.
+  const storage = await mf.unsafeGetDurableObjectStorage("user-worker", "CacheMetadata", {
+    name: metadataName,
+  });
+  await storage.exec(
+    `UPDATE entries SET latest_revision = latest_revision + 1,
+      active_revision = latest_revision + 1, fresh_until = ?, replaced_revision = ?
+      WHERE cache_key LIKE '%/refresh-race-unwritten%'`,
+    Date.now() + 60_000,
+    Number(replacesRevision),
+  );
+  const refresh = {
+    ...options,
+    cacheControl: "public, max-age=60, stale-while-revalidate=60",
+    replacesRevision,
+  };
+  const dropped = await put("/refresh-race-unwritten", "second", refresh);
+  assert.deepEqual(dropped.json, { backingStoreUpdated: false, edgePurgeAccepted: false });
+  assert.deepEqual(await (await worker.fetch("https://user.test/admin/edge-calls")).json(), []);
+
+  // Once that revision is stale without reaching R2, readers still see the one they refresh.
+  await storage.exec(
+    `UPDATE entries SET fresh_until = ? WHERE cache_key LIKE '%/refresh-race-unwritten%'`,
+    Date.now() - 1,
+  );
+  const healed = await put("/refresh-race-unwritten", "second", refresh);
+  assert.equal(healed.json.backingStoreUpdated, true);
+  assert.equal(await (await read("/refresh-race-unwritten")).text(), "second");
+});
+
+test("replacesRevision lets a refresh land once the soft tags its read checked expire", async () => {
+  const options = {
+    cacheControl: "public, max-age=1, stale-while-revalidate=60",
+    noRevalidator: true,
+    purgeExisting: true,
+  };
+  await put("/refresh-race-soft-tags", "first", options);
+  await new Promise((resolve) => setTimeout(resolve, 1100));
+  const stale = await read("/refresh-race-soft-tags");
+  assert.equal(stale.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  await stale.arrayBuffer();
+  const refresh = {
+    ...options,
+    cacheControl: "public, max-age=60, stale-while-revalidate=60",
+    replacesRevision: stale.headers.get("X-Workers-Response-Store-Revision"),
+    // Tags the caller checks itself, e.g. revalidatePath()'s, as the stale read saw them.
+    replacesTagExpiration: { tags: ["_N_T_/refresh-race-soft-tags"], expiration: 0 },
+  };
+  const first = await put("/refresh-race-soft-tags", "second", refresh);
+  assert.equal(first.json.backingStoreUpdated, true);
+  const duplicate = await put("/refresh-race-soft-tags", "third", refresh);
+  assert.deepEqual(duplicate.json, { backingStoreUpdated: false, edgePurgeAccepted: false });
+
+  // The Store keeps no entry under those tags, but records their expiration.
+  await purge({ tags: ["_N_T_/refresh-race-soft-tags"] });
+  const late = await put("/refresh-race-soft-tags", "fourth", refresh);
+  assert.equal(late.json.backingStoreUpdated, true);
+  assert.equal(await (await read("/refresh-race-soft-tags")).text(), "fourth");
+
+  // A duplicate that read them after the purge is dropped; malformed ones leave an ordinary write.
+  const tags = refresh.replacesTagExpiration.tags;
+  const current = { tags, expiration: Number.MAX_SAFE_INTEGER };
+  const dropped = await put("/refresh-race-soft-tags", "fifth", {
+    ...refresh,
+    replacesTagExpiration: current,
+  });
+  assert.equal(dropped.json.backingStoreUpdated, false);
+  const malformed = await put("/refresh-race-soft-tags", "malformed", {
+    ...refresh,
+    replacesTagExpiration: { tags: [1], expiration: 0 } as never,
+  });
+  assert.equal(malformed.json.backingStoreUpdated, true);
+});
+
+test("generatedAt publishes an entry generated before its tags were invalidated stale", async () => {
+  const tick = () => new Promise((resolve) => setTimeout(resolve, 5));
+  const options = { noRevalidator: true, tags: ["generated-at-invalidated"] };
+  const generatedAt = Date.now();
+  await tick();
+  await invalidate({ tags: options.tags });
+  await tick();
+
+  await put("/generated-at-invalidated", "before", { ...options, generatedAt });
+  const before = await read("/generated-at-invalidated");
+  assert.equal(before.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  assert.equal(await before.text(), "before");
+
+  await put("/generated-at-invalidated", "after", { ...options, generatedAt: Date.now() });
+  const after = await read("/generated-at-invalidated");
+  assert.equal(after.headers.get("X-Workers-Response-Store"), "BLOB-FRESH");
+  assert.equal(await after.text(), "after");
+
+  // Without a valid generatedAt, the write is dated at its publication, as before.
+  await put("/generated-at-invalidated-unset", "unset", options);
+  await put("/generated-at-invalidated-malformed", "malformed", {
+    ...options,
+    generatedAt: Number.NaN,
+  });
+  for (const path of ["/generated-at-invalidated-unset", "/generated-at-invalidated-malformed"]) {
+    const response = await read(path);
+    assert.equal(response.headers.get("X-Workers-Response-Store"), "BLOB-FRESH", path);
+    await response.arrayBuffer();
+  }
+});
+
+test("generatedAt publishes an entry generated before its tags were purged expired", async () => {
+  const tick = () => new Promise((resolve) => setTimeout(resolve, 5));
+  const options = {
+    expiryBehavior: "miss" as const,
+    noRevalidator: true,
+    tags: ["generated-at-purged"],
+  };
+  const generatedAt = Date.now();
+  await tick();
+  await purge({ tags: options.tags });
+  await tick();
+
+  const before = await put("/generated-at-purged", "before", { ...options, generatedAt });
+  assert.equal(before.json.backingStoreUpdated, true);
+  const expired = await read("/generated-at-purged");
+  assert.equal(expired.status, 404);
+  assert.equal(expired.headers.get("X-Workers-Response-Store"), "MISS");
+  await expired.arrayBuffer();
+
+  await put("/generated-at-purged", "after", { ...options, generatedAt: Date.now() });
+  const after = await read("/generated-at-purged");
+  assert.equal(after.headers.get("X-Workers-Response-Store"), "BLOB-FRESH");
+  assert.equal(await after.text(), "after");
+});
+
+test("generatedAt counts an invalidation in the generation's starting millisecond as after it", async () => {
+  const storage = await mf.unsafeGetDurableObjectStorage("user-worker", "CacheMetadata", {
+    name: metadataName,
+  });
+  const invalidated = { noRevalidator: true, tags: ["generated-at-tie-invalidated"] };
+  await invalidate({ tags: invalidated.tags });
+  const [{ stale_at: staleAt }] = (await storage.exec(
+    "SELECT stale_at FROM tag_invalidations WHERE tag = ?",
+    invalidated.tags[0],
+  )) as [{ stale_at: number }];
+  await put("/generated-at-tie-invalidated", "tie", { ...invalidated, generatedAt: staleAt });
+  const stale = await read("/generated-at-tie-invalidated");
+  assert.equal(stale.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  await stale.arrayBuffer();
+
+  const purged = {
+    expiryBehavior: "miss" as const,
+    noRevalidator: true,
+    tags: ["generated-at-tie-purged"],
+  };
+  await purge({ tags: purged.tags });
+  const purgedAt = await tagExpiration(purged.tags);
+  await put("/generated-at-tie-purged", "tie", { ...purged, generatedAt: purgedAt });
+  const expired = await read("/generated-at-tie-purged");
+  assert.equal(expired.headers.get("X-Workers-Response-Store"), "MISS");
+  await expired.arrayBuffer();
+});
+
+test("generatedAt expires a regeneration that outlasted an expire deadline", async () => {
+  const path = "/generated-at-regeneration-deadline";
+  const tags = [path.slice(1)];
+  const storage = await mf.unsafeGetDurableObjectStorage("user-worker", "CacheMetadata", {
+    name: metadataName,
+  });
+  const entry = async () =>
+    (
+      (await storage.exec(
+        "SELECT active_revision, swr_until FROM entries WHERE cache_key LIKE ?",
+        `%${path}%`,
+      )) as { active_revision: number; swr_until: number }[]
+    )[0]!;
+  await put(path, "first", {
+    tags,
+    revalidator: { cacheTags: tags, delayMs: 1500, generatedAt: true },
+  });
+  // invalidate() publishes the stale copy as a new revision.
+  await invalidate({ tags, expire: 1 });
+  const { active_revision: revision } = await entry();
+  // The stale read starts a regeneration that is still running at the deadline.
+  const stale = await read(path);
+  assert.equal(stale.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  await stale.arrayBuffer();
+  for (let attempt = 0; attempt < 100; attempt++) {
+    if ((await entry()).active_revision > revision) break;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  const regenerated = await entry();
+  assert.ok(regenerated.active_revision > revision);
+  assert.ok(regenerated.swr_until <= Date.now());
+});
+
+test("generatedAt publishes an entry generated before a passed expire deadline expired", async () => {
+  const tick = () => new Promise((resolve) => setTimeout(resolve, 5));
+  const options = {
+    expiryBehavior: "miss" as const,
+    noRevalidator: true,
+    tags: ["generated-at-deadline"],
+  };
+  const generatedBefore = Date.now();
+  await tick();
+  await invalidate({ tags: options.tags, expire: 1 });
+  await tick();
+  // Generated while the tag was stale, but before its deadline.
+  const generatedStale = Date.now();
+  await new Promise((resolve) => setTimeout(resolve, 1100));
+
+  for (const [path, generatedAt] of [
+    ["/generated-at-deadline-before", generatedBefore],
+    ["/generated-at-deadline-stale", generatedStale],
+  ] as const) {
+    const write = await put(path, "expired", { ...options, generatedAt });
+    assert.equal(write.json.backingStoreUpdated, true, path);
+    const expired = await read(path);
+    assert.equal(expired.headers.get("X-Workers-Response-Store"), "MISS", path);
+    await expired.arrayBuffer();
+  }
+
+  await put("/generated-at-deadline-after", "after", { ...options, generatedAt: Date.now() });
+  const after = await read("/generated-at-deadline-after");
+  assert.equal(after.headers.get("X-Workers-Response-Store"), "BLOB-FRESH");
+  assert.equal(await after.text(), "after");
+});
+
+test.each([
+  { follower: "after", body: "third", status: "BLOB-FRESH" },
+  // A write without generatedAt is dated at publication, after the leader started.
+  { follower: "unset", body: "third", status: "BLOB-FRESH" },
+  // One no newer than the leader is as stale as it, so the leader stands in.
+  { follower: "before", body: "second", status: "BLOB-STALE" },
+])(
+  "generatedAt coalesces a write into a stale leader only if generated no later (%o)",
+  async ({ follower: generated, body, status }) => {
+    const path = `/generated-at-coalesced-${generated}`;
+    const tags = [path.slice(1)];
+    const tick = () => new Promise((resolve) => setTimeout(resolve, 5));
+    const edgeCalls = async () =>
+      ((await (await worker.fetch("https://user.test/admin/edge-calls")).json()) as unknown[])
+        .length;
+    await put(path, "first", { tags });
+    const generatedBefore = Date.now();
+    await tick();
+    await invalidate({ tags });
+    await tick();
+    const generatedAfter = Date.now();
+
+    const calls = await edgeCalls();
+    await worker.fetch("https://user.test/admin/edge-purge?mode=rate-limit&delay-first-ms=1500");
+    const options = { coalesce: true, purgeExisting: true, tags };
+    // The leader lands stale, and stays coalescible while its purge is pending.
+    const leader = put(path, "second", { ...options, generatedAt: generatedBefore });
+    for (let attempt = 0; attempt < 50; attempt++) {
+      if ((await edgeCalls()) > calls) break;
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    assert.equal(await edgeCalls(), calls + 1);
+    // Like Next.js, a write generated after the invalidate() is stored fresh.
+    const follower = await put(path, "third", {
+      ...options,
+      ...(generated === "unset"
+        ? {}
+        : { generatedAt: generated === "after" ? generatedAfter : generatedBefore }),
+    });
+    assert.equal(follower.json.backingStoreUpdated, true);
+    assert.equal((await leader).json.backingStoreUpdated, true);
+    const after = await read(path);
+    assert.equal(after.headers.get("X-Workers-Response-Store"), status);
+    assert.equal(await after.text(), body);
+  },
+);
+
+test("generatedAt ages a write from its generation start, however late it reaches the Store", async () => {
+  const storage = await mf.unsafeGetDurableObjectStorage("user-worker", "CacheMetadata", {
+    name: metadataName,
+  });
+  const options = { expiryBehavior: "miss" as const, noRevalidator: true };
+  // Generated 2.5 seconds before it reaches the Store, e.g. delayed behind a coalesced write.
+  const generatedAt = Date.now() - 2500;
+  await put("/generated-at-aged-stale", "stale", {
+    ...options,
+    cacheControl: "public, max-age=2, stale-while-revalidate=2",
+    generatedAt,
+  });
+  const stale = await read("/generated-at-aged-stale");
+  assert.equal(stale.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  await stale.arrayBuffer();
+  const [{ swr_until: swrUntil }] = (await storage.exec(
+    "SELECT swr_until FROM entries WHERE cache_key LIKE ?",
+    "%/generated-at-aged-stale%",
+  )) as [{ swr_until: number }];
+  // Its stale window still ends 4 seconds after its generation started.
+  assert.equal(swrUntil, generatedAt + 4000);
+
+  await put("/generated-at-aged-expired", "expired", {
+    ...options,
+    cacheControl: "public, max-age=1, stale-while-revalidate=1",
+    generatedAt,
+  });
+  const expired = await read("/generated-at-aged-expired");
+  assert.equal(expired.headers.get("X-Workers-Response-Store"), "MISS");
+  await expired.arrayBuffer();
+});
+
+test("generatedAt doesn't coalesce a newer write into a leader that aged past its freshness", async () => {
+  const path = "/generated-at-coalesced-aged";
+  const tags = [path.slice(1)];
+  const edgeCalls = async () =>
+    ((await (await worker.fetch("https://user.test/admin/edge-calls")).json()) as unknown[]).length;
+  await put(path, "first", { tags });
+  const calls = await edgeCalls();
+  await worker.fetch("https://user.test/admin/edge-purge?mode=rate-limit&delay-first-ms=1500");
+  const options = { coalesce: true, purgeExisting: true, tags };
+  // The leader lands stale by its own age, with no invalidation.
+  const leader = put(path, "second", {
+    ...options,
+    cacheControl: "public, max-age=1, stale-while-revalidate=60",
+    generatedAt: Date.now() - 2500,
+  });
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if ((await edgeCalls()) > calls) break;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  assert.equal(await edgeCalls(), calls + 1);
+  const follower = await put(path, "third", { ...options, generatedAt: Date.now() });
+  assert.equal(follower.json.backingStoreUpdated, true);
+  assert.equal((await leader).json.backingStoreUpdated, true);
+  const after = await read(path);
+  assert.equal(after.headers.get("X-Workers-Response-Store"), "BLOB-FRESH");
+  assert.equal(await after.text(), "third");
+});
+
+test.each([
+  {
+    case: "goes stale while its edge purge runs",
+    leader: { cacheControl: "public, max-age=1, stale-while-revalidate=60", generatedAgo: 600 },
+    waitMs: 600,
+  },
+  // A future generation start, e.g. from a skewed clock, counts as the leader's ingestion.
+  {
+    case: "has a future generation start",
+    leader: { cacheControl: "public, max-age=0, stale-while-revalidate=60", generatedAgo: -60_000 },
+    waitMs: 5,
+  },
+  // A leader without a generation start is dated at its publication.
+  {
+    case: "was published stale without a generation start",
+    leader: { cacheControl: "public, max-age=0, stale-while-revalidate=60" },
+    waitMs: 5,
+  },
+] as { case: string; leader: { cacheControl: string; generatedAgo?: number }; waitMs: number }[])(
+  "generatedAt doesn't coalesce a newer write into a leader that $case",
+  async ({ case: name, leader: leaderOptions, waitMs }) => {
+    const path = `/generated-at-coalesced-${name.replaceAll(" ", "-")}`;
+    const tags = [path.slice(1)];
+    const edgeCalls = async () =>
+      ((await (await worker.fetch("https://user.test/admin/edge-calls")).json()) as unknown[])
+        .length;
+    await put(path, "first", { tags });
+    const calls = await edgeCalls();
+    await worker.fetch("https://user.test/admin/edge-purge?mode=rate-limit&delay-first-ms=1500");
+    const options = { coalesce: true, purgeExisting: true, tags };
+    const leader = put(path, "second", {
+      ...options,
+      cacheControl: leaderOptions.cacheControl,
+      ...(leaderOptions.generatedAgo === undefined
+        ? {}
+        : { generatedAt: Date.now() - leaderOptions.generatedAgo }),
+    });
+    for (let attempt = 0; attempt < 50; attempt++) {
+      if ((await edgeCalls()) > calls) break;
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    assert.equal(await edgeCalls(), calls + 1);
+    await new Promise((resolve) => setTimeout(resolve, waitMs));
+    const follower = await put(path, "third", { ...options, generatedAt: Date.now() });
+    assert.equal(follower.json.backingStoreUpdated, true);
+    assert.equal((await leader).json.backingStoreUpdated, true);
+    const after = await read(path);
+    assert.equal(after.headers.get("X-Workers-Response-Store"), "BLOB-FRESH");
+    assert.equal(await after.text(), "third");
+  },
+);
+
+test("generatedAt doesn't coalesce a newer write into a leader whose body outlasted its freshness", async () => {
+  const path = "/generated-at-coalesced-slow-body";
+  const pending = await metadataRowCount("pending_objects");
+  // The leader's freshness ends while its body is still being read.
+  const leader = put(path, "second", {
+    coalesce: true,
+    cacheControl: "public, max-age=1, stale-while-revalidate=60",
+    generatedAt: Date.now(),
+    bodyDelayMs: 1500,
+  });
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if ((await metadataRowCount("pending_objects")) > pending) break;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  assert.ok((await metadataRowCount("pending_objects")) > pending);
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  const follower = await put(path, "third", { coalesce: true, generatedAt: Date.now() });
+  assert.equal(follower.json.backingStoreUpdated, true);
+  assert.equal((await leader).json.backingStoreUpdated, true);
+  const after = await read(path);
+  assert.equal(after.headers.get("X-Workers-Response-Store"), "BLOB-FRESH");
+  assert.equal(await after.text(), "third");
+});
+
+test("generatedAt rounds a fractional generation start down for the stored metadata", async () => {
+  await put("/generated-at-fractional", "fractional", { generatedAt: Date.now() - 500.5 });
+  const object = await (
+    await mf.getR2Bucket("CACHE_BODIES", "user-worker")
+  ).head((await r2Objects()).objects[0].key);
+  // The R2 fallback reads only integer metadata.
+  assert.match(object?.customMetadata?.freshUntil ?? "", /^\d+$/);
+  assert.match(object?.customMetadata?.swrUntil ?? "", /^\d+$/);
+  const response = await read("/generated-at-fractional");
+  assert.equal(response.headers.get("X-Workers-Response-Store"), "BLOB-FRESH");
+  assert.equal(await response.text(), "fractional");
+});
+
+test("generatedAt ages a future-dated write from its admission, including its coalescing wait", async () => {
+  const path = "/generated-at-future-follower";
+  const pending = await metadataRowCount("pending_objects");
+  // A leader that lands stale, so the newer follower writes its own response after it.
+  const leader = put(path, "second", {
+    coalesce: true,
+    cacheControl: "public, max-age=0, stale-while-revalidate=60",
+    generatedAt: Date.now(),
+    bodyDelayMs: 1500,
+  });
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if ((await metadataRowCount("pending_objects")) > pending) break;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  assert.ok((await metadataRowCount("pending_objects")) > pending);
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  const follower = await put(path, "third", {
+    coalesce: true,
+    cacheControl: "public, max-age=1, stale-while-revalidate=60",
+    generatedAt: Date.now() + 60_000,
+  });
+  assert.equal(follower.json.backingStoreUpdated, true);
+  assert.equal((await leader).json.backingStoreUpdated, true);
+  // Its second-long freshness ran out while it waited behind the leader.
+  const after = await read(path);
+  assert.equal(after.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  assert.equal(await after.text(), "third");
+});
+
+test("replacesRevision lets refreshes land after a refresh whose R2 write failed", async () => {
+  const options = {
+    cacheControl: "public, max-age=1, stale-while-revalidate=60",
+    noRevalidator: true,
+    purgeExisting: true,
+  };
+  await put("/refresh-race-r2-failure", "first", options);
+  await new Promise((resolve) => setTimeout(resolve, 1100));
+  const stale = await read("/refresh-race-r2-failure");
+  assert.equal(stale.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  await stale.arrayBuffer();
+  const refresh = {
+    ...options,
+    cacheControl: "public, max-age=60, stale-while-revalidate=60",
+    replacesRevision: stale.headers.get("X-Workers-Response-Store-Revision"),
+  };
+  await worker.fetch("https://user.test/admin/edge-purge?mode=rate-limit&fail-r2");
+  await assert.rejects(
+    put("/refresh-race-r2-failure", "second", refresh),
+    /R2 response publication failed/,
+  );
+  await worker.fetch("https://user.test/admin/edge-purge?mode=rate-limit");
+  // The failed write's tombstone may straddle a mutation, like a purge: both refreshes land.
+  for (const body of ["third", "fourth"]) {
+    const write = await put("/refresh-race-r2-failure", body, refresh);
+    assert.equal(write.json.backingStoreUpdated, true, body);
+    assert.equal(await (await read("/refresh-race-r2-failure")).text(), body);
+  }
+});
+
+test("replacesRevision lets a refresh coalesced behind another land after an invalidate()", async () => {
+  const path = "/refresh-race-coalesced-invalidated";
+  const tags = [path.slice(1)];
+  const edgeCalls = async () =>
+    ((await (await worker.fetch("https://user.test/admin/edge-calls")).json()) as unknown[]).length;
+  await put(path, "first", { tags });
+  const fresh = await read(path);
+  await fresh.arrayBuffer();
+  const replacesRevision = fresh.headers.get("X-Workers-Response-Store-Revision");
+  assert.ok(replacesRevision);
+  await worker.fetch("https://user.test/admin/edge-purge?mode=rate-limit&delay-first-ms=1500");
+  const options = { coalesce: true, purgeExisting: true, replacesRevision, tags };
+  // The leader replaces the fresh copy, and stays coalescible while its purge is pending.
+  const leader = put(path, "second", options);
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if ((await edgeCalls()) === 1) break;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  assert.equal(await edgeCalls(), 1);
+  await invalidate({ tags });
+  // Like Next.js, a refresh of the same revision that lands after the invalidate() is stored.
+  const follower = await put(path, "third", options);
+  assert.equal(follower.json.backingStoreUpdated, true);
+  assert.equal((await leader).json.backingStoreUpdated, true);
+  const after = await read(path);
+  assert.equal(after.headers.get("X-Workers-Response-Store"), "BLOB-FRESH");
+  assert.equal(await after.text(), "third");
+});
+
+test("replacesRevision doesn't coalesce a refresh into a leader older than its revision", async () => {
+  const path = "/refresh-race-old-leader";
+  const tags = [path.slice(1)];
+  const edgeCalls = async () =>
+    ((await (await worker.fetch("https://user.test/admin/edge-calls")).json()) as unknown[]).length;
+  await put(path, "first", { noRevalidator: true, tags });
+  await worker.fetch("https://user.test/admin/edge-purge?mode=rate-limit&delay-first-ms=1500");
+  // The leader replaces the fresh copy, and stays coalescible while its purge is pending.
+  const leader = put(path, "second", {
+    coalesce: true,
+    noRevalidator: true,
+    purgeExisting: true,
+    tags,
+  });
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if ((await edgeCalls()) === 1) break;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  // The leader has published and is waiting on its purge.
+  assert.equal(await edgeCalls(), 1);
+  await invalidate({ tags });
+  const stale = await read(path);
+  assert.equal(stale.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  await stale.arrayBuffer();
+  const replacesRevision = stale.headers.get("X-Workers-Response-Store-Revision");
+  assert.ok(replacesRevision);
+
+  const refresh = await put(path, "third", {
+    coalesce: true,
+    noRevalidator: true,
+    purgeExisting: true,
+    tags,
+    replacesRevision,
+  });
+  assert.equal(refresh.json.backingStoreUpdated, true);
+  await leader;
+  assert.equal(await (await read(path)).text(), "third");
+});
+
+test("replacesRevision drops an overlapping refresh coalesced into one that replaced it", async () => {
+  // Replacing a fresh entry purges its edge copy, so a follower that adopted the replacement
+  // would request the same purge a second time.
+  await worker.fetch("https://user.test/admin/edge-purge?mode=rate-limit");
+  await put("/refresh-race-coalesced", "first");
+  const fresh = await read("/refresh-race-coalesced");
+  await fresh.arrayBuffer();
+  const replacesRevision = fresh.headers.get("X-Workers-Response-Store-Revision");
+  assert.ok(replacesRevision);
+  const options = { coalesce: true, purgeExisting: true, replacesRevision };
+  const first = put("/refresh-race-coalesced", "second", { ...options, bodyDelayMs: 300 });
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if ((await metadataRowCount("pending_objects")) === 1) break;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  assert.equal(await metadataRowCount("pending_objects"), 1);
+  const second = put("/refresh-race-coalesced", "third", options);
+
+  assert.equal((await first).json.backingStoreUpdated, true);
+  assert.deepEqual((await second).json, { backingStoreUpdated: false, edgePurgeAccepted: false });
+  assert.equal(
+    ((await (await worker.fetch("https://user.test/admin/edge-calls")).json()) as unknown[]).length,
+    1,
+  );
+  assert.equal(await (await read("/refresh-race-coalesced")).text(), "second");
+});
+
+test("replacesRevision leaves a refresh coalesced behind an ordinary write to it", async () => {
+  await put("/refresh-race-coalesced-ordinary", "first");
+  const fresh = await read("/refresh-race-coalesced-ordinary");
+  await fresh.arrayBuffer();
+  const replacesRevision = fresh.headers.get("X-Workers-Response-Store-Revision");
+  assert.ok(replacesRevision);
+  const leader = put("/refresh-race-coalesced-ordinary", "second", {
+    coalesce: true,
+    purgeExisting: true,
+    bodyDelayMs: 300,
+  });
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if ((await metadataRowCount("pending_objects")) === 1) break;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  assert.equal(await metadataRowCount("pending_objects"), 1);
+  // As for any coalesced write, the leader stands in for it: no second R2 write.
+  const follower = await put("/refresh-race-coalesced-ordinary", "third", {
+    coalesce: true,
+    purgeExisting: true,
+    replacesRevision,
+  });
+  assert.equal(follower.json.backingStoreUpdated, true);
+  assert.equal((await leader).json.backingStoreUpdated, true);
+  assert.equal(await (await read("/refresh-race-coalesced-ordinary")).text(), "second");
+});
+
+test("an entry without a revalidator keeps its edge policy with response metadata in the body", async () => {
+  await put("/expired-edge-copy-large-headers", "body", {
+    cacheControl: "public, max-age=0, stale-while-revalidate=60",
+    largeHeaderBytes: 9_000,
+    noRevalidator: true,
+  });
+  const stale = await read("/expired-edge-copy-large-headers");
+  assert.equal(stale.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  assert.equal(
+    stale.headers.get("Cloudflare-CDN-Cache-Control"),
+    "max-age=0, stale-while-revalidate=0, stale-if-error=0",
+  );
+  assert.equal(await stale.text(), "body");
+});
+
+test("purgeExisting still purges a stale entry whose edge copy may still be served", async () => {
+  await worker.fetch("https://user.test/admin/edge-purge?mode=rate-limit");
+  // Workers Cache keeps serving an entry with a revalidator through its SWR window.
+  await put("/stale-with-revalidator", "first", {
+    cacheControl: "public, max-age=0, stale-while-revalidate=60",
+  });
+  const replacement = await put("/stale-with-revalidator", "second", { purgeExisting: true });
+  assert.deepEqual(replacement.json, { backingStoreUpdated: true, edgePurgeAccepted: false });
+
+  // invalidate() made this one stale early; its refused purge of the earlier copies is queued.
+  await put("/stale-invalidated", "first", { noRevalidator: true, tags: ["stale-invalidated"] });
+  assert.deepEqual((await invalidate({ tags: ["stale-invalidated"] })).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: false,
+  });
+  const afterInvalidate = await put("/stale-invalidated", "second", {
+    noRevalidator: true,
+    purgeExisting: true,
+  });
+  assert.deepEqual(afterInvalidate.json, { backingStoreUpdated: true, edgePurgeAccepted: false });
+  assert.equal(
+    ((await (await worker.fetch("https://user.test/admin/edge-calls")).json()) as unknown[]).length,
+    3,
+  );
+});
+
+test("put clears a miss cached while the write is in flight", async () => {
+  const write = put("/miss-during-put", "stored-after-delayed-put", { bodyDelayMs: 200 });
+  let pendingObjects = 0;
+  for (let attempt = 0; attempt < 50; attempt++) {
+    pendingObjects = await metadataRowCount("pending_objects");
+    if (pendingObjects > 0) break;
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  }
+  assert.equal(pendingObjects, 1);
+  assert.equal((await read("/miss-during-put")).status, 404);
+
+  await write;
+  const stored = await read("/miss-during-put");
+  assert.equal(stored.status, 200);
+  assert.equal(await stored.text(), "stored-after-delayed-put");
+});
+
+// Cloudflare-specific regression for #3433: retain real R2/DO storage and RPC,
+// replacing only ctx.cache.purge to exercise rate limits and transport failures.
+test.each(["rate-limit", "throw", "reject"])(
+  "put preserves its committed body when edge purge fails: %s",
+  async (mode) => {
+    await worker.fetch(`https://user.test/admin/edge-purge?mode=${mode}`);
+    await put("/purge-failure", "original");
+    const result = await put("/purge-failure", "replacement", { purgeExisting: true });
+    assert.equal(result.response.status, 200);
+    assert.deepEqual(result.json, { backingStoreUpdated: true, edgePurgeAccepted: false });
+    assert.equal(await (await read("/purge-failure")).text(), "replacement");
+  },
+);
+
+test.each(["rate-limit", "throw", "reject"])(
+  "refresh preserves its regenerated body when edge purge fails: %s",
+  async (mode) => {
+    await worker.fetch(`https://user.test/admin/edge-purge?mode=${mode}`);
+    await put("/refresh-purge-failure", "original", {
+      revalidator: { body: "regenerated" },
+    });
+    const result = await refreshSelectors({ pathPrefixes: ["/refresh-purge-failure"] });
+    assert.equal(result.response.status, 200);
+    assert.deepEqual(result.json, { backingStoreUpdated: true, edgePurgeAccepted: false });
+    assert.equal(await (await read("/refresh-purge-failure")).text(), "regenerated");
+  },
+);
+
+test("refresh invalidates prior edge responses instead of purging them", async () => {
+  await worker.fetch("https://user.test/admin/edge-purge?mode=success&invalidate");
+  await put("/refresh-invalidate", "original", {
+    revalidator: { body: "regenerated" },
+  });
+  const result = await refreshSelectors({ pathPrefixes: ["/refresh-invalidate"] });
+  assert.deepEqual(result.json, { backingStoreUpdated: true, edgePurgeAccepted: true });
+  assert.deepEqual(await (await worker.fetch("https://user.test/admin/edge-calls")).json(), [
+    {
+      operation: "invalidate",
+      options: { tags: [`runtime-cache-${await cacheKeyHash("/refresh-invalidate")}`] },
+    },
+  ]);
+  assert.equal(await (await read("/refresh-invalidate")).text(), "regenerated");
+});
+
+test("replacement writes and purges keep hard edge purges when invalidation is available", async () => {
+  await worker.fetch("https://user.test/admin/edge-purge?mode=success&invalidate");
+  await put("/hard-edge-purge", "original", { tags: ["hard-edge-purge"] });
+  await put("/hard-edge-purge", "replacement", {
+    purgeExisting: true,
+    tags: ["hard-edge-purge"],
+  });
+  await purge({ tags: ["hard-edge-purge"] });
+  assert.deepEqual(
+    (await (await worker.fetch("https://user.test/admin/edge-calls")).json()).map(
+      ({ operation }: { operation: string }) => operation,
+    ),
+    ["purge", "purge"],
+  );
+});
+
+test("refresh falls back to a hard edge purge when invalidation is unavailable", async () => {
+  await worker.fetch("https://user.test/admin/edge-purge?mode=success");
+  await put("/refresh-purge-fallback", "original", {
+    revalidator: { body: "regenerated" },
+  });
+  const result = await refreshSelectors({ pathPrefixes: ["/refresh-purge-fallback"] });
+  assert.deepEqual(result.json, { backingStoreUpdated: true, edgePurgeAccepted: true });
+  assert.deepEqual(
+    (await (await worker.fetch("https://user.test/admin/edge-calls")).json()).map(
+      ({ operation }: { operation: string }) => operation,
+    ),
+    ["purge"],
+  );
+});
+
+test("invalidate marks entries stale and leaves regeneration to the next read", async () => {
+  await put("/invalidate/tagged", "original", {
+    tags: ["invalidate-group"],
+    revalidator: { body: "regenerated", cacheControl: "public, max-age=60" },
+  });
+  await put("/invalidate/untouched", "untouched", {
+    revalidator: { body: "must-not-regenerate", cacheControl: "public, max-age=60" },
+  });
+  assert.deepEqual((await invalidate({})).json, {
+    error: "invalidate() requires tags or pathPrefixes",
+  });
+
+  const result = await invalidate({ tags: ["INVALIDATE-GROUP"] });
+  assert.deepEqual(result.json, { backingStoreUpdated: true, edgePurgeAccepted: false });
+  const stats = (await (await worker.fetch("https://user.test/admin/stats")).json()) as {
+    regenerationCount: number;
+  };
+  assert.equal(stats.regenerationCount, 0);
+
+  const stale = await read("/invalidate/tagged");
+  assert.equal(await stale.text(), "original");
+  assert.equal(stale.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  assert.equal(stale.headers.get("X-Workers-Response-Store-Revision"), "2");
+  await vi.waitFor(async () => {
+    const fresh = await read("/invalidate/tagged");
+    assert.equal(await fresh.text(), "regenerated");
+    assert.equal(fresh.headers.get("X-Revalidation-Reason"), "swr");
+    assert.equal(fresh.headers.get("X-Workers-Response-Store-Revision"), "3");
+  });
+  const untouched = await read("/invalidate/untouched");
+  assert.equal(await untouched.text(), "untouched");
+  assert.equal(untouched.headers.get("X-Workers-Response-Store"), "BLOB-FRESH");
+});
+
+test("invalidate refetches replayable edge responses and purges the others", async () => {
+  await worker.fetch("https://user.test/admin/edge-purge?mode=success&invalidate");
+  await put("/invalidate-edge/replayable", "replayable", {
+    tags: ["invalidate-edge"],
+    revalidator: { body: "regenerated", cacheControl: "public, max-age=60" },
+  });
+  await put("/invalidate-edge/static", "static", {
+    noRevalidator: true,
+    tags: ["invalidate-edge"],
+  });
+
+  const result = await invalidate({ pathPrefixes: ["/invalidate-edge/"] });
+  assert.deepEqual(result.json, { backingStoreUpdated: true, edgePurgeAccepted: true });
+  assert.deepEqual(await (await worker.fetch("https://user.test/admin/edge-calls")).json(), [
+    {
+      operation: "purge",
+      options: { tags: [`runtime-cache-${await cacheKeyHash("/invalidate-edge/static")}`] },
+    },
+    {
+      operation: "invalidate",
+      options: { tags: [`runtime-cache-${await cacheKeyHash("/invalidate-edge/replayable")}`] },
+    },
+  ]);
+  // The Store cannot regenerate an entry without a revalidator, so it keeps serving it stale.
+  const stale = await read("/invalidate-edge/static");
+  assert.equal(await stale.text(), "static");
+  assert.equal(stale.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+});
+
+test("invalidate caps the stale window at expire", async () => {
+  await put("/invalidate-expire", "must-not-return", {
+    cacheControl: "public, max-age=60, stale-while-revalidate=3600",
+    revalidator: { body: "regenerated", cacheControl: "public, max-age=60" },
+  });
+
+  await invalidate({ pathPrefixes: ["/invalidate-expire"], expire: 0 });
+  const response = await read("/invalidate-expire");
+  assert.equal(await response.text(), "regenerated");
+  assert.equal(response.headers.get("X-Revalidation-Reason"), "expired");
+});
+
+test("invalidate prevents a pending tagged write from publishing over it", async () => {
+  await put("/invalidate-pending", "seed", { tags: ["invalidate-pending"] });
+  const write = put("/invalidate-pending", "too-late", {
+    bodyDelayMs: 300,
+    tags: ["invalidate-pending"],
+  });
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if ((await metadataRowCount("pending_objects")) === 1) break;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  assert.equal(await metadataRowCount("pending_objects"), 1);
+
+  await invalidate({ tags: ["invalidate-pending"] });
+  assert.deepEqual((await write).json, {
+    backingStoreUpdated: false,
+    edgePurgeAccepted: false,
+  });
+  const response = await read("/invalidate-pending");
+  assert.equal(await response.text(), "seed");
+  assert.equal(response.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+});
+
+test("invalidate prevents a pending first write under a path prefix from publishing", async () => {
+  const write = put("/invalidate-cold/write", "too-late", { bodyDelayMs: 300 });
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if ((await metadataRowCount("pending_objects")) === 1) break;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  assert.equal(await metadataRowCount("pending_objects"), 1);
+
+  assert.deepEqual((await invalidate({ pathPrefixes: ["/invalidate-cold/"] })).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: true,
+  });
+  assert.deepEqual((await write).json, {
+    backingStoreUpdated: false,
+    edgePurgeAccepted: false,
+  });
+  assert.equal((await read("/invalidate-cold/write")).status, 404);
+});
+
+test("a tag invalidation without matches still records its deadline", async () => {
+  assert.deepEqual((await invalidate({ tags: ["no-entries-yet"], expire: 1 })).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: true,
+  });
+
+  // An entry published with the tag before the deadline expires at it, as in Next.js.
+  const path = "/invalidate-deadline-later-entry";
+  await put(path, "seed", {
+    cacheControl: "public, max-age=60",
+    tags: ["no-entries-yet"],
+    revalidator: { body: "regenerated", cacheControl: "public, max-age=60" },
+  });
+  const fresh = await read(path);
+  assert.equal(await fresh.text(), "seed");
+  assert.equal(fresh.headers.get("X-Workers-Response-Store"), "BLOB-FRESH");
+  await new Promise((resolve) => setTimeout(resolve, 1_100));
+  const expired = await read(path);
+  assert.equal(await expired.text(), "regenerated");
+  assert.equal(expired.headers.get("X-Revalidation-Reason"), "expired");
+});
+
+test("invalidate tombstones an entry whose source revision is not in R2", async () => {
+  await worker.fetch("https://user.test/admin/edge-purge?mode=success&invalidate");
+  await put("/invalidate-missing-r2", "seed", {
+    revalidator: { body: "regenerated", cacheControl: "public, max-age=60" },
+  });
+  const bucket = await mf.getR2Bucket("CACHE_BODIES", "user-worker");
+  await bucket.delete((await bucket.list()).objects[0].key);
+
+  const result = await invalidate({ pathPrefixes: ["/invalidate-missing-r2"] });
+  assert.deepEqual(result.json, { backingStoreUpdated: true, edgePurgeAccepted: true });
+  assert.deepEqual(
+    (await (await worker.fetch("https://user.test/admin/edge-calls")).json()).map(
+      ({ operation }: { operation: string }) => operation,
+    ),
+    ["purge"],
+  );
+  const [object] = (await bucket.list({ include: ["customMetadata"] })).objects;
+  assert.deepEqual(object.customMetadata, { latestRevision: "2", tombstoned: "1" });
+  assert.equal(await metadataRowCount("pending_r2_tombstones"), 0);
+});
+
+test("back-to-back invalidations keep an entry stale instead of tombstoning it", async () => {
+  await put("/invalidate-twice", "seed", { tags: ["invalidate-twice"] });
+  const stub = await metadataStub();
+  await stub.invalidateMatching({ tags: ["invalidate-twice"] }, Date.now());
+  await stub.invalidateMatching({ tags: ["invalidate-twice"] }, Date.now());
+  assert.deepEqual((await stub.drainPendingTombstones(400)).failures, []);
+  let response = await read("/invalidate-twice");
+  assert.equal(await response.text(), "seed");
+  assert.equal(response.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  assert.equal(response.headers.get("X-Workers-Response-Store-Revision"), "3");
+
+  // An earlier drain may land its stale copy without recording it.
+  await put("/invalidate-in-flight", "seed", { tags: ["invalidate-in-flight"] });
+  await stub.invalidateMatching({ tags: ["invalidate-in-flight"] }, Date.now());
+  await stub.drainPendingTombstones(400);
+  const storage = await mf.unsafeGetDurableObjectStorage("user-worker", "CacheMetadata", {
+    name: metadataName,
+  });
+  await storage.exec("UPDATE pending_r2_tombstones SET r2_complete = 0");
+  await stub.invalidateMatching({ tags: ["invalidate-in-flight"] }, Date.now());
+  assert.deepEqual((await stub.drainPendingTombstones(400)).failures, []);
+  response = await read("/invalidate-in-flight");
+  assert.equal(await response.text(), "seed");
+  assert.equal(response.headers.get("X-Workers-Response-Store-Revision"), "3");
+});
+
+test("invalidate's expire also expires an entry regenerated before it", async () => {
+  const path = "/invalidate-expire-regenerated";
+  await put(path, "seed", {
+    tags: ["expire-regenerated"],
+    revalidator: {
+      body: "regenerated",
+      cacheControl: "public, max-age=60",
+      cacheTags: ["expire-regenerated"],
+    },
+  });
+
+  await invalidate({ tags: ["expire-regenerated"], expire: 1 });
+  assert.equal(await (await read(path)).text(), "seed");
+  await vi.waitFor(async () => {
+    const fresh = await read(path);
+    assert.equal(await fresh.text(), "regenerated");
+    assert.equal(fresh.headers.get("X-Workers-Response-Store"), "BLOB-FRESH");
+  });
+  await new Promise((resolve) => setTimeout(resolve, 1_100));
+  const expired = await read(path);
+  assert.equal(await expired.text(), "regenerated");
+  assert.equal(expired.headers.get("X-Revalidation-Reason"), "expired");
+});
+
+test("a retried stale rewrite purges the edge once R2 holds its tombstone", async () => {
+  await put("/invalidate-retry", "seed");
+  const stub = await metadataStub();
+  await stub.invalidateMatching({ pathPrefixes: ["/invalidate-retry"] }, Date.now());
+  // A previous drain tombstoned the key but stopped before recording it.
+  const bucket = await mf.getR2Bucket("CACHE_BODIES", "user-worker");
+  await bucket.put((await bucket.list()).objects[0].key, new Uint8Array(), {
+    customMetadata: { latestRevision: "2", tombstoned: "1" },
+  });
+
+  const drained = await stub.drainPendingTombstones(400);
+  assert.equal(drained.purged.length, 1);
+  assert.equal(drained.purged[0].edgeInvalidate, false);
+});
+
+test("invalidate keeps a pending purge's hard edge purge", async () => {
+  await worker.fetch("https://user.test/admin/edge-purge?mode=rate-limit");
+  await put("/invalidate-after-purge", "purged");
+  await purge({ pathPrefixes: ["/invalidate-after-purge"] });
+  await put("/invalidate-after-purge", "replacement");
+
+  await worker.fetch("https://user.test/admin/edge-purge?mode=success&invalidate");
+  const result = await invalidate({ pathPrefixes: ["/invalidate-after-purge"] });
+  assert.deepEqual(result.json, { backingStoreUpdated: true, edgePurgeAccepted: true });
+  assert.deepEqual(
+    (await (await worker.fetch("https://user.test/admin/edge-calls")).json()).map(
+      ({ operation }: { operation: string }) => operation,
+    ),
+    ["purge"],
+  );
+  assert.equal(await (await read("/invalidate-after-purge")).text(), "replacement");
+});
+
+test.each(["rate-limit", "throw", "reject"])(
+  "refresh reports a failed edge invalidation: %s",
+  async (mode) => {
+    await worker.fetch(`https://user.test/admin/edge-purge?mode=${mode}&invalidate`);
+    await put("/refresh-invalidate-failure", "original", {
+      revalidator: { body: "regenerated" },
+    });
+    const result = await refreshSelectors({ pathPrefixes: ["/refresh-invalidate-failure"] });
+    assert.equal(result.response.status, 200);
+    assert.deepEqual(result.json, { backingStoreUpdated: true, edgePurgeAccepted: false });
+    assert.equal(await (await read("/refresh-invalidate-failure")).text(), "regenerated");
+  },
+);
+
+test.each(["rate-limit", "throw", "reject"])(
+  "purge retains tombstones for a later edge purge retry: %s",
+  async (mode) => {
+    await worker.fetch(`https://user.test/admin/edge-purge?mode=${mode}`);
+    await put("/tombstone-purge-failure", "original", { tags: ["purge-failure"] });
+    const options = { tags: ["purge-failure"] };
+    const result = await purge(options);
+    assert.equal(result.response.status, 200);
+    assert.deepEqual(result.json, { backingStoreUpdated: true, edgePurgeAccepted: false });
+    assert.equal((await read("/tombstone-purge-failure")).status, 404);
+    const storage = await mf.unsafeGetDurableObjectStorage("user-worker", "CacheMetadata", {
+      name: metadataName,
+    });
+    assert.deepEqual(
+      await storage.exec("SELECT r2_complete, edge_purge_complete FROM pending_r2_tombstones"),
+      [{ r2_complete: 1, edge_purge_complete: 0 }],
+    );
+    await worker.fetch("https://user.test/admin/edge-purge?mode=success");
+    assert.equal(await (await metadataStub()).retryPendingTombstones(), false);
+    assert.equal(await metadataRowCount("pending_r2_tombstones"), 0);
+  },
+);
+
+test("failed R2 publication retains its tombstone when edge purge fails", async () => {
+  await put("/publication-purge-failure", "original");
+  await worker.fetch("https://user.test/admin/edge-purge?mode=rate-limit&fail-r2");
+  await assert.rejects(
+    put("/publication-purge-failure", "replacement", { purgeExisting: true }),
+    /R2 response publication failed/,
+  );
+  const storage = await mf.unsafeGetDurableObjectStorage("user-worker", "CacheMetadata", {
+    name: metadataName,
+  });
+  assert.deepEqual(
+    await storage.exec("SELECT r2_complete, edge_purge_complete FROM pending_r2_tombstones"),
+    [{ r2_complete: 1, edge_purge_complete: 0 }],
+  );
+  assert.equal((await read("/publication-purge-failure")).status, 404);
+  await worker.fetch("https://user.test/admin/edge-purge?mode=success");
+  assert.equal(await (await metadataStub()).retryPendingTombstones(), false);
+  assert.equal(await metadataRowCount("pending_r2_tombstones"), 0);
+});
+
+test("put and fetch use pathname plus query, excluding host", async () => {
+  const result = await put("/identity?a=1", "first", { host: "one.example" });
+  assert.deepEqual(result.json, { backingStoreUpdated: true, edgePurgeAccepted: true });
+
+  const sameKey = await read("/identity?a=1", { host: "two.example" });
+  assert.equal(sameKey.status, 200);
+  assert.equal(await sameKey.text(), "first");
+  assert.equal(sameKey.headers.get("X-Workers-Response-Store"), "BLOB-FRESH");
+
+  const differentQuery = await read("/identity?a=2", { host: "one.example" });
+  assert.equal(differentQuery.status, 404);
+
+  const entries = await metadata();
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].cacheKey, "/identity?a=1");
+  assert.equal("body" in entries[0], false);
+  const objects = await r2Objects();
+  assert.equal(objects.objects.length, 1);
+  assert.match(objects.objects[0].key, /\/active$/);
+  assert.equal(entries[0].objectKey, objects.objects[0].key);
+  const bucket = await mf.getR2Bucket("CACHE_BODIES", "user-worker");
+  const object = await bucket.head(objects.objects[0].key);
+  assert.ok(object);
+  assert.ok(object.customMetadata);
+  assert.deepEqual(Object.keys(object.customMetadata).sort(), [
+    "createdAt",
+    "freshUntil",
+    "initialAge",
+    "latestRevision",
+    "responseHeaders",
+    "status",
+    "statusText",
+    "swrUntil",
+  ]);
+  assert.equal(object.customMetadata.status, "200");
+  assert.equal(object.customMetadata.initialAge, "0");
+  assert.match(object.customMetadata.createdAt, /^\d{13}$/);
+  assert.equal(await metadataRowCount("pending_objects"), 0);
+});
+
+test("large response headers are stored in the R2 object body envelope", async () => {
+  const result = await put("/large-response-headers", "body", { largeHeaderBytes: 9_000 });
+  assert.deepEqual(result.json, { backingStoreUpdated: true, edgePurgeAccepted: true });
+
+  const response = await read("/large-response-headers");
+  assert.equal(response.headers.get("X-Large-Response-Header"), "x".repeat(9_000));
+  assert.equal(await response.text(), "body");
+
+  const object = await (
+    await mf.getR2Bucket("CACHE_BODIES", "user-worker")
+  ).head((await r2Objects()).objects[0].key);
+  assert.match(object?.customMetadata?.responseMetadataBytes ?? "", /^\d+$/);
+  assert.equal(object?.customMetadata?.responseHeaders, undefined);
+});
+
+test("default R2 keys fetch and miss without SQLite", async () => {
+  const path = "/r2-native";
+  const digest = await cacheKeyHash(path);
+  const result = await put(path, "stored-through-r2", {
+    cacheControl: "public, max-age=60, stale-while-revalidate=60",
+  });
+  assert.deepEqual(result.json, { backingStoreUpdated: true, edgePurgeAccepted: true });
+
+  const objects = await r2Objects();
+  assert.deepEqual(
+    objects.objects.map(({ key }) => key),
+    [`${r2Root}/${digest}/active`],
+  );
+
+  const storage = await mf.unsafeGetDurableObjectStorage("user-worker", "CacheMetadata", {
+    name: metadataName,
+  });
+  await storage.exec("DROP TABLE entries");
+
+  const stored = await read(path);
+  assert.equal(stored.status, 200);
+  assert.equal(stored.headers.get("X-Workers-Response-Store"), "BLOB-FRESH");
+  assert.equal(await stored.text(), "stored-through-r2");
+
+  const miss = await read("/r2-miss");
+  assert.equal(miss.status, 404);
+  assert.equal(miss.headers.get("X-Workers-Response-Store"), "MISS");
+});
+
+test("versioned response-store keys remain ordinary keys in the Worker and shard layout", async () => {
+  const digest = "01".repeat(32);
+  const path = `/r2-sharded?__workers_response_store=v1.${digest}`;
+  await put(path, "sharded", { shards: 4 });
+
+  assert.deepEqual(
+    (await r2Objects()).objects.map(({ key }) => key),
+    [`${r2Root}/shards-4/${await cacheKeyHash(path)}/active`],
+  );
+  assert.equal(
+    await metadataRowCount("entries", metadataShardName(4, await cacheKeyShard(path, 4))),
+    1,
+  );
+  assert.equal(await (await read(path, { shards: 4 })).text(), "sharded");
+});
+
+test("a versioned-looking query parameter cannot alias another cache key", async () => {
+  const victim = "/digest-victim";
+  const attacker = `/digest-attacker?__workers_response_store=v1.${await cacheKeyHash(victim)}`;
+  await put(victim, "victim");
+  await put(attacker, "attacker");
+
+  assert.equal(await (await read(victim)).text(), "victim");
+  assert.equal(await (await read(attacker)).text(), "attacker");
+  assert.equal((await r2Objects()).objects.length, 2);
+});
+
+test("framework-specific and malformed markers remain ordinary R2 keys", async () => {
+  const frameworkKey = `/framework-key?__some_framework_cache_key=${"12".repeat(32)}`;
+  const malformedNewKey = "/malformed-key?__workers_response_store=not-versioned";
+  await put(frameworkKey, "framework");
+  await put(malformedNewKey, "malformed");
+
+  const objects = await r2Objects();
+  assert.deepEqual(
+    objects.objects.map(({ key }) => key).sort(),
+    [
+      `${r2Root}/${await cacheKeyHash(frameworkKey)}/active`,
+      `${r2Root}/${await cacheKeyHash(malformedNewKey)}/active`,
+    ].sort(),
+  );
+  assert.equal(await (await read(frameworkKey)).text(), "framework");
+  assert.equal(await (await read(malformedNewKey)).text(), "malformed");
+});
+
+test("legacy revision objects become cold misses and refill through the unchanged API", async () => {
+  const path = `/legacy-layout?__vinext_response_store=${"34".repeat(32)}`;
+  const digest = await cacheKeyHash(path);
+  const namespace = await mf.getDurableObjectNamespace("CACHE_METADATA", "user-worker");
+  const stub = namespace.getByName(versionId) as any;
+  const reservation = await stub.reserveWrite(
+    digest,
+    path,
+    `runtime-cache/${versionId}/${digest}`,
+    Date.now(),
+  );
+  const bucket = await mf.getR2Bucket("CACHE_BODIES", "user-worker");
+  await bucket.put(reservation.objectKey, "legacy-body", {
+    customMetadata: { status: "200", createdAt: String(Date.now()), initialAge: "0" },
+  });
+  const publication = await stub.publish(digest, reservation.revision, {
+    objectKey: reservation.objectKey,
+    statusText: "",
+    responseHeaders: [["cache-control", "public, max-age=60"]],
+    freshUntil: Date.now() + 60_000,
+    swrUntil: Date.now() + 60_000,
+    revalidator: null,
+    cacheTags: [],
+    fenceTags: [],
+  });
+  assert.equal(publication.published, true);
+
+  assert.equal((await read(path)).status, 404);
+  assert.deepEqual((await put(path, "current-layout")).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: true,
+  });
+  assert.equal(await (await read(path)).text(), "current-layout");
+  assert.equal((await metadata())[0].objectKey, `${r2Root}/${digest}/active`);
+  assert.notEqual(await bucket.head(reservation.objectKey), null);
+  assert.notEqual(await bucket.head(`${r2Root}/${digest}/active`), null);
+});
+
+test("purge fences a default R2 key with a tombstone that a later put replaces", async () => {
+  const path = "/r2-purge";
+  const digest = await cacheKeyHash(path);
+  const objectKey = `${r2Root}/${digest}/active`;
+  await put(path, "before-purge", { tags: ["r2-tag"] });
+
+  const purged = await purge({ tags: ["r2-tag"] });
+  assert.deepEqual(purged.json, { backingStoreUpdated: true, edgePurgeAccepted: false });
+
+  const bucket = await mf.getR2Bucket("CACHE_BODIES", "user-worker");
+  const tombstone = await bucket.head(objectKey);
+  assert.deepEqual(tombstone?.customMetadata, {
+    latestRevision: "2",
+    tombstoned: "1",
+  });
+  assert.equal(tombstone?.size, 0);
+  assert.equal((await read(path)).status, 404);
+
+  await put(path, "after-purge");
+  const replacement = await bucket.head(objectKey);
+  assert.equal(replacement?.customMetadata?.tombstoned, undefined);
+  assert.equal(replacement?.customMetadata?.latestRevision, "3");
+  assert.equal(await (await read(path)).text(), "after-purge");
+});
+
+test("a reserved write cannot recreate a default R2 object after purge", async () => {
+  const path = "/r2-purge-race";
+  const digest = await cacheKeyHash(path);
+  const objectKey = `${r2Root}/${digest}/active`;
+  await put(path, "active");
+
+  const delayed = put(path, "too-late", { bodyDelayMs: 300 });
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if ((await metadataRowCount("pending_objects")) > 0) break;
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  }
+  assert.equal(await metadataRowCount("pending_objects"), 1);
+
+  await purge({ pathPrefixes: ["/r2-purge-race"] });
+  assert.deepEqual((await delayed).json, {
+    backingStoreUpdated: false,
+    edgePurgeAccepted: false,
+  });
+
+  const bucket = await mf.getR2Bucket("CACHE_BODIES", "user-worker");
+  const tombstone = await bucket.head(objectKey);
+  assert.equal(tombstone?.customMetadata?.tombstoned, "1");
+  assert.equal(tombstone?.customMetadata?.latestRevision, "3");
+  assert.equal((await read(path)).status, 404);
+});
+
+test("refresh rewrites the metadata and body on a default R2 object", async () => {
+  const path = "/r2-refresh";
+  const digest = await cacheKeyHash(path);
+  const objectKey = `${r2Root}/${digest}/active`;
+  await put(path, "before-refresh", {
+    revalidator: { body: "after-refresh", cacheControl: "public, max-age=60" },
+  });
+
+  const refreshed = await refreshSelectors({ pathPrefixes: ["/r2-refresh"] });
+  assert.equal(refreshed.json.backingStoreUpdated, true);
+
+  const bucket = await mf.getR2Bucket("CACHE_BODIES", "user-worker");
+  const object = await bucket.head(objectKey);
+  assert.equal(object?.customMetadata?.latestRevision, "2");
+  assert.equal(await (await read(path)).text(), "after-refresh");
+});
+
+test("opt-in shards distribute keys while preserving refresh, tag invalidation, and SWR", async () => {
+  const shards = 4;
+  const paths = await onePathPerShard(shards);
+
+  for (const [index, path] of paths.entries()) {
+    await put(path, `seed-${index}`, {
+      revalidator: {
+        body: `refreshed-${index}`,
+        cacheControl: "public, max-age=60",
+        cacheTags: ["sharded-tag"],
+      },
+      shards,
+      tags: ["sharded-tag"],
+    });
+  }
+
+  const namespace = await mf.getDurableObjectNamespace("CACHE_METADATA", "user-worker");
+  for (let index = 0; index < shards; index++) {
+    const entries = await (namespace.getByName(metadataShardName(shards, index)) as any).inspect();
+    assert.equal(entries.length, 1);
+  }
+
+  assert.deepEqual((await refreshSelectors({ tags: ["SHARDED-TAG"] }, shards)).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: false,
+  });
+  for (const [index, path] of paths.entries()) {
+    assert.equal(await (await read(path, { shards })).text(), `refreshed-${index}`);
+  }
+
+  assert.deepEqual((await purge({ tags: ["sharded-tag"] }, shards)).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: false,
+  });
+  const expirations = await Promise.all(
+    Array.from({ length: shards }, (_, index) =>
+      (namespace.getByName(metadataShardName(shards, index)) as any).getTagExpiration([
+        "sharded-tag",
+      ]),
+    ),
+  );
+  assert.ok(expirations[0] > 0);
+  assert.ok(expirations.every((expiration) => expiration === expirations[0]));
+  assert.equal(await tagExpiration(["sharded-tag"], shards), expirations[0]);
+  for (const path of paths) assert.equal((await read(path, { shards })).status, 404);
+
+  const swrPath = paths[0];
+  await put(swrPath, "stale", {
+    cacheControl: "public, max-age=0, stale-while-revalidate=30",
+    revalidator: { body: "fresh", cacheControl: "public, max-age=60", delayMs: 100 },
+    shards,
+  });
+  const stale = await Promise.all(Array.from({ length: 4 }, () => read(swrPath, { shards })));
+  assert.deepEqual(await Promise.all(stale.map((response) => response.text())), [
+    "stale",
+    "stale",
+    "stale",
+    "stale",
+  ]);
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  assert.equal(await (await read(swrPath, { shards })).text(), "fresh");
+});
+
+test("sharded refresh completes healthy shards before reporting reservation failures", async () => {
+  const shards = 4;
+  const paths = await onePathPerShard(shards);
+
+  for (const [index, path] of paths.entries()) {
+    await put(path, `seed-${index}`, {
+      revalidator: { body: `refreshed-${index}`, cacheControl: "public, max-age=60" },
+      shards,
+      tags: ["partial-refresh"],
+    });
+  }
+
+  const failedShard = 0;
+  const storage = await mf.unsafeGetDurableObjectStorage("user-worker", "CacheMetadata", {
+    name: metadataShardName(shards, failedShard),
+  });
+  await storage.exec("DROP TABLE entries");
+
+  const result = await refreshSelectors({ tags: ["partial-refresh"] }, shards);
+  assert.equal(result.response.status, 500);
+  assert.deepEqual(result.json, { error: "One or more cache entries failed to refresh" });
+
+  for (let index = 1; index < shards; index++) {
+    assert.equal(await (await read(paths[index], { shards })).text(), `refreshed-${index}`);
+  }
+});
+
+test("a sharded tag purge fences an in-flight publication on its key shard", async () => {
+  const shards = 4;
+  const path = "/sharded/pending-tag";
+  const shardName = metadataShardName(shards, await cacheKeyShard(path, shards));
+  const write = put(path, "too-late", {
+    bodyDelayMs: 300,
+    shards,
+    tags: ["pending-sharded-tag"],
+  });
+
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if ((await metadataRowCount("pending_objects", shardName)) === 1) break;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  assert.equal(await metadataRowCount("pending_objects", shardName), 1);
+
+  await purge({ tags: ["pending-sharded-tag"] }, shards);
+  assert.deepEqual((await write).json, {
+    backingStoreUpdated: false,
+    edgePurgeAccepted: false,
+  });
+  assert.equal((await read(path, { shards })).status, 404);
+});
+
+test("null-body response statuses refill without an R2 body stream", async () => {
+  const result = await put("/no-content", "ignored", { status: 204 });
+  assert.deepEqual(result.json, { backingStoreUpdated: true, edgePurgeAccepted: true });
+
+  const response = await read("/no-content");
+  assert.equal(response.status, 204);
+  assert.equal(await response.text(), "");
+  assert.equal((await r2Objects()).objects.length, 1);
+});
+
+test("a cold refill preserves downstream headers, representation age, and remaining freshness", async () => {
+  await put("/freshness", "aged", {
+    cacheControl: "public, max-age=100, stale-while-revalidate=100",
+    cloudflareCacheControl: "max-age=3, stale-while-revalidate=4",
+    age: 1,
+  });
+
+  const first = await read("/freshness");
+  assert.equal(
+    first.headers.get("Cache-Control"),
+    "public, max-age=100, stale-while-revalidate=100",
+  );
+  assert.equal(
+    first.headers.get("Cloudflare-CDN-Cache-Control"),
+    "max-age=2, stale-while-revalidate=4",
+  );
+  assert.equal(first.headers.get("Age"), "1");
+  const ageBasis = first.headers.get("X-Workers-Response-Store-Age-Basis");
+  assert.ok(ageBasis);
+  assert.match(ageBasis, /^\d{13}:1$/);
+  await first.arrayBuffer();
+
+  await new Promise((resolve) => setTimeout(resolve, 1100));
+  const later = await read("/freshness");
+  assert.match(
+    later.headers.get("Cloudflare-CDN-Cache-Control") ?? "",
+    /^max-age=[01], stale-while-revalidate=4$/,
+  );
+  assert.ok(Number(later.headers.get("Age")) >= 2);
+  assert.equal(later.headers.get("X-Workers-Response-Store-Age-Basis"), ageBasis);
+});
+
+test("cache policy disables SWR when Workers Cache forbids stale serving", async () => {
+  for (const [path, cacheControl] of [
+    ["/policy/s-maxage", "public, s-maxage=60, stale-while-revalidate=30"],
+    ["/policy/must-revalidate", "public, max-age=60, must-revalidate, stale-while-revalidate=30"],
+    ["/policy/proxy-revalidate", "public, max-age=60, proxy-revalidate, stale-while-revalidate=30"],
+  ]) {
+    await put(path, "policy", { cacheControl });
+    const response = await read(path);
+    assert.equal(
+      response.headers.get("Cloudflare-CDN-Cache-Control"),
+      "max-age=60, stale-while-revalidate=0",
+    );
+  }
+
+  await put("/policy/no-cache", "policy", {
+    cacheControl: "public, no-cache, max-age=60, stale-while-revalidate=30",
+  });
+  const immediatelyStale = await read("/policy/no-cache");
+  assert.equal(immediatelyStale.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  assert.equal(
+    immediatelyStale.headers.get("Cloudflare-CDN-Cache-Control"),
+    "max-age=0, stale-while-revalidate=30",
+  );
+
+  await put("/policy/invalid-max-age", "policy", {
+    cacheControl: "public, max-age=2.5, stale-while-revalidate=30",
+  });
+  const invalidMaxAge = await read("/policy/invalid-max-age");
+  assert.equal(invalidMaxAge.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  assert.match(
+    invalidMaxAge.headers.get("Cloudflare-CDN-Cache-Control") ?? "",
+    /^max-age=0, stale-while-revalidate=(29|30)$/,
+  );
+
+  await put("/policy/invalid-swr", "policy", {
+    cacheControl: "public, max-age=60, stale-while-revalidate=30seconds",
+  });
+  const invalidSwr = await read("/policy/invalid-swr");
+  assert.match(
+    invalidSwr.headers.get("Cloudflare-CDN-Cache-Control") ?? "",
+    /^max-age=(59|60), stale-while-revalidate=0$/,
+  );
+});
+
+test("stored responses advertise stable ETags that distinguish equal Last-Modified revisions", async () => {
+  const lastModified = "Tue, 29 Sep 2026 00:00:00 GMT";
+  await put("/validators", "first-body", { lastModified });
+  const first = await read("/validators");
+  const etag = first.headers.get("ETag");
+  assert.ok(etag);
+  assert.equal(first.headers.get("Last-Modified"), lastModified);
+  assert.equal((await read("/validators")).headers.get("ETag"), etag);
+
+  await put("/validators", "second-body", { lastModified });
+  const second = await read("/validators");
+  assert.equal(second.headers.get("Last-Modified"), lastModified);
+  assert.notEqual(second.headers.get("ETag"), etag);
+});
+
+test("stored responses preserve application validators", async () => {
+  const etag = '"application-etag"';
+  const lastModified = "Tue, 29 Sep 2026 00:00:00 GMT";
+  await put("/app-validators", "body", { etag, lastModified });
+  const response = await read("/app-validators");
+  assert.equal(response.headers.get("ETag"), etag);
+  assert.equal(response.headers.get("Last-Modified"), lastModified);
+});
+
+test.each(["If-None-Match", "If-Modified-Since"])(
+  "Workers Cache %s revalidation returns the committed fresh response",
+  async (header) => {
+    await put("/conditional-stale", "stale-body", {
+      cacheControl: "public, max-age=0, stale-while-revalidate=30",
+      revalidator: { body: "fresh-body", cacheControl: "public, max-age=60", delayMs: 100 },
+    });
+
+    const response = await conditionalRead("/conditional-stale", header);
+    assert.equal(await response.text(), "fresh-body");
+    assert.equal(response.headers.get("X-Revalidation-Reason"), "swr");
+    assert.equal(response.headers.get("X-Workers-Response-Store"), "BLOB-FRESH");
+    assert.equal(response.headers.get("X-Workers-Response-Store-Revision"), "2");
+    assert.equal(await (await read("/conditional-stale")).text(), "fresh-body");
+    assert.equal(await metadataRowCount("pending_objects"), 0);
+  },
+);
+
+test("conditional reads reuse fresh backing responses without regenerating", async () => {
+  await put("/conditional-fresh", "fresh-body", { revalidator: { fail: true } });
+  const response = await conditionalRead("/conditional-fresh");
+  assert.equal(await response.text(), "fresh-body");
+  assert.equal(response.headers.get("X-Workers-Response-Store-Revision"), "1");
+});
+
+test("failed conditional revalidation does not return stale as a successful replacement", async () => {
+  await put("/conditional-failure", "stale-body", {
+    cacheControl: "public, max-age=0, stale-while-revalidate=30",
+    revalidator: { body: "recovered", cacheControl: "public, max-age=60", failOnce: true },
+  });
+  await assert.rejects(conditionalRead("/conditional-failure"), /regeneration failure/);
+  assert.equal(await metadataRowCount("pending_objects"), 0);
+  assert.equal(await (await conditionalRead("/conditional-failure")).text(), "recovered");
+});
+
+test("stale R2 content returns immediately and deduplicates background regeneration", async () => {
+  await put("/stale", "stale-body", {
+    cacheControl: "public, max-age=0, stale-while-revalidate=30",
+    revalidator: {
+      body: "swr-regenerated",
+      cacheControl: "public, max-age=60, stale-while-revalidate=30",
+      delayMs: 500,
+    },
+  });
+
+  const startedAt = Date.now();
+  const responses = await Promise.all(Array.from({ length: 8 }, () => read("/stale")));
+  assert.ok(Date.now() - startedAt < 400, "stale reads should not await the 500ms regeneration");
+  assert.deepEqual(
+    await Promise.all(responses.map((response) => response.text())),
+    Array.from({ length: 8 }, () => "stale-body"),
+  );
+  assert.equal(responses[0].headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  assert.match(
+    responses[0].headers.get("Cloudflare-CDN-Cache-Control") ?? "",
+    /^max-age=0, stale-while-revalidate=(29|30)$/,
+  );
+
+  await new Promise((resolve) => setTimeout(resolve, 650));
+  const fresh = await read("/stale");
+  assert.equal(await fresh.text(), "swr-regenerated");
+  assert.equal(fresh.headers.get("X-Revalidation-Reason"), "swr");
+  assert.equal(fresh.headers.get("X-Workers-Response-Store-Revision"), "2");
+  const stats = (await (await worker.fetch("https://user.test/admin/stats")).json()) as {
+    regenerationCount: number;
+  };
+  assert.equal(stats.regenerationCount, 1);
+  assert.equal(await metadataRowCount("revalidation_claims"), 0);
+  assert.equal(await metadataRowCount("pending_objects"), 0);
+});
+
+test("conditional and unconditional stale reads share one regeneration claim", async () => {
+  await put("/conditional-claim", "stale-body", {
+    cacheControl: "public, max-age=0, stale-while-revalidate=30",
+    revalidator: { body: "fresh-body", cacheControl: "public, max-age=60", delayMs: 500 },
+  });
+
+  const first = conditionalRead("/conditional-claim");
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if ((await metadataRowCount("revalidation_claims")) === 1) break;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  assert.equal(await metadataRowCount("revalidation_claims"), 1);
+  await assert.rejects(
+    conditionalRead("/conditional-claim"),
+    /revalidation is already in progress/,
+  );
+  assert.equal(await (await read("/conditional-claim")).text(), "stale-body");
+  assert.equal(await (await first).text(), "fresh-body");
+  const stats = (await (await worker.fetch("https://user.test/admin/stats")).json()) as {
+    regenerationCount: number;
+    maxConcurrentRegenerations: number;
+  };
+  assert.equal(stats.regenerationCount, 1);
+  assert.equal(stats.maxConcurrentRegenerations, 1);
+  assert.equal(await metadataRowCount("revalidation_claims"), 0);
+  assert.equal(await metadataRowCount("pending_objects"), 0);
+});
+
+test("a superseded conditional revalidation never returns the old active body", async () => {
+  const path = "/conditional-lease-expiry";
+  await put(path, "stale-body", {
+    cacheControl: "public, max-age=0, stale-while-revalidate=60",
+    revalidator: { body: "fresh-body", cacheControl: "public, max-age=60", delayMs: 500 },
+  });
+  const [entry] = await metadata();
+  const pending = conditionalRead(path);
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if ((await metadataRowCount("revalidation_claims")) === 1) break;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  assert.equal(await metadataRowCount("revalidation_claims"), 1);
+
+  // Advance the claim's clock without waiting 30 seconds or changing R2 age.
+  const stub = await metadataStub();
+  const replacement = await stub.claimRevalidation(
+    entry.keyHash,
+    entry.activeRevision,
+    entry.cacheKey,
+    `${r2Root}/${entry.keyHash}`,
+    Date.now() + 30_001,
+    30_000,
+  );
+  assert.ok(replacement);
+  await assert.rejects(pending, /revalidation is already in progress or was superseded/);
+  assert.equal((await metadata())[0].activeRevision, 1);
+  assert.equal(await metadataRowCount("revalidation_claims"), 1);
+
+  await stub.releaseWrite(entry.keyHash, replacement.objectKey, replacement.claimId);
+  assert.equal(await (await conditionalRead(path)).text(), "fresh-body");
+  assert.equal(await metadataRowCount("revalidation_claims"), 0);
+  assert.equal(await metadataRowCount("pending_objects"), 0);
+});
+
+test("a failed background regeneration releases its claim for a later retry", async () => {
+  await put("/stale-retry", "stale-body", {
+    cacheControl: "public, max-age=0, stale-while-revalidate=30",
+    revalidator: {
+      body: "retry-succeeded",
+      cacheControl: "public, max-age=60",
+      failOnce: true,
+    },
+  });
+
+  assert.equal(await (await read("/stale-retry")).text(), "stale-body");
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  assert.equal(await (await read("/stale-retry")).text(), "stale-body");
+
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  const fresh = await read("/stale-retry");
+  assert.equal(await fresh.text(), "retry-succeeded");
+  const stats = (await (await worker.fetch("https://user.test/admin/stats")).json()) as {
+    regenerationCount: number;
+  };
+  assert.equal(stats.regenerationCount, 2);
+});
+
+test("hard-expired content is never returned and regeneration is committed before serving", async () => {
+  await put("/expired", "must-not-return", {
+    cacheControl: "public, max-age=0",
+    revalidator: {
+      body: "regenerated-body",
+      cacheControl: "public, max-age=60, stale-while-revalidate=30",
+    },
+  });
+
+  const response = await read("/expired", {
+    headers: { "X-Visitor-Secret": "must-not-reach-regeneration" },
+  });
+  assert.equal(await response.text(), "regenerated-body");
+  assert.equal(response.headers.get("X-Revalidation-Reason"), "expired");
+  assert.equal(response.headers.get("X-Revalidation-Request"), "/expired");
+  assert.equal(response.headers.get("X-Revalidation-Observed-Visitor"), "absent");
+  assert.equal(response.headers.get("X-Revalidation-Version"), "poc-v2");
+  assert.equal(response.headers.get("X-Workers-Response-Store-Revision"), "2");
+  const objects = await r2Objects();
+  assert.equal(objects.objects.length, 1, "the superseded R2 revision is deleted");
+});
+
+test("expiryBehavior: miss returns a miss for hard-expired content without regenerating", async () => {
+  await put("/expired-miss", "must-not-return", {
+    cacheControl: "public, max-age=0",
+    expiryBehavior: "miss",
+    tags: ["expired-miss"],
+    revalidator: { bodyPrefix: "manual", cacheControl: "public, max-age=0" },
+  });
+  assert.equal((await metadata())[0].expiryBehavior, "miss");
+
+  const missed = await read("/expired-miss");
+  assert.equal(missed.status, 404);
+  assert.equal(missed.headers.get("X-Workers-Response-Store"), "MISS");
+  assert.equal(missed.headers.get("Cache-Control"), "no-store");
+  assert.equal(await missed.text(), "Workers Response Store miss");
+  const stats = (await (await worker.fetch("https://user.test/admin/stats")).json()) as {
+    regenerationCount: number;
+  };
+  assert.equal(stats.regenerationCount, 0);
+  assert.equal((await metadata())[0].activeRevision, 1);
+
+  // refresh() still regenerates through the stored revalidator and keeps the policy.
+  const result = await refreshSelectors({ tags: ["expired-miss"] });
+  assert.equal(result.json.backingStoreUpdated, true);
+  const [entry] = await metadata();
+  assert.equal(entry.activeRevision, 2);
+  assert.equal(entry.expiryBehavior, "miss");
+  const refreshed = await read("/expired-miss");
+  assert.equal(refreshed.status, 404);
+  assert.equal(refreshed.headers.get("X-Workers-Response-Store"), "MISS");
+});
+
+test("expiryBehavior: miss also answers conditional and large-header reads with a miss", async () => {
+  await put("/expired-miss-conditional", "must-not-return", {
+    cacheControl: "public, max-age=0",
+    expiryBehavior: "miss",
+    revalidator: { body: "must-not-regenerate", cacheControl: "public, max-age=60" },
+  });
+  await put("/expired-miss-large", "must-not-return", {
+    cacheControl: "public, max-age=0",
+    expiryBehavior: "miss",
+    largeHeaderBytes: 9_000,
+    revalidator: { body: "must-not-regenerate", cacheControl: "public, max-age=60" },
+  });
+
+  const conditional = await conditionalRead("/expired-miss-conditional");
+  assert.equal(conditional.status, 404);
+  assert.equal(conditional.headers.get("X-Workers-Response-Store"), "MISS");
+  const large = await read("/expired-miss-large");
+  assert.equal(large.status, 404);
+  assert.equal(large.headers.get("X-Workers-Response-Store"), "MISS");
+  const stats = (await (await worker.fetch("https://user.test/admin/stats")).json()) as {
+    regenerationCount: number;
+  };
+  assert.equal(stats.regenerationCount, 0);
+});
+
+test("expiryBehavior: miss still serves stale content and regenerates it in the background", async () => {
+  await put("/expired-miss-stale", "stale-body", {
+    cacheControl: "public, max-age=0, stale-while-revalidate=30",
+    expiryBehavior: "miss",
+    revalidator: { body: "swr-regenerated", cacheControl: "public, max-age=60" },
+  });
+
+  const stale = await read("/expired-miss-stale");
+  assert.equal(await stale.text(), "stale-body");
+  assert.equal(stale.headers.get("X-Workers-Response-Store"), "BLOB-STALE");
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  const fresh = await read("/expired-miss-stale");
+  assert.equal(await fresh.text(), "swr-regenerated");
+  assert.equal((await metadata())[0].expiryBehavior, "miss");
+});
+
+test("missing R2 content returns a cache miss without querying metadata", async () => {
+  const path = "/missing-body";
+  await put(path, "lost");
+  const bucket = await mf.getR2Bucket("CACHE_BODIES", "user-worker");
+  const before = await bucket.list();
+  await bucket.delete(before.objects[0].key);
+
+  const response = await read(path);
+  assert.equal(response.status, 404);
+  assert.equal(response.headers.get("X-Workers-Response-Store"), "MISS");
+});
+
+test("manual refresh replaces R2 before reporting the local edge-purge limitation", async () => {
+  await put("/refresh", "seed", {
+    tags: ["manual-refresh"],
+    revalidator: { bodyPrefix: "manual", cacheControl: "public, max-age=60" },
+  });
+  const result = await refreshSelectors({ tags: ["manual-refresh"] });
+  assert.deepEqual(result.json, { backingStoreUpdated: true, edgePurgeAccepted: false });
+
+  const response = await read("/refresh");
+  assert.match(await response.text(), /^manual:1:/);
+  assert.equal(response.headers.get("X-Revalidation-Reason"), "manual");
+  assert.equal((await r2Objects()).objects.length, 1);
+});
+
+test("refresh candidate selection returns only reservation fields", async () => {
+  const path = "/refresh-candidate-projection";
+  await put(path, "seed", {
+    largeHeaderBytes: 16_000,
+    revalidator: { body: "refreshed", cacheControl: "public, max-age=60" },
+  });
+
+  const metadata = await metadataStub();
+  const options = { pathPrefixes: [path] };
+  assert.deepEqual(await metadata.findRefreshCandidates(options, "reservation"), [
+    {
+      keyHash: await cacheKeyHash(path),
+      cacheKey: path,
+      activeRevision: 1,
+      latestRevision: 1,
+      hasRevalidator: true,
+    },
+  ]);
+  assert.deepEqual((await metadata.findRefreshCandidates(options))[0]?.revalidator, {
+    id: "fixture-render",
+    args: [{ body: "refreshed", cacheControl: "public, max-age=60" }],
+  });
+});
+
+test("refresh selects entries by tag and path prefix", async () => {
+  await put("/refresh-select/tagged", "tagged-seed", {
+    tags: ["refresh-group"],
+    revalidator: {
+      body: "tag-refreshed",
+      cacheControl: "public, max-age=60",
+      cacheTags: ["refresh-group"],
+    },
+  });
+  await put("/refresh-select/prefix/a", "prefix-seed", {
+    revalidator: { body: "prefix-refreshed", cacheControl: "public, max-age=60" },
+  });
+  await put("/refresh-select/untouched", "untouched-seed", {
+    revalidator: { body: "should-not-run", cacheControl: "public, max-age=60" },
+  });
+
+  assert.deepEqual((await refreshSelectors({ tags: ["REFRESH-GROUP"] })).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: false,
+  });
+  assert.equal(await (await read("/refresh-select/tagged")).text(), "tag-refreshed");
+  assert.equal(await (await read("/refresh-select/prefix/a")).text(), "prefix-seed");
+
+  assert.deepEqual((await refreshSelectors({ pathPrefixes: ["/refresh-select/prefix"] })).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: false,
+  });
+  assert.equal(await (await read("/refresh-select/prefix/a")).text(), "prefix-refreshed");
+  assert.equal(await (await read("/refresh-select/untouched")).text(), "untouched-seed");
+  assert.equal((await r2Objects()).objects.length, 3);
+});
+
+test("refresh accepts more tag selectors than one SQLite parameter batch", async () => {
+  const tags = Array.from({ length: 101 }, (_, index) => `selector-${index}`);
+  await put("/refresh-many-tags", "seed", {
+    tags: [tags.at(-1)!],
+    revalidator: { body: "refreshed", cacheControl: "public, max-age=60" },
+  });
+
+  assert.deepEqual((await refreshSelectors({ tags })).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: false,
+  });
+  assert.equal(await (await read("/refresh-many-tags")).text(), "refreshed");
+});
+
+test("manual refresh handles more than one hundred candidates", async () => {
+  await Promise.all(
+    Array.from({ length: 101 }, (_, index) =>
+      put(`/refresh-batch/${index}`, "seed", {
+        tags: ["refresh-batch"],
+        revalidator: { body: "refreshed", cacheControl: "public, max-age=60" },
+      }),
+    ),
+  );
+
+  assert.deepEqual((await refreshSelectors({ tags: ["refresh-batch"] })).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: false,
+  });
+  assert.equal((await metadata()).filter((entry) => entry.activeRevision === 2).length, 101);
+  assert.equal(await metadataRowCount("pending_objects"), 0);
+  assert.equal((await r2Objects()).objects.length, 101);
+});
+
+test("manual refresh bounds revalidator concurrency and completes every candidate", async () => {
+  const candidateCount = 13;
+  await Promise.all(
+    Array.from({ length: candidateCount }, (_, index) =>
+      put(`/refresh-concurrency/${index}`, `seed-${index}`, {
+        tags: ["refresh-concurrency"],
+        revalidator: {
+          body: `refreshed-${index}`,
+          cacheControl: "public, max-age=60",
+          delayMs: 50,
+          fail: index === candidateCount - 1,
+        },
+      }),
+    ),
+  );
+
+  const result = await refreshSelectors({ tags: ["refresh-concurrency"] });
+  assert.equal(result.response.status, 500);
+  assert.deepEqual(result.json, { error: "One or more cache entries failed to refresh" });
+
+  const stats = (await (await worker.fetch("https://user.test/admin/stats")).json()) as {
+    activeRegenerationCount: number;
+    maxConcurrentRegenerations: number;
+    regenerationCount: number;
+  };
+  assert.deepEqual(stats, {
+    activeRegenerationCount: 0,
+    maxConcurrentRegenerations: 6,
+    regenerationCount: candidateCount,
+  });
+
+  for (let index = 0; index < candidateCount; index++) {
+    assert.equal(
+      await (await read(`/refresh-concurrency/${index}`)).text(),
+      index === candidateCount - 1 ? `seed-${index}` : `refreshed-${index}`,
+    );
+  }
+});
+
+test("manual refresh reserves candidates only as concurrency slots become available", async () => {
+  const candidateCount = 13;
+  await Promise.all(
+    Array.from({ length: candidateCount }, (_, index) =>
+      put(`/refresh-reservation-window/${index}`, `seed-${index}`, {
+        tags: ["refresh-reservation-window"],
+        revalidator: {
+          body: `refreshed-${index}`,
+          cacheControl: "public, max-age=60",
+          delayMs: 500,
+        },
+      }),
+    ),
+  );
+
+  const refreshing = refreshSelectors({ tags: ["refresh-reservation-window"] });
+  let activePaths: string[] = [];
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const response = await worker.fetch("https://user.test/admin/active-regenerations");
+    activePaths = (await response.json()) as string[];
+    if (activePaths.length === 6) break;
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  }
+  assert.equal(activePaths.length, 6);
+
+  const activeObjectKeys = await Promise.all(
+    activePaths.map(async (path) => `${r2Root}/${await cacheKeyHash(path)}/2`),
+  );
+  const storage = await mf.unsafeGetDurableObjectStorage("user-worker", "CacheMetadata", {
+    name: metadataName,
+  });
+  await storage.exec(
+    `UPDATE pending_objects SET created_at = CASE
+      WHEN object_key IN (${activeObjectKeys.map(() => "?").join(", ")}) THEN ? ELSE 0 END`,
+    ...activeObjectKeys,
+    Date.now(),
+  );
+
+  const swept = await (await metadataStub()).sweepExpiredPendingObjects(1);
+  const result = await refreshing;
+  assert.equal(swept, 0);
+  assert.deepEqual(result.json, { backingStoreUpdated: true, edgePurgeAccepted: false });
+  assert.equal(
+    (await metadata()).filter((entry) => entry.activeRevision === 2).length,
+    candidateCount,
+  );
+  assert.equal(await metadataRowCount("pending_objects"), 0);
+});
+
+test("manual refresh does not regenerate a replacement outside its selected revision", async () => {
+  const paths = Array.from({ length: 7 }, (_, index) => `/refresh-replacement/${index}`);
+  await Promise.all(
+    paths.map((path, index) =>
+      put(path, `seed-${index}`, {
+        tags: ["refresh-replacement"],
+        revalidator: {
+          body: `refreshed-${index}`,
+          cacheControl: "public, max-age=60",
+          delayMs: 300,
+        },
+      }),
+    ),
+  );
+
+  const refreshing = refreshSelectors({ tags: ["refresh-replacement"] });
+  let activePaths: string[] = [];
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const response = await worker.fetch("https://user.test/admin/active-regenerations");
+    activePaths = (await response.json()) as string[];
+    if (activePaths.length === 6) break;
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  }
+  assert.equal(activePaths.length, 6);
+
+  const queuedPath = paths.find((path) => !activePaths.includes(path));
+  assert.ok(queuedPath);
+  const replacement = put(queuedPath, "replacement", { bodyDelayMs: 600 });
+  let replacementReserved = false;
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const queuedEntry = (await metadata()).find((entry) => entry.cacheKey === queuedPath);
+    if (queuedEntry?.latestRevision === 2) {
+      replacementReserved = true;
+      break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  }
+  assert.equal(replacementReserved, true);
+
+  const [refreshResult, replacementResult] = await Promise.all([refreshing, replacement]);
+  assert.deepEqual(refreshResult.json, {
+    backingStoreUpdated: false,
+    edgePurgeAccepted: false,
+  });
+  assert.deepEqual(replacementResult.json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: true,
+  });
+  assert.equal(await (await read(queuedPath)).text(), "replacement");
+  assert.equal(await metadataRowCount("pending_objects"), 0);
+});
+
+test("refresh and purge select entries from their stored tags", async () => {
+  await put("/tag-index", "seed", {
+    tags: ["Original", "Shared"],
+    revalidator: {
+      body: "refreshed",
+      cacheControl: "public, max-age=60",
+      cacheTags: ["Replacement"],
+    },
+  });
+
+  assert.deepEqual((await metadata())[0].cacheTags, ["Original", "Shared"]);
+  assert.equal(await metadataRowCount("entry_tags"), 2);
+  assert.deepEqual((await refreshSelectors({ tags: ["ORIGINAL"] })).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: false,
+  });
+  assert.deepEqual((await metadata())[0].cacheTags, ["Replacement"]);
+  assert.equal(await metadataRowCount("entry_tags"), 1);
+  assert.deepEqual((await refreshSelectors({ tags: ["original"] })).json, {
+    backingStoreUpdated: false,
+    edgePurgeAccepted: false,
+  });
+
+  await purge({ tags: ["REPLACEMENT"] });
+  assert.equal((await read("/tag-index")).status, 404);
+  assert.equal(await metadataRowCount("entry_tags"), 0);
+  assert.ok((await (await metadataStub()).getTagExpiration(["replacement"])) > 0);
+});
+
+test("tag expiration is recorded without creating an R2 marker object", async () => {
+  const before = Date.now();
+  await purge({ tags: ["missing-tag"] });
+
+  const stub = await metadataStub();
+  assert.ok((await stub.getTagExpiration(["missing-tag"])) >= before);
+  assert.equal(await stub.getTagExpiration(["other-tag"]), 0);
+
+  const batchedTags = Array.from({ length: 101 }, (_, index) => `tag-${index}`);
+  await purge({ tags: batchedTags });
+  assert.ok((await stub.getTagExpiration(batchedTags)) >= before);
+  assert.equal((await r2Objects()).objects.length, 0);
+});
+
+test("tag expiration lookup reads authoritative invalidation state", async () => {
+  const before = Date.now();
+  assert.equal(await tagExpiration(["unchanged"]), 0);
+
+  await purge({ tags: ["changed"] });
+  assert.ok((await tagExpiration(["changed"])) >= before);
+  assert.equal(await tagExpiration(["unchanged"]), 0);
+});
+
+test("the internal purge tag is first and large tag sets remain selectable", async () => {
+  await put("/cache-tag-order", "tagged", { tags: ["user-tag"] });
+  const taggedResponse = await read("/cache-tag-order");
+  const cacheTag = taggedResponse.headers.get("Cache-Tag");
+  assert.ok(cacheTag);
+  assert.ok(cacheTag.startsWith("runtime-cache-"));
+  await taggedResponse.arrayBuffer();
+
+  const tags = Array.from(
+    { length: 1_000 },
+    (_, index) => `cache-tag-${String(index).padStart(4, "0")}-abcdefgh`,
+  );
+  await put("/many-cache-tags", "tagged", { tags });
+  assert.equal(await metadataRowCount("entry_tags"), 1_001);
+
+  await purge({ tags: [tags.at(-1)!] });
+  assert.equal((await read("/many-cache-tags")).status, 404);
+  assert.equal(await (await read("/cache-tag-order")).text(), "tagged");
+  assert.equal(await metadataRowCount("entry_tags"), 1);
+});
+
+test("purge supports tags, path prefixes, and purgeEverything", async () => {
+  await put("/posts/a", "a", { tags: ["posts", "a"] });
+  await put("/posts/b", "b", { tags: ["posts", "b"] });
+  await put("/other", "other", { tags: ["other"] });
+
+  assert.deepEqual((await purge({ tags: ["a"] })).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: false,
+  });
+  assert.equal((await read("/posts/a")).status, 404);
+  assert.equal(await (await read("/posts/b")).text(), "b");
+
+  await purge({ pathPrefixes: ["/posts"] });
+  assert.equal((await read("/posts/b")).status, 404);
+  assert.equal(await (await read("/other")).text(), "other");
+
+  await purge({ purgeEverything: true });
+  assert.equal((await read("/other")).status, 404);
+  assert.equal((await r2Objects()).objects.length, 3);
+});
+
+test("path-prefix selection uses the cache-key index", async () => {
+  await put("/indexed-prefix/a", "a");
+  const storage = await mf.unsafeGetDurableObjectStorage("user-worker", "CacheMetadata", {
+    name: metadataName,
+  });
+  const plan = await storage.exec(`
+    EXPLAIN QUERY PLAN
+    SELECT entries.key_hash FROM entries
+    WHERE entries.key_hash IN (
+      SELECT path_entry.key_hash FROM json_each('["/indexed-prefix"]') AS path_prefix
+      JOIN entries AS path_entry
+        ON path_entry.cache_key >= path_prefix.value
+        AND path_entry.cache_key < path_prefix.value || char(127)
+    )
+  `);
+  const details = plan.map(({ detail }) => detail).filter((detail) => typeof detail === "string");
+
+  assert.ok(
+    details.some((detail) => detail.includes("INDEX entries_cache_key")),
+    JSON.stringify(plan),
+  );
+  assert.ok(
+    details.every((detail) => !detail.includes("SCAN path_entry")),
+    JSON.stringify(plan),
+  );
+});
+
+test("a failed R2 purge remains queued and retryable after SQLite is tombstoned", async () => {
+  await put("/retry-purge", "still-readable-until-r2-is-tombstoned", {
+    tags: ["retry-purge"],
+  });
+  const stub = await metadataStub();
+  const reserved = await stub.purgeMatching({ tags: ["retry-purge"] });
+  assert.equal(reserved.pendingTombstones, 1);
+  assert.equal(await metadataRowCount("pending_r2_tombstones"), 1);
+  assert.equal(await (await read("/retry-purge")).text(), "still-readable-until-r2-is-tombstoned");
+
+  const retry = await stub.purgeMatching({ tags: ["retry-purge"] });
+  assert.equal(retry.pendingTombstones, 0);
+  assert.deepEqual(await stub.listPendingEdgePurges(400), []);
+  const drained = await stub.drainPendingTombstones(400);
+  assert.deepEqual(drained.failures, []);
+  assert.equal(drained.purged.length, 1);
+  assert.equal(await metadataRowCount("pending_r2_tombstones"), 1);
+  assert.equal((await stub.listPendingEdgePurges(400)).length, 1);
+  await stub.markTombstonesEdgePurged(drained.pending);
+  assert.equal(await metadataRowCount("pending_r2_tombstones"), 0);
+  assert.equal((await read("/retry-purge")).status, 404);
+});
+
+test("autonomous cleanup retains edge work when cache purge is unavailable", async () => {
+  await put("/alarm-purge", "old", { tags: ["alarm-purge"] });
+  const stub = await metadataStub();
+  const reserved = await stub.purgeMatching({ tags: ["alarm-purge"] });
+  assert.equal(reserved.pendingTombstones, 1);
+  assert.equal(await (await read("/alarm-purge")).text(), "old");
+
+  await assert.rejects(stub.retryPendingTombstones());
+
+  assert.equal(await metadataRowCount("pending_r2_tombstones"), 1);
+  assert.equal((await read("/alarm-purge")).status, 404);
+  await stub.markTombstonesEdgePurged(await stub.listPendingEdgePurges(1));
+});
+
+test("purge retains edge work when cache purge is unavailable", async () => {
+  await put("/unavailable-tag-purge", "old", { tags: ["unavailable"] });
+  await put("/unavailable-global-purge", "old");
+
+  assert.deepEqual((await purge({ tags: ["unavailable"] })).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: false,
+  });
+  assert.equal(await metadataRowCount("pending_r2_tombstones"), 1);
+
+  assert.deepEqual((await purge({ purgeEverything: true })).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: false,
+  });
+  assert.equal(await metadataRowCount("pending_r2_tombstones"), 2);
+
+  const stub = await metadataStub();
+  await stub.markTombstonesEdgePurged(await stub.listPendingEdgePurges(2));
+});
+
+test("a broad purge only acknowledges tombstones in its snapshot", async () => {
+  await put("/broad-purge-snapshot", "old", { tags: ["snapshot"] });
+  await put("/broad-purge-later", "old", { tags: ["later"] });
+  const stub = await metadataStub();
+
+  const snapshot = await stub.purgeMatching({ tags: ["snapshot"] });
+  await stub.drainPendingTombstones(400);
+  await stub.purgeMatching({ tags: ["later"] });
+  await stub.drainPendingTombstones(400);
+
+  await stub.markTombstonesEdgePurgedThrough(snapshot.tombstoneSequence);
+  assert.deepEqual(
+    (await stub.listPendingEdgePurges(400)).map(({ cacheKey }: { cacheKey: string }) => cacheKey),
+    ["/broad-purge-later"],
+  );
+  await stub.markTombstonesEdgePurged(await stub.listPendingEdgePurges(400));
+});
+
+test("stale edge completion cannot remove a replacement tombstone", async () => {
+  await put("/stale-edge-completion", "first", { tags: ["stale-edge-completion"] });
+  const stub = await metadataStub();
+
+  await stub.purgeMatching({ tags: ["stale-edge-completion"] });
+  const first = await stub.drainPendingTombstones(1);
+  assert.equal(first.purged.length, 1);
+
+  await put("/stale-edge-completion", "second", { tags: ["stale-edge-completion"] });
+  await stub.purgeMatching({ tags: ["stale-edge-completion"] });
+  await stub.markTombstonesEdgePurged(first.purged);
+
+  assert.equal(await metadataRowCount("pending_r2_tombstones"), 1);
+  const replacement = await stub.drainPendingTombstones(1);
+  assert.equal(replacement.purged.length, 1);
+  assert.ok(replacement.purged[0].revision > first.purged[0].revision);
+  await stub.markTombstonesEdgePurged(replacement.purged);
+  assert.equal(await metadataRowCount("pending_r2_tombstones"), 0);
+});
+
+test("purge only drains R2 and edge work from its snapshot", async () => {
+  const stub = await metadataStub();
+  await stub.inspect();
+  const storage = await mf.unsafeGetDurableObjectStorage("user-worker", "CacheMetadata", {
+    name: metadataName,
+  });
+  await storage.exec(`
+    WITH RECURSIVE numbers(value) AS (
+      VALUES(0)
+      UNION ALL
+      SELECT value + 1 FROM numbers WHERE value < 400
+    )
+    INSERT INTO pending_r2_tombstones
+      (key_hash, cache_key, object_key, revision, r2_complete, tombstone_sequence)
+    SELECT
+      printf('historical-r2-%03d', value),
+      printf('/historical-r2/%d', value),
+      printf('historical-r2-object-%d', value),
+      1,
+      0,
+      1
+    FROM numbers
+  `);
+  await storage.exec(`
+    WITH RECURSIVE numbers(value) AS (
+      VALUES(0)
+      UNION ALL
+      SELECT value + 1 FROM numbers WHERE value < 400
+    )
+    INSERT INTO pending_r2_tombstones
+      (key_hash, cache_key, object_key, revision, r2_complete, tombstone_sequence)
+    SELECT
+      printf('historical-edge-%03d', value),
+      printf('/historical-edge/%d', value),
+      printf('historical-edge-object-%d', value),
+      1,
+      1,
+      2
+    FROM numbers
+  `);
+  await storage.exec("UPDATE metadata_state SET tombstone_sequence = 2 WHERE singleton = 1");
+
+  await put("/current-purge", "current", { tags: ["current-purge"] });
+  assert.deepEqual((await purge({ tags: ["current-purge"] })).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: false,
+  });
+
+  assert.deepEqual(
+    await storage.exec(
+      `SELECT r2_complete, edge_purge_complete, tombstone_sequence
+      FROM pending_r2_tombstones WHERE cache_key = '/current-purge'`,
+    ),
+    [{ edge_purge_complete: 0, r2_complete: 1, tombstone_sequence: 3 }],
+  );
+  assert.deepEqual(
+    await storage.exec(
+      `SELECT COUNT(*) AS count FROM pending_r2_tombstones
+      WHERE tombstone_sequence = 1 AND r2_complete = 0`,
+    ),
+    [{ count: 401 }],
+  );
+  assert.deepEqual(
+    (await stub.listPendingEdgePurges(400, 3)).map(
+      ({ cacheKey }: { cacheKey: string }) => cacheKey,
+    ),
+    ["/current-purge"],
+  );
+  assert.equal((await stub.listPendingEdgePurges(400, 2)).length, 400);
+});
+
+test("snapshot draining preserves tombstones created by a concurrent later purge", async () => {
+  await put("/snapshot-current", "current", { tags: ["snapshot-current"] });
+  await put("/snapshot-later", "later", { tags: ["snapshot-later"] });
+  const stub = await metadataStub();
+
+  const current = await stub.purgeMatching({ tags: ["snapshot-current"] });
+  const later = await stub.purgeMatching({ tags: ["snapshot-later"] });
+  const drained = await stub.drainPendingTombstones(
+    400,
+    undefined,
+    undefined,
+    current.tombstoneSequence,
+  );
+
+  assert.deepEqual(
+    drained.pending.map(({ cacheKey }: { cacheKey: string }) => cacheKey),
+    ["/snapshot-current"],
+  );
+  assert.deepEqual(
+    (await stub.listPendingEdgePurges(400, current.tombstoneSequence)).map(
+      ({ cacheKey }: { cacheKey: string }) => cacheKey,
+    ),
+    ["/snapshot-current"],
+  );
+  assert.equal(
+    (await stub.drainPendingTombstones(400, undefined, undefined, later.tombstoneSequence))
+      .pending[0].cacheKey,
+    "/snapshot-later",
+  );
+  await stub.markTombstonesEdgePurged(await stub.listPendingEdgePurges(400));
+});
+
+test("a failed R2 publication can be fenced with a newer tombstone", async () => {
+  await put("/failed-publication", "possibly-committed", { tags: ["failed-publication"] });
+  await put("/unrelated-pending-tombstone", "unrelated", { tags: ["unrelated"] });
+  const entry = (await metadata()).find(({ cacheKey }) => cacheKey === "/failed-publication");
+  assert.ok(entry);
+  const stub = await metadataStub();
+  await stub.purgeMatching({ tags: ["unrelated"] });
+  assert.equal(await metadataRowCount("entry_tags"), 1);
+
+  const reconciled = await stub.invalidatePublishedRevision(entry.keyHash, entry.activeRevision);
+
+  assert.deepEqual(reconciled.failures, []);
+  assert.equal(reconciled.purged.length, 1);
+  assert.equal(reconciled.pending[0].keyHash, entry.keyHash);
+  assert.equal(await metadataRowCount("entry_tags"), 0);
+  await stub.markTombstonesEdgePurged(reconciled.pending);
+  assert.deepEqual(await metadata(), []);
+  assert.equal(await metadataRowCount("pending_r2_tombstones"), 1);
+
+  const unrelated = await stub.drainPendingTombstones(1);
+  assert.equal(unrelated.pending[0].cacheKey, "/unrelated-pending-tombstone");
+  await stub.markTombstonesEdgePurged(unrelated.pending);
+  assert.equal(await metadataRowCount("pending_r2_tombstones"), 0);
+  assert.equal((await read("/failed-publication")).status, 404);
+
+  await put("/failed-publication", "replacement");
+  assert.equal(await (await read("/failed-publication")).text(), "replacement");
+});
+
+test("purge batches more entries than the SQL and R2 drain limits", async () => {
+  await Promise.all(
+    Array.from({ length: 401 }, (_, index) => put(`/large-purge/${index}`, `${index}`)),
+  );
+
+  assert.deepEqual((await purge({ pathPrefixes: ["/large-purge/"] })).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: false,
+  });
+  assert.equal((await metadata()).length, 0);
+  assert.equal((await r2Objects()).objects.length, 401);
+});
+
+test("a newer put wins and the superseded candidate is cleaned up", async () => {
+  const slow = put("/race", "slow", { bodyDelayMs: 300 });
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  const fast = await put("/race", "fast");
+  const slowResult = await slow;
+
+  assert.deepEqual(fast.json, { backingStoreUpdated: true, edgePurgeAccepted: true });
+  assert.deepEqual(slowResult.json, { backingStoreUpdated: false, edgePurgeAccepted: false });
+  assert.equal(await (await read("/race")).text(), "fast");
+  assert.equal((await r2Objects()).objects.length, 1);
+});
+
+test("an overlapping first-write reservation still purges when it replaces a publication", async () => {
+  const first = put("/overlapping-first-write", "first", {
+    bodyDelayMs: 150,
+    purgeExisting: true,
+  });
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  const replacement = put("/overlapping-first-write", "replacement", {
+    bodyDelayMs: 300,
+    purgeExisting: true,
+  });
+
+  assert.deepEqual((await first).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: true,
+  });
+  assert.deepEqual((await replacement).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: false,
+  });
+  assert.equal(await (await read("/overlapping-first-write")).text(), "replacement");
+});
+
+test("overlapping first writes can be coalesced without an edge purge", async () => {
+  const first = put("/coalesced", "first", {
+    bodyDelayMs: 300,
+    coalesce: true,
+    purgeExisting: true,
+  });
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  const second = await put("/coalesced", "second", {
+    coalesce: true,
+    purgeExisting: true,
+  });
+  const firstResult = await first;
+
+  assert.deepEqual(firstResult.json, { backingStoreUpdated: true, edgePurgeAccepted: true });
+  assert.deepEqual(second.json, { backingStoreUpdated: true, edgePurgeAccepted: true });
+  assert.equal(await (await read("/coalesced")).text(), "first");
+  assert.equal((await metadata())[0].activeRevision, 1);
+  assert.equal((await r2Objects()).objects.length, 1);
+  assert.equal(await metadataRowCount("pending_objects"), 0);
+});
+
+test("coalesced replacements still purge the existing edge response", async () => {
+  await put("/coalesced-replacement", "seed");
+  const first = put("/coalesced-replacement", "first", {
+    bodyDelayMs: 300,
+    coalesce: true,
+    purgeExisting: true,
+  });
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  const second = put("/coalesced-replacement", "second", {
+    coalesce: true,
+    purgeExisting: true,
+  });
+
+  assert.deepEqual((await first).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: false,
+  });
+  assert.deepEqual((await second).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: false,
+  });
+  assert.equal(await (await read("/coalesced-replacement")).text(), "first");
+});
+
+test("a coalesced tee body does not block on its unread sibling", async () => {
+  const first = put("/coalesced-tee", "first", { bodyDelayMs: 300, coalesce: true });
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  const second = put("/coalesced-tee", "second", { coalesce: true, teeBody: true });
+
+  assert.deepEqual((await second).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: true,
+  });
+  await first;
+});
+
+test("writes with different purge requirements are not coalesced", async () => {
+  const first = put("/coalesced-purge", "first", { bodyDelayMs: 300, coalesce: true });
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  const second = await put("/coalesced-purge", "second", {
+    coalesce: true,
+    purgeExisting: true,
+  });
+  const firstResult = await first;
+
+  assert.deepEqual(firstResult.json, {
+    backingStoreUpdated: false,
+    edgePurgeAccepted: false,
+  });
+  assert.deepEqual(second.json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: true,
+  });
+  assert.equal(await (await read("/coalesced-purge")).text(), "second");
+});
+
+test("a failed coalesced write does not suppress an immediate retry", async () => {
+  await assert.rejects(
+    put("/coalesced-retry", "fails", {
+      bodyFailure: true,
+      coalesce: true,
+    }),
+    /put fixture returned 500/,
+  );
+
+  const retry = await put("/coalesced-retry", "succeeds", { coalesce: true });
+  assert.deepEqual(retry.json, { backingStoreUpdated: true, edgePurgeAccepted: true });
+  assert.equal(await (await read("/coalesced-retry")).text(), "succeeds");
+});
+
+test("a failed coalesced write preserves an overlapping successful write", async () => {
+  const failing = put("/coalesced-fallback", "fails", {
+    bodyDelayMs: 300,
+    bodyFailure: true,
+    coalesce: true,
+    purgeExisting: true,
+  });
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  const fallback = put("/coalesced-fallback", "succeeds", {
+    coalesce: true,
+    purgeExisting: true,
+  });
+
+  await assert.rejects(failing, /put fixture returned 500/);
+  assert.deepEqual((await fallback).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: true,
+  });
+  assert.equal(await (await read("/coalesced-fallback")).text(), "succeeds");
+});
+
+test("a failed newer write does not discard an overlapping successful write", async () => {
+  const successful = put("/write-fallback", "succeeds", { bodyDelayMs: 300 });
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  await assert.rejects(
+    put("/write-fallback", "fails", { bodyFailure: true }),
+    /put fixture returned 500/,
+  );
+  assert.deepEqual((await successful).json, {
+    backingStoreUpdated: true,
+    edgePurgeAccepted: true,
+  });
+  assert.equal(await (await read("/write-fallback")).text(), "succeeds");
+});
+
+test("purge prevents coalesced writes from resurrecting an entry", async () => {
+  await put("/purge-coalesced", "seed");
+  const first = put("/purge-coalesced", "first", { bodyDelayMs: 300, coalesce: true });
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  const second = put("/purge-coalesced", "second", { coalesce: true });
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  await purge({ purgeEverything: true });
+  assert.deepEqual((await first).json, {
+    backingStoreUpdated: false,
+    edgePurgeAccepted: false,
+  });
+  assert.deepEqual((await second).json, {
+    backingStoreUpdated: false,
+    edgePurgeAccepted: false,
+  });
+  assert.equal((await read("/purge-coalesced")).status, 404);
+  assert.equal((await r2Objects()).objects.length, 1);
+});
+
+test("purge prevents an initial slow write from creating an entry", async () => {
+  const write = put("/purge-cold-write", "too-late", { bodyDelayMs: 300 });
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if ((await metadataRowCount("pending_objects")) === 1) break;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  assert.equal(await metadataRowCount("pending_objects"), 1);
+
+  await purge({ purgeEverything: true });
+  assert.deepEqual((await write).json, {
+    backingStoreUpdated: false,
+    edgePurgeAccepted: false,
+  });
+  assert.equal((await read("/purge-cold-write")).status, 404);
+  assert.equal((await r2Objects()).objects.length, 0);
+});
+
+test("repeated purge prevents a post-tombstone write from resurrecting an entry", async () => {
+  await put("/purge-twice", "seed");
+  await purge({ purgeEverything: true });
+  const write = put("/purge-twice", "too-late", { bodyDelayMs: 300 });
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  await purge({ purgeEverything: true });
+  assert.deepEqual((await write).json, {
+    backingStoreUpdated: false,
+    edgePurgeAccepted: false,
+  });
+  assert.equal((await read("/purge-twice")).status, 404);
+});
+
+test("tag purge prevents a pending tagged write from publishing", async () => {
+  const write = put("/purge-pending-tag", "too-late", {
+    bodyDelayMs: 300,
+    tags: ["pending-tag"],
+  });
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if ((await metadataRowCount("pending_objects")) === 1) break;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  assert.equal(await metadataRowCount("pending_objects"), 1);
+
+  await purge({ tags: ["pending-tag"] });
+  assert.deepEqual((await write).json, {
+    backingStoreUpdated: false,
+    edgePurgeAccepted: false,
+  });
+  assert.equal((await read("/purge-pending-tag")).status, 404);
+});
+
+test("an expired revalidation claim cannot publish after its replacement", async () => {
+  await put("/claim-replacement", "seed");
+  const [entry] = await metadata();
+  const stub = await metadataStub();
+  const first = await stub.claimRevalidation(
+    entry.keyHash,
+    entry.activeRevision,
+    entry.cacheKey,
+    "runtime-cache/poc-v2/claim-replacement",
+    100,
+    1,
+  );
+  const second = await stub.claimRevalidation(
+    entry.keyHash,
+    entry.activeRevision,
+    entry.cacheKey,
+    "runtime-cache/poc-v2/claim-replacement",
+    102,
+    100,
+  );
+  assert.ok(first);
+  assert.ok(second);
+
+  const result = await stub.publish(
+    entry.keyHash,
+    first.revision,
+    {
+      objectKey: first.objectKey,
+      statusText: "",
+      responseHeaders: [],
+      freshUntil: 1_000,
+      swrUntil: 1_000,
+      revalidator: null,
+      cacheTags: [],
+      fenceTags: [],
+    },
+    first.claimId,
+  );
+  assert.equal(result.published, false);
+});
+
+test("a revalidation claim cannot replace a newer active revision", async () => {
+  await put("/claim-active-revision", "seed");
+  const [entry] = await metadata();
+  const stub = await metadataStub();
+  const write = await stub.reserveWrite(
+    entry.keyHash,
+    entry.cacheKey,
+    "runtime-cache/poc-v2/claim-active-revision",
+    Date.now(),
+  );
+  const claim = await stub.claimRevalidation(
+    entry.keyHash,
+    entry.activeRevision,
+    entry.cacheKey,
+    "runtime-cache/poc-v2/claim-active-revision",
+    100,
+    100,
+  );
+  assert.ok(claim);
+
+  const candidate = {
+    statusText: "",
+    responseHeaders: [],
+    freshUntil: 1_000,
+    swrUntil: 1_000,
+    revalidator: null,
+    cacheTags: [],
+    fenceTags: [],
+  };
+  assert.equal(
+    (
+      await stub.publish(entry.keyHash, write.revision, {
+        ...candidate,
+        objectKey: write.objectKey,
+      })
+    ).published,
+    true,
+  );
+  assert.equal(
+    (
+      await stub.publish(
+        entry.keyHash,
+        claim.revision,
+        { ...candidate, objectKey: claim.objectKey },
+        claim.claimId,
+      )
+    ).published,
+    false,
+  );
+});
+
+test("a write reserved after a tag purge is not rejected by its timestamp", async () => {
+  const createdAt = Date.now();
+  await purge({ tags: ["already-purged"] });
+
+  const stub = await metadataStub();
+  const reservation = await stub.reserveWrite(
+    "post-purge-write",
+    "/post-purge-write",
+    "runtime-cache/poc-v2/post-purge-write",
+    createdAt,
+  );
+  const result = await stub.publish("post-purge-write", reservation.revision, {
+    objectKey: reservation.objectKey,
+    statusText: "",
+    responseHeaders: [],
+    freshUntil: createdAt + 60_000,
+    swrUntil: createdAt + 60_000,
+    revalidator: null,
+    cacheTags: ["already-purged"],
+    fenceTags: ["already-purged"],
+  });
+
+  assert.equal(result.published, true);
+});
+
+test("a failed write replacement preserves an intervening purge fence", async () => {
+  const stub = await metadataStub();
+  const prefix = "runtime-cache/poc-v2/retry-fence";
+  const first = await stub.reserveWrite("retry-fence", "/retry-fence", prefix, Date.now());
+  const replacement = await stub.replaceFailedWrite(
+    "retry-fence",
+    "/retry-fence",
+    prefix,
+    first.objectKey,
+    [],
+    Date.now(),
+  );
+  assert.ok(replacement);
+
+  await stub.purgeMatching({ purgeEverything: true });
+
+  assert.equal(
+    await stub.replaceFailedWrite(
+      "retry-fence",
+      "/retry-fence",
+      prefix,
+      replacement.objectKey,
+      [],
+      Date.now(),
+    ),
+    null,
+  );
+});
+
+test("an unrelated purge does not discard a failed write replacement", async () => {
+  const stub = await metadataStub();
+  const prefix = "runtime-cache/poc-v2/retry-unrelated-purge";
+  const first = await stub.reserveWrite(
+    "retry-unrelated-purge",
+    "/retry-unrelated-purge",
+    prefix,
+    Date.now(),
+  );
+
+  await stub.purgeMatching({ pathPrefixes: ["/other"] });
+
+  assert.ok(
+    await stub.replaceFailedWrite(
+      "retry-unrelated-purge",
+      "/retry-unrelated-purge",
+      prefix,
+      first.objectKey,
+      [],
+      Date.now(),
+    ),
+  );
+});
+
+test("the previous metadata schema is upgraded in place", async () => {
+  const persistencePath = await mkdtemp(path.join(tmpdir(), "response-store-migration-"));
+  let legacy;
+  let upgraded;
+
+  try {
+    legacy = new Miniflare({
+      compatibilityDate: "2026-04-08",
+      resourcePersistencePath: persistencePath,
+      unsafeEphemeralDurableObjects: true,
+      workers: [
+        {
+          name: "migration-worker",
+          modules: true,
+          script: `
+            import { DurableObject } from "cloudflare:workers";
+            export class CacheMetadata extends DurableObject {
+              constructor(ctx, env) {
+                super(ctx, env);
+                ctx.blockConcurrencyWhile(async () => ctx.storage.sql.exec(\`
+                  CREATE TABLE tag_invalidations (
+                    tag TEXT PRIMARY KEY,
+                    invalidated_at INTEGER NOT NULL
+                  ) WITHOUT ROWID;
+                  CREATE TABLE entries (
+                    key_hash TEXT PRIMARY KEY,
+                    cache_key TEXT NOT NULL,
+                    active_revision INTEGER,
+                    latest_revision INTEGER NOT NULL,
+                    object_key TEXT,
+                    status_text TEXT,
+                    response_headers TEXT,
+                    fresh_until INTEGER,
+                    swr_until INTEGER,
+                    revalidator_id TEXT,
+                    revalidator_args TEXT,
+                    cache_tags TEXT,
+                    tombstoned INTEGER NOT NULL DEFAULT 0
+                  );
+                  CREATE TABLE metadata_schema_migrations (version INTEGER PRIMARY KEY);
+                  INSERT INTO metadata_schema_migrations (version) VALUES (1);
+                  CREATE TABLE metadata_state (
+                    singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
+                    tag_invalidation_sequence INTEGER NOT NULL
+                  );
+                  INSERT INTO metadata_state (singleton, tag_invalidation_sequence) VALUES (1, 0);
+                  CREATE TABLE pending_objects (
+                    object_key TEXT PRIMARY KEY,
+                    created_at INTEGER NOT NULL
+                  );
+                  CREATE TABLE pending_r2_tombstones (
+                    key_hash TEXT PRIMARY KEY,
+                    cache_key TEXT NOT NULL,
+                    object_key TEXT NOT NULL,
+                    revision INTEGER NOT NULL
+                  ) WITHOUT ROWID;
+                \`));
+              }
+              seed() {
+                this.ctx.storage.sql.exec(
+                  "INSERT INTO tag_invalidations (tag, invalidated_at) VALUES ('old-tag', 123)"
+                );
+                this.ctx.storage.sql.exec(
+                  "INSERT INTO entries (key_hash, cache_key, active_revision, latest_revision, object_key, status_text, response_headers, fresh_until, swr_until, cache_tags, tombstoned) VALUES ('legacy-entry', '/legacy-entry', 1, 1, 'legacy-object', '', '[]', 1, 1, json_array('Legacy-Entry-Tag', 'ÜBER'), 0)"
+                );
+                this.ctx.storage.sql.exec(
+                  "INSERT INTO entries (key_hash, cache_key, active_revision, latest_revision, object_key, status_text, response_headers, fresh_until, swr_until, cache_tags, tombstoned) VALUES ('legacy-kept', '/legacy-kept', 3, 3, 'legacy-kept-object', '', '[]', 1, 1, json_array(), 0)"
+                );
+              }
+            }
+            export default { fetch() { return new Response("ok"); } };
+          `,
+          durableObjects: {
+            CACHE_METADATA: { className: "CacheMetadata", useSQLite: true },
+          },
+        },
+      ],
+    });
+    const legacyNamespace = await legacy.getDurableObjectNamespace(
+      "CACHE_METADATA",
+      "migration-worker",
+    );
+    await (legacyNamespace.getByName(metadataName) as any).seed();
+    await legacy.dispose();
+    legacy = undefined;
+
+    upgraded = new Miniflare({
+      compatibilityDate: "2026-04-08",
+      compatibilityFlags: ["nodejs_compat"],
+      resourcePersistencePath: persistencePath,
+      unsafeEphemeralDurableObjects: true,
+      unsafeInspectDurableObjects: true,
+      workers: [
+        {
+          name: "migration-worker",
+          compatibilityDate: "2026-04-08",
+          compatibilityFlags: ["nodejs_compat"],
+          modules: true,
+          scriptPath: workerScript,
+          durableObjects: {
+            CACHE_METADATA: { className: "CacheMetadata", useSQLite: true },
+          },
+          r2Buckets: { CACHE_BODIES: "migration-test" },
+          bindings: {
+            CF_VERSION_METADATA: {
+              id: versionId,
+              tag: "test",
+              timestamp: "2026-09-04T00:00:00Z",
+            },
+          },
+        },
+      ],
+    });
+    const purgeResponse = await upgraded.dispatchFetch("https://user.test/admin/purge", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tags: ["ÜBER", "new-tag"] }),
+    });
+    assert.equal(purgeResponse.status, 200);
+    assert.deepEqual(await purgeResponse.json(), {
+      backingStoreUpdated: true,
+      edgePurgeAccepted: false,
+    });
+    const storage = await upgraded.unsafeGetDurableObjectStorage(
+      "migration-worker",
+      "CacheMetadata",
+      { name: metadataName },
+    );
+    assert.deepEqual(
+      await storage.exec("SELECT version FROM metadata_schema_migrations ORDER BY version"),
+      [
+        { version: 1 },
+        { version: 2 },
+        { version: 3 },
+        { version: 4 },
+        { version: 5 },
+        { version: 6 },
+        { version: 7 },
+        { version: 8 },
+        { version: 9 },
+        { version: 10 },
+      ],
+    );
+    assert.deepEqual(
+      await storage.exec(
+        "SELECT expiry_behavior, replaced_revision, invalidated_revision FROM entries WHERE key_hash = ?",
+        "legacy-entry",
+      ),
+      // The purge above recorded the revision it tombstoned.
+      [{ expiry_behavior: null, invalidated_revision: 2, replaced_revision: null }],
+    );
+    // Invalidations before the upgrade weren't recorded: the entry is marked for its next publish
+    // to count the active revision as one.
+    assert.deepEqual(
+      await storage.exec(
+        "SELECT replaced_revision, invalidated_revision FROM entries WHERE key_hash = ?",
+        "legacy-kept",
+      ),
+      [{ invalidated_revision: Number.MAX_SAFE_INTEGER, replaced_revision: null }],
+    );
+    assert.deepEqual(await storage.exec("SELECT tag, key_hash FROM entry_tags"), []);
+    assert.deepEqual(
+      await storage.exec("SELECT tombstoned FROM entries WHERE key_hash = ?", "legacy-entry"),
+      [{ tombstoned: 1 }],
+    );
+    assert.deepEqual(
+      await storage.exec(
+        "SELECT r2_complete, edge_purge_complete, source_revision, edge_invalidate FROM pending_r2_tombstones",
+      ),
+      [{ edge_invalidate: 0, edge_purge_complete: 0, r2_complete: 1, source_revision: null }],
+    );
+    const invalidations = await storage.exec(
+      "SELECT tag, invalidated_at FROM tag_invalidations WHERE tag IN ('old-tag', 'new-tag') ORDER BY tag",
+    );
+    assert.equal(invalidations[0]?.tag, "new-tag");
+    assert.ok(Number(invalidations[0]?.invalidated_at) > 123);
+    assert.deepEqual(invalidations[1], { invalidated_at: 123, tag: "old-tag" });
+    assert.deepEqual(
+      await storage.exec(
+        "SELECT expires_at, stale_at FROM tag_invalidations WHERE tag = 'old-tag'",
+      ),
+      [{ expires_at: null, stale_at: 0 }],
+    );
+    assert.deepEqual(
+      await storage.exec("SELECT invalidation_sequence, publishable FROM pending_objects"),
+      [],
+    );
+    assert.deepEqual(
+      await storage.exec(
+        `SELECT name FROM sqlite_schema
+        WHERE type = 'index' AND name IN (
+          'pending_r2_tombstones_r2_pending',
+          'pending_r2_tombstones_edge_pending',
+          'pending_r2_tombstones_r2_sequence',
+          'pending_r2_tombstones_edge_sequence'
+        ) ORDER BY name`,
+      ),
+      [
+        { name: "pending_r2_tombstones_edge_pending" },
+        { name: "pending_r2_tombstones_edge_sequence" },
+        { name: "pending_r2_tombstones_r2_pending" },
+        { name: "pending_r2_tombstones_r2_sequence" },
+      ],
+    );
+  } finally {
+    await legacy?.dispose();
+    await upgraded?.dispose();
+    await rm(persistencePath, { force: true, recursive: true });
+  }
+});
+
+test("upgrading from schema 8 leaves existing entries untouched", async () => {
+  const persistencePath = await mkdtemp(path.join(tmpdir(), "response-store-migration-9-"));
+  let legacy;
+  let upgraded;
+
+  try {
+    legacy = new Miniflare({
+      compatibilityDate: "2026-04-08",
+      resourcePersistencePath: persistencePath,
+      unsafeEphemeralDurableObjects: true,
+      workers: [
+        {
+          name: "migration-worker",
+          modules: true,
+          script: `
+            import { DurableObject } from "cloudflare:workers";
+            export class CacheMetadata extends DurableObject {
+              seed() {
+                this.ctx.storage.sql.exec(\`
+                  CREATE TABLE entries (
+                    key_hash TEXT PRIMARY KEY,
+                    cache_key TEXT NOT NULL,
+                    active_revision INTEGER,
+                    latest_revision INTEGER NOT NULL,
+                    object_key TEXT,
+                    status_text TEXT,
+                    response_headers TEXT,
+                    fresh_until INTEGER,
+                    swr_until INTEGER,
+                    revalidator_id TEXT,
+                    revalidator_args TEXT,
+                    expiry_behavior TEXT,
+                    cache_tags TEXT,
+                    tombstoned INTEGER NOT NULL DEFAULT 0
+                  );
+                  CREATE TABLE metadata_schema_migrations (version INTEGER PRIMARY KEY);
+                  INSERT INTO metadata_schema_migrations (version)
+                    VALUES (1), (2), (3), (4), (5), (6), (7), (8);
+                  WITH RECURSIVE bulk(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM bulk WHERE n < 1000)
+                  INSERT INTO entries (key_hash, cache_key, active_revision, latest_revision, object_key, status_text, response_headers, fresh_until, swr_until, cache_tags, tombstoned)
+                    SELECT 'bulk-' || n, '/bulk/' || n, 1, 1, 'bulk-object-' || n, '', '[]', 1, 1, '[]', 0 FROM bulk;
+                  INSERT INTO entries (key_hash, cache_key, active_revision, latest_revision, object_key, status_text, response_headers, fresh_until, swr_until, cache_tags, tombstoned)
+                    VALUES ('legacy-kept', '/legacy-kept', 3, 3, 'legacy-kept-object', '', '[]', 1, 1, '[]', 0);
+                  CREATE TABLE bulk_entry_updates (count INTEGER NOT NULL);
+                  INSERT INTO bulk_entry_updates (count) VALUES (0);
+                  CREATE TRIGGER count_bulk_entry_updates AFTER UPDATE ON entries
+                    WHEN OLD.cache_key LIKE '/bulk/%'
+                    BEGIN UPDATE bulk_entry_updates SET count = count + 1; END;
+                \`);
+              }
+            }
+            export default { fetch() { return new Response("ok"); } };
+          `,
+          durableObjects: {
+            CACHE_METADATA: { className: "CacheMetadata", useSQLite: true },
+          },
+        },
+      ],
+    });
+    const legacyNamespace = await legacy.getDurableObjectNamespace(
+      "CACHE_METADATA",
+      "migration-worker",
+    );
+    await (legacyNamespace.getByName(metadataName) as any).seed();
+    await legacy.dispose();
+    legacy = undefined;
+
+    upgraded = new Miniflare({
+      compatibilityDate: "2026-04-08",
+      compatibilityFlags: ["nodejs_compat"],
+      resourcePersistencePath: persistencePath,
+      unsafeEphemeralDurableObjects: true,
+      unsafeInspectDurableObjects: true,
+      workers: [
+        {
+          name: "migration-worker",
+          compatibilityDate: "2026-04-08",
+          compatibilityFlags: ["nodejs_compat"],
+          modules: true,
+          scriptPath: workerScript,
+          durableObjects: {
+            CACHE_METADATA: { className: "CacheMetadata", useSQLite: true },
+          },
+          r2Buckets: { CACHE_BODIES: "migration-test" },
+          bindings: {
+            CF_VERSION_METADATA: {
+              id: versionId,
+              tag: "test",
+              timestamp: "2026-09-04T00:00:00Z",
+            },
+          },
+        },
+      ],
+    });
+    const namespace = await upgraded.getDurableObjectNamespace(
+      "CACHE_METADATA",
+      "migration-worker",
+    );
+    const stub = namespace.getByName(metadataName) as any;
+    const refresh = async (replaces: number) => {
+      const reservation = await stub.reserveWrite(
+        "legacy-kept",
+        "/legacy-kept",
+        "runtime-cache/poc-v2/legacy-kept",
+        Date.now(),
+      );
+      const publication = await stub.publish(
+        "legacy-kept",
+        reservation.revision,
+        {
+          objectKey: reservation.objectKey,
+          statusText: "",
+          responseHeaders: [],
+          freshUntil: Date.now() + 60_000,
+          swrUntil: Date.now() + 60_000,
+          revalidator: null,
+          cacheTags: [],
+          fenceTags: [],
+        },
+        undefined,
+        undefined,
+        { revision: replaces },
+      );
+      return publication.published;
+    };
+
+    // Invalidations before the upgrade weren't recorded, so the revision active at the upgrade
+    // counts as one: refreshes of an older revision all land, duplicate ones of it don't.
+    assert.equal(await refresh(2), true);
+    assert.equal(await refresh(2), true);
+    assert.equal(await refresh(3), true);
+    assert.equal(await refresh(3), false);
+
+    const storage = await upgraded.unsafeGetDurableObjectStorage(
+      "migration-worker",
+      "CacheMetadata",
+      { name: metadataName },
+    );
+    assert.deepEqual(
+      await storage.exec("SELECT version FROM metadata_schema_migrations WHERE version >= 8"),
+      [{ version: 8 }, { version: 9 }, { version: 10 }],
+    );
+    // The migration runs in the constructor's transaction, so it must not scale with the table.
+    assert.deepEqual(await storage.exec("SELECT count FROM bulk_entry_updates"), [{ count: 0 }]);
+    // The previous release drops a refresh when `invalidated_revision <= replaces.revision`. Marked
+    // entries never match that, so after a rollback to it their refreshes still land.
+    assert.deepEqual(
+      await storage.exec("SELECT invalidated_revision FROM entries WHERE key_hash = 'bulk-1'"),
+      [{ invalidated_revision: Number.MAX_SAFE_INTEGER }],
+    );
+    // An entry created after the upgrade has no unrecorded invalidations: it isn't marked.
+    await stub.reserveWrite(
+      "post-upgrade",
+      "/post-upgrade",
+      "runtime-cache/poc-v2/post-upgrade",
+      Date.now(),
+    );
+    assert.deepEqual(
+      await storage.exec(
+        "SELECT invalidated_revision FROM entries WHERE key_hash = ?",
+        "post-upgrade",
+      ),
+      [{ invalidated_revision: null }],
+    );
+  } finally {
+    await legacy?.dispose();
+    await upgraded?.dispose();
+    await rm(persistencePath, { force: true, recursive: true });
+  }
+});
+
+test("retention sweep forgets expired reservations without deleting R2 objects", async () => {
+  const bucket = await mf.getR2Bucket("CACHE_BODIES", "user-worker");
+  const stub = await metadataStub();
+  const reservation = await stub.reserveWrite(
+    "active-cleanup",
+    "/active-cleanup",
+    "runtime-cache/poc-v2/active-cleanup",
+    Date.now(),
+  );
+  await bucket.put(reservation.objectKey, "active");
+  const publication = await stub.publish("active-cleanup", reservation.revision, {
+    objectKey: reservation.objectKey,
+    statusText: "",
+    responseHeaders: [],
+    freshUntil: 1_000,
+    swrUntil: 1_000,
+    revalidator: null,
+    cacheTags: [],
+    fenceTags: [],
+  });
+  assert.equal(publication.published, true);
+  const activeObjectKey = reservation.objectKey;
+  const orphanObjectKey = "runtime-cache/orphaned-candidate";
+  await bucket.put(orphanObjectKey, "orphan");
+  await stub.trackPendingObject(activeObjectKey, 0);
+  await stub.trackPendingObjects([orphanObjectKey], 0);
+
+  assert.equal(await stub.sweepExpiredPendingObjects(1), 1);
+
+  assert.notEqual(await bucket.head(orphanObjectKey), null);
+  assert.notEqual(await bucket.head(activeObjectKey), null);
+  await stub.finishPendingObjects([activeObjectKey]);
+
+  const finishedKeys = Array.from({ length: 101 }, (_, index) => `finished-${index}`);
+  await stub.trackPendingObjects(finishedKeys, 0);
+  await stub.finishPendingObjects(finishedKeys);
+  assert.deepEqual(await stub.listExpiredPendingObjects(1, finishedKeys.length), []);
+});
+
+test("retention cleanup uses the persistent active-object index", async () => {
+  await put("/cleanup-index", "active");
+  const storage = await mf.unsafeGetDurableObjectStorage("user-worker", "CacheMetadata", {
+    name: metadataName,
+  });
+  const plan = await storage.exec(`
+    EXPLAIN QUERY PLAN
+    SELECT pending_objects.object_key
+    FROM pending_objects
+    LEFT JOIN entries
+      ON entries.object_key = pending_objects.object_key AND entries.tombstoned = 0
+    ORDER BY pending_objects.created_at
+    LIMIT 101
+  `);
+  const details = plan.map(({ detail }) => detail).filter((detail) => typeof detail === "string");
+
+  assert.ok(
+    details.some((detail) => detail.includes("COVERING INDEX entries_active_object_key")),
+    JSON.stringify(plan),
+  );
+  assert.ok(
+    details.every((detail) => !detail.includes("AUTOMATIC")),
+    JSON.stringify(plan),
+  );
+});
+
+test("tombstone cleanup uses persistent queue indexes and keyed completion", async () => {
+  await put("/tombstone-query-plan", "active");
+  const storage = await mf.unsafeGetDurableObjectStorage("user-worker", "CacheMetadata", {
+    name: metadataName,
+  });
+
+  const unfinished = await storage.exec(`
+    EXPLAIN QUERY PLAN
+    SELECT key_hash, cache_key, object_key, revision, r2_complete, edge_purge_complete
+    FROM pending_r2_tombstones
+    WHERE r2_complete = 0
+    ORDER BY key_hash LIMIT 400
+  `);
+  const pendingEdge = await storage.exec(`
+    EXPLAIN QUERY PLAN
+    SELECT key_hash, cache_key, object_key, revision, r2_complete, edge_purge_complete
+    FROM pending_r2_tombstones
+    WHERE r2_complete = 1 AND edge_purge_complete = 0
+    ORDER BY key_hash LIMIT 400
+  `);
+  const completed = await storage.exec(`
+    EXPLAIN QUERY PLAN
+    DELETE FROM pending_r2_tombstones
+    WHERE r2_complete = 1 AND edge_purge_complete = 1
+      AND key_hash = 'tombstone-query-plan' AND revision = 1
+  `);
+  const sequenceUnfinished = await storage.exec(`
+    EXPLAIN QUERY PLAN
+    SELECT key_hash, cache_key, object_key, revision, r2_complete, edge_purge_complete
+    FROM pending_r2_tombstones
+    WHERE r2_complete = 0 AND tombstone_sequence = 1
+    ORDER BY key_hash LIMIT 400
+  `);
+  const sequencePendingEdge = await storage.exec(`
+    EXPLAIN QUERY PLAN
+    SELECT key_hash, cache_key, object_key, revision, r2_complete, edge_purge_complete
+    FROM pending_r2_tombstones
+    WHERE r2_complete = 1 AND edge_purge_complete = 0 AND tombstone_sequence = 1
+    ORDER BY key_hash LIMIT 400
+  `);
+  const sequenceCompleted = await storage.exec(`
+    EXPLAIN QUERY PLAN
+    DELETE FROM pending_r2_tombstones
+    WHERE r2_complete = 1 AND edge_purge_complete = 0 AND tombstone_sequence <= 1
+  `);
+  const unfinishedDetails = unfinished
+    .map(({ detail }) => detail)
+    .filter((detail): detail is string => typeof detail === "string");
+  const pendingEdgeDetails = pendingEdge
+    .map(({ detail }) => detail)
+    .filter((detail): detail is string => typeof detail === "string");
+  const completedDetails = completed
+    .map(({ detail }) => detail)
+    .filter((detail): detail is string => typeof detail === "string");
+  const sequenceUnfinishedDetails = sequenceUnfinished
+    .map(({ detail }) => detail)
+    .filter((detail): detail is string => typeof detail === "string");
+  const sequencePendingEdgeDetails = sequencePendingEdge
+    .map(({ detail }) => detail)
+    .filter((detail): detail is string => typeof detail === "string");
+  const sequenceCompletedDetails = sequenceCompleted
+    .map(({ detail }) => detail)
+    .filter((detail): detail is string => typeof detail === "string");
+
+  assert.ok(
+    unfinishedDetails.some((detail) => detail.includes("INDEX pending_r2_tombstones_r2_pending")),
+    JSON.stringify(unfinished),
+  );
+  assert.ok(
+    pendingEdgeDetails.some((detail) =>
+      detail.includes("INDEX pending_r2_tombstones_edge_pending"),
+    ),
+    JSON.stringify(pendingEdge),
+  );
+  assert.ok(
+    completedDetails.some((detail) => detail.includes("PRIMARY KEY (key_hash=?)")),
+    JSON.stringify(completed),
+  );
+  assert.ok(
+    sequenceUnfinishedDetails.some((detail) =>
+      detail.includes("INDEX pending_r2_tombstones_r2_sequence"),
+    ),
+    JSON.stringify(sequenceUnfinished),
+  );
+  assert.ok(
+    sequencePendingEdgeDetails.some((detail) =>
+      detail.includes("INDEX pending_r2_tombstones_edge_sequence"),
+    ),
+    JSON.stringify(sequencePendingEdge),
+  );
+  assert.ok(
+    sequenceCompletedDetails.some((detail) =>
+      detail.includes("INDEX pending_r2_tombstones_edge_sequence"),
+    ),
+    JSON.stringify(sequenceCompleted),
+  );
+});
+
+test("retention cleanup fences an expired reservation without touching R2", async () => {
+  const stub = await metadataStub();
+  const createdAt = Date.now();
+  const reservation = await stub.reserveWrite(
+    "expired-reservation",
+    "/expired-reservation",
+    "runtime-cache/poc-v2/expired-reservation",
+    createdAt,
+  );
+
+  assert.equal(await stub.sweepExpiredPendingObjects(createdAt + 1), 1);
+  assert.equal(await metadataRowCount("pending_objects"), 0);
+
+  const result = await stub.publish("expired-reservation", reservation.revision, {
+    objectKey: reservation.objectKey,
+    statusText: "",
+    responseHeaders: [],
+    freshUntil: 1_000,
+    swrUntil: 1_000,
+    revalidator: null,
+    cacheTags: [],
+    fenceTags: [],
+  });
+  assert.equal(result.published, false);
+  assert.equal(await metadataRowCount("pending_objects"), 0);
+});
+
+test("replacement and purge clean their durable object markers", async () => {
+  await put("/replacement-cleanup", "first");
+  const stub = await metadataStub();
+  assert.equal(await metadataRowCount("pending_objects"), 0);
+
+  await put("/replacement-cleanup", "second");
+  assert.equal(await metadataRowCount("pending_objects"), 0);
+  assert.equal((await r2Objects()).objects.length, 1);
+
+  await purge({ pathPrefixes: ["/replacement-cleanup"] });
+  assert.equal(await metadataRowCount("pending_objects"), 0);
+  assert.deepEqual(await stub.listExpiredPendingObjects(Date.now() + 1, 10), []);
+  assert.equal((await r2Objects()).objects.length, 1);
+});
+
+test("purge tombstones an entry before a slow regeneration can publish", async () => {
+  await put("/purge-race", "seed", {
+    tags: ["purge-race"],
+    revalidator: { body: "too-late", delayMs: 300 },
+  });
+  const refreshing = refreshSelectors({ tags: ["purge-race"] });
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  await purge({ purgeEverything: true });
+  const refreshResult = await refreshing;
+
+  assert.deepEqual(refreshResult.json, { backingStoreUpdated: false, edgePurgeAccepted: false });
+  assert.equal((await read("/purge-race")).status, 404);
+  assert.equal((await r2Objects()).objects.length, 1);
+});
+
+test("regeneration failure retains the last durable revision", async () => {
+  await put("/failure", "still-active", {
+    cacheControl: "public, max-age=0",
+    revalidator: { fail: true },
+  });
+  const failed = await read("/failure");
+  assert.equal(failed.status, 500);
+  assert.match(await failed.text(), /Fixture regeneration failure/);
+  const entries = await metadata();
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].activeRevision, 1);
+  assert.equal((await r2Objects()).objects.length, 1);
+});
+
+test("a 10 MiB response body is stored in and refilled from R2", async () => {
+  const size = 10 * 1024 * 1024;
+  const body = new Uint8Array(size);
+  body.fill(97);
+  const result = await put("/large", body, { contentType: "application/octet-stream" });
+  assert.equal(result.json.backingStoreUpdated, true);
+
+  const response = await read("/large");
+  assert.equal(Number(response.headers.get("Content-Length")), size);
+  const returned = new Uint8Array(await response.arrayBuffer());
+  assert.equal(returned.byteLength, size);
+  assert.equal(returned[0], 97);
+  assert.equal(returned.at(-1), 97);
+});

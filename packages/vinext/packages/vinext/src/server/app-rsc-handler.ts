@@ -1,0 +1,3605 @@
+import type {
+  NextHeader,
+  NextI18nConfig,
+  NextRedirect,
+  NextRewrite,
+} from "../config/next-config.js";
+import type { BasePathMatchState } from "../config/config-matchers.js";
+import { requestContextFromRequest } from "../config/request-context.js";
+import {
+  normalizePathnameForRouteMatch,
+  normalizePathnameForRouteMatchStrict,
+} from "../routing/utils.js";
+import { patternToNextFormat } from "../routing/route-validation.js";
+import { traceFindPageComponents } from "./pages-execution-tracing.js";
+import { isExternalUrl } from "../utils/external-url.js";
+import {
+  getActiveDraftModeState,
+  getEffectiveRequestCookieHeader,
+  getDraftModeCookieHeader,
+  getHeadersContext,
+  hasEffectiveRequestCookieChanges,
+  headersContextFromRequest,
+  isDraftModeEnabled,
+  isDraftModeRequest,
+  runStaticParamsCheckDetached,
+  runWithHeadersContext,
+} from "vinext/shims/headers";
+import {
+  ACTION_REVALIDATED_HEADER,
+  FLIGHT_HEADERS,
+  NEXT_ACTION_HEADER,
+  NEXT_ROUTER_PREFETCH_HEADER,
+  NEXT_ROUTER_SEGMENT_PREFETCH_HEADER,
+  RSC_ACTION_HEADER,
+  RSC_HEADER,
+  VINEXT_MW_CTX_HEADER,
+  VINEXT_PRERENDER_PAGES_STATIC_PATHS_PATH,
+  VINEXT_PRERENDER_METADATA_ROUTES_PATH,
+  VINEXT_PRERENDER_REWRITTEN_HEADER,
+  VINEXT_PRERENDER_ROUTE_PARAMS_HEADER,
+  VINEXT_PRERENDER_SECRET_HEADER,
+  VINEXT_PRERENDER_SPECULATIVE_HEADER,
+  VINEXT_PRERENDER_STATIC_PARAMS_PATH,
+  VINEXT_PARAMS_HEADER,
+  VINEXT_RENDERED_PATH_AND_SEARCH_HEADER,
+  VINEXT_REVALIDATE_HOST_HEADER,
+  VINEXT_INTERCEPTION_CONTEXT_HEADER,
+  VINEXT_INTERCEPTION_ID_HEADER,
+  VINEXT_ROUTE_MISS_HEADER,
+  VINEXT_SPECIAL_ERROR_STATUS_HEADER,
+} from "./headers.js";
+import type { ReactFormState } from "react-dom/client";
+import {
+  getRequestExecutionContext,
+  type ExecutionContextLike,
+} from "vinext/shims/request-context";
+import { pickRootParams, setRootParams, type RootParams } from "vinext/shims/root-params";
+import {
+  closeAfterResponse,
+  closeAfterResponseWithBody,
+  createRequestContext,
+  preserveFullyBufferedBodyMetadata,
+  runWithRequestContext,
+} from "vinext/shims/unified-request-context";
+import { flattenErrorCauses } from "../utils/error-cause.js";
+import { hasBasePath, restoreBasePath, stripBasePath } from "../utils/base-path.js";
+import { mergeRewriteQuery } from "../utils/query.js";
+import {
+  buildRequestHeadersFromMiddlewareResponse,
+  hasMiddlewareRequestHeaderOverrides,
+} from "../utils/middleware-request-headers.js";
+import { isPossibleAppRouteActionRequest } from "./app-action-request.js";
+import type { AppMiddlewareContext, ApplyAppMiddlewareResult } from "./app-middleware.js";
+import { mergeMiddlewareResponseHeaders } from "./app-page-response.js";
+import {
+  mergeMiddlewareResponseHeadersOntoResponse,
+  withExternalRewriteResponseHeaders,
+} from "./middleware-response-headers.js";
+import { normalizeInterceptionContextHeader } from "./app-interception-context-header.js";
+import type {
+  AppPrerenderRootParamNamesMap,
+  AppPrerenderStaticParamsMap,
+} from "./app-prerender-endpoints.js";
+import {
+  canonicalizeDynamicShellRscRequestHeaders,
+  canonicalizeLoadingShellRscRequestHeaders,
+  canonicalizePrewarmableRscRequestHeaders,
+  createCanonicalRscRequestUrl,
+  createRscRequestUrl,
+  createRscRedirectLocation,
+  hasRscCacheBustingSearchParam,
+  resolveInvalidRscCacheBustingRequest,
+  stripRscCacheBustingSearchParam,
+  VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM,
+} from "./app-rsc-cache-busting.js";
+import {
+  applyAppRscConfigHeaders,
+  finalizeAppRscResponse,
+  isAppRscResponseConfigHeadersApplied,
+  isStreamedActionRedirectResponse,
+  markAppRscApplicationResponse,
+  markAppRscRouteHandlerResponse,
+  markAppRscResponseConfigHeadersApplied,
+  markStreamedActionRedirectResponse,
+} from "./app-rsc-response-finalizer.js";
+import type { RouteHandlerRuntime } from "./config-headers.js";
+import { normalizeRscRequest } from "./app-rsc-request-normalization.js";
+import { isAppRouteHandlerRoute } from "./app-rsc-route-matching.js";
+import {
+  resolveAppPageNavigationParams,
+  type AppPageNavigationParamSlot,
+} from "./app-page-navigation-params.js";
+import { buildNextDataNotFoundResponse, normalizePagesDataRequest } from "./pages-data-route.js";
+import {
+  isLocaleRedirect,
+  normalizeDefaultLocalePathname,
+  shouldRestoreLocaleRootTrailingSlash,
+} from "./pages-i18n.js";
+import {
+  badRequestResponse,
+  notFoundResponse,
+  notFoundStaticAssetResponse,
+} from "./http-error-responses.js";
+import { assetPrefixPathname, isNextStaticPath } from "../utils/asset-prefix.js";
+import {
+  isOnDemandRevalidateRequest,
+  PRERENDER_REVALIDATE_HEADER,
+} from "./revalidation-request.js";
+import { openForwardedMiddlewareContext } from "./forwarded-middleware-context.js";
+import type { PagesRouteDataKind } from "./pages-route-data-kind.js";
+import { hasPagesPreviewCookie } from "./pages-response-stage.js";
+import { isInterceptionMatchedUrlPath, normalizePath } from "./normalize-path.js";
+import { getRenderedConcreteUrlPathsForRoute } from "./pregenerated-concrete-paths.js";
+import { getScriptNonceFromHeaderSources } from "./csp.js";
+import { buildPageCacheTags } from "./implicit-tags.js";
+import { parseNextHttpErrorDigest } from "./next-error-digest.js";
+import {
+  DEFAULT_DEVICE_SIZES,
+  DEFAULT_IMAGE_SIZES,
+  isImageOptimizationPath,
+  markImageOptimizationSignal,
+  resolveDevImageRedirect,
+  type ImageConfig,
+} from "./image-optimization.js";
+import { runWithPrerenderWorkUnit } from "./prerender-work-unit-setup.js";
+import { buildPostMwRequestContext } from "./app-post-middleware-context.js";
+import type { AppRscRenderMode } from "./app-rsc-render-mode.js";
+import type { AppPagePprFallbackCacheShell } from "./app-ppr-fallback-shell.js";
+import {
+  applyCdnResponseHeaders,
+  captureCdnResponsePolicyOverrides,
+  isCdnResponsePolicyHeader,
+  NEVER_CACHE_CONTROL,
+  reconcileCdnResponseHeadersAfterOuterPolicy,
+  SERVER_ACTION_CACHE_CONTROL,
+} from "./cache-control.js";
+import {
+  cloneRequestWithHeaders,
+  cloneRequestWithUrl,
+  filterInternalHeaders,
+  hasUrlParserDotSegment,
+  normalizeTrailingSlash,
+  normalizeTrailingSlashPathname,
+  resolvePublicFileRoute,
+  stripRequestUrlFragment,
+} from "./request-pipeline.js";
+import {
+  matchPrerenderRouteParamsPayload,
+  readTrustedPrerenderRouteParams,
+  serializePrerenderRouteParamsHeader,
+  type TrustedPrerenderState,
+} from "./prerender-route-params.js";
+import { respondServerActionNotFound } from "./server-action-not-found.js";
+import {
+  createRouteTreePrefetchResponse,
+  isRouteTreePrefetchRequest,
+  type AppRouteTreePrefetchRoute,
+  type PrefetchInliningConfig,
+} from "./app-route-tree-prefetch.js";
+import {
+  markRouteCacheabilityDynamic,
+  preserveRouteCacheabilityResponsePolicy,
+  resetRouteCacheability,
+} from "vinext/shims/cacheability-classification";
+import {
+  APP_METADATA_RESPONSE_STAGE_NO_MATCH_HEADER,
+  APP_WORKER_RESPONSE_STAGE_PROTOCOL_VERSION,
+  createSharedAppCacheIdentity,
+  createSharedAppPageCacheIdentity,
+  createSharedAppRouteCacheIdentity,
+  createSharedHybridPagesCacheIdentity,
+  isStaticCandidateAppPageDispatch,
+  prepareSharedAppPageDispatch,
+  withoutAppPageDispatchQuery,
+  type AppMatchedWorkerResponseStageProps,
+  type AppWorkerResponseStageProps,
+  type DispatchAppWorkerResponseStage,
+  type HybridPagesWorkerResponseStageProps,
+  type RenderAppWorkerResponseStageLocally,
+} from "./app-worker-stages.js";
+import type { VinextCacheabilityProbeMode } from "./multi-stage.js";
+import {
+  adapterSharedCacheIdentity,
+  adapterUsesSharedCacheIdentity,
+  pagesCacheIdentityOrigin,
+  pagesPageSharesAcrossHosts,
+} from "./shared-cache-identity.js";
+import { parseCacheabilityManifest, type CacheabilityManifest } from "./cacheability-manifest.js";
+import {
+  consumePagesResponseStagePolicyOwner,
+  withoutResponseStageVary,
+} from "./response-stage-policy.js";
+import {
+  consumeResponseStageLinkProvenance,
+  copyLinkHeaderProvenance,
+} from "./app-response-header-provenance.js";
+import { traceAppPageRender } from "./app-page-tracing.js";
+import { runOutsideWorkStoreScope } from "vinext/shims/internal/work-store-scope";
+import { normalizePathTrailingSlash } from "vinext/shims/url-utils";
+import {
+  replaceFrameworkRequestRoute,
+  resetFrameworkRequestRoute,
+  setFrameworkRequestRoute,
+  traceFrameworkRequest,
+} from "./request-tracing.js";
+
+type AppPageParams = Record<string, string | string[]>;
+type RequestContext = ReturnType<typeof requestContextFromRequest>;
+const HAS_CONFIG_HEADERS = process.env.__VINEXT_HAS_CONFIG_HEADERS !== "false";
+const HAS_CONFIG_REDIRECTS = process.env.__VINEXT_HAS_CONFIG_REDIRECTS !== "false";
+const HAS_CONFIG_REWRITES = process.env.__VINEXT_HAS_CONFIG_REWRITES !== "false";
+type StaticParamsMap = AppPrerenderStaticParamsMap;
+type RootParamNamesMap = AppPrerenderRootParamNamesMap;
+
+type AppRscMiddlewareContext = AppMiddlewareContext;
+
+/**
+ * Decode an interception context to the canonical source pathname it names.
+ * Throws for any value the client could not send back as its context header.
+ */
+function decodeInterceptionSourcePathname(context: string): string {
+  if (!isInterceptionMatchedUrlPath(context)) {
+    throw new Error("Invalid interception source pathname");
+  }
+  // The source is matched on its raw segments, like a direct request, so it
+  // must already be the URL parser's own output. Otherwise a spelling a direct
+  // request can never carry (raw non-ASCII, an unescaped `{`, an encoded dot
+  // segment) could match a route that no request URL reaches.
+  if (new URL(context, "http://n").pathname !== context) {
+    throw new Error("Interception source is not a parsed URL pathname");
+  }
+  const decodedSourcePathname = normalizePathnameForRouteMatchStrict(context);
+  if (/[\t\n\r]/.test(decodedSourcePathname)) {
+    throw new Error("Interception source contains a stripped URL character");
+  }
+  if (hasUrlParserDotSegment(decodedSourcePathname)) {
+    throw new Error("Interception source contains a URL dot segment");
+  }
+  const sourcePathname = normalizePath(decodedSourcePathname);
+  if (sourcePathname !== decodedSourcePathname) {
+    throw new Error("Non-canonical interception source pathname");
+  }
+  return sourcePathname;
+}
+
+/**
+ * Whether a server-derived context satisfies the whole inbound header
+ * contract, so the client can send it back unchanged on its next request.
+ */
+function isValidInterceptionSourceContext(context: string): boolean {
+  if (normalizeInterceptionContextHeader(context) !== context) return false;
+  try {
+    decodeInterceptionSourcePathname(context);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function ruleUsesUnkeyedRequestCondition(rule: NextRedirect | NextRewrite): boolean {
+  return [...(rule.has ?? []), ...(rule.missing ?? [])].some(
+    (condition) =>
+      condition.type === "header" || condition.type === "cookie" || condition.type === "host",
+  );
+}
+
+function markConditionalRewriteCacheability(rewrite: NextRewrite): void {
+  if (ruleUsesUnkeyedRequestCondition(rewrite)) {
+    // Query values are already part of the public Workers Cache key. Headers,
+    // cookies, and hostnames are not, so a rewrite selected by any of them
+    // cannot publish its destination under the source URL.
+    markRouteCacheabilityDynamic(
+      "next.config rewrite depends on request headers, cookies, or hostnames",
+    );
+  }
+}
+
+function markConditionalRedirectCacheability(redirect: NextRedirect): void {
+  if (ruleUsesUnkeyedRequestCondition(redirect)) {
+    markRouteCacheabilityDynamic(
+      "next.config redirect depends on request headers, cookies, or hostnames",
+    );
+  }
+}
+
+function haveSameRequestCookies(
+  first: ReadonlyMap<string, string>,
+  second: ReadonlyMap<string, string>,
+): boolean {
+  if (first.size !== second.size) return false;
+  for (const [name, value] of first) {
+    if (second.get(name) !== value) return false;
+  }
+  return true;
+}
+
+function haveSamePageParams(first: AppPageParams, second: AppPageParams): boolean {
+  const firstKeys = Object.keys(first);
+  const secondKeys = Object.keys(second);
+  if (firstKeys.length !== secondKeys.length) return false;
+  for (const key of firstKeys) {
+    const firstValue = first[key];
+    const secondValue = second[key];
+    if (Array.isArray(firstValue)) {
+      if (
+        !Array.isArray(secondValue) ||
+        firstValue.length !== secondValue.length ||
+        firstValue.some((value, index) => value !== secondValue[index])
+      ) {
+        return false;
+      }
+    } else if (firstValue !== secondValue) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function rewriteCachePathname(sourcePathname: string, resolvedPathname: string): string {
+  return `${sourcePathname}?__vinext_rewrite=${encodeURIComponent(resolvedPathname)}`;
+}
+
+function requestOptsOutOfWorkerResponseStage(
+  request: Request,
+  options: Pick<CreateAppRscHandlerOptions<AppRscHandlerRoute>, "draftModeSecret">,
+  scriptNonce: string | undefined,
+  allowInternalRscDocumentFallback: boolean,
+): boolean {
+  if (request.method !== "GET" && request.method !== "HEAD") return true;
+  if (allowInternalRscDocumentFallback || scriptNonce !== undefined) return true;
+  if (isDraftModeRequest(request, options.draftModeSecret) || isDraftModeEnabled()) return true;
+  if (isOnDemandRevalidateRequest(request.headers.get(PRERENDER_REVALIDATE_HEADER))) return true;
+  if (request.headers.has(VINEXT_PRERENDER_ROUTE_PARAMS_HEADER)) return true;
+  return false;
+}
+
+let parsedCacheabilityRequestProjection:
+  | { buildId: string; manifest: CacheabilityManifest | null; raw: string }
+  | undefined;
+
+function readCacheabilityRequestProjection(
+  options: Pick<
+    CreateAppRscHandlerOptions<AppRscHandlerRoute>,
+    "buildId" | "cacheabilityRequestProjection"
+  >,
+): CacheabilityManifest | null {
+  const raw = options.cacheabilityRequestProjection;
+  if (!raw || !options.buildId) return null;
+  if (
+    parsedCacheabilityRequestProjection?.raw !== raw ||
+    parsedCacheabilityRequestProjection.buildId !== options.buildId
+  ) {
+    parsedCacheabilityRequestProjection = {
+      buildId: options.buildId,
+      manifest: parseCacheabilityManifest(raw, options.buildId),
+      raw,
+    };
+  }
+  return parsedCacheabilityRequestProjection.manifest;
+}
+
+type RunAppMiddlewareOptions = {
+  cleanPathname: string;
+  context: AppRscMiddlewareContext;
+  externalRewriteRequest: Request;
+  hadBasePath: boolean;
+  isDataRequest: boolean;
+  middlewareRequest?: Request;
+  request: Request;
+  /** `shouldRestoreLocaleRootTrailingSlash` for the raw request pathname. */
+  restoreLocaleRootTrailingSlash?: boolean;
+  validateExternalRewriteRequest: () => Promise<Response | null>;
+};
+
+export type AppRscHandlerRoute = {
+  __loadPage?: unknown;
+  __loadRouteHandler?: unknown;
+  canUseCanonicalLoadingShell?: boolean;
+  forceDynamic?: boolean;
+  isDynamic: boolean;
+  layouts?: readonly unknown[];
+  layoutTreePositions?: readonly number[];
+  params?: readonly string[];
+  page?: unknown;
+  pattern: string;
+  rootParamNames?: readonly string[];
+  routeHandler?: unknown;
+  routeSegments: readonly string[];
+  slots?: Readonly<
+    Record<
+      string,
+      NonNullable<AppRouteTreePrefetchRoute["slots"]>[string] & AppPageNavigationParamSlot
+    >
+  > | null;
+};
+
+type AppRscRouteMatch<TRoute> = {
+  /**
+   * For an interception match, the source route and params the interception
+   * context names, when they differ from the rendered `route` and `params`:
+   * a sibling intercept opened from a deeper source renders the intercepting
+   * route itself, while the deeper source is what gets authorized.
+   */
+  authorizationParams?: AppPageParams;
+  authorizationRoute?: TRoute;
+  interceptionSourceIsConcrete?: boolean;
+  params: AppPageParams;
+  route: TRoute;
+};
+
+function isSameInterceptionSource<TRoute>(
+  a: AppRscRouteMatch<TRoute>,
+  b: { params: AppPageParams; route: TRoute } | null | undefined,
+): boolean {
+  return (
+    b != null &&
+    (a.authorizationRoute ?? a.route) === b.route &&
+    haveSamePageParams(a.authorizationParams ?? a.params, b.params)
+  );
+}
+
+function applyMiddlewareContextToResponse(
+  response: Response,
+  middlewareContext: AppRscMiddlewareContext,
+  appendToPostConfigLink = false,
+): Response {
+  if (!middlewareContext.headers && middlewareContext.status == null) {
+    return response;
+  }
+
+  const headers = new Headers(response.headers);
+  const responseLink = appendToPostConfigLink ? headers.get("link") : null;
+  mergeMiddlewareResponseHeadersOntoResponse(headers, middlewareContext.headers);
+  const middlewareLink = middlewareContext.headers?.get("link");
+  if (responseLink && middlewareLink) {
+    headers.set("link", `${middlewareLink}, ${responseLink}`);
+  }
+
+  return preserveFullyBufferedBodyMetadata(
+    response,
+    new Response(response.body, {
+      // As in Next.js, which sets a 304 after middleware's status, a 304
+      // answers the request's own validator.
+      status: response.status === 304 ? 304 : (middlewareContext.status ?? response.status),
+      statusText: response.statusText,
+      headers,
+    }),
+  );
+}
+
+/**
+ * These headers describe the current routed request, not the shared RSC
+ * bytes, so they are composed above a transported response stage: a cache HIT
+ * cannot replay another query/path and never loses dynamic params. An
+ * intercepted response's params include its target's, which this match lacks,
+ * so the response stage keeps them under an interception context, in its
+ * cache identity.
+ */
+function withRoutedRscHeaders(
+  response: Response,
+  navigationParams: AppPageParams,
+  resolvedUrl: string,
+  keepsRenderedParams: boolean,
+): Response {
+  const headers = new Headers(response.headers);
+  if (!keepsRenderedParams || !headers.has(VINEXT_PARAMS_HEADER)) {
+    if (Object.keys(navigationParams).length > 0) {
+      headers.set(VINEXT_PARAMS_HEADER, encodeURIComponent(JSON.stringify(navigationParams)));
+    } else {
+      headers.delete(VINEXT_PARAMS_HEADER);
+    }
+  }
+  headers.set(VINEXT_RENDERED_PATH_AND_SEARCH_HEADER, encodeURIComponent(resolvedUrl));
+  return preserveFullyBufferedBodyMetadata(
+    response,
+    new Response(response.body, {
+      headers,
+      status: response.status,
+      statusText: response.statusText,
+    }),
+  );
+}
+
+/**
+ * Next.js answers a Link's segment prefetch of a page whose notFound(),
+ * forbidden() or unauthorized() it stored with a 200, so its router renders
+ * the page's fallback without loading the document. A shared response stage
+ * gives that prefetch the navigation's response, so the request's own headers
+ * decide the status here.
+ */
+function withStoredSpecialErrorStatus(response: Response, isSegmentPrefetch: boolean): Response {
+  const marker = response.headers.get(VINEXT_SPECIAL_ERROR_STATUS_HEADER);
+  if (marker === null) return response;
+  const headers = new Headers(response.headers);
+  headers.delete(VINEXT_SPECIAL_ERROR_STATUS_HEADER);
+  const storedStatus = Number(marker);
+  const isStoredSpecialError = storedStatus === 401 || storedStatus === 403 || storedStatus === 404;
+  // As on a single-stage render, the stored status takes precedence over a
+  // middleware status that the response stage's composition applied. A 304
+  // answers the request's own validator, so it stays a 304.
+  const status =
+    response.status === 304 || !isStoredSpecialError
+      ? response.status
+      : isSegmentPrefetch
+        ? 200
+        : storedStatus;
+  return preserveFullyBufferedBodyMetadata(
+    response,
+    new Response(response.body, {
+      headers,
+      status,
+      statusText: status === response.status ? response.statusText : "",
+    }),
+  );
+}
+
+/** Send a routing-level not-found from a dispatch as an unmatched route's 404. */
+function withRouteMissCacheControl(response: Response): Response {
+  if (!response.headers.has(VINEXT_ROUTE_MISS_HEADER)) return response;
+  // Dispatch rejects the params after the matched route was recorded.
+  replaceFrameworkRequestRoute("/404");
+  let unmarkedResponse = response;
+  try {
+    // Keep the response itself, whose config headers may already be applied.
+    response.headers.delete(VINEXT_ROUTE_MISS_HEADER);
+    // A split stage reattaches the rejected match's params, which the client
+    // would read into useParams(). An unmatched route has none.
+    response.headers.delete(VINEXT_PARAMS_HEADER);
+  } catch {
+    const headers = new Headers(response.headers);
+    headers.delete(VINEXT_ROUTE_MISS_HEADER);
+    headers.delete(VINEXT_PARAMS_HEADER);
+    unmarkedResponse = preserveFullyBufferedBodyMetadata(
+      response,
+      new Response(response.body, {
+        headers,
+        status: response.status,
+        statusText: response.statusText,
+      }),
+    );
+    copyLinkHeaderProvenance(response.headers, unmarkedResponse.headers);
+    if (isAppRscResponseConfigHeadersApplied(response)) {
+      markAppRscResponseConfigHeadersApplied(unmarkedResponse);
+    }
+  }
+  return withUnmatchedRouteCacheControl(unmarkedResponse);
+}
+
+type DispatchMatchedPageOptions<TRoute> = {
+  bypassInterceptionContextCache: boolean;
+  cachePathname: string;
+  cleanPathname: string;
+  displayPathname: string;
+  formState: ReactFormState | null;
+  actionError?: unknown;
+  actionFailed?: boolean;
+  handlerStart: number;
+  interceptionContext: string | null;
+  interceptionId: string | null;
+  interceptionPathname: string;
+  isProgressiveActionRender: boolean;
+  isRscRequest: boolean;
+  middlewareContext: AppRscMiddlewareContext;
+  mountedSlotsHeader: string | null;
+  params: AppPageParams;
+  pprFallbackCacheShells?:
+    | readonly {
+        fallbackParamNames: readonly string[];
+        params: AppPageParams;
+        pathname: string;
+      }[]
+    | null;
+  pprFallbackShell?: {
+    fallbackParamNames: readonly string[];
+    routePattern: string;
+  };
+  renderedConcreteUrlPaths?: ReadonlySet<string>;
+  /**
+   * Called on a dynamicParams = false miss. When it returns true, routing
+   * resumes with the fallback rewrites, so the miss renders no 404.
+   */
+  resumeRoutingAfterMiss?: () => boolean;
+  skipStaticParamsValidation?: boolean;
+  staticParamsValidationParams?: AppPageParams;
+  rootParams?: RootParams;
+  request: Request;
+  renderedPathAndSearch?: string | null;
+  route: TRoute;
+  scriptNonce?: string;
+  searchParams: URLSearchParams;
+  renderMode: AppRscRenderMode;
+  /** Render the document whole before its first byte (a regeneration or warm-up). */
+  renderWholeDocument?: boolean;
+};
+
+type DispatchMatchedRouteHandlerOptions<TRoute> = {
+  /**
+   * Legacy transported cache-bypass bit. Also covers request/cache route-identity
+   * divergence so the response cannot be published under another route's key.
+   */
+  bypassInterceptionContextCache: boolean;
+  cachePathname: string;
+  cleanPathname: string;
+  middlewareContext: AppRscMiddlewareContext;
+  /**
+   * `null` for non-dynamic routes. Mirrors Next.js' route handler context
+   * shape: user code that does `params ? await params : null` resolves to
+   * `null` for routes without dynamic segments. Dynamic routes receive the
+   * matched params object.
+   */
+  params: AppPageParams | null;
+  /** Render the not-found page Next.js serves for an unmatched URL. */
+  renderNotFound: () => Promise<Response>;
+  /**
+   * Called on a dynamicParams = false miss. When it returns true, routing
+   * resumes with the fallback rewrites, so the miss renders no 404.
+   */
+  resumeRoutingAfterMiss?: () => boolean;
+  request: Request;
+  route: TRoute;
+  searchParams: URLSearchParams;
+};
+
+type HandleProgressiveActionRequestOptions<TRoute> = {
+  actionId: string | null;
+  cleanPathname: string;
+  contentType: string;
+  middlewareContext: AppRscMiddlewareContext;
+  request: Request;
+  routeMatch: AppRscRouteMatch<TRoute> | null;
+};
+
+/**
+ * Side-effect headers captured during a progressive (no-JS) server action's
+ * non-redirect execution. Forwarded onto the page render response so that
+ * `cookies().set(...)` and revalidation kinds reach the browser. See
+ * `app-server-action-execution.ts` and issue #1483 for the full rationale.
+ */
+type ProgressiveActionSideEffects = {
+  pendingCookies: string[];
+  draftCookie: string | null | undefined;
+  /** Numeric revalidation kind: `0` (none), `1` (static+dynamic), etc. */
+  revalidationKind: number;
+};
+
+type ProgressiveActionFormStateResult =
+  | ({
+      formState: ReactFormState | null;
+      kind: "form-state";
+    } & ProgressiveActionSideEffects)
+  | ({
+      actionError: unknown;
+      actionFailed: true;
+      formState: null;
+      kind: "form-state";
+    } & ProgressiveActionSideEffects);
+
+type HandleServerActionRequestOptions<TRoute> = {
+  actionId: string | null;
+  cleanPathname: string;
+  contentType: string;
+  interceptionContext: string | null;
+  isRscRequest: boolean;
+  middlewareContext: AppRscMiddlewareContext;
+  mountedSlotsHeader: string | null;
+  request: Request;
+  scriptNonce?: string;
+  routeMatch: AppRscRouteMatch<TRoute> | null;
+  routePathname: string;
+  dispatchRedirectTargetRequest: (request: Request) => Promise<Response>;
+  sourceConfigHeaders: Headers | null;
+  searchParams: URLSearchParams;
+};
+
+type RenderNotFoundOptions<TRoute> = {
+  isRscRequest: boolean;
+  matchedParams?: AppPageParams;
+  middlewareContext: AppRscMiddlewareContext;
+  request: Request;
+  route: TRoute | null;
+  scriptNonce?: string;
+};
+
+type RenderPagesFallbackOptions = {
+  allowRscDocumentFallback?: boolean;
+  appRouteMatch?: { route: { isDynamic: boolean; pattern: string } } | null;
+  dispatchPagesResponseStage?: (
+    request: Request,
+    resourceKind: "api" | "page",
+    dataKind?: PagesRouteDataKind,
+    hasRequestAwareDocument?: boolean,
+    runsInitialProps?: boolean,
+  ) => Promise<Response>;
+  isDataRequest?: boolean;
+  isRscRequest: boolean;
+  initialResponseHeaders?: Headers;
+  matchKind?: "dynamic" | "static";
+  middlewareContext: AppRscMiddlewareContext;
+  pathname?: string;
+  pagesDataRequest?: Request | null;
+  request: Request;
+  /** The basePath `request.url` still carries, removed before the page renders. */
+  requestBasePath?: string;
+  /** The shared cache entry answers every host; a request-time render is not stored. */
+  sharedAcrossHosts?: boolean;
+  url: URL;
+};
+
+type NavigationContextValue = {
+  params: AppPageParams;
+  pathname: string;
+  searchParams: URLSearchParams;
+};
+
+export type CreateAppRscHandlerOptions<TRoute extends AppRscHandlerRoute> = {
+  assetPrefix?: string;
+  basePath: string;
+  buildId: string | null;
+  /**
+   * Serialized request-stage projection of the Workers Cache manifest. Shared
+   * App page dispatches whose manifest state is `static-candidate` drop the
+   * user query. Null outside a `vinext deploy` artifact.
+   */
+  cacheabilityRequestProjection?: string | null;
+  clearRequestContext: () => void;
+  configHeaders: NextHeader[];
+  configRedirects: NextRedirect[];
+  configRewrites: {
+    afterFiles: NextRewrite[];
+    beforeFiles: NextRewrite[];
+    fallback: NextRewrite[];
+  };
+  draftModeSecret: string;
+  /**
+   * Dev-only key the hybrid Pages handler seals x-vinext-mw-ctx with. Null
+   * outside `vite dev`, so a forwarded middleware context is never honored.
+   */
+  devForwardedMiddlewareContextKey?: string | null;
+  dispatchMatchedPage: (options: DispatchMatchedPageOptions<TRoute>) => Promise<Response>;
+  dispatchMatchedRouteHandler: (
+    options: DispatchMatchedRouteHandlerOptions<TRoute>,
+  ) => Promise<Response>;
+  /**
+   * Hydrate a matched route's lazily-loaded page/route-handler modules before
+   * any synchronous read of `route.page` / `route.routeHandler`. Idempotent and
+   * dedup'd. Provided by the generated RSC entry; absent in older entries.
+   */
+  ensureRouteLoaded?: (route: TRoute) => unknown;
+  /**
+   * Whether a loaded page rejects these params under `dynamicParams = false`.
+   * Absent in the request-only stage, which has no route modules and sends
+   * route tree prefetches to the full graph.
+   */
+  isDynamicParamsMiss?: (route: TRoute, params: AppPageParams) => Promise<boolean>;
+  ensureInstrumentation?: (ctx: ExecutionContextLike | null) => Promise<void>;
+  /**
+   * Register cache adapters configured via the vinext() `cache` option. Wired
+   * from the generated RSC entry (which can import `virtual:vinext-cache-adapters`)
+   * so config-driven cache handlers apply to App Router on EVERY runtime — the
+   * Node server and dev included, not just the Cloudflare worker entry.
+   */
+  registerCacheAdapters: (env?: Record<string, unknown>) => void;
+  /** Request-only entries dynamically load the response graph for local bypasses. */
+  renderResponseStageLocally?: RenderAppWorkerResponseStageLocally;
+  handleProgressiveActionRequest?: (
+    options: HandleProgressiveActionRequestOptions<TRoute>,
+  ) => Promise<Response | ProgressiveActionFormStateResult | null>;
+  handleMetadataRouteRequest?: (
+    cleanPathname: string,
+    routePathname: string,
+  ) => Promise<Response | null>;
+  isMetadataRoutePath?: (cleanPathname: string) => boolean | Promise<boolean>;
+  getPrerenderMetadataRoutePaths?: () => Promise<unknown>;
+  createPprFallbackShells?: (
+    route: Pick<AppRscHandlerRoute, "params" | "pattern" | "rootParamNames">,
+    params: AppPageParams,
+  ) => AppPagePprFallbackCacheShell[];
+  handleServerActionRequest?: (
+    options: HandleServerActionRequestOptions<TRoute>,
+  ) => Promise<Response | null>;
+  i18nConfig: NextI18nConfig | null;
+  imageConfig?: ImageConfig;
+  isMetadataRoute?: (pathname: string) => boolean;
+  isDev: boolean;
+  hasInterceptionId: (interceptionId: string) => boolean;
+  loadPrerenderPagesRoutes?: () => Promise<unknown>;
+  matchInterceptRoute?: (
+    pathname: string,
+    sourcePathname: string,
+    interceptionId?: string | null,
+  ) => AppRscRouteMatch<TRoute> | null;
+  matchRoute: (pathname: string) => AppRscRouteMatch<TRoute> | null;
+  matchRequestRoute?: (pathname: string) => AppRscRouteMatch<TRoute> | null;
+  /** `matchRequestRoute` without its decoded static page substitution. */
+  matchRawRequestRoute?: (pathname: string) => AppRscRouteMatch<TRoute> | null;
+  runMiddleware?: (options: RunAppMiddlewareOptions) => Promise<ApplyAppMiddlewareResult>;
+  publicFiles: ReadonlySet<string>;
+  prefetchInlining?: PrefetchInliningConfig;
+  renderNotFound: (options: RenderNotFoundOptions<TRoute>) => Promise<Response | null>;
+  renderPagesFallback?: (options: RenderPagesFallbackOptions) => Promise<Response | null>;
+  rootParamNamesByPattern?: RootParamNamesMap;
+  setNavigationContext: (context: NavigationContextValue) => void;
+  /** next.config `skipProxyUrlNormalize`. */
+  skipProxyUrlNormalize?: boolean;
+  /** next.config `skipTrailingSlashRedirect`: serve both slash forms without a 308. */
+  skipTrailingSlashRedirect?: boolean;
+  staticParamsMap: StaticParamsMap;
+  trailingSlash: boolean;
+  validateDevRequestOrigin?: (request: Request) => Response | null;
+};
+
+function hasProperty<TKey extends PropertyKey>(
+  value: object,
+  key: TKey,
+): value is object & Record<TKey, unknown> {
+  return key in value;
+}
+
+function isEdgeRouteHandler(handler: unknown): boolean {
+  if (!handler || typeof handler !== "object" || !hasProperty(handler, "runtime")) return false;
+  return handler.runtime === "edge" || handler.runtime === "experimental-edge";
+}
+
+function isExecutionContextLike(value: unknown): value is ExecutionContextLike {
+  if (!value || typeof value !== "object") return false;
+  return hasProperty(value, "waitUntil") && typeof value.waitUntil === "function";
+}
+
+function isForwardedActionContext(
+  value: unknown,
+): value is { actionForwarded: true } & Partial<ExecutionContextLike> {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    hasProperty(value, "actionForwarded") &&
+    value.actionForwarded === true
+  );
+}
+
+async function applyRewrite(
+  options: {
+    basePathState: BasePathMatchState;
+    clearRequestContext: () => void;
+    middlewareContext: AppRscMiddlewareContext;
+    request: Request;
+    requestContext: RequestContext;
+    rewrites: NextRewrite[];
+    /** Raw pathname identity used for config source matching and capture substitution. */
+    paramsPathname?: string;
+    validateExternalRewriteRequest: () => Promise<Response | null>;
+  },
+  cleanPathname: string,
+  recordCacheability = true,
+): Promise<Response | string | null> {
+  if (!HAS_CONFIG_REWRITES || !options.rewrites.length) return null;
+
+  const sourcePathname = options.paramsPathname ?? cleanPathname;
+  const configMatchers = await import("../config/config-matchers.js");
+  const rewritten = configMatchers.matchRewrite(
+    sourcePathname,
+    options.rewrites,
+    options.requestContext,
+    options.basePathState,
+    options.paramsPathname,
+    recordCacheability ? markConditionalRewriteCacheability : undefined,
+  );
+  if (!rewritten) return null;
+
+  if (isExternalUrl(rewritten)) {
+    const validationResponse = await options.validateExternalRewriteRequest();
+    if (validationResponse) return validationResponse;
+    // Next.js applies middleware's request-header override before any config
+    // rewrite, so the external origin receives the post-middleware headers.
+    const { requestWithMiddlewareContextHeaders } = await import("./app-middleware.js");
+    const proxyRequest = requestWithMiddlewareContextHeaders(
+      options.request,
+      options.middlewareContext,
+    );
+    options.clearRequestContext();
+    // Next.js proxies a next.config external rewrite without the config and
+    // middleware headers it staged, though its Set-Cookie patch still puts
+    // middleware's cookies ahead of the upstream's.
+    return markAppRscResponseConfigHeadersApplied(
+      withExternalRewriteResponseHeaders(
+        await configMatchers.proxyExternalRequest(proxyRequest, rewritten),
+        new Headers(),
+        options.middlewareContext.headers?.getSetCookie() ?? [],
+      ),
+    );
+  }
+
+  return rewritten;
+}
+
+function requestContextForResolvedUrl(
+  requestContext: RequestContext,
+  resolvedUrl: string,
+  baseUrl: URL,
+): RequestContext {
+  return {
+    cookies: requestContext.cookies,
+    headers: requestContext.headers,
+    host: requestContext.host,
+    query: new URL(resolvedUrl, baseUrl).searchParams,
+  };
+}
+
+function pathnameForResolvedUrl(resolvedUrl: string): string {
+  return resolvedUrl.split("#", 1)[0].split("?", 1)[0];
+}
+
+/**
+ * Percent-encode the code points the URL parser encodes in a path (so `é`
+ * becomes `%C3%A9`) without resolving dot segments or `\`: Next.js only parses
+ * a rewrite destination's template, so a captured `../admin` stays verbatim.
+ */
+function serializeResolvedUrl(resolvedUrl: string, base: URL): string {
+  const resolved = new URL(resolvedUrl, base);
+  stripRscCacheBustingSearchParam(resolved);
+  const pathname = pathnameForResolvedUrl(resolvedUrl).replace(
+    /[\0-\x20"<>`{}^\x7F]|[^\0-\x7F]/gu,
+    // A lone surrogate serializes as U+FFFD, as in the URL parser.
+    (char) =>
+      char.length === 1 && char >= "\uD800" && char <= "\uDFFF"
+        ? "%EF%BF%BD"
+        : encodeURIComponent(char),
+  );
+  return pathname + resolved.search + resolved.hash;
+}
+
+async function applyConfigHeadersToMiddlewareRedirect(
+  response: Response,
+  options: {
+    basePathState: BasePathMatchState;
+    configHeaders: NextHeader[];
+    pathname: string;
+    recordCacheability: boolean;
+    requestContext: RequestContext;
+  },
+): Promise<Response> {
+  // Non-redirect middleware responses still pass through finalization, where
+  // config headers are applied once. Finalization leaves redirects that
+  // application code did not return alone, so they need the earlier header layer here.
+  if (response.status < 300 || response.status >= 400) return response;
+  if (!HAS_CONFIG_HEADERS || !options.configHeaders.length) return response;
+
+  const { applyConfigHeadersToResponse } = await import("./config-headers.js");
+  const headers = new Headers();
+  applyConfigHeadersToResponse(headers, {
+    configHeaders: options.configHeaders,
+    pathname: options.pathname,
+    requestContext: options.requestContext,
+    basePathState: options.basePathState,
+    middlewareHeaders: response.headers,
+    recordCacheability: options.recordCacheability,
+  });
+
+  if (!headers.entries().next().done) {
+    mergeMiddlewareResponseHeaders(headers, response.headers);
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
+  }
+
+  return response;
+}
+
+function requestWithoutRscCacheBustingSearchParam(request: Request): Request {
+  const url = new URL(request.url);
+  // `hasRscCacheBustingSearchParam` and `stripRscCacheBustingSearchParam` share
+  // the same encoding-aware matcher (`isRscCacheBustingSearchPair`), so the
+  // guard and the strip can never disagree on which pairs count as `_rsc`
+  // (including encoded-key edge cases like `%5Frsc`). Gating on the matcher
+  // rather than a before/after search comparison also avoids spuriously
+  // rebuilding/normalizing requests whose only difference is degenerate empty
+  // query pairs (e.g. `?a=1&&b=2`).
+  if (!hasRscCacheBustingSearchParam(url)) return request;
+
+  stripRscCacheBustingSearchParam(url);
+  // URL normalization does not create a second body consumer. Reconstructing
+  // from the request shares/transfers its stream into the replacement request;
+  // App middleware creates the one explicit tee when it genuinely needs an
+  // isolated branch.
+  return cloneRequestWithUrl(request, url.toString());
+}
+
+/** Send a response with a never-cache policy, rebuilding immutable headers. */
+function withNeverCacheControl(
+  response: Response,
+  cacheControl: string = NEVER_CACHE_CONTROL,
+): Response {
+  const applyNoStore = (headers: Headers): void => {
+    applyCdnResponseHeaders(headers, { cacheControl });
+  };
+  let markedResponse = response;
+  try {
+    applyNoStore(markedResponse.headers);
+  } catch {
+    // Response.redirect() and some middleware responses expose immutable
+    // headers. Rebuild them before applying the fail-closed cache policy.
+    const headers = new Headers(response.headers);
+    applyNoStore(headers);
+    markedResponse = new Response(response.body, {
+      headers,
+      status: response.status,
+      statusText: response.statusText,
+    });
+  }
+  return markedResponse;
+}
+
+// The never-cache policy of an unmatched route's 404 is reasserted after
+// next.config headers, so a matching Cache-Control rule can't replace it.
+const unmatchedRouteResponses = new WeakSet<Response>();
+
+/** Send an unmatched route's 404 with the never-cache policy, as Next.js does. */
+function withUnmatchedRouteCacheControl(response: Response): Response {
+  const markedResponse = withNeverCacheControl(response);
+  unmatchedRouteResponses.add(markedResponse);
+  return markedResponse;
+}
+
+// As in Next.js, every response to a Server Action carries its never-cache
+// policy, reasserted after next.config headers and over middleware's.
+const serverActionResponses = new WeakSet<Response>();
+
+function markServerActionResponse(response: Response): Response {
+  serverActionResponses.add(response);
+  return response;
+}
+
+/**
+ * A fetch action's redirect that streams its target's render keeps the
+ * target's policy, as in Next.js. Every other action response is never cached.
+ */
+function withServerActionCacheControl(response: Response): Response {
+  if (isStreamedActionRedirectResponse(response)) return response;
+  return withNeverCacheControl(response, SERVER_ACTION_CACHE_CONTROL);
+}
+
+async function handleAppRscRequest<TRoute extends AppRscHandlerRoute>(
+  options: CreateAppRscHandlerOptions<TRoute>,
+  request: Request,
+  preMiddlewareRequestContext: RequestContext,
+  middlewareContext: AppRscMiddlewareContext,
+  isDataRequest: boolean,
+  isMiddlewareDataRequest: boolean,
+  pagesDataRequest: Request | null,
+  dispatchInternalRequest: (request: Request) => Promise<Response>,
+  allowInternalRscDocumentFallback: boolean,
+  dispatchResponseStage?: DispatchAppWorkerResponseStage,
+  responseStageProbeMode: VinextCacheabilityProbeMode | null = null,
+  reportInterceptionResponseUncacheable: (uncacheable: boolean) => void = () => {},
+): Promise<Response> {
+  let interceptionResponseUncacheable = false;
+  const setInterceptionResponseUncacheable = (uncacheable: boolean): void => {
+    interceptionResponseUncacheable = uncacheable;
+    reportInterceptionResponseUncacheable(uncacheable);
+  };
+  const handlerStart = process.env.NODE_ENV !== "production" ? performance.now() : 0;
+
+  if (process.env.NODE_ENV !== "production") {
+    const originBlock = options.validateDevRequestOrigin?.(request);
+    if (originBlock) return originBlock;
+  }
+
+  const canHandleOutsideBasePath =
+    Boolean(options.runMiddleware) ||
+    [
+      ...options.configRedirects,
+      ...options.configRewrites.beforeFiles,
+      ...options.configRewrites.afterFiles,
+      ...options.configRewrites.fallback,
+      ...options.configHeaders,
+    ].some((rule) => rule.basePath === false);
+  const normalized = normalizeRscRequest(
+    request,
+    options.basePath,
+    canHandleOutsideBasePath,
+    options.assetPrefix,
+  );
+  if (normalized instanceof Response) {
+    if (
+      request.headers.has(VINEXT_INTERCEPTION_CONTEXT_HEADER) ||
+      request.headers.has(VINEXT_INTERCEPTION_ID_HEADER)
+    ) {
+      setInterceptionResponseUncacheable(true);
+    }
+    return normalized;
+  }
+
+  const {
+    url,
+    isRscRequest,
+    interceptionContextHeader,
+    interceptionIdHeader,
+    mountedSlotsHeader,
+    renderMode,
+    hadBasePath,
+  } = normalized;
+  setFrameworkRequestRoute(undefined, isRscRequest);
+  const hasRawInterceptionContext =
+    isRscRequest && request.headers.has(VINEXT_INTERCEPTION_CONTEXT_HEADER);
+  if (hasRawInterceptionContext) {
+    // Header normalization deliberately treats malformed/oversized values as
+    // absent for progressive enhancement, but the raw value still contributes
+    // to the RSC URL hash. Keep those attacker-selected variants out of every
+    // shared cache even when routing proceeds as a direct request.
+    setInterceptionResponseUncacheable(true);
+  }
+  // Validate the client-supplied source pathname immediately after request
+  // normalization, before redirects, middleware, rewrites, or cache-busting
+  // responses can observe a structurally different identity. Keep the raw
+  // header for the route matcher's deliberate one-decode contract, while
+  // carrying the decoded canonical pathname for middleware authorization.
+  let interceptionSourcePathname: string | null = null;
+  if (isRscRequest && interceptionContextHeader !== null) {
+    try {
+      interceptionSourcePathname = decodeInterceptionSourcePathname(interceptionContextHeader);
+    } catch {
+      options.clearRequestContext();
+      setInterceptionResponseUncacheable(true);
+      return badRequestResponse();
+    }
+  }
+  const { pathname, requestPathname } = normalized;
+  let cleanPathname = pathname;
+  let resolvedUrl = cleanPathname + url.search;
+  // Compared with `resolvedUrl` only after it is serialized below, so keep the
+  // same form: an unrewritten `/blog/café` must not look rewritten.
+  const originalResolvedUrl = serializeResolvedUrl(resolvedUrl, url);
+  const getResolvedSearchParams = () => new URL(resolvedUrl, url).searchParams;
+  // Canonical (external) pathname the user requested. Middleware rewrites and
+  // next.config.js rewrites mutate `cleanPathname` so internal route matching
+  // can find the destination page, but hooks like `usePathname()` must reflect
+  // the original URL the user sees in the address bar.
+  // Matches Next.js: test/e2e/app-dir/hooks/hooks.test.ts —
+  //   "should have the canonical url pathname on rewrite"
+  const canonicalPathname = cleanPathname;
+
+  const basePathState = { basePath: options.basePath, hadBasePath };
+  let cleanPathnameIsRequestPathname = true;
+  const matchCleanPathname = () =>
+    cleanPathnameIsRequestPathname && options.matchRequestRoute
+      ? options.matchRequestRoute(requestPathname)
+      : options.matchRoute(cleanPathname);
+
+  if (
+    interceptionIdHeader !== null &&
+    (!isRscRequest ||
+      interceptionContextHeader === null ||
+      (request.method !== "GET" && request.method !== "HEAD") ||
+      !options.hasInterceptionId(interceptionIdHeader))
+  ) {
+    // Reject attacker-selected selector values before middleware, redirects,
+    // or other early responders can attach a cacheable policy. Exact
+    // source/target verification still happens after rewrites below.
+    setInterceptionResponseUncacheable(true);
+    return badRequestResponse();
+  }
+
+  if (interceptionIdHeader !== null) {
+    // Canonicalize selector-bearing URLs before any cacheable redirect can
+    // depend on the selector. A `_rsc` hash that does not cover the selector
+    // would otherwise give two graph-owned IDs the same request URL while
+    // producing different redirect locations.
+    const selectorCacheBustingRedirect = await resolveInvalidRscCacheBustingRequest({
+      isRscRequest,
+      request,
+    });
+    if (selectorCacheBustingRedirect) return selectorCacheBustingRedirect;
+  }
+
+  const provesConcreteInterceptionSource = (
+    sourceMatch: AppRscRouteMatch<TRoute> | null,
+    sourceContext: string | null = interceptionContextHeader,
+  ): boolean => {
+    if (sourceMatch === null) return false;
+    if (sourceMatch.interceptionSourceIsConcrete !== undefined) {
+      return sourceMatch.interceptionSourceIsConcrete;
+    }
+    // Backward-compatible fallback for custom/older entry glue. Route identity
+    // proves existence; match the raw context like a direct request to it.
+    return (
+      sourceContext !== null &&
+      (options.matchRequestRoute ?? options.matchRoute)(sourceContext)?.route ===
+        (sourceMatch.authorizationRoute ?? sourceMatch.route)
+    );
+  };
+  const directInterceptionSourceMatch =
+    hadBasePath && hasRawInterceptionContext && interceptionContextHeader !== null
+      ? (options.matchInterceptRoute?.(
+          requestPathname,
+          interceptionContextHeader,
+          interceptionIdHeader,
+        ) ?? null)
+      : null;
+  if (provesConcreteInterceptionSource(directInterceptionSourceMatch)) {
+    // Direct targets with a concrete source can be proven before config
+    // redirects or middleware. If routing later changes the target, the
+    // post-rewrite proof below replaces this state before page dispatch.
+    setInterceptionResponseUncacheable(false);
+  }
+
+  if (
+    pathname === VINEXT_PRERENDER_STATIC_PARAMS_PATH ||
+    pathname === VINEXT_PRERENDER_PAGES_STATIC_PATHS_PATH ||
+    pathname === VINEXT_PRERENDER_METADATA_ROUTES_PATH
+  ) {
+    const { handleAppPrerenderEndpoint } = await import("./app-prerender-endpoints.js");
+    const prerenderEndpointResponse = await handleAppPrerenderEndpoint(request, {
+      isPrerenderEnabled() {
+        return (
+          process.env.VINEXT_PRERENDER === "1" ||
+          getRequestExecutionContext()?.isPrerenderPathDiscovery === true
+        );
+      },
+      getMetadataRoutePaths: options.getPrerenderMetadataRoutePaths,
+      loadPagesRoutes: options.loadPrerenderPagesRoutes,
+      pathname,
+      rootParamNamesByPattern: options.rootParamNamesByPattern,
+      staticParamsMap: options.staticParamsMap,
+    });
+    if (prerenderEndpointResponse) return prerenderEndpointResponse;
+  }
+
+  // `skipTrailingSlashRedirect` drops these redirects entirely, like Next.js
+  // omitting them from the routes manifest.
+  if (!isDataRequest && !options.skipTrailingSlashRedirect) {
+    const metadataBypassesTrailingSlash =
+      options.trailingSlash &&
+      options.isMetadataRoutePath &&
+      (await options.isMetadataRoutePath(cleanPathname));
+    const trailingSlashRedirect = metadataBypassesTrailingSlash
+      ? null
+      : normalizeTrailingSlash(
+          requestPathname,
+          hadBasePath ? options.basePath : "",
+          options.trailingSlash,
+          url.search,
+        );
+    if (trailingSlashRedirect) return trailingSlashRedirect;
+  }
+
+  // Default-locale path normalisation (issue #1336, item 4). Next.js
+  // splices in the (domain-aware) default locale on every request that
+  // arrives without a locale prefix before running config redirect / rewrite
+  // / header matching. Mirrors resolve-routes.ts lines ~250-263.
+  //
+  // Defined once here so the same helper is reused for the redirect match
+  // below, the middleware-redirect config header match further down, and the
+  // post-middleware rewrite matches. `i18nConfig` and `url.hostname` are
+  // request-scoped constants from this point on.
+  const matchPathname = (p: string): string =>
+    normalizeDefaultLocalePathname(p, options.i18nConfig, { hostname: url.hostname });
+  // Header matching re-adds the root's trailing slash exactly where Next.js
+  // does, so a root rule's `/:nextInternalLocale(...)/` source matches. A
+  // `/_next/data` request was already rewritten to its page path, but its raw
+  // pathname ends in `.json`, so its slash is never restored.
+  const restoreLocaleRootTrailingSlash =
+    !pagesDataRequest && shouldRestoreLocaleRootTrailingSlash(url.pathname, options);
+  const headerMatchPathname = normalizeDefaultLocalePathname(requestPathname, options.i18nConfig, {
+    hostname: url.hostname,
+    restoreRootTrailingSlash: restoreLocaleRootTrailingSlash,
+  });
+
+  // Config sources match the request's raw encoded identity. Internal route
+  // matching uses the normalized pathname separately, but decoding literal
+  // source segments here would make aliases such as `/%72ewrite` match
+  // `/rewrite`, unlike Next.js. Dynamic captures must likewise retain their
+  // original percent-encoding for Location substitution.
+  const redirectPathname = matchPathname(requestPathname);
+  const configMatchers =
+    HAS_CONFIG_REDIRECTS && options.configRedirects.length
+      ? await import("../config/config-matchers.js")
+      : null;
+  const redirect = configMatchers
+    ? configMatchers.matchRedirect(
+        redirectPathname,
+        options.configRedirects,
+        preMiddlewareRequestContext,
+        basePathState,
+        dispatchResponseStage ? undefined : markConditionalRedirectCacheability,
+      )
+    : null;
+  if (configMatchers && redirect) {
+    // matchRedirect has already prefixed a local destination with basePath.
+    const destination = redirect.destination;
+    // For RSC navigations `createRscRedirectLocation` recomputes the
+    // cache-busting `_rsc` param onto the Location. For plain (document)
+    // requests, carry the original request query onto the Location so it
+    // survives the redirect, mirroring Next.js resolve-routes.ts (issue #1529).
+    const location =
+      isRscRequest && request.headers.get(RSC_HEADER) === "1"
+        ? // Encoded first, so the URL parser cannot strip captured control
+          // characters and send an RSC navigation somewhere else.
+          await createRscRedirectLocation(
+            configMatchers.encodeRedirectLocation(destination),
+            request,
+          )
+        : configMatchers.encodeRedirectLocation(
+            configMatchers.preserveRedirectDestinationQuery(
+              destination,
+              url.search,
+              redirect.destinationQuery,
+            ),
+          );
+    return new Response(null, {
+      status: redirect.statusCode,
+      headers: { Location: location },
+    });
+  }
+
+  const rscCacheBustingRedirect =
+    hadBasePath && interceptionIdHeader === null
+      ? await resolveInvalidRscCacheBustingRequest({ isRscRequest, request })
+      : null;
+  if (rscCacheBustingRedirect) return rscCacheBustingRedirect;
+
+  let filesystemRouteEligible = hadBasePath;
+  const validateClaimedOutsideBasePathRsc = async (
+    routeClaimed = filesystemRouteEligible,
+  ): Promise<Response | null> => {
+    if (hadBasePath || !routeClaimed) return null;
+    return resolveInvalidRscCacheBustingRequest({ isRscRequest, request });
+  };
+
+  const runMiddleware = isOnDemandRevalidateRequest(
+    request.headers.get(PRERENDER_REVALIDATE_HEADER),
+  )
+    ? undefined
+    : options.runMiddleware;
+  // Branch the exact downstream body owner before creating URL aliases. URL
+  // reconstruction shares a stream; cloning an alias would lock the body still
+  // referenced by `request` and break the subsequent action/route-handler read.
+  const isolatedMiddlewareSource =
+    runMiddleware && request.body && !request.bodyUsed ? request.clone() : null;
+
+  // Keep cache-busting validation on the real request above, then hide the
+  // internal `_rsc` transport query from userland middleware and post-middleware
+  // has/missing matching. This mirrors Next.js' navigation middleware fixture.
+  const userlandRequest = requestWithoutRscCacheBustingSearchParam(request);
+  const isolatedMiddlewareRequest = isolatedMiddlewareSource
+    ? requestWithoutRscCacheBustingSearchParam(isolatedMiddlewareSource)
+    : undefined;
+  let didMiddlewareRewrite = false;
+  let didMiddlewareRewritePathname = false;
+  // Rewrites carry or drop the basePath: middleware by its target URL, config
+  // rules unless they set `basePath: false`. Like Next.js, post-middleware
+  // rules match against the current state and the image endpoint is served
+  // only under basePath.
+  let resolvedPathnameHasBasePath = hadBasePath;
+  const currentBasePathState = (): BasePathMatchState => ({
+    basePath: options.basePath,
+    hadBasePath: resolvedPathnameHasBasePath,
+  });
+
+  if (runMiddleware) {
+    const middlewareResult = await runMiddleware({
+      cleanPathname,
+      context: middlewareContext,
+      externalRewriteRequest: request,
+      hadBasePath,
+      isDataRequest: isMiddlewareDataRequest,
+      middlewareRequest: isolatedMiddlewareRequest,
+      request: userlandRequest,
+      restoreLocaleRootTrailingSlash,
+      validateExternalRewriteRequest: () => validateClaimedOutsideBasePathRsc(true),
+    });
+    if (!dispatchResponseStage && middlewareResult.pathnameEligible) {
+      // Next.js runs matched middleware before serving a page response. A CDN
+      // HIT in front of this Worker would skip that request-specific boundary,
+      // so this architecture must remain private until middleware is isolated
+      // into an uncached outer stage.
+      markRouteCacheabilityDynamic(
+        middlewareResult.matched
+          ? "middleware matched this request"
+          : "middleware is eligible for this pathname",
+      );
+    }
+    if (middlewareResult.kind === "response") {
+      if (request.body && !request.body.locked) {
+        void request.body.cancel().catch(() => {});
+      }
+      if (middlewareResult.externalRewrite) {
+        // Next.js stages next.config headers beneath middleware's and the
+        // upstream's, so they only fill headers neither one set.
+        const headers = new Headers();
+        await applyAppRscConfigHeaders(headers, request, {
+          basePath: options.basePath,
+          configHeaders: options.configHeaders,
+          i18nConfig: options.i18nConfig,
+          restoreLocaleRootTrailingSlash,
+          middlewareHeaders: middlewareContext.headers,
+          recordCacheability: dispatchResponseStage === undefined,
+          requestContext: preMiddlewareRequestContext,
+        });
+        return markAppRscResponseConfigHeadersApplied(
+          withExternalRewriteResponseHeaders(middlewareResult.response, headers, []),
+        );
+      }
+      // Finalization applies config headers to a response middleware returned
+      // directly. As in Next.js, they yield to that response's own headers.
+      middlewareContext.headers ??= new Headers(middlewareResult.response.headers);
+      return applyConfigHeadersToMiddlewareRedirect(middlewareResult.response, {
+        basePathState,
+        configHeaders: options.configHeaders,
+        pathname: headerMatchPathname,
+        recordCacheability: dispatchResponseStage === undefined,
+        requestContext: preMiddlewareRequestContext,
+      });
+    }
+
+    cleanPathname = middlewareResult.cleanPathname;
+    didMiddlewareRewrite = middlewareResult.rewritten;
+    if (didMiddlewareRewrite) {
+      resolvedPathnameHasBasePath = middlewareResult.rewriteHadBasePath ?? true;
+    }
+    // A rewrite destination is authoritative even when normalization makes it
+    // textually equal to the incoming path (for example /%61dmin -> /admin).
+    if (didMiddlewareRewrite || cleanPathname !== pathname) {
+      cleanPathnameIsRequestPathname = false;
+    }
+    didMiddlewareRewritePathname = cleanPathname !== pathname;
+    if (middlewareResult.search !== null) {
+      url.search = middlewareResult.search;
+    }
+    resolvedUrl = cleanPathname + url.search;
+  }
+
+  const scriptNonce = getScriptNonceFromHeaderSources(request.headers, middlewareContext.headers);
+  const hasMiddlewareCookieOverlay = hasEffectiveRequestCookieChanges(
+    request.headers.get("cookie"),
+  );
+  const middlewareCookieOverlay = hasMiddlewareCookieOverlay
+    ? (getEffectiveRequestCookieHeader() ?? "")
+    : null;
+  const draftModeCookie =
+    dispatchResponseStage || options.renderResponseStageLocally ? getDraftModeCookieHeader() : null;
+  const responseStageCacheability = (resolvedRouteUrl: string) => ({
+    policyHeaders: null,
+    probeMode: responseStageProbeMode,
+    resolvedRoutePathname: pathnameForResolvedUrl(resolvedRouteUrl),
+  });
+  let responseStagePolicyPromise: Promise<Array<[string, string]> | null> | undefined;
+  const loadResponseStagePolicy = () =>
+    (responseStagePolicyPromise ??= options.configHeaders.length
+      ? import("./config-headers.js").then(({ resolveResponseStageCachePolicy }) =>
+          withoutResponseStageVary(
+            resolveResponseStageCachePolicy({
+              basePathState,
+              configHeaders: options.configHeaders,
+              pathname: headerMatchPathname,
+              requestContext: preMiddlewareRequestContext,
+            }),
+          ),
+        )
+      : Promise.resolve(null));
+  let canUseSharedWorkerResponseStage =
+    draftModeCookie === null &&
+    !hasMiddlewareCookieOverlay &&
+    !hasMiddlewareRequestHeaderOverrides(
+      middlewareContext.requestHeaders ?? middlewareContext.headers,
+    ) &&
+    !requestOptsOutOfWorkerResponseStage(
+      request,
+      options,
+      scriptNonce,
+      allowInternalRscDocumentFallback,
+    );
+  const isOnDemandRevalidate = isOnDemandRevalidateRequest(
+    request.headers.get(PRERENDER_REVALIDATE_HEADER),
+  );
+  const transportedResponseStage: RenderAppWorkerResponseStageLocally | undefined =
+    dispatchResponseStage
+      ? async (stageRequest, props) => {
+          const responseStagePolicy = await loadResponseStagePolicy();
+          const cache =
+            responseStageProbeMode ||
+            isOnDemandRevalidate ||
+            ((props.kind === "app-page" || props.kind === "app-route-handler") &&
+              (props.bypassInterceptionContextCache ||
+                // Next.js lets an explicit next.config public policy cache a
+                // force-dynamic route, so only bypass when no such policy matched.
+                (props.forceDynamic === true && responseStagePolicy === null)))
+              ? "bypass"
+              : canUseSharedWorkerResponseStage
+                ? "shared"
+                : "bypass";
+          let dispatchRequest =
+            props.kind === "app-page"
+              ? prepareSharedAppPageDispatch(stageRequest, cache)
+              : stageRequest;
+          let dispatchProps = props;
+          let canonicalRsc: { headers: Headers; navigation: boolean } | null = null;
+          if (
+            cache === "shared" &&
+            props.kind === "app-page" &&
+            props.isRscRequest &&
+            // A rewrite's target is in the props that key a shared dispatch,
+            // so a rewritten request is canonicalized like a direct one.
+            (props.matchKind === "request" || props.matchKind === "resolved") &&
+            props.interceptionContext === null &&
+            props.interceptionId === null &&
+            props.mountedSlotsHeader === null
+          ) {
+            const headers = new Headers(dispatchRequest.headers);
+            const canonicalized =
+              props.renderMode === "navigation"
+                ? canonicalizePrewarmableRscRequestHeaders(headers)
+                : props.renderMode === "prefetch-loading-shell" && props.canUseCanonicalLoadingShell
+                  ? canonicalizeLoadingShellRscRequestHeaders(headers)
+                  : props.renderMode === "prefetch-dynamic-shell"
+                    ? canonicalizeDynamicShellRscRequestHeaders(headers)
+                    : false;
+            if (canonicalized) {
+              const navigation = props.renderMode !== "prefetch-loading-shell";
+              canonicalRsc = { headers, navigation };
+              dispatchRequest = cloneRequestWithHeaders(dispatchRequest, headers);
+              // A search-param shell is the query-free page's navigation, so
+              // it's dispatched as one and shares that page's entry.
+              if (props.renderMode === "prefetch-dynamic-shell") {
+                const queryFree = withoutAppPageDispatchQuery(dispatchRequest.url, {
+                  ...props,
+                  renderMode: "navigation",
+                });
+                dispatchRequest = cloneRequestWithUrl(dispatchRequest, queryFree.url);
+                dispatchProps = queryFree.props;
+              }
+            }
+          }
+          let stageProps: AppWorkerResponseStageProps = {
+            ...dispatchProps,
+            cacheability: {
+              ...props.cacheability,
+              policyHeaders: responseStagePolicy,
+            },
+          };
+          // Workers Cache keys a dispatch by its URL and props, and a hit runs
+          // no code, so a static-candidate path drops the user query from the
+          // dispatch itself. A next.config public policy keeps the full URL,
+          // as the query-free cache identity below does. The canonical RSC
+          // URL is built afterwards, because it keeps the request's search.
+          if (
+            cache === "shared" &&
+            responseStagePolicy === null &&
+            stageProps.kind === "app-page"
+          ) {
+            const projection = readCacheabilityRequestProjection(options);
+            if (
+              projection &&
+              isStaticCandidateAppPageDispatch(projection, dispatchRequest, stageProps)
+            ) {
+              const queryFree = withoutAppPageDispatchQuery(dispatchRequest.url, stageProps);
+              dispatchRequest = cloneRequestWithUrl(dispatchRequest, queryFree.url);
+              stageProps = queryFree.props;
+            }
+          }
+          if (canonicalRsc) {
+            const rscPath = canonicalRsc.navigation
+              ? createCanonicalRscRequestUrl(dispatchRequest.url)
+              : await createRscRequestUrl(dispatchRequest.url, canonicalRsc.headers);
+            dispatchRequest = cloneRequestWithUrl(
+              dispatchRequest,
+              new URL(rscPath, dispatchRequest.url).toString(),
+            );
+          }
+          // Shared dispatches are GET/HEAD only. Every host shares one entry,
+          // as in Next.js. A next.config public policy is admitted whatever
+          // the render read of the query, so a page keeps the query in its
+          // identity, as Next.js CDN caching does. Interception and mounted-slot
+          // payloads stay contextual, as the RSC canonicalization above does.
+          // A Route Handler or metadata route has no such representations,
+          // so its identity keeps only the method, path and route props, as
+          // Next.js keys a route handler by its pathname.
+          // A host-free identity keeps the query of every dispatch.
+          const cacheIdentity =
+            cache !== "shared" ||
+            stageProps.kind === "app-full-request" ||
+            stageProps.kind === "hybrid-pages" ||
+            !adapterUsesSharedCacheIdentity()
+              ? undefined
+              : adapterSharedCacheIdentity() !== "query-free" || responseStagePolicy !== null
+                ? createSharedAppCacheIdentity(dispatchRequest, stageProps)
+                : stageProps.kind === "app-page" &&
+                    stageProps.matchKind !== "interception" &&
+                    stageProps.interceptionContext === null &&
+                    stageProps.interceptionId === null &&
+                    stageProps.mountedSlotsHeader === null
+                  ? createSharedAppPageCacheIdentity(dispatchRequest, stageProps)
+                  : stageProps.kind === "app-metadata" ||
+                      (stageProps.kind === "app-route-handler" &&
+                        stageProps.matchKind !== "interception")
+                    ? createSharedAppRouteCacheIdentity(dispatchRequest, stageProps)
+                    : createSharedAppCacheIdentity(dispatchRequest, stageProps);
+          let response = await dispatchResponseStage(
+            dispatchRequest,
+            stageProps,
+            cacheIdentity ? { cache, cacheIdentity } : { cache },
+          );
+          if (stageRequest.method.toUpperCase() === "HEAD" && response.body) {
+            await response.body.cancel();
+            response = new Response(null, {
+              headers: response.headers,
+              status: response.status,
+              statusText: response.statusText,
+            });
+          }
+          return response;
+        }
+      : undefined;
+  const responseStageRequest = (stageRequest = request): Request => {
+    const activeHeaders = getHeadersContext()?.headers;
+    if (!activeHeaders) return stageRequest;
+    return cloneRequestWithHeaders(stageRequest, new Headers(activeHeaders));
+  };
+  const renderMetadataRouteIfMatched = async (): Promise<Response | null> => {
+    if (
+      !filesystemRouteEligible ||
+      (options.isMetadataRoute
+        ? !options.isMetadataRoute(cleanPathname)
+        : !options.handleMetadataRouteRequest)
+    ) {
+      return null;
+    }
+    const metadataRoutePathname = cleanPathnameIsRequestPathname ? requestPathname : cleanPathname;
+    const metadataResponseStage = transportedResponseStage ?? options.renderResponseStageLocally;
+    if (metadataResponseStage) {
+      const response = await metadataResponseStage(responseStageRequest(), {
+        kind: "app-metadata",
+        buildId: options.buildId,
+        cacheability: responseStageCacheability(resolvedUrl),
+        canonicalPathname,
+        cleanPathname,
+        draftModeCookie,
+        isRscRequest,
+        middlewareCookieOverlay,
+        mountedSlotsHeader,
+        protocolVersion: APP_WORKER_RESPONSE_STAGE_PROTOCOL_VERSION,
+        requestOrigin: url.origin,
+        renderMode,
+        resolvedUrl,
+        routePathname: metadataRoutePathname,
+        scriptNonce: scriptNonce ?? null,
+      });
+      if (response.headers.get(APP_METADATA_RESPONSE_STAGE_NO_MATCH_HEADER) === "1") {
+        await response.body?.cancel();
+        return null;
+      }
+      return response;
+    }
+    return options.handleMetadataRouteRequest?.(cleanPathname, metadataRoutePathname) ?? null;
+  };
+  const applyConfigHeadersToResponseStage = async (
+    response: Response,
+    preserveExistingPolicy = false,
+    routeHandlerRuntime?: RouteHandlerRuntime,
+  ): Promise<Response> => {
+    // Responses returned by a transport binding can have immutable headers.
+    // Compose config headers on a mutable copy while retaining stream/cache
+    // metadata carried by the response-stage result.
+    const headers = new Headers(response.headers);
+    copyLinkHeaderProvenance(response.headers, headers);
+    await applyAppRscConfigHeaders(headers, request, {
+      basePath: options.basePath,
+      configHeaders: options.configHeaders,
+      i18nConfig: options.i18nConfig,
+      restoreLocaleRootTrailingSlash,
+      middlewareHeaders: middlewareContext.headers,
+      overwriteExisting: preserveExistingPolicy ? new Set<string>() : isCdnResponsePolicyHeader,
+      recordCacheability: dispatchResponseStage === undefined,
+      requestContext: preMiddlewareRequestContext,
+      routeHandlerRuntime,
+    });
+    return preserveFullyBufferedBodyMetadata(
+      response,
+      new Response(response.body, {
+        headers,
+        status: response.status,
+        statusText: response.statusText,
+      }),
+    );
+  };
+  let preHandlerResponseHeadersPromise: Promise<Headers> | undefined;
+  const loadPreHandlerResponseHeaders = () =>
+    (preHandlerResponseHeadersPromise ??= (async () => {
+      const headers = new Headers();
+      await applyAppRscConfigHeaders(headers, request, {
+        basePath: options.basePath,
+        configHeaders: options.configHeaders,
+        i18nConfig: options.i18nConfig,
+        restoreLocaleRootTrailingSlash,
+        middlewareHeaders: middlewareContext.headers,
+        overwriteExisting: isCdnResponsePolicyHeader,
+        recordCacheability: false,
+        requestContext: preMiddlewareRequestContext,
+      });
+      mergeMiddlewareResponseHeaders(headers, middlewareContext.headers);
+      return headers;
+    })());
+  let outerResponsePolicyPromise: Promise<Headers> | undefined;
+  const loadOuterResponsePolicy = () =>
+    (outerResponsePolicyPromise ??= Promise.all([
+      loadPreHandlerResponseHeaders(),
+      loadResponseStagePolicy(),
+    ]).then(([headers, responseStagePolicy]) =>
+      captureCdnResponsePolicyOverrides(headers, new Headers(responseStagePolicy ?? [])),
+    ));
+  const composeResponseStageResponse = async (
+    response: Response,
+    routeHandlerRuntime?: RouteHandlerRuntime,
+  ): Promise<Response> => {
+    // Positive config cache policy was already transported into the response
+    // stage before admission. Preserve its completed policy so a late render
+    // failure cannot be made public again and the uncached gateway does not
+    // expose a shared-cache directive. Single-stage rendering still applies
+    // config and middleware policy with ordinary Next.js precedence.
+    const transportedLink = consumeResponseStageLinkProvenance(response);
+    response = transportedLink.response;
+    response = await applyConfigHeadersToResponseStage(
+      response,
+      Boolean(dispatchResponseStage || options.renderResponseStageLocally),
+      routeHandlerRuntime,
+    );
+    response = applyMiddlewareContextToResponse(
+      response,
+      middlewareContext,
+      transportedLink.appendToPostConfigLink,
+    );
+    reconcileCdnResponseHeadersAfterOuterPolicy(response.headers, await loadOuterResponsePolicy());
+    return markAppRscResponseConfigHeadersApplied(response);
+  };
+  const postMiddlewareRequestContext = buildPostMwRequestContext(userlandRequest);
+  // Like Next.js, only a pathname under the basePath resolves to a route or
+  // file. A rewrite's destination decides this, not the request.
+  if (didMiddlewareRewrite) filesystemRouteEligible = resolvedPathnameHasBasePath;
+
+  // Rewrites (beforeFiles, afterFiles, fallback) use `matchPathname` from
+  // above to splice in the default locale before matching. Route matching
+  // itself continues to use the un-prefixed `cleanPathname` because App
+  // Router files live under `app/...` with no locale segment. See issue
+  // #1336 item 4 / pages-i18n.normalizeDefaultLocalePathname.
+  for (const rewrite of options.configRewrites.beforeFiles) {
+    const beforeFilesRewrite = await applyRewrite(
+      {
+        basePathState: currentBasePathState(),
+        clearRequestContext: options.clearRequestContext,
+        middlewareContext,
+        // External RSC rewrites must forward the validated `_rsc` token so the
+        // destination server can validate the request without the original URL.
+        request: request,
+        requestContext: requestContextForResolvedUrl(
+          postMiddlewareRequestContext,
+          resolvedUrl,
+          url,
+        ),
+        paramsPathname: matchPathname(
+          cleanPathnameIsRequestPathname ? requestPathname : cleanPathname,
+        ),
+        rewrites: [rewrite],
+        validateExternalRewriteRequest: () => validateClaimedOutsideBasePathRsc(true),
+      },
+      matchPathname(cleanPathname),
+      dispatchResponseStage === undefined,
+    );
+    if (beforeFilesRewrite instanceof Response) return beforeFilesRewrite;
+    if (beforeFilesRewrite) {
+      resolvedUrl = mergeRewriteQuery(resolvedUrl, beforeFilesRewrite);
+      cleanPathname = pathnameForResolvedUrl(resolvedUrl);
+      cleanPathnameIsRequestPathname = false;
+      resolvedPathnameHasBasePath = !options.basePath || rewrite.basePath !== false;
+      filesystemRouteEligible = resolvedPathnameHasBasePath;
+    }
+  }
+
+  const claimedRscCacheBustingRedirect = await validateClaimedOutsideBasePathRsc();
+  if (claimedRscCacheBustingRedirect) return claimedRscCacheBustingRedirect;
+
+  const actionId =
+    request.headers.get(RSC_ACTION_HEADER) ?? request.headers.get(NEXT_ACTION_HEADER);
+  const isPostRequest = request.method.toUpperCase() === "POST";
+  const contentType = request.headers.get("content-type") || "";
+  const isProgressiveActionRequest =
+    isPostRequest && !actionId && contentType.startsWith("multipart/form-data");
+
+  // Next.js checks the filesystem after each rewrite phase, so late rewrites
+  // to the endpoint are served as well. Like Next.js, it compares the raw
+  // pathname, so `/_next/%69mage` is not the endpoint.
+  const serveImageEndpointIfMatched = async (): Promise<Response | null> => {
+    if (
+      !filesystemRouteEligible ||
+      !resolvedPathnameHasBasePath ||
+      !isImageOptimizationPath(cleanPathnameIsRequestPathname ? requestPathname : cleanPathname)
+    ) {
+      return null;
+    }
+    // Rewrites to or of the endpoint replace the query in `resolvedUrl`.
+    const imageUrl = new URL(resolvedUrl, url);
+    const imageRedirect = resolveDevImageRedirect(
+      imageUrl,
+      [
+        ...(options.imageConfig?.deviceSizes ?? DEFAULT_DEVICE_SIZES),
+        ...(options.imageConfig?.imageSizes ?? DEFAULT_IMAGE_SIZES),
+      ],
+      options.imageConfig?.qualities,
+      { isDev: options.isDev, localPatterns: options.imageConfig?.localPatterns },
+    );
+    const middlewareHeaders = new Headers();
+    mergeMiddlewareResponseHeaders(middlewareHeaders, middlewareContext.headers);
+    if (!imageRedirect) {
+      return new Response("Invalid image optimization parameters", {
+        status: 400,
+        headers: middlewareHeaders,
+      });
+    }
+    const overrideHeaders = middlewareContext.requestHeaders ?? middlewareContext.headers;
+    return markImageOptimizationSignal(
+      Response.redirect(new URL(imageRedirect, url.origin).href, 302),
+      {
+        // Hosts replace this carrier with the image, and the finalizer skips
+        // redirects, so config headers travel in the signal under middleware's.
+        middlewareHeaders: new Headers(await loadPreHandlerResponseHeaders()),
+        // The context holds middleware's encoded overrides, not request headers.
+        requestHeaders: overrideHeaders
+          ? buildRequestHeadersFromMiddlewareResponse(request.headers, overrideHeaders)
+          : null,
+        search: imageUrl.search,
+      },
+    );
+  };
+  const imageEndpointResponse = await serveImageEndpointIfMatched();
+  if (imageEndpointResponse) return imageEndpointResponse;
+
+  const metadataRouteResponse = await renderMetadataRouteIfMatched();
+  if (metadataRouteResponse) {
+    return composeResponseStageResponse(metadataRouteResponse);
+  }
+
+  // Late rewrites can also reach a public file, so the afterFiles and fallback
+  // loops repeat this check.
+  const servePublicFileIfMatched = (): Response | null => {
+    if (!filesystemRouteEligible) return null;
+    const publicFileResponse = resolvePublicFileRoute({
+      // A direct request pathname is already normalized; a rewrite
+      // destination is still URL-encoded.
+      cleanPathname: cleanPathnameIsRequestPathname
+        ? cleanPathname
+        : normalizePathnameForRouteMatch(cleanPathname),
+      middlewareContext,
+      publicFiles: options.publicFiles,
+      request,
+    });
+    if (publicFileResponse) options.clearRequestContext();
+    return publicFileResponse;
+  };
+  const publicFileResponse = servePublicFileIfMatched();
+  if (publicFileResponse) return publicFileResponse;
+
+  stripRscCacheBustingSearchParam(url);
+  resolvedUrl = serializeResolvedUrl(resolvedUrl, url);
+
+  options.setNavigationContext({
+    pathname: canonicalPathname,
+    searchParams: getResolvedSearchParams(),
+    params: {},
+  });
+
+  // Eagerly seed `setRootParams` from the current cleanPathname before any
+  // action dispatch so that user code which reads `unstable_rootParams()`
+  // inside route handlers, `"use cache"` functions, and the page rerender
+  // that follows a successful server action observes the matched layout's
+  // root params. Without this seeding the rootParams remain null until the
+  // post-action match block below runs, which is too late for action
+  // execution and route-handler dispatch (both happen earlier).
+  //
+  // The route is matched against the current cleanPathname here. Ordinary
+  // requests may still be rewritten by the afterFiles / fallback loops below,
+  // where the second `setRootParams` call replaces this value before rendering.
+  // Interception-only RSC targets promote their source route at this same
+  // boundary so Server Action rerenders receive the same route and params as
+  // the subsequent page dispatch. Document requests remain direct-route-only.
+  const directPreActionMatch = filesystemRouteEligible ? matchCleanPathname() : null;
+  const preActionRoutePathname = cleanPathnameIsRequestPathname ? requestPathname : cleanPathname;
+  // Interception renders the *source* route's tree for this request. Next.js
+  // never does that: its generated rewrite points at the intercepting route and
+  // the client keeps the segments it already holds, so only the requested target
+  // is rendered server-side. Because vinext renders the source tree instead, one
+  // request reaches a second route that the middleware run above never saw, since
+  // that run received the target's cleanPathname. The source pathname arrives in
+  // a client header, so authorize it before anything downstream renders from it.
+  // Authorization takes the steps a direct request to the source takes, in
+  // order: trailing-slash canonicalization, config redirects, middleware,
+  // beforeFiles rewrites, then afterFiles rewrites for a dynamic source.
+  // Skipped when the source resolves to the route and params already matched
+  // and authorized for this request, which is also the case where
+  // interception does not fire.
+  // The context the selected source was resolved from. A source middleware
+  // rewrite below can replace both with the rewritten source it authorized.
+  // Only RSC requests authorize a source, so every other request, including a
+  // server action POST without `RSC: 1`, renders without one.
+  let interceptionSourceContext =
+    interceptionSourcePathname !== null ? interceptionContextHeader : null;
+  let interceptionSourceMatch =
+    filesystemRouteEligible &&
+    interceptionSourcePathname !== null &&
+    interceptionContextHeader !== null
+      ? (options.matchInterceptRoute?.(
+          preActionRoutePathname,
+          interceptionContextHeader,
+          interceptionIdHeader,
+        ) ?? null)
+      : null;
+  let hasVerifiedInterceptionSource = provesConcreteInterceptionSource(interceptionSourceMatch);
+  if (interceptionIdHeader !== null && !hasVerifiedInterceptionSource) {
+    // The supplemental-refresh selector is an untrusted request header. Only
+    // graph-owned identities that match this exact target and source may reach
+    // rendering or shared caches; otherwise arbitrary short values can create
+    // unbounded `_rsc` and Vary variants.
+    options.clearRequestContext();
+    setInterceptionResponseUncacheable(true);
+    return badRequestResponse();
+  }
+  let bypassInterceptionContextCache = hasRawInterceptionContext && !hasVerifiedInterceptionSource;
+  if (interceptionContextHeader !== null) {
+    // Replace any direct-target proof after rewrites. Exact graph ownership is
+    // the only point where the source identity is safe for shared variants.
+    setInterceptionResponseUncacheable(bypassInterceptionContextCache);
+  }
+  let interceptionCacheProofInvalidated = false;
+  const invalidateInterceptionCacheProof = (): void => {
+    if (!hasRawInterceptionContext) return;
+    interceptionCacheProofInvalidated = true;
+    bypassInterceptionContextCache = true;
+    setInterceptionResponseUncacheable(true);
+  };
+  if (
+    interceptionSourceMatch !== null &&
+    interceptionContextHeader !== null &&
+    interceptionSourcePathname !== null &&
+    !isSameInterceptionSource(interceptionSourceMatch, directPreActionMatch)
+  ) {
+    // A direct request to a non-canonical spelling redirects to the canonical
+    // one first, so every later step sees that. The client can legitimately
+    // send a matched route path, such as `/en` under `trailingSlash: true`.
+    // With `skipTrailingSlashRedirect` a direct request keeps its spelling, so
+    // the authorization pass must see the source exactly as named.
+    const sourceRequestPathname = options.skipTrailingSlashRedirect
+      ? interceptionContextHeader
+      : (normalizeTrailingSlashPathname(interceptionContextHeader, options.trailingSlash) ??
+        interceptionContextHeader);
+    const decodedSourceRequestPathname = options.skipTrailingSlashRedirect
+      ? interceptionSourcePathname
+      : (normalizeTrailingSlashPathname(interceptionSourcePathname, options.trailingSlash) ??
+        interceptionSourcePathname);
+    const adoptRewrittenInterceptionSource = (rewrittenPathname: string): boolean => {
+      // The raw context was matched before this rewrite, so it can name another
+      // route: with an unprefixed default locale, `/feed` rewrites to
+      // `/en/feed`, yet `/feed` alone matches `/[locale]` with locale "feed".
+      // Propose the source this rewrite reaches instead. It becomes the context
+      // the client sends back, so it must satisfy the inbound header contract;
+      // otherwise keep the raw match. Either way the selected source must be
+      // the exact route and params the rewrite reaches, so a rewrite cannot
+      // select a source it did not route the claimed source to.
+      const rewrittenInterceptionSourceMatch = isValidInterceptionSourceContext(rewrittenPathname)
+        ? (options.matchInterceptRoute?.(
+            preActionRoutePathname,
+            rewrittenPathname,
+            interceptionIdHeader,
+          ) ?? null)
+        : null;
+      if (rewrittenInterceptionSourceMatch !== null) {
+        interceptionSourceMatch = rewrittenInterceptionSourceMatch;
+        interceptionSourceContext = rewrittenPathname;
+      }
+      const rewrittenSourceMatch = options.matchRoute(rewrittenPathname);
+      return (
+        interceptionSourceMatch !== null &&
+        isSameInterceptionSource(interceptionSourceMatch, rewrittenSourceMatch)
+      );
+    };
+    // A direct request to a redirected source never renders it.
+    if (
+      configMatchers?.matchRedirect(
+        matchPathname(sourceRequestPathname),
+        options.configRedirects,
+        preMiddlewareRequestContext,
+        currentBasePathState(),
+        dispatchResponseStage ? undefined : markConditionalRedirectCacheability,
+      )
+    ) {
+      options.clearRequestContext();
+      return notFoundResponse();
+    }
+    // Raw pathname the source's config rewrites match, like `paramsPathname`
+    // for the target's beforeFiles rewrites.
+    let sourceRulesPathname = sourceRequestPathname;
+    if (runMiddleware) {
+      const sourceUrl = new URL(userlandRequest.url);
+      sourceUrl.search = new URL(resolvedUrl, url).search;
+      // Source middleware must see the URL a direct request to the source
+      // carries: the raw, still-encoded context, under the basePath the
+      // target's rewrites resolved to.
+      const sourceUrlPathname = resolvedPathnameHasBasePath
+        ? restoreBasePath(sourceRequestPathname, options.basePath)
+        : sourceRequestPathname;
+      sourceUrl.pathname = sourceUrlPathname;
+      if (sourceUrl.pathname !== sourceUrlPathname) {
+        options.clearRequestContext();
+        setInterceptionResponseUncacheable(true);
+        return badRequestResponse();
+      }
+      // Clone before rebuilding the URL so runtimes that transfer Request bodies
+      // cannot disturb the original Server Action branch. Release the temporary
+      // clone when reconstruction leaves it readable.
+      const sourceRequest = userlandRequest.body ? userlandRequest.clone() : userlandRequest;
+      const sourceMiddlewareRequest = cloneRequestWithUrl(sourceRequest, sourceUrl.href);
+      // Hybrid dev attaches the target route's middleware result so the RSC
+      // entry does not execute it twice. This is a distinct source route and
+      // must run middleware itself rather than replaying the target's decision.
+      sourceMiddlewareRequest.headers.delete(VINEXT_MW_CTX_HEADER);
+      // Strip Flight headers on this owned branch before applyAppMiddleware so
+      // it does not need another body tee solely to hide transport metadata.
+      for (const header of FLIGHT_HEADERS) sourceMiddlewareRequest.headers.delete(header);
+      const targetHeadersContext = getHeadersContext();
+      const targetRequestHeaders = targetHeadersContext
+        ? new Headers(targetHeadersContext.headers)
+        : null;
+      targetRequestHeaders?.delete(VINEXT_MW_CTX_HEADER);
+      for (const header of FLIGHT_HEADERS) targetRequestHeaders?.delete(header);
+      // Chain source authorization from the request identity already established
+      // by target middleware, while keeping transport-only headers hidden.
+      if (targetRequestHeaders) {
+        const sourceHeaderNames = Array.from(sourceMiddlewareRequest.headers.keys());
+        for (const header of sourceHeaderNames) {
+          sourceMiddlewareRequest.headers.delete(header);
+        }
+        for (const [name, value] of targetRequestHeaders) {
+          sourceMiddlewareRequest.headers.append(name, value);
+        }
+      }
+      const sourceMiddlewareContext: AppRscMiddlewareContext = {
+        headers: null,
+        requestHeaders: null,
+        status: null,
+      };
+      const sourceHeadersContext = headersContextFromRequest(sourceMiddlewareRequest, {
+        draftModeSecret: options.draftModeSecret,
+      });
+      // Keep source authorization in a child request context. In particular,
+      // NextResponse.next({ request: { headers } }) mutates the live headers
+      // context; allowing those overrides to escape would make the target render
+      // observe headers from a different route.
+      let sourceMiddlewareResult: ApplyAppMiddlewareResult;
+      try {
+        sourceMiddlewareResult = await runWithHeadersContext(sourceHeadersContext, () =>
+          runMiddleware({
+            cleanPathname: decodedSourceRequestPathname,
+            // Deliberately not the request's `middlewareContext`. This run decides
+            // whether the source route may render; it does not contribute headers
+            // or status to the target's response, which belongs to another route.
+            context: sourceMiddlewareContext,
+            externalRewriteRequest: request,
+            hadBasePath: resolvedPathnameHasBasePath,
+            isDataRequest: isMiddlewareDataRequest,
+            request: sourceMiddlewareRequest,
+            // From the spelling a direct request uses: a basePath root drops
+            // its slash in `sourceUrl`, while a direct request keeps `/docs/`.
+            restoreLocaleRootTrailingSlash: shouldRestoreLocaleRootTrailingSlash(
+              normalizePathTrailingSlash(sourceUrlPathname, options.trailingSlash ?? false),
+              options,
+            ),
+            validateExternalRewriteRequest: () => validateClaimedOutsideBasePathRsc(true),
+          }),
+        );
+      } finally {
+        // Release every temporary branch owned by source authorization. Some
+        // runtimes transfer sourceRequest into sourceMiddlewareRequest; the
+        // body-state checks make the cleanup safe in both transfer and tee cases.
+        if (
+          sourceMiddlewareRequest.body &&
+          !sourceMiddlewareRequest.bodyUsed &&
+          !sourceMiddlewareRequest.body.locked
+        ) {
+          // Cancellation marks this throwaway branch as released immediately,
+          // but its promise may not settle until another tee branch finishes.
+          // Do not delay Server Action dispatch on a streaming request body.
+          void sourceMiddlewareRequest.body.cancel().catch(() => {});
+        }
+        if (
+          sourceRequest !== userlandRequest &&
+          sourceRequest.body &&
+          !sourceRequest.bodyUsed &&
+          !sourceRequest.body.locked
+        ) {
+          void sourceRequest.body.cancel().catch(() => {});
+        }
+      }
+      if (!dispatchResponseStage && sourceMiddlewareResult.pathnameEligible) {
+        markRouteCacheabilityDynamic(
+          sourceMiddlewareResult.matched
+            ? "middleware matched this request"
+            : "middleware is eligible for this pathname",
+        );
+      }
+      if (sourceMiddlewareResult.kind === "response") {
+        if (request.body && !request.body.locked) {
+          void request.body.cancel().catch(() => {});
+        }
+        options.clearRequestContext();
+        return sourceMiddlewareResult.response;
+      }
+      // The source and target share one render context. Existing target headers
+      // and all cookies are identity-bearing and may not be replaced/deleted by
+      // source middleware. Pure header additions are safe to retain and are
+      // copied into the live render context instead of silently discarded.
+      let sourceHeadersCompatible = true;
+      if (targetRequestHeaders) {
+        for (const [name, value] of targetRequestHeaders) {
+          if (sourceHeadersContext.headers.get(name) !== value) {
+            sourceHeadersCompatible = false;
+            break;
+          }
+        }
+      }
+      if (
+        !targetHeadersContext ||
+        !targetRequestHeaders ||
+        !sourceHeadersCompatible ||
+        !haveSameRequestCookies(targetHeadersContext.cookies, sourceHeadersContext.cookies)
+      ) {
+        options.clearRequestContext();
+        return notFoundResponse();
+      }
+      let addedSourceHeader = false;
+      for (const [name, value] of sourceHeadersContext.headers) {
+        if (!targetRequestHeaders.has(name)) {
+          targetHeadersContext.headers.set(name, value);
+          addedSourceHeader = true;
+        }
+      }
+      if (addedSourceHeader) {
+        targetHeadersContext.readonlyHeaders = undefined;
+        // Source-route middleware runs after the initial response-stage
+        // eligibility decision. A header added here is observable by the
+        // intercepted render, so its representation is request-specific.
+        canUseSharedWorkerResponseStage = false;
+      }
+      if (sourceMiddlewareResult.rewritten) {
+        // Rewrites such as locale insertion are valid only when they resolve to
+        // the exact source route and params selected for interception. A
+        // different route, params, or query would authorize one identity and
+        // render another, so fail closed instead. A destination outside the
+        // basePath resolves no route at all.
+        if (
+          (options.basePath && sourceMiddlewareResult.rewriteHadBasePath === false) ||
+          sourceMiddlewareResult.search !== sourceUrl.search ||
+          !adoptRewrittenInterceptionSource(sourceMiddlewareResult.cleanPathname)
+        ) {
+          options.clearRequestContext();
+          return notFoundResponse();
+        }
+        sourceRulesPathname = sourceMiddlewareResult.cleanPathname;
+      }
+    }
+    if (
+      HAS_CONFIG_REWRITES &&
+      (options.configRewrites.beforeFiles.length || options.configRewrites.afterFiles.length)
+    ) {
+      const { matchRewrite } = await import("../config/config-matchers.js");
+      // The source request shares the target's cookies and query. Rebuild
+      // the rest from the live headers context, which now also carries any
+      // header source middleware added, such as a `Host` the target lacked.
+      const sourceRewriteContext = requestContextForResolvedUrl(
+        buildPostMwRequestContext(userlandRequest),
+        resolvedUrl,
+        url,
+      );
+      // Applies one phase's rules to the source as a direct request does:
+      // every beforeFiles rule in turn, afterFiles up to the first destination
+      // that matches a route. Returns whether the source may still intercept.
+      const rewriteSource = (rewrites: NextRewrite[], stopAtRoute: boolean): boolean => {
+        let didRewriteSource = false;
+        for (const rewrite of rewrites) {
+          const destination = matchRewrite(
+            matchPathname(sourceRulesPathname),
+            [rewrite],
+            sourceRewriteContext,
+            currentBasePathState(),
+            matchPathname(sourceRulesPathname),
+            dispatchResponseStage === undefined ? markConditionalRewriteCacheability : undefined,
+          );
+          if (!destination) continue;
+          // An external rewrite proxies instead of rendering the source, and a
+          // destination query would render it with different search params.
+          if (isExternalUrl(destination) || destination.includes("?")) return false;
+          sourceRulesPathname = pathnameForResolvedUrl(destination);
+          didRewriteSource = true;
+          if (stopAtRoute && options.matchRoute(sourceRulesPathname)) break;
+        }
+        return !didRewriteSource || adoptRewrittenInterceptionSource(sourceRulesPathname);
+      };
+      // A direct request that reaches a dynamic route after beforeFiles still
+      // takes the afterFiles rules before that route is accepted, so a rule
+      // that rewrites the source away for this client refuses it here too. A
+      // static route is final before afterFiles.
+      if (
+        !rewriteSource(options.configRewrites.beforeFiles, false) ||
+        ((interceptionSourceMatch.authorizationRoute ?? interceptionSourceMatch.route).isDynamic &&
+          !rewriteSource(options.configRewrites.afterFiles, true))
+      ) {
+        options.clearRequestContext();
+        return notFoundResponse();
+      }
+    }
+  }
+  if (interceptionSourceMatch !== null) {
+    hasVerifiedInterceptionSource = provesConcreteInterceptionSource(
+      interceptionSourceMatch,
+      interceptionSourceContext,
+    );
+    if (!hasVerifiedInterceptionSource) {
+      // A slot-owner fallback stands in for a source with no route of its own,
+      // so a direct request to that source renders no such tree. Render the
+      // target as a direct request instead, as Next.js does when its
+      // interception rewrite does not apply.
+      if (interceptionIdHeader !== null) {
+        options.clearRequestContext();
+        setInterceptionResponseUncacheable(true);
+        return badRequestResponse();
+      }
+      interceptionSourceMatch = null;
+      interceptionSourceContext = null;
+    }
+    bypassInterceptionContextCache = hasRawInterceptionContext && !hasVerifiedInterceptionSource;
+    setInterceptionResponseUncacheable(bypassInterceptionContextCache);
+  }
+  const interceptionPreActionMatch =
+    filesystemRouteEligible &&
+    directPreActionMatch === null &&
+    isRscRequest &&
+    interceptionSourcePathname !== null
+      ? interceptionSourceMatch
+      : null;
+  const preActionMatch = directPreActionMatch ?? interceptionPreActionMatch;
+  const isInterceptionMatch = interceptionPreActionMatch !== null;
+  // `matchRequestRoute` answers an encoded request such as `/%61`, which
+  // reaches `/[slug]` raw, with the static `/a` whose prerender Next.js
+  // serves, and routing (rewrites, Pages arbitration) treats it as `/a`, as
+  // Next.js's filesystem check does. Draft mode and server actions skip that
+  // cache in Next.js, so they render the raw-matched page.
+  const rendersRawRequestMatch =
+    options.matchRawRequestRoute !== undefined &&
+    (isPossibleAppRouteActionRequest(request) ||
+      isDraftModeRequest(request, options.draftModeSecret) ||
+      isDraftModeEnabled());
+  // Middleware can enable or disable draft mode for this request.
+  const isActiveDraftMode = () =>
+    getActiveDraftModeState() ?? isDraftModeRequest(request, options.draftModeSecret);
+  const usesRawRequestMatch = () =>
+    rendersRawRequestMatch && cleanPathnameIsRequestPathname && !isInterceptionMatch;
+  const renderedRouteMatch = <TMatch extends AppRscRouteMatch<TRoute> | null>(
+    routeMatch: TMatch,
+  ): TMatch =>
+    routeMatch !== null && usesRawRequestMatch()
+      ? ((options.matchRawRequestRoute!(requestPathname) as TMatch | null) ?? routeMatch)
+      : routeMatch;
+  const renderedPreActionMatch = renderedRouteMatch(preActionMatch);
+  if (renderedPreActionMatch) {
+    setRootParams(
+      pickRootParams(renderedPreActionMatch.params, renderedPreActionMatch.route.rootParamNames),
+    );
+  }
+
+  // A Pages client navigating to a path that middleware rewrites into App
+  // territory needs `x-nextjs-rewrite` so it can hard-navigate; the body is an
+  // unused placeholder. Only take this shortcut when the App match definitively
+  // owns the rewrite target. A dynamic App match does not: a concrete Pages
+  // route outranks it, so those fall through to the arbitration below, which
+  // gives `renderPagesFallback` its chance to run getServerSideProps.
+  if (
+    pagesDataRequest &&
+    didMiddlewareRewritePathname &&
+    preActionMatch &&
+    !preActionMatch.route.isDynamic
+  ) {
+    const headers = new Headers();
+    mergeMiddlewareResponseHeaders(headers, middlewareContext.headers);
+    headers.set("content-type", "application/json");
+    headers.set("x-nextjs-rewrite", resolvedUrl);
+    options.clearRequestContext();
+    return new Response("{}", { headers });
+  }
+
+  // Next.js only handles Server Actions while rendering App pages. Route
+  // Handlers and Pages routes receive action POSTs untouched: no action runs,
+  // so the action origin check and body size limit don't apply either. A
+  // static or interception App match is final here, and so is a page's literal
+  // path such as `/blog/[slug]`, which action forwarding requests and Next.js
+  // serves decoded, without a trailing slash, from its filesystem check before
+  // afterFiles rewrites. Otherwise afterFiles and fallback rewrites or Pages
+  // routes may still claim the request, so the action waits for the final
+  // route.
+  const literalRoutePattern =
+    preActionMatch !== null && !isAppRouteHandlerRoute(preActionMatch.route)
+      ? patternToNextFormat(preActionMatch.route.pattern)
+      : null;
+  const routeMatchPathname = cleanPathnameIsRequestPathname
+    ? cleanPathname
+    : normalizePathnameForRouteMatch(cleanPathname);
+  const isServerActionRequest = isPostRequest && Boolean(actionId);
+  const requestsLiteralRoutePattern =
+    (isProgressiveActionRequest || isServerActionRequest) &&
+    literalRoutePattern !== null &&
+    literalRoutePattern ===
+      (routeMatchPathname.length > 1 && routeMatchPathname.endsWith("/")
+        ? routeMatchPathname.slice(0, -1)
+        : routeMatchPathname);
+  // Late routing must not move an action request off the page it ran on.
+  const isFinalRouteMatch = isInterceptionMatch || requestsLiteralRoutePattern;
+  const preActionMatchIsFinal =
+    preActionMatch !== null && (isFinalRouteMatch || !preActionMatch.route.isDynamic);
+  let serverActionHandled = false;
+  const handleServerAction = async (
+    routeMatch: AppRscRouteMatch<TRoute> | null,
+    routePathname: string,
+  ): Promise<Response | null> => {
+    if (!filesystemRouteEligible || !isPostRequest || !actionId) return null;
+    if (routeMatch && isAppRouteHandlerRoute(routeMatch.route)) return null;
+    if (!options.handleServerActionRequest) {
+      return markServerActionResponse(
+        respondServerActionNotFound(actionId, options.clearRequestContext),
+      );
+    }
+    const sourceConfigHeaders = new Headers();
+    await applyAppRscConfigHeaders(sourceConfigHeaders, request, {
+      basePath: options.basePath,
+      configHeaders: options.configHeaders,
+      i18nConfig: options.i18nConfig,
+      restoreLocaleRootTrailingSlash,
+      middlewareHeaders: middlewareContext.headers,
+      recordCacheability: dispatchResponseStage === undefined,
+      requestContext: preMiddlewareRequestContext,
+    });
+    const serverActionResponse = await options.handleServerActionRequest({
+      actionId,
+      cleanPathname,
+      contentType,
+      interceptionContext: interceptionSourceContext,
+      isRscRequest,
+      middlewareContext,
+      mountedSlotsHeader,
+      request,
+      scriptNonce,
+      routeMatch,
+      routePathname,
+      dispatchRedirectTargetRequest: dispatchInternalRequest,
+      sourceConfigHeaders,
+      searchParams: getResolvedSearchParams(),
+    });
+    return serverActionResponse && markServerActionResponse(serverActionResponse);
+  };
+  let progressiveActionHandled = false;
+  let progressiveActionFormState: ProgressiveActionFormStateResult | null = null;
+  const handleProgressiveAction = async (
+    routeMatch: AppRscRouteMatch<TRoute> | null,
+    unrenderedRouteMatch: AppRscRouteMatch<TRoute> | null,
+  ): Promise<Response | ProgressiveActionFormStateResult | null> => {
+    if (!filesystemRouteEligible || !isProgressiveActionRequest) return null;
+    if (routeMatch && isAppRouteHandlerRoute(routeMatch.route)) return null;
+    if (!options.handleProgressiveActionRequest) {
+      return unrenderedRouteMatch?.route.__loadPage &&
+        !unrenderedRouteMatch.route.__loadRouteHandler
+        ? markServerActionResponse(respondServerActionNotFound(null, options.clearRequestContext))
+        : null;
+    }
+    const progressiveActionResult = await options.handleProgressiveActionRequest({
+      actionId,
+      cleanPathname,
+      contentType,
+      middlewareContext,
+      request,
+      routeMatch,
+    });
+    if (progressiveActionResult instanceof Response) {
+      return markServerActionResponse(markAppRscApplicationResponse(progressiveActionResult));
+    }
+    if (progressiveActionResult?.kind !== "form-state") return null;
+    // Other errors answer a plain 500 before the render, so this is an action
+    // that failed to find another Server Action.
+    if (
+      "actionError" in progressiveActionResult &&
+      middlewareContext.status === null &&
+      progressiveActionHttpFallbackStatus(progressiveActionResult.actionError) === null
+    ) {
+      middlewareContext.status = 500;
+    }
+    return progressiveActionResult;
+  };
+  if (preActionMatchIsFinal) {
+    progressiveActionHandled = true;
+    const progressiveActionResult = await handleProgressiveAction(
+      renderedPreActionMatch,
+      preActionMatch,
+    );
+    if (progressiveActionResult instanceof Response) return progressiveActionResult;
+    progressiveActionFormState = progressiveActionResult;
+  }
+  if (isServerActionRequest && preActionMatchIsFinal) {
+    serverActionHandled = true;
+    const serverActionResponse = await handleServerAction(
+      renderedPreActionMatch,
+      preActionRoutePathname,
+    );
+    if (serverActionResponse) return serverActionResponse;
+  }
+
+  let match = preActionMatch;
+  const renderPagesForMatchKind = async (
+    matchKind: "dynamic" | "static",
+  ): Promise<Response | null> => {
+    if (!filesystemRouteEligible) return null;
+    // Pages routes match the raw request pathname, as in the Pages-only
+    // pipeline and Next.js: static segments keep their encoded identity, so
+    // `/%66r/...` is not the `fr` locale and `/%61bout` is not `/about`, and the
+    // route trie decodes dynamic captures once. `cleanPathname` is the decoded
+    // canonical form, so it only names the Pages route after a rewrite.
+    const pagesRouteUrl = cleanPathnameIsRequestPathname
+      ? requestPathname + resolvedUrl.slice(pathnameForResolvedUrl(resolvedUrl).length)
+      : resolvedUrl;
+    let sharedOuterPolicyNeedsReconciliation = false;
+    const dispatchPagesResponseStage = dispatchResponseStage
+      ? async (
+          stageRequest: Request,
+          resourceKind: "api" | "page",
+          dataKind?: PagesRouteDataKind,
+          hasRequestAwareDocument?: boolean,
+          runsInitialProps?: boolean,
+        ) => {
+          const pagesOnDemandRevalidate =
+            resourceKind === "page" &&
+            isOnDemandRevalidateRequest(stageRequest.headers.get(PRERENDER_REVALIDATE_HEADER));
+          const cache =
+            responseStageProbeMode ||
+            pagesOnDemandRevalidate ||
+            hasPagesPreviewCookie(stageRequest.headers.get("cookie")) ||
+            (resourceKind === "page" && dataKind === "static" && hasRequestAwareDocument)
+              ? "bypass"
+              : canUseSharedWorkerResponseStage
+                ? "shared"
+                : "bypass";
+          const renderRequest = responseStageRequest(stageRequest);
+          // Next.js keys a static page's response cache entry by its path, so
+          // one entry answers every host that is not a configured i18n domain.
+          // A probe classifies the shared dispatch, so it renders as one.
+          const sharedAcrossHosts =
+            (cache === "shared" || responseStageProbeMode !== null) &&
+            resourceKind === "page" &&
+            pagesPageSharesAcrossHosts({ dataKind, runsInitialProps }) &&
+            adapterUsesSharedCacheIdentity();
+          const hybridProps: HybridPagesWorkerResponseStageProps = {
+            kind: "hybrid-pages",
+            buildId: options.buildId,
+            cacheability: {
+              ...responseStageCacheability(resolvedUrl),
+              policyHeaders: await loadResponseStagePolicy(),
+              ...(isDataRequest ? { representation: "pages-data" as const } : {}),
+            },
+            allowRscDocumentFallback:
+              didMiddlewareRewritePathname || allowInternalRscDocumentFallback,
+            appRouteMatch: match
+              ? { isDynamic: match.route.isDynamic, pattern: match.route.pattern }
+              : null,
+            canonicalPathname,
+            cleanPathname,
+            draftModeCookie,
+            isDataRequest,
+            isRscRequest,
+            matchKind,
+            middlewareCookieOverlay,
+            preHandlerHeaders:
+              cache === "shared" && resourceKind === "page" && dataKind === "static"
+                ? null
+                : [...(await loadPreHandlerResponseHeaders())],
+            protocolVersion: APP_WORKER_RESPONSE_STAGE_PROTOCOL_VERSION,
+            requestOrigin: url.origin,
+            resourceKind,
+            requestUrl: request.url,
+            resolvedUrl: pagesRouteUrl,
+            scriptNonce: scriptNonce ?? null,
+            sharedAcrossHosts,
+          };
+          let response = await dispatchResponseStage(
+            renderRequest,
+            hybridProps,
+            cache === "shared" && sharedAcrossHosts
+              ? {
+                  cache,
+                  cacheIdentity: createSharedHybridPagesCacheIdentity(
+                    renderRequest,
+                    hybridProps,
+                    pagesCacheIdentityOrigin(request.url, options.i18nConfig),
+                  ),
+                }
+              : { cache },
+          );
+          const policyOwner =
+            resourceKind === "page"
+              ? consumePagesResponseStagePolicyOwner(response)
+              : { owner: null, response };
+          response = policyOwner.response;
+          const requestTimePolicyOwner =
+            policyOwner.owner === "request-time" ||
+            (policyOwner.owner === null && dataKind === "server");
+          sharedOuterPolicyNeedsReconciliation =
+            cache === "shared" && resourceKind === "page" && !requestTimePolicyOwner;
+          const responseStageHasContentLength = response.headers.has("Content-Length");
+          response = await applyConfigHeadersToResponseStage(
+            response,
+            resourceKind === "api" || requestTimePolicyOwner,
+          );
+          // A next.config Content-Length describes neither the transported
+          // Pages body nor its final framing. Preserve only a length authored
+          // by the response-stage handler itself.
+          if (!responseStageHasContentLength) response.headers.delete("Content-Length");
+          return response;
+        }
+      : undefined;
+    const response =
+      !isFinalRouteMatch && (match === null || match.route.isDynamic)
+        ? ((await runOutsideWorkStoreScope(() =>
+            options.renderPagesFallback?.({
+              appRouteMatch: match ?? null,
+              allowRscDocumentFallback:
+                didMiddlewareRewritePathname || allowInternalRscDocumentFallback,
+              dispatchPagesResponseStage,
+              isDataRequest,
+              isRscRequest,
+              matchKind,
+              middlewareContext,
+              pathname: pagesRouteUrl,
+              pagesDataRequest,
+              request,
+              requestBasePath: hadBasePath ? options.basePath : "",
+              url,
+            }),
+          )) ?? null)
+        : null;
+    if (response) preserveRouteCacheabilityResponsePolicy();
+    if (!response) return null;
+    if (sharedOuterPolicyNeedsReconciliation) {
+      reconcileCdnResponseHeadersAfterOuterPolicy(
+        response.headers,
+        await loadOuterResponsePolicy(),
+      );
+    }
+
+    // Next.js answers the locale-detection redirect before it stages
+    // next.config headers, so only the Pages route's own responses get them.
+    const markPagesResponse = (pagesResponse: Response): Response =>
+      dispatchPagesResponseStage
+        ? markAppRscResponseConfigHeadersApplied(pagesResponse)
+        : isLocaleRedirect(response)
+          ? pagesResponse
+          : markAppRscApplicationResponse(pagesResponse);
+    const isRewritten = resolvedUrl !== originalResolvedUrl;
+    const isPrerender = typeof process !== "undefined" && process.env?.VINEXT_PRERENDER === "1";
+    if ((!pagesDataRequest || !isRewritten) && !isPrerender) {
+      return markPagesResponse(response);
+    }
+
+    const headers = new Headers(response.headers);
+    if (pagesDataRequest && isRewritten) headers.set("x-nextjs-rewrite", resolvedUrl);
+    if (isPrerender) {
+      // Mirrors the Pages pipeline: a build request can satisfy a
+      // request-conditional rewrite that real visitors may not, so only an
+      // unrewritten Pages render may become a snapshot.
+      headers.set(VINEXT_PRERENDER_REWRITTEN_HEADER, isRewritten ? "1" : "0");
+    }
+    const markedResponse = new Response(response.body, {
+      headers,
+      status: response.status,
+      statusText: response.statusText,
+    });
+    return markPagesResponse(markedResponse);
+  };
+  const staticPagesFallbackResponse = await renderPagesForMatchKind("static");
+  if (staticPagesFallbackResponse) {
+    options.clearRequestContext();
+    return staticPagesFallbackResponse;
+  }
+  if (!isFinalRouteMatch && (!match || match.route.isDynamic)) {
+    for (const rewrite of options.configRewrites.afterFiles) {
+      const afterFilesRewrite = await applyRewrite(
+        {
+          basePathState: currentBasePathState(),
+          clearRequestContext: options.clearRequestContext,
+          middlewareContext,
+          // External RSC rewrites must forward the validated `_rsc` token.
+          request: request,
+          requestContext: requestContextForResolvedUrl(
+            postMiddlewareRequestContext,
+            resolvedUrl,
+            url,
+          ),
+          paramsPathname: matchPathname(
+            cleanPathnameIsRequestPathname ? requestPathname : cleanPathname,
+          ),
+          rewrites: [rewrite],
+          validateExternalRewriteRequest: () => validateClaimedOutsideBasePathRsc(true),
+        },
+        matchPathname(cleanPathname),
+        dispatchResponseStage === undefined,
+      );
+      if (afterFilesRewrite instanceof Response) {
+        invalidateInterceptionCacheProof();
+        return afterFilesRewrite;
+      }
+      if (!afterFilesRewrite) continue;
+      resolvedUrl = mergeRewriteQuery(resolvedUrl, afterFilesRewrite);
+      cleanPathname = pathnameForResolvedUrl(resolvedUrl);
+      cleanPathnameIsRequestPathname = false;
+      invalidateInterceptionCacheProof();
+      resolvedPathnameHasBasePath = !options.basePath || rewrite.basePath !== false;
+      filesystemRouteEligible = resolvedPathnameHasBasePath;
+      const claimedRscCacheBustingRedirect = await validateClaimedOutsideBasePathRsc();
+      if (claimedRscCacheBustingRedirect) return claimedRscCacheBustingRedirect;
+      const rewrittenImageEndpointResponse = await serveImageEndpointIfMatched();
+      if (rewrittenImageEndpointResponse) return rewrittenImageEndpointResponse;
+      const rewrittenMetadataResponse = await renderMetadataRouteIfMatched();
+      if (rewrittenMetadataResponse) {
+        return composeResponseStageResponse(rewrittenMetadataResponse);
+      }
+      const rewrittenPublicFileResponse = servePublicFileIfMatched();
+      if (rewrittenPublicFileResponse) return rewrittenPublicFileResponse;
+      match = matchCleanPathname();
+      const rewrittenStaticPagesResponse = await renderPagesForMatchKind("static");
+      if (rewrittenStaticPagesResponse) {
+        options.clearRequestContext();
+        return rewrittenStaticPagesResponse;
+      }
+      const rewrittenDynamicPagesResponse = await renderPagesForMatchKind("dynamic");
+      if (rewrittenDynamicPagesResponse) {
+        options.clearRequestContext();
+        return rewrittenDynamicPagesResponse;
+      }
+      if (match) break;
+    }
+  }
+
+  const dynamicPagesFallbackResponse = await renderPagesForMatchKind("dynamic");
+  if (dynamicPagesFallbackResponse) {
+    options.clearRequestContext();
+    return dynamicPagesFallbackResponse;
+  }
+
+  // Next.js rejects a dynamicParams = false miss while routing and resumes with
+  // the fallback rewrites after the one that reached the rejected route, so a
+  // later one can still claim the URL. vinext finds the miss where the
+  // dispatch checks the params, after the cache answers what it can, and
+  // resumes routing from there.
+  // https://github.com/vercel/next.js/blob/v16.2.7/packages/next/src/server/lib/router-server.ts
+  let nextFallbackRewriteIndex = 0;
+  // Next.js skips a route it already tried, whatever the params.
+  const rejectedRoutes = new Set<TRoute>();
+  let shouldResumeRoutingAfterMiss = false;
+  const canResumeRoutingAfterMiss = (): boolean =>
+    nextFallbackRewriteIndex < options.configRewrites.fallback.length;
+  const resumeRoutingAfterMiss = (): boolean => {
+    if (!canResumeRoutingAfterMiss()) return false;
+    shouldResumeRoutingAfterMiss = true;
+    return true;
+  };
+  // The cache bypass a match adds, restored when routing resumes past it.
+  let bypassInterceptionContextCacheBeforeMatch = bypassInterceptionContextCache;
+  let interceptionResponseUncacheableBeforeMatch = interceptionResponseUncacheable;
+
+  const finishRouting = async (): Promise<Response> => {
+    if (!match) {
+      for (
+        let rewriteIndex = nextFallbackRewriteIndex;
+        rewriteIndex < options.configRewrites.fallback.length;
+        rewriteIndex++
+      ) {
+        const rewrite = options.configRewrites.fallback[rewriteIndex];
+        const fallbackRewrite = await applyRewrite(
+          {
+            basePathState: currentBasePathState(),
+            clearRequestContext: options.clearRequestContext,
+            middlewareContext,
+            // External RSC rewrites must forward the validated `_rsc` token.
+            request: request,
+            requestContext: requestContextForResolvedUrl(
+              postMiddlewareRequestContext,
+              resolvedUrl,
+              url,
+            ),
+            paramsPathname: matchPathname(
+              cleanPathnameIsRequestPathname ? requestPathname : cleanPathname,
+            ),
+            rewrites: [rewrite],
+            validateExternalRewriteRequest: () => validateClaimedOutsideBasePathRsc(true),
+          },
+          matchPathname(cleanPathname),
+          dispatchResponseStage === undefined,
+        );
+        if (fallbackRewrite instanceof Response) {
+          invalidateInterceptionCacheProof();
+          return fallbackRewrite;
+        }
+        if (!fallbackRewrite) continue;
+        nextFallbackRewriteIndex = rewriteIndex + 1;
+        resolvedUrl = mergeRewriteQuery(resolvedUrl, fallbackRewrite);
+        cleanPathname = pathnameForResolvedUrl(resolvedUrl);
+        cleanPathnameIsRequestPathname = false;
+        invalidateInterceptionCacheProof();
+        resolvedPathnameHasBasePath = !options.basePath || rewrite.basePath !== false;
+        filesystemRouteEligible = resolvedPathnameHasBasePath;
+        const claimedRscCacheBustingRedirect = await validateClaimedOutsideBasePathRsc();
+        if (claimedRscCacheBustingRedirect) return claimedRscCacheBustingRedirect;
+        const rewrittenImageEndpointResponse = await serveImageEndpointIfMatched();
+        if (rewrittenImageEndpointResponse) return rewrittenImageEndpointResponse;
+        const rewrittenMetadataResponse = await renderMetadataRouteIfMatched();
+        if (rewrittenMetadataResponse) {
+          return composeResponseStageResponse(rewrittenMetadataResponse);
+        }
+        const rewrittenPublicFileResponse = servePublicFileIfMatched();
+        if (rewrittenPublicFileResponse) return rewrittenPublicFileResponse;
+        match = matchCleanPathname();
+        if (match && rejectedRoutes.has(match.route)) match = null;
+        const rewrittenStaticPagesResponse = await renderPagesForMatchKind("static");
+        if (rewrittenStaticPagesResponse) {
+          options.clearRequestContext();
+          return rewrittenStaticPagesResponse;
+        }
+        const rewrittenDynamicPagesResponse = await renderPagesForMatchKind("dynamic");
+        if (rewrittenDynamicPagesResponse) {
+          options.clearRequestContext();
+          return rewrittenDynamicPagesResponse;
+        }
+        if (match) break;
+      }
+    }
+
+    if (interceptionCacheProofInvalidated && interceptionSourceContext !== null) {
+      const finalInterceptionTargetPathname = cleanPathnameIsRequestPathname
+        ? requestPathname
+        : cleanPathname;
+      const finalInterceptionSourceMatch =
+        filesystemRouteEligible && match !== null
+          ? (options.matchInterceptRoute?.(
+              finalInterceptionTargetPathname,
+              interceptionSourceContext,
+              interceptionIdHeader,
+            ) ?? null)
+          : null;
+      const hasVerifiedFinalInterceptionSource =
+        hasVerifiedInterceptionSource &&
+        interceptionSourceMatch !== null &&
+        provesConcreteInterceptionSource(finalInterceptionSourceMatch) &&
+        finalInterceptionSourceMatch !== null &&
+        finalInterceptionSourceMatch.route === interceptionSourceMatch.route &&
+        haveSamePageParams(finalInterceptionSourceMatch.params, interceptionSourceMatch.params) &&
+        isSameInterceptionSource(finalInterceptionSourceMatch, {
+          params: interceptionSourceMatch.authorizationParams ?? interceptionSourceMatch.params,
+          route: interceptionSourceMatch.authorizationRoute ?? interceptionSourceMatch.route,
+        });
+      if (interceptionIdHeader !== null && !hasVerifiedFinalInterceptionSource) {
+        options.clearRequestContext();
+        setInterceptionResponseUncacheable(true);
+        return badRequestResponse();
+      }
+      if (!hasVerifiedFinalInterceptionSource) {
+        // A late rewrite reached a target whose source was never authorized, or
+        // differs from the one that was. Next.js applies interception rewrites
+        // in beforeFiles, so a target reached only after them is not
+        // intercepted; render it as a direct request instead.
+        interceptionSourceContext = null;
+      }
+      bypassInterceptionContextCache = !hasVerifiedFinalInterceptionSource;
+      setInterceptionResponseUncacheable(bypassInterceptionContextCache);
+    }
+
+    // Classify the resolved, unmatched path after middleware and rewrites.
+    // An explicit middleware/route 404 or a rewrite to a missing page keeps its
+    // own response, matching Next.js's router-server.ts static-asset fallback.
+    if (
+      (!filesystemRouteEligible || !match) &&
+      isNextStaticPath(cleanPathname, "", assetPrefixPathname(options.assetPrefix ?? ""))
+    ) {
+      options.clearRequestContext();
+      const headers = new Headers();
+      mergeMiddlewareResponseHeaders(headers, middlewareContext.headers);
+      applyCdnResponseHeaders(headers, { cacheControl: NEVER_CACHE_CONTROL });
+      return notFoundStaticAssetResponse(headers);
+    }
+
+    if (!filesystemRouteEligible) {
+      options.clearRequestContext();
+      const headers = new Headers();
+      mergeMiddlewareResponseHeaders(headers, middlewareContext.headers);
+      return withUnmatchedRouteCacheControl(notFoundResponse({ headers }));
+    }
+
+    if (pagesDataRequest) {
+      options.clearRequestContext();
+      if (
+        runMiddleware &&
+        (middlewareContext.status === null ||
+          middlewareContext.status === 200 ||
+          middlewareContext.status === 404)
+      ) {
+        const response = buildNextDataNotFoundResponse();
+        const headers = new Headers(response.headers);
+        mergeMiddlewareResponseHeaders(headers, middlewareContext.headers);
+        headers.set("x-nextjs-matched-path", matchPathname(canonicalPathname));
+        if (resolvedUrl !== originalResolvedUrl) {
+          headers.set("x-nextjs-rewrite", resolvedUrl);
+        }
+        return new Response("{}", { status: 200, headers });
+      }
+      return buildNextDataNotFoundResponse();
+    }
+
+    if (
+      (isProgressiveActionRequest && !progressiveActionHandled) ||
+      (isServerActionRequest && !serverActionHandled)
+    ) {
+      const finalRouteMatch = renderedRouteMatch(match);
+      // The action renders the final route, so it sees that route's root params.
+      setRootParams(
+        finalRouteMatch
+          ? pickRootParams(finalRouteMatch.params, finalRouteMatch.route.rootParamNames)
+          : null,
+      );
+      if (isServerActionRequest) {
+        const serverActionResponse = await handleServerAction(
+          finalRouteMatch,
+          cleanPathnameIsRequestPathname ? requestPathname : cleanPathname,
+        );
+        if (serverActionResponse) return serverActionResponse;
+      } else {
+        const progressiveActionResult = await handleProgressiveAction(finalRouteMatch, match);
+        if (progressiveActionResult instanceof Response) return progressiveActionResult;
+        progressiveActionFormState = progressiveActionResult;
+      }
+    }
+
+    const renderUnmatchedRoute = async (): Promise<Response> => {
+      setFrameworkRequestRoute("/404", isRscRequest);
+      const notFoundResponseStage = transportedResponseStage ?? options.renderResponseStageLocally;
+      if (notFoundResponseStage) {
+        const response = await notFoundResponseStage(responseStageRequest(), {
+          kind: "app-not-found",
+          buildId: options.buildId,
+          cacheability: responseStageCacheability(resolvedUrl),
+          canonicalPathname,
+          cleanPathname,
+          draftModeCookie,
+          isRscRequest,
+          middlewareCookieOverlay,
+          mountedSlotsHeader,
+          protocolVersion: APP_WORKER_RESPONSE_STAGE_PROTOCOL_VERSION,
+          requestOrigin: url.origin,
+          renderMode,
+          resolvedUrl,
+          scriptNonce: scriptNonce ?? null,
+        });
+        // As in Next.js, an unmatched route's 404 is never cached.
+        return withUnmatchedRouteCacheControl(await composeResponseStageResponse(response));
+      }
+
+      const renderedNotFoundResponse = await traceAppPageRender("/404", "render", () =>
+        options.renderNotFound({
+          isRscRequest,
+          middlewareContext,
+          request,
+          route: null,
+          scriptNonce,
+        }),
+      );
+      if (renderedNotFoundResponse) {
+        // The root layout can redirect() during this render.
+        return markAppRscApplicationResponse(
+          withUnmatchedRouteCacheControl(renderedNotFoundResponse),
+        );
+      }
+
+      options.clearRequestContext();
+      const headers = new Headers();
+      mergeMiddlewareResponseHeaders(headers, middlewareContext.headers);
+      return withUnmatchedRouteCacheControl(notFoundResponse({ headers }));
+    };
+
+    if (!match) {
+      // Dev-only favicon short-circuit: browsers auto-request /favicon.ico on
+      // every page load. Don't compile/render the not-found page for it.
+      // Check `canonicalPathname` (the original browser-requested URL) so a
+      // middleware rewrite that lands on `/favicon.ico` still falls through to
+      // the normal not-found render.
+      // Matches Next.js: packages/next/src/server/lib/router-server.ts —
+      // condition `parsedUrl.pathname === '/favicon.ico'`.
+      if (process.env.NODE_ENV !== "production" && canonicalPathname === "/favicon.ico") {
+        options.clearRequestContext();
+        return new Response("", { status: 404 });
+      }
+
+      return renderUnmatchedRoute();
+    }
+
+    bypassInterceptionContextCacheBeforeMatch = bypassInterceptionContextCache;
+    interceptionResponseUncacheableBeforeMatch = interceptionResponseUncacheable;
+    match = renderedRouteMatch(match);
+    const { route, params } = match;
+    const requestPathnameDiffersFromCachePath = requestPathname !== cleanPathname;
+    const rawRequestPathnameIsObservable =
+      isInterceptionMatch ||
+      route.routeHandler != null ||
+      typeof route.__loadRouteHandler === "function";
+    if (
+      (!isInterceptionMatch || requestPathnameDiffersFromCachePath) &&
+      options.matchRequestRoute
+    ) {
+      const cachePathMatch = options.matchRoute(cleanPathname);
+      if (
+        (requestPathnameDiffersFromCachePath && rawRequestPathnameIsObservable) ||
+        !cachePathMatch ||
+        cachePathMatch.route.pattern !== route.pattern ||
+        !haveSamePageParams(cachePathMatch.params, params)
+      ) {
+        // The raw request spelling remains observable to Route Handlers, while
+        // ISR/CDN identity uses the normalized pathname. Reuse the existing
+        // internal bypass channel when either the spelling or semantic route
+        // differs so every local and split response stage skips shared reads and
+        // writes without changing the worker protocol.
+        bypassInterceptionContextCache = true;
+        setInterceptionResponseUncacheable(true);
+      }
+    }
+    // Next.js keys App ISR by the resolved pathname:
+    // packages/next/src/build/templates/app-route.ts
+    // Keep that resolved identity while also partitioning by the public source
+    // pathname that user code observes through usePathname().
+    const cachePathname = cleanPathnameIsRequestPathname
+      ? cleanPathname
+      : rewriteCachePathname(canonicalPathname, cleanPathname);
+    // Hydrate lazy page/route-handler modules before the page-vs-handler dispatch
+    // branch and any downstream synchronous module reads.
+    if (options.ensureRouteLoaded) {
+      await traceFindPageComponents(route.pattern, () => options.ensureRouteLoaded!(route));
+    }
+    const resolvedSearchParams = getResolvedSearchParams();
+    const isRouteTreePrefetch = isRouteTreePrefetchRequest(request) && !route.routeHandler;
+    // Next.js rejects a dynamicParams = false miss while routing, outside draft
+    // mode, so a fallback rewrite can claim the URL's route tree. Without one
+    // that could, vinext doesn't run the route's generators for each prefetched
+    // link: the tree holds only the route's segments, and the prefetch of its
+    // content gets the 404, where Next.js 404s the tree too.
+    if (
+      isRouteTreePrefetch &&
+      !isFinalRouteMatch &&
+      canResumeRoutingAfterMiss() &&
+      !isActiveDraftMode() &&
+      options.isDynamicParamsMiss &&
+      (await runStaticParamsCheckDetached(() => options.isDynamicParamsMiss!(route, params)))
+    ) {
+      // The rejected match seeded its root params before routing finished.
+      setRootParams(null);
+      // A fallback rewrite that claims the URL answers with its own route's
+      // tree; otherwise the URL gets the unmatched route's 404.
+      resumeRoutingAfterMiss();
+      return new Response(null, { status: 404 });
+    }
+    setFrameworkRequestRoute(patternToNextFormat(route.pattern), isRscRequest);
+    if (isRouteTreePrefetch) {
+      const response = await createRouteTreePrefetchResponse(route, {
+        buildId: options.buildId,
+        prefetchInlining: options.prefetchInlining,
+      });
+      options.clearRequestContext();
+      return applyMiddlewareContextToResponse(response, middlewareContext);
+    }
+    const prerenderRouteParamsPayload = readTrustedPrerenderRouteParams(request);
+    const prerenderRouteParamsMatch = matchPrerenderRouteParamsPayload(
+      prerenderRouteParamsPayload,
+      route.pattern,
+      params,
+    );
+    const prerenderRouteParams = prerenderRouteParamsMatch?.params ?? null;
+    const isPrerenderFallbackShell = prerenderRouteParamsMatch?.kind === "fallback-shell";
+    const renderParams = prerenderRouteParams ?? params;
+    const responseStageMatchKind: AppMatchedWorkerResponseStageProps["matchKind"] =
+      isInterceptionMatch
+        ? "interception"
+        : cleanPathnameIsRequestPathname && options.matchRequestRoute
+          ? usesRawRequestMatch()
+            ? "raw-request"
+            : "request"
+          : "resolved";
+    const responseStageRoutePathname = isInterceptionMatch
+      ? preActionRoutePathname
+      : cleanPathnameIsRequestPathname
+        ? requestPathname || "/"
+        : cleanPathname || "/";
+    const matchedResponseStage = transportedResponseStage ?? options.renderResponseStageLocally;
+    let runtimeFallbackShells: AppPagePprFallbackCacheShell[] = [];
+    if (
+      options.createPprFallbackShells &&
+      request.method === "GET" &&
+      !isRscRequest &&
+      !isPrerenderFallbackShell &&
+      route.params
+    ) {
+      runtimeFallbackShells = options.createPprFallbackShells(
+        {
+          params: route.params,
+          pattern: route.pattern,
+          rootParamNames: route.rootParamNames,
+        },
+        params,
+      );
+    }
+    options.setNavigationContext({
+      pathname: canonicalPathname,
+      searchParams: resolvedSearchParams,
+      params: renderParams,
+    });
+    const rootParams = pickRootParams(renderParams, route.rootParamNames);
+    setRootParams(rootParams);
+
+    if (route.routeHandler) {
+      // Next.js edge route handlers run through web/adapter.ts, which strips
+      // internal search params from the request URL. Node route handlers only
+      // strip `_rsc` from the parsed query object and rebuild request.url from
+      // initURL, preserving it there even for RSC requests.
+      const routeHandlerRuntime = isEdgeRouteHandler(route.routeHandler) ? "edge" : "node";
+      const routeHandlerRequest = routeHandlerRuntime === "edge" ? userlandRequest : request;
+      const routeHandlerUrl = new URL(routeHandlerRequest.url);
+      const internalRscValues =
+        routeHandlerRuntime === "edge"
+          ? []
+          : routeHandlerUrl.searchParams.getAll(VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM);
+      routeHandlerUrl.search = resolvedSearchParams.toString();
+      for (const internalRscValue of internalRscValues) {
+        routeHandlerUrl.searchParams.append(
+          VINEXT_RSC_CACHE_BUSTING_SEARCH_PARAM,
+          internalRscValue,
+        );
+      }
+      if (matchedResponseStage) {
+        const response = await matchedResponseStage(responseStageRequest(), {
+          kind: "app-route-handler",
+          buildId: options.buildId,
+          cacheability: responseStageCacheability(resolvedUrl),
+          bypassInterceptionContextCache,
+          cachePathname,
+          canUseCanonicalLoadingShell: route.canUseCanonicalLoadingShell === true,
+          canonicalPathname,
+          cleanPathname,
+          draftModeCookie,
+          forceDynamic: route.forceDynamic === true,
+          interceptionContext: interceptionContextHeader,
+          interceptionId: interceptionIdHeader,
+          isRscRequest,
+          matchKind: responseStageMatchKind,
+          middlewareCookieOverlay,
+          mountedSlotsHeader,
+          params,
+          protocolVersion: APP_WORKER_RESPONSE_STAGE_PROTOCOL_VERSION,
+          requestOrigin: url.origin,
+          renderMode,
+          resolvedUrl,
+          routePattern: route.pattern,
+          routePathname: responseStageRoutePathname,
+          scriptNonce: scriptNonce ?? null,
+        });
+        return withRouteMissCacheControl(
+          await composeResponseStageResponse(
+            response,
+            // The miss renders the not-found page, which takes page config headers.
+            response.headers.has(VINEXT_ROUTE_MISS_HEADER) ? undefined : routeHandlerRuntime,
+          ),
+        );
+      }
+      const { setCurrentFetchSoftTags } = await import("vinext/shims/fetch-cache");
+      setCurrentFetchSoftTags(
+        buildPageCacheTags(cleanPathname, [], [...route.routeSegments], "route"),
+      );
+      const routeHandlerResponse = await options.dispatchMatchedRouteHandler({
+        bypassInterceptionContextCache,
+        cachePathname,
+        cleanPathname,
+        middlewareContext,
+        // Non-dynamic routes report params as `null` to match Next.js. Internal
+        // bookkeeping above (navigation context, root params) keeps the matched
+        // object (always `{}` for non-dynamic) so `useParams()` etc. still see
+        // an object shape; only the user-facing handler context surfaces null.
+        params: route.isDynamic ? renderParams : null,
+        renderNotFound() {
+          // Render the 404 with the context of an unmatched route.
+          options.setNavigationContext({
+            pathname: canonicalPathname,
+            searchParams: resolvedSearchParams,
+            params: {},
+          });
+          setRootParams({});
+          return renderUnmatchedRoute();
+        },
+        request: cloneRequestWithUrl(routeHandlerRequest, routeHandlerUrl.toString()),
+        route,
+        resumeRoutingAfterMiss,
+        searchParams: resolvedSearchParams,
+      });
+      if (routeHandlerResponse.headers.has(VINEXT_ROUTE_MISS_HEADER)) {
+        // The not-found render is application code, so a redirect it throws
+        // still gets config headers, as for an unmatched URL.
+        return markAppRscApplicationResponse(withRouteMissCacheControl(routeHandlerResponse));
+      }
+      return markAppRscRouteHandlerResponse(routeHandlerResponse, routeHandlerRuntime);
+    }
+
+    const failedProgressiveActionResult =
+      progressiveActionFormState && "actionError" in progressiveActionFormState
+        ? progressiveActionFormState
+        : null;
+    const actionHttpFallbackStatus = failedProgressiveActionResult
+      ? progressiveActionHttpFallbackStatus(failedProgressiveActionResult.actionError)
+      : null;
+    const normalizedProgressiveActionError =
+      actionHttpFallbackStatus === null || actionHttpFallbackStatus === 404
+        ? failedProgressiveActionResult?.actionError
+        : { digest: "NEXT_NOT_FOUND" };
+    const renderedPageResponse = matchedResponseStage
+      ? await matchedResponseStage(responseStageRequest(), {
+          kind: "app-page",
+          buildId: options.buildId,
+          cacheability: responseStageCacheability(resolvedUrl),
+          bypassInterceptionContextCache,
+          cachePathname,
+          canUseCanonicalLoadingShell: route.canUseCanonicalLoadingShell === true,
+          canonicalPathname,
+          cleanPathname,
+          draftModeCookie,
+          forceDynamic: route.forceDynamic === true,
+          interceptionContext: interceptionSourceContext,
+          interceptionId: interceptionIdHeader,
+          isRscRequest,
+          matchKind: responseStageMatchKind,
+          middlewareCookieOverlay,
+          mountedSlotsHeader,
+          params,
+          protocolVersion: APP_WORKER_RESPONSE_STAGE_PROTOCOL_VERSION,
+          requestOrigin: url.origin,
+          renderMode,
+          resolvedUrl,
+          routePattern: route.pattern,
+          routePathname: responseStageRoutePathname,
+          scriptNonce: scriptNonce ?? null,
+        })
+          .then((response) =>
+            transportedResponseStage && isRscRequest
+              ? withRoutedRscHeaders(
+                  response,
+                  // As a single-stage render does, include the params of the
+                  // route's active slot patterns.
+                  resolveAppPageNavigationParams(route, params, cleanPathname),
+                  resolvedUrl,
+                  interceptionSourceContext !== null,
+                )
+              : response,
+          )
+          .then(composeResponseStageResponse)
+      : await options.dispatchMatchedPage({
+          bypassInterceptionContextCache,
+          cachePathname,
+          cleanPathname,
+          displayPathname: canonicalPathname,
+          formState: progressiveActionFormState?.formState ?? null,
+          actionError: normalizedProgressiveActionError,
+          actionFailed: failedProgressiveActionResult !== null,
+          handlerStart,
+          interceptionContext: interceptionSourceContext,
+          interceptionId: interceptionIdHeader,
+          interceptionPathname: cleanPathnameIsRequestPathname ? requestPathname : cleanPathname,
+          isProgressiveActionRender: progressiveActionFormState !== null,
+          isRscRequest,
+          middlewareContext,
+          mountedSlotsHeader,
+          params: renderParams,
+          pprFallbackCacheShells: runtimeFallbackShells,
+          pprFallbackShell: isPrerenderFallbackShell
+            ? {
+                fallbackParamNames: prerenderRouteParamsMatch.fallbackParamNames,
+                routePattern: route.pattern,
+              }
+            : undefined,
+          renderedConcreteUrlPaths: getRenderedConcreteUrlPathsForRoute(route.pattern),
+          // An action has already run for the matched page, and routing ends
+          // at an intercepted route.
+          resumeRoutingAfterMiss:
+            isFinalRouteMatch || isServerActionRequest || isProgressiveActionRequest
+              ? undefined
+              : resumeRoutingAfterMiss,
+          skipStaticParamsValidation: isPrerenderFallbackShell,
+          staticParamsValidationParams:
+            prerenderRouteParams === null || isPrerenderFallbackShell ? undefined : params,
+          rootParams,
+          request,
+          renderedPathAndSearch: resolvedUrl,
+          route,
+          scriptNonce,
+          searchParams: resolvedSearchParams,
+          renderMode,
+        });
+    const pageResponse = withStoredSpecialErrorStatus(
+      withRouteMissCacheControl(renderedPageResponse),
+      // Next.js reads the segment header only on a prefetch.
+      isRscRequest &&
+        request.headers.get(NEXT_ROUTER_PREFETCH_HEADER) === "1" &&
+        request.headers.has(NEXT_ROUTER_SEGMENT_PREFETCH_HEADER),
+    );
+
+    // No-JS progressive form actions write cookies via cookies().set() / draftMode()
+    // *during action execution*, before the page rerender begins. Those writes only
+    // exist on the request-scoped headers state; the page-render path never flushes
+    // them. We attach them here so the rendered Response carries the action's
+    // Set-Cookie headers and revalidation marker, mirroring Next.js'
+    // res.setHeader('set-cookie', ...) flush in action-handler.ts / app-render.tsx.
+    // Issue: https://github.com/cloudflare/vinext/issues/1483
+    if (progressiveActionFormState) {
+      return markServerActionResponse(
+        markAppRscApplicationResponse(
+          applyProgressiveActionSideEffects(pageResponse, progressiveActionFormState),
+        ),
+      );
+    }
+    return markAppRscApplicationResponse(pageResponse);
+  };
+
+  let response = await finishRouting();
+  // Each resume starts at a later fallback rewrite, so this ends.
+  while (shouldResumeRoutingAfterMiss) {
+    await response.body?.cancel();
+    shouldResumeRoutingAfterMiss = false;
+    // The rejected match no longer names the request.
+    resetFrameworkRequestRoute();
+    resetRouteCacheability();
+    options.setNavigationContext({
+      pathname: canonicalPathname,
+      searchParams: getResolvedSearchParams(),
+      params: {},
+    });
+    setRootParams(null);
+    bypassInterceptionContextCache = bypassInterceptionContextCacheBeforeMatch;
+    setInterceptionResponseUncacheable(interceptionResponseUncacheableBeforeMatch);
+    if (match) rejectedRoutes.add(match.route);
+    match = null;
+    response = await finishRouting();
+  }
+  return response;
+}
+
+function progressiveActionHttpFallbackStatus(actionError: unknown): number | null {
+  const actionErrorDigest =
+    actionError && typeof actionError === "object" && "digest" in actionError
+      ? String(actionError.digest)
+      : null;
+  return actionErrorDigest ? (parseNextHttpErrorDigest(actionErrorDigest)?.status ?? null) : null;
+}
+
+/**
+ * Append `Set-Cookie` headers and the `x-action-revalidated` marker captured
+ * during progressive (no-JS) server action execution to the page render
+ * response. See issue #1483.
+ *
+ * Falls back to rebuilding the response when the headers object is immutable
+ * (e.g. `Response.redirect()`), so cookies set by the action ride out on a
+ * redirect issued during the rerender too.
+ */
+function applyProgressiveActionSideEffects(
+  response: Response,
+  sideEffects: ProgressiveActionFormStateResult,
+): Response {
+  const hasPendingCookies = sideEffects.pendingCookies.length > 0;
+  const hasDraftCookie = Boolean(sideEffects.draftCookie);
+  const hasRevalidationKind = sideEffects.revalidationKind !== 0;
+  if (!hasPendingCookies && !hasDraftCookie && !hasRevalidationKind) {
+    return response;
+  }
+
+  const applyTo = (headers: Headers): void => {
+    for (const cookie of sideEffects.pendingCookies) {
+      headers.append("Set-Cookie", cookie);
+    }
+    if (sideEffects.draftCookie) {
+      headers.append("Set-Cookie", sideEffects.draftCookie);
+    }
+    if (hasRevalidationKind) {
+      headers.set(ACTION_REVALIDATED_HEADER, JSON.stringify(sideEffects.revalidationKind));
+    }
+  };
+
+  try {
+    applyTo(response.headers);
+    return response;
+  } catch {
+    // Headers were immutable (Response.redirect()/Response.error()) — rebuild
+    // with a fresh mutable Headers seeded from the original response.
+    const headers = new Headers(response.headers);
+    applyTo(headers);
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
+  }
+}
+
+export type AppRscRequestHandler = (
+  request: Request,
+  ctx: unknown,
+  allowInternalRscDocumentFallback?: boolean,
+  dispatchResponseStage?: DispatchAppWorkerResponseStage,
+  responseStageProbeMode?: VinextCacheabilityProbeMode | null,
+  trustedPrerenderState?: TrustedPrerenderState | null,
+) => Promise<Response>;
+
+/** Build the request-only handler without retaining the response renderer graph. */
+export function createAppRscRequestHandler<TRoute extends AppRscHandlerRoute>(
+  options: CreateAppRscHandlerOptions<TRoute>,
+): AppRscRequestHandler {
+  const handleAppRscRequestLifecycle = async (
+    hostRequest: Request,
+    ctx: unknown,
+    allowInternalRscDocumentFallback = false,
+    dispatchResponseStage?: DispatchAppWorkerResponseStage,
+    responseStageProbeMode: VinextCacheabilityProbeMode | null = null,
+    transportedPrerenderState?: TrustedPrerenderState | null,
+  ): Promise<Response> => {
+    // Read before anything clones the request: srvx returns its own
+    // connection signal only until a clone materializes its native Request,
+    // whose signal merely follows it.
+    const rawRequestSignal = hostRequest.signal;
+    // srvx (Nitro, `vite preview`) keeps a `#fragment` sent on the request line.
+    const rawRequest = stripRequestUrlFragment(hostRequest);
+    // Strip forged internal headers at the App Router request boundary.
+    // Must happen BEFORE headersContextFromRequest() and
+    // requestContextFromRequest() so the captured context never contains
+    // attacker-controlled internal headers. This is the correct boundary
+    // for pure App Router requests; in hybrid app+pages mode the connect
+    // handler already filtered headers upstream and x-vinext-mw-ctx carries
+    // the forwarded middleware context.
+    // filterInternalHeaders drops x-vinext-mw-ctx, so read it first and
+    // re-attach it below for applyForwardedMiddlewareContext. Only a value
+    // sealed with this dev server's key is honored; any other copy is dropped
+    // and middleware runs as usual.
+    const mwCtx = openForwardedMiddlewareContext(
+      rawRequest.headers.get(VINEXT_MW_CTX_HEADER),
+      options.devForwardedMiddlewareContextKey,
+    );
+    const pagesDataUrl = new URL(rawRequest.url);
+    const pagesDataInScope =
+      !options.basePath || hasBasePath(pagesDataUrl.pathname, options.basePath);
+    if (pagesDataInScope) {
+      pagesDataUrl.pathname = stripBasePath(pagesDataUrl.pathname, options.basePath);
+    }
+    const pagesDataCandidate = pagesDataInScope
+      ? cloneRequestWithUrl(rawRequest, pagesDataUrl.toString())
+      : null;
+    const pagesDataNormalization =
+      options.renderPagesFallback && pagesDataCandidate
+        ? normalizePagesDataRequest(
+            pagesDataCandidate,
+            options.buildId,
+            "",
+            typeof options.runMiddleware === "function" && options.trailingSlash,
+          )
+        : null;
+    if (pagesDataNormalization?.notFoundResponse) {
+      return pagesDataNormalization.notFoundResponse;
+    }
+    const isPagesDataRequest = pagesDataNormalization?.isDataReq === true;
+    const executionContext = isExecutionContextLike(ctx)
+      ? ctx
+      : (getRequestExecutionContext() ?? null);
+    // Read the trusted prerender route params before filtering strips the
+    // route-params header (it IS in VINEXT_INTERNAL_HEADERS), then re-attach the
+    // validated value below so the second read in handleAppRscRequest still sees
+    // it. The secret was already verified upstream at prod-server's
+    // nodeToWebRequest boundary; the surviving secret header (NOT in either
+    // internal-header list) lets readTrustedPrerenderRouteParams's
+    // VINEXT_PRERENDER gate pass on the reconstructed request. If the secret
+    // header is ever added to VINEXT_INTERNAL_HEADERS, that second read breaks.
+    // A remote response stage receives only the authenticated, serialized
+    // state. Single-stage Node requests retain the existing verified-header
+    // boundary, then recursive renders carry the resolved state explicitly.
+    const trustedPrerenderState: TrustedPrerenderState | null =
+      transportedPrerenderState !== undefined
+        ? transportedPrerenderState
+        : process.env.VINEXT_PRERENDER === "1" &&
+            rawRequest.headers.get(VINEXT_PRERENDER_SECRET_HEADER) !== null
+          ? {
+              routeParams: readTrustedPrerenderRouteParams(rawRequest),
+              speculative: rawRequest.headers.get(VINEXT_PRERENDER_SPECULATIVE_HEADER) === "1",
+            }
+          : null;
+    const prerenderRouteParamsPayload = trustedPrerenderState?.routeParams ?? null;
+    const isTrustedSpeculativePrerender = trustedPrerenderState?.speculative === true;
+    const filteredHeaders = executionContext?.isInternalPagesRevalidation
+      ? new Headers(rawRequest.headers)
+      : filterInternalHeaders(rawRequest.headers);
+    filteredHeaders.delete(VINEXT_REVALIDATE_HOST_HEADER);
+    if (isForwardedActionContext(ctx)) {
+      filteredHeaders.set("x-action-forwarded", "1");
+    }
+    if (mwCtx !== null) {
+      filteredHeaders.set(VINEXT_MW_CTX_HEADER, mwCtx);
+    }
+    const prerenderRouteParamsHeader = serializePrerenderRouteParamsHeader(
+      prerenderRouteParamsPayload,
+    );
+    if (prerenderRouteParamsHeader !== null) {
+      filteredHeaders.set(VINEXT_PRERENDER_ROUTE_PARAMS_HEADER, prerenderRouteParamsHeader);
+    }
+    if (isTrustedSpeculativePrerender) {
+      filteredHeaders.set(VINEXT_PRERENDER_SPECULATIVE_HEADER, "1");
+    }
+    let appRequest = rawRequest;
+    if (pagesDataNormalization?.isDataReq) {
+      const appRequestUrl = new URL(pagesDataNormalization.request.url);
+      appRequestUrl.pathname = restoreBasePath(appRequestUrl.pathname, options.basePath);
+      appRequest = cloneRequestWithUrl(pagesDataCandidate!, appRequestUrl.toString());
+    }
+    const request = cloneRequestWithHeaders(appRequest, filteredHeaders);
+    const pagesDataRequest = pagesDataNormalization?.isDataReq
+      ? cloneRequestWithHeaders(pagesDataCandidate!, filteredHeaders)
+      : null;
+
+    const headersContext = headersContextFromRequest(request, {
+      draftModeSecret: options.draftModeSecret,
+    });
+    const requestContext = createRequestContext({
+      headersContext,
+      executionContext,
+      // Like Next.js's work store, an authorized on-demand revalidation makes
+      // the data caches skip their reads for the whole request.
+      isOnDemandRevalidate: isOnDemandRevalidateRequest(
+        request.headers.get(PRERENDER_REVALIDATE_HEADER),
+      ),
+      // The Node production server's request already follows its signal, so
+      // it passes the signal itself.
+      requestSignal: executionContext?.requestSignal ?? rawRequestSignal,
+      unstableCacheRevalidation: "background",
+    });
+    let interceptionResponseUncacheable = false;
+
+    const responsePromise = runWithRequestContext(requestContext, () =>
+      runWithPrerenderWorkUnit(
+        async () => {
+          // A separately deployed response stage owns all render/data-cache
+          // execution. Keep its fetch runtime out of the request-stage startup
+          // graph; single-stage handlers still install it before user code runs.
+          if (!dispatchResponseStage) {
+            const { ensureFetchPatch } = await import("vinext/shims/fetch-cache");
+            ensureFetchPatch();
+          }
+          const preMiddlewareRequestContext = requestContextFromRequest(request);
+          const middlewareContext: AppRscMiddlewareContext = {
+            headers: null,
+            requestHeaders: null,
+            status: null,
+          };
+          let response: Response;
+
+          try {
+            response = await handleAppRscRequest(
+              options,
+              request,
+              preMiddlewareRequestContext,
+              middlewareContext,
+              isPagesDataRequest,
+              isPagesDataRequest,
+              pagesDataRequest,
+              (internalRequest) =>
+                appRscHandler(
+                  internalRequest,
+                  ctx,
+                  true,
+                  dispatchResponseStage,
+                  responseStageProbeMode,
+                  trustedPrerenderState,
+                  true,
+                ),
+              allowInternalRscDocumentFallback,
+              dispatchResponseStage,
+              responseStageProbeMode,
+              (uncacheable) => {
+                interceptionResponseUncacheable = uncacheable;
+              },
+            );
+          } catch (error) {
+            if (process.env.NODE_ENV !== "production") {
+              flattenErrorCauses(error);
+            }
+            throw error;
+          }
+
+          response = await finalizeAppRscResponse(response, request, {
+            basePath: options.basePath,
+            configHeaders: options.configHeaders,
+            i18nConfig: options.i18nConfig,
+            // Read the raw URL: `request` already has a `/_next/data`
+            // pathname rewritten to its page path.
+            restoreLocaleRootTrailingSlash: shouldRestoreLocaleRootTrailingSlash(
+              new URL(rawRequest.url).pathname,
+              options,
+            ),
+            middlewareHeaders: middlewareContext.headers,
+            recordCacheability: dispatchResponseStage === undefined,
+            requestContext: preMiddlewareRequestContext,
+          });
+          if (serverActionResponses.has(response)) return withServerActionCacheControl(response);
+          return interceptionResponseUncacheable || unmatchedRouteResponses.has(response)
+            ? withNeverCacheControl(response)
+            : response;
+        },
+        {
+          cacheComponents: options.createPprFallbackShells !== undefined,
+          route: () => new URL(request.url).pathname,
+        },
+      ),
+    );
+    let response: Response;
+    try {
+      response = await responsePromise;
+    } catch (error) {
+      await closeAfterResponse(requestContext);
+      throw error;
+    }
+    const closedResponse = closeAfterResponseWithBody(response, requestContext);
+    // A forwarded action's streamed redirect is read back through this wrapper.
+    return isStreamedActionRedirectResponse(response)
+      ? markStreamedActionRedirectResponse(closedResponse)
+      : closedResponse;
+  };
+
+  const appRscHandler = async function appRscHandler(
+    rawRequest: Request,
+    ctx: unknown,
+    allowInternalRscDocumentFallback = false,
+    dispatchResponseStage?: DispatchAppWorkerResponseStage,
+    responseStageProbeMode: VinextCacheabilityProbeMode | null = null,
+    transportedPrerenderState?: TrustedPrerenderState | null,
+    detachedTrace = false,
+  ): Promise<Response> {
+    // Register config-driven cache adapters before anything touches the cache.
+    // On the Cloudflare worker the entry already registered them with `env` (this
+    // guarded call is a no-op); on Node/dev this is where they get wired, with no
+    // bindings available.
+    options.registerCacheAdapters();
+    await options.ensureInstrumentation?.(isExecutionContextLike(ctx) ? ctx : null);
+
+    const traceUrl = new URL(rawRequest.url);
+    return traceFrameworkRequest({
+      callback: () =>
+        handleAppRscRequestLifecycle(
+          rawRequest,
+          ctx,
+          allowInternalRscDocumentFallback,
+          dispatchResponseStage,
+          responseStageProbeMode,
+          transportedPrerenderState,
+        ),
+      detached: detachedTrace,
+      getStatus: (response) => response?.status,
+      headers: rawRequest.headers,
+      isRsc: rawRequest.headers.get(RSC_HEADER) === "1",
+      method: rawRequest.method,
+      target: traceUrl.pathname + traceUrl.search,
+    });
+  };
+
+  return appRscHandler;
+}

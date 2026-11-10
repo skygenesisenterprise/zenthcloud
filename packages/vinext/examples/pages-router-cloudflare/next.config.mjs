@@ -1,0 +1,71 @@
+export default {
+  // The cloudflare-pages-router-dev e2e project runs with this flag so the
+  // Worker request stage covers raw `_next/data` URLs reaching middleware.
+  skipProxyUrlNormalize: process.env.VINEXT_E2E_SKIP_PROXY_URL_NORMALIZE === "1",
+  images: {
+    // Every local path without a query string (the Next.js default), plus the
+    // query strings middleware gates image sources on.
+    // Coverage: tests/e2e/cloudflare-pages-router/image-middleware.spec.ts
+    localPatterns: [
+      { pathname: "**", search: "" },
+      { pathname: "/vinext-image.png", search: "?members-only" },
+      { pathname: "/vinext-image.png", search: "?redirect" },
+      { pathname: "/_next/static/**", search: "?members-only" },
+    ],
+    // Serve SVG sources as-is, with the image endpoint's security headers.
+    // Coverage: tests/e2e/cloudflare-pages-router/image-bypass-types.spec.ts
+    dangerouslyAllowSVG: true,
+  },
+  async headers() {
+    return [
+      {
+        source: "/about",
+        headers: [{ key: "X-Page-Header", value: "about-page" }],
+      },
+      // /_next/image keeps a source max-age above minimumCacheTTL, as Next.js does.
+      // Coverage: tests/e2e/cloudflare-pages-router/image-bypass-types.spec.ts
+      {
+        source: "/vinext-icon.ico",
+        headers: [{ key: "Cache-Control", value: "public, max-age=86400" }],
+      },
+      {
+        source: "/headers-before-middleware-rewrite",
+        headers: [{ key: "x-rewrite-source-header", value: "1" }],
+      },
+    ];
+  },
+
+  async redirects() {
+    return [
+      {
+        source: "/redirect-before-middleware-rewrite",
+        destination: "/about",
+        permanent: false,
+      },
+      {
+        source: "/redirect-before-middleware-response",
+        destination: "/about",
+        permanent: false,
+      },
+    ];
+  },
+
+  async rewrites() {
+    return {
+      beforeFiles: [],
+      afterFiles: [
+        { source: "/nav-test", destination: "/about" },
+        { source: "/rewrite-about", destination: "/about" },
+      ],
+      fallback:
+        process.env.VINEXT_E2E_REVALIDATION_PROXY === "1"
+          ? [
+              {
+                source: "/external-revalidate-proxy",
+                destination: "http://127.0.0.1:43199/revalidation-capture",
+              },
+            ]
+          : [],
+    };
+  },
+};

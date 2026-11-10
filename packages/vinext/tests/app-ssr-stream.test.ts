@@ -1,0 +1,1463 @@
+import { createContext, runInContext } from "node:vm";
+import { describe, it, expect, vi } from "vite-plus/test";
+import { createElement, Suspense, use } from "react";
+import { renderToReadableStream } from "react-dom/server.edge";
+import {
+  concatUint8Arrays,
+  decodeRscEmbeddedChunk,
+  type RscEmbeddedChunk,
+} from "../packages/vinext/src/server/app-rsc-embedded-chunks.js";
+import {
+  createNavigationRuntimeRscCompatibilityScript,
+  createNavigationRuntimeRscMetadataScript,
+  createRscEmbedTransform,
+  createTickBufferedTransform,
+  navigationRuntimeRscBootstrapExpression,
+  waitAtLeastOneReactRenderTask,
+} from "../packages/vinext/src/server/app-ssr-stream.js";
+import { scriptSafeJsonStringify } from "../packages/vinext/src/server/html.js";
+
+const utf8 = (value: string): Uint8Array => new TextEncoder().encode(value);
+const text = (bytes: Uint8Array | null): string => (bytes ? new TextDecoder().decode(bytes) : "");
+
+it("serializes dynamic stale time into the hydration bootstrap", () => {
+  expect(
+    createNavigationRuntimeRscMetadataScript(
+      { id: "1" },
+      { pathname: "/posts/1", searchParams: [] },
+      30,
+    ),
+  ).toContain("dynamicStaleTimeSeconds:30");
+});
+
+it("serializes browser search-param ownership into the early hydration bootstrap", () => {
+  expect(
+    createNavigationRuntimeRscMetadataScript(
+      {},
+      { pathname: "/static", searchParams: [] },
+      undefined,
+      true,
+    ),
+  ).toContain("searchParamsFromBrowser:true");
+});
+
+it("sends the server's RSC compatibility ID with the page, except for static export", () => {
+  vi.stubEnv("__VINEXT_RSC_COMPATIBILITY_ID", "compat-a");
+  try {
+    expect(createNavigationRuntimeRscCompatibilityScript()).toBe(
+      'Object.assign(((self[Symbol.for("vinext.navigationRuntime")]??={bootstrap:{routeManifest:null},functions:{}}).bootstrap.rsc??={rsc:[]}),{compatibilityId:"compat-a"})',
+    );
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("__NEXT_CONFIG_OUTPUT", "export");
+    expect(createNavigationRuntimeRscCompatibilityScript()).toBe("");
+    vi.stubEnv("__NEXT_CONFIG_OUTPUT", "");
+    vi.stubEnv("__VINEXT_RSC_COMPATIBILITY_ID", "");
+    expect(createNavigationRuntimeRscCompatibilityScript()).toBe("");
+  } finally {
+    vi.unstubAllEnvs();
+  }
+});
+
+function createTextStream(chunks: string[]): ReadableStream<Uint8Array> {
+  return new ReadableStream({
+    start(controller) {
+      for (const chunk of chunks) {
+        controller.enqueue(new TextEncoder().encode(chunk));
+      }
+      controller.close();
+    },
+  });
+}
+
+function createByteStream(chunks: Uint8Array[]): ReadableStream<Uint8Array> {
+  return new ReadableStream({
+    start(controller) {
+      for (const chunk of chunks) {
+        controller.enqueue(chunk);
+      }
+      controller.close();
+    },
+  });
+}
+
+// Runs the embed's scripts as the browser would and returns the bytes it
+// rebuilds from the embedded chunks.
+function runEmbedScripts(scripts: string): Uint8Array {
+  const self: Record<PropertyKey, unknown> = {};
+  const context = createContext({ self });
+  for (const scriptSource of scripts
+    .slice("<script>".length, -"</script>".length)
+    .split("</script><script>")) {
+    runInContext(scriptSource, context);
+  }
+  const navigationRuntime = self[Symbol.for("vinext.navigationRuntime")] as {
+    bootstrap: { rsc: { rsc: RscEmbeddedChunk[] } };
+  };
+  return concatUint8Arrays(navigationRuntime.bootstrap.rsc.rsc.map(decodeRscEmbeddedChunk));
+}
+
+function createNoopRscEmbedTransform() {
+  return {
+    flush: () => null,
+    finalize: async () => new Uint8Array(),
+    getRawBuffer: async () => new ArrayBuffer(0),
+  };
+}
+
+describe("createRscEmbedTransform raw buffer (#981)", () => {
+  it("accumulates raw bytes while producing embed scripts", async () => {
+    const sideStream = createTextStream(["chunk1", "chunk2"]);
+    const transform = createRscEmbedTransform(sideStream);
+
+    // Let the reader pump all chunks
+    const rawBuffer = await transform.getRawBuffer();
+    expect(rawBuffer).toBeInstanceOf(ArrayBuffer);
+    expect(new TextDecoder().decode(rawBuffer)).toBe("chunk1chunk2");
+
+    // Embed scripts still work
+    const finalScripts = text(await transform.finalize());
+    expect(finalScripts).toContain('Symbol.for("vinext.navigationRuntime")');
+    expect(finalScripts).toContain(".done=true");
+    expect(finalScripts).toContain('.rsc.push("chunk1chunk2")');
+  });
+
+  it("coalesces adjacent text chunks into one inline Flight script", async () => {
+    const transform = createRscEmbedTransform(createTextStream(Array(1_000).fill("chunk")));
+
+    const finalScripts = text(await transform.finalize());
+
+    expect(finalScripts.match(/\.rsc\.push\(/g)).toHaveLength(1);
+    expect(finalScripts.match(/<script/g)).toHaveLength(2);
+    expect(finalScripts).toContain(`.rsc.push("${"chunk".repeat(1_000)}")`);
+  });
+
+  it("embeds text exactly as script-safe JSON of the decoded text", async () => {
+    // Escaped or ASCII-sensitive text next to multi-byte characters, including
+    // U+2028/U+2029 and a byte order mark, which the embed handles as bytes.
+    const chunks = [
+      '\uFEFF0:"caf\u00e9 \u{1F600} \\ \u0000\u0007\b\t\n\f\r\u001f"\n',
+      '1:"</script><SCRIPT></ScRiPt ><!-- <scrip <!- <p>&amp; \u2028\u2029 \u00e2\u0080\u00a8"\n',
+      "2:T3,\u00e9\u00e2\n",
+    ];
+    const transform = createRscEmbedTransform(createTextStream(chunks), "n\u00f6nce");
+
+    const finalScripts = text(await transform.finalize());
+
+    expect(finalScripts).toContain(
+      '<script nonce="n\u00f6nce">' +
+        navigationRuntimeRscBootstrapExpression() +
+        ".rsc.push(" +
+        scriptSafeJsonStringify(chunks.join("")) +
+        ")</script>",
+    );
+  });
+
+  it("optionally mirrors text chunks into the Next.js inline Flight transport", async () => {
+    const transform = createRscEmbedTransform(createTextStream(["chunk1", "chunk2"]), {
+      mirrorNextFlight: true,
+      scriptNonce: "test-nonce",
+    });
+
+    const finalScripts = text(await transform.finalize());
+
+    expect(finalScripts).toContain(
+      '<script nonce="test-nonce">(self.__next_f=self.__next_f||[]).push([0])</script>',
+    );
+    expect(finalScripts).toContain(
+      '<script nonce="test-nonce">self.__next_f.push([1,"chunk1chunk2"])</script>',
+    );
+    expect(finalScripts).toContain(
+      '<script nonce="test-nonce">self.addEventListener("DOMContentLoaded",()=>{if(self.__next_f?.push===Array.prototype.push)self.__next_f.length=0},{once:true})</script>',
+    );
+    expect(finalScripts.match(/self\.__next_f=self\.__next_f\|\|\[\]/g)).toHaveLength(1);
+  });
+
+  it("replays the stream from its start to a render that replaces one that read it", async () => {
+    let streamController!: ReadableStreamDefaultController<Uint8Array>;
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        streamController = controller;
+        controller.enqueue(new TextEncoder().encode("first"));
+      },
+    });
+    const transform = createRscEmbedTransform(stream, { mirrorNextFlight: () => false });
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const replayed = transform.replay();
+    streamController.enqueue(new TextEncoder().encode("second"));
+    streamController.close();
+
+    expect(await new Response(replayed).text()).toBe("firstsecond");
+    expect(await new Response(transform.replay()).text()).toBe("firstsecond");
+    expect(text(transform.flush())).toContain('.rsc.push("firstsecond")');
+  });
+
+  it("keeps a replay open after the last byte when asked", async () => {
+    const transform = createRscEmbedTransform(createTextStream(["chunk"]), {
+      mirrorNextFlight: () => false,
+    });
+    await transform.finalize();
+
+    const reader = transform.replay({ keepOpen: true })!.getReader();
+    expect(new TextDecoder().decode((await reader.read()).value)).toBe("chunk");
+    const next = await Promise.race([
+      reader.read().then(() => "read"),
+      new Promise((resolve) => setTimeout(() => resolve("pending"), 10)),
+    ]);
+    expect(next).toBe("pending");
+    await reader.cancel();
+  });
+
+  it("can't replay once the raw bytes are released", async () => {
+    const transform = createRscEmbedTransform(createTextStream(["chunk"]));
+    await transform.getRawBuffer();
+
+    expect(transform.replay()).toBeNull();
+  });
+
+  it("starts mirroring mid-stream once asked, replaying the chunks already embedded", async () => {
+    let streamController!: ReadableStreamDefaultController<Uint8Array>;
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        streamController = controller;
+        controller.enqueue(new TextEncoder().encode("first"));
+      },
+    });
+    let mirror = false;
+    const transform = createRscEmbedTransform(stream, { mirrorNextFlight: () => mirror });
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const firstScripts = text(transform.flush());
+    expect(firstScripts).not.toContain("self.__next_f");
+
+    mirror = true;
+    streamController.enqueue(new TextEncoder().encode("second"));
+    streamController.close();
+    const finalScripts = text(await transform.finalize());
+
+    expect(finalScripts.match(/self\.__next_f=self\.__next_f\|\|\[\]/g)).toHaveLength(1);
+    expect(finalScripts).toContain('self.addEventListener("DOMContentLoaded"');
+    const firstIndex = finalScripts.indexOf('self.__next_f.push([1,"first"])');
+    const secondIndex = finalScripts.indexOf('self.__next_f.push([1,"second"])');
+    expect(firstIndex).toBeGreaterThan(-1);
+    expect(secondIndex).toBeGreaterThan(firstIndex);
+  });
+
+  it("replays the embedded chunks into a late mirror after the raw buffer was captured", async () => {
+    let streamController!: ReadableStreamDefaultController<Uint8Array>;
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        streamController = controller;
+        controller.enqueue(new TextEncoder().encode("first"));
+      },
+    });
+    let mirror = false;
+    const transform = createRscEmbedTransform(stream, { mirrorNextFlight: () => mirror });
+    // Cache capture claims the raw buffer as the SSR entry does, which clears
+    // the raw chunks once the stream completes.
+    const rawBuffer = transform.getRawBuffer();
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(text(transform.flush())).not.toContain("self.__next_f");
+    streamController.enqueue(new TextEncoder().encode("second"));
+    streamController.close();
+    expect(new TextDecoder().decode(await rawBuffer)).toBe("firstsecond");
+
+    mirror = true;
+    const finalScripts = text(await transform.finalize());
+
+    const firstIndex = finalScripts.indexOf('self.__next_f.push([1,"first"])');
+    expect(firstIndex).toBeGreaterThan(-1);
+    expect(finalScripts.indexOf('self.__next_f.push([1,"second"])')).toBeGreaterThan(firstIndex);
+  });
+
+  it("does not mirror when its predicate stays false", async () => {
+    const transform = createRscEmbedTransform(createTextStream(["chunk"]), {
+      mirrorNextFlight: () => false,
+    });
+
+    const finalScripts = text(await transform.finalize());
+
+    expect(finalScripts).not.toContain("self.__next_f");
+  });
+
+  it("does not mirror Next.js inline Flight chunks by default", async () => {
+    const transform = createRscEmbedTransform(createTextStream(["chunk"]));
+
+    const finalScripts = text(await transform.finalize());
+
+    expect(finalScripts).not.toContain("self.__next_f");
+  });
+
+  it("schedules cleanup for an unclaimed progressive buffer before a later stream error", async () => {
+    let streamController!: ReadableStreamDefaultController<Uint8Array>;
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        streamController = controller;
+        controller.enqueue(new TextEncoder().encode("partial"));
+      },
+    });
+    const transform = createRscEmbedTransform(stream, { mirrorNextFlight: true });
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const progressiveScripts = text(transform.flush());
+    expect(progressiveScripts).toContain('self.__next_f.push([1,"partial"])');
+    expect(progressiveScripts).toContain('self.addEventListener("DOMContentLoaded"');
+
+    streamController.error(new Error("stream broke"));
+    await expect(transform.finalize()).rejects.toThrow("stream broke");
+  });
+
+  it("preserves progressive chunks until a deferred Next.js consumer claims the buffer", async () => {
+    let streamController!: ReadableStreamDefaultController<Uint8Array>;
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        streamController = controller;
+        controller.enqueue(new TextEncoder().encode("first"));
+      },
+    });
+    const transform = createRscEmbedTransform(stream, { mirrorNextFlight: true });
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const firstScripts = text(transform.flush());
+    streamController.enqueue(new TextEncoder().encode("second"));
+    streamController.close();
+    const finalScripts = text(await transform.finalize());
+
+    const listeners = new Map<string, () => void>();
+    const self = {
+      __next_f: undefined as undefined | Array<unknown>,
+      addEventListener(name: string, listener: () => void) {
+        listeners.set(name, listener);
+      },
+    };
+    const context = createContext({ self });
+    const runScripts = (html: string) => {
+      const scriptSources = html
+        .slice("<script>".length, -"</script>".length)
+        .split("</script><script>");
+      for (const scriptSource of scriptSources) {
+        runInContext(scriptSource, context);
+      }
+    };
+
+    runScripts(firstScripts);
+    const received = [...self.__next_f!];
+    self.__next_f!.length = 0;
+    self.__next_f!.push = (segment) => {
+      received.push(segment);
+      return received.length;
+    };
+    runScripts(finalScripts);
+    listeners.get("DOMContentLoaded")!();
+
+    expect(received).toEqual([[0], [1, "first"], [1, "second"]]);
+    expect(self.__next_f).toHaveLength(0);
+    expect(self.__next_f!.push).not.toBe(Array.prototype.push);
+  });
+
+  it("finalizes initial cache metadata after the RSC stream settles", async () => {
+    let initialCacheKind: "dynamic" | "static" = "static";
+    const transform = createRscEmbedTransform(createTextStream(["chunk"]), {
+      getInitialNavigationCacheMetadata: () => ({
+        kind: initialCacheKind,
+        ...(initialCacheKind === "dynamic" ? { dynamicStaleTimeSeconds: 30 } : {}),
+      }),
+    });
+
+    initialCacheKind = "dynamic";
+    const finalScripts = text(await transform.finalize());
+
+    expect(finalScripts).toContain('"initialCacheKind":"dynamic"');
+    expect(finalScripts).toContain('"dynamicStaleTimeSeconds":30');
+    expect(finalScripts.indexOf("initialCacheKind")).toBeLessThan(
+      finalScripts.indexOf(".done=true"),
+    );
+  });
+
+  it("omits dynamic stale time from finalized static payload metadata", async () => {
+    const transform = createRscEmbedTransform(createTextStream(["chunk"]), {
+      getInitialNavigationCacheMetadata: () => ({
+        kind: "static",
+      }),
+    });
+
+    const finalScripts = text(await transform.finalize());
+
+    expect(finalScripts).toContain('"initialCacheKind":"static"');
+    expect(finalScripts).not.toContain("dynamicStaleTimeSeconds");
+    expect(finalScripts).not.toContain("staleTimeSeconds");
+  });
+
+  it("emits the completed render's cacheLife stale time in the done script", async () => {
+    // The getter runs at finalize() time — after the RSC stream drains — so a
+    // cacheLife claim registered mid-stream still reaches the done script.
+    let staleTimeSeconds: number | undefined;
+    const transform = createRscEmbedTransform(createTextStream(["chunk"]), {
+      getInitialNavigationCacheMetadata: () => ({
+        kind: "static",
+        ...(staleTimeSeconds === undefined ? {} : { staleTimeSeconds }),
+      }),
+    });
+
+    staleTimeSeconds = 30;
+    const finalScripts = text(await transform.finalize());
+
+    expect(finalScripts).toContain('"staleTimeSeconds":30');
+    expect(finalScripts.indexOf("staleTimeSeconds")).toBeLessThan(
+      finalScripts.indexOf(".done=true"),
+    );
+  });
+
+  it("rejects getRawBuffer when the stream errors (#1002)", async () => {
+    const errorStream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode("partial"));
+        controller.error(new Error("stream broke"));
+      },
+    });
+    const transform = createRscEmbedTransform(errorStream);
+    await expect(transform.getRawBuffer()).rejects.toThrow("stream broke");
+  });
+
+  it("preserves Flight bytes in both embedded and captured RSC data", async () => {
+    const sideStream = createTextStream([':HL["/a.css","stylesheet"]']);
+    const transform = createRscEmbedTransform(sideStream);
+
+    const rawBuffer = await transform.getRawBuffer();
+    const rawText = new TextDecoder().decode(rawBuffer);
+    expect(rawText).toBe(':HL["/a.css","stylesheet"]');
+
+    const finalScripts = text(await transform.finalize());
+    expect(finalScripts).toContain("stylesheet");
+    expect(finalScripts).toContain(".done=true");
+  });
+
+  it("preserves a UTF-8 BOM at an embedded Flight chunk boundary", async () => {
+    const flightChunks = [
+      new TextEncoder().encode("1:T4,"),
+      new Uint8Array([0xef, 0xbb, 0xbf, 0x61]),
+      new TextEncoder().encode("2:T1,b"),
+    ];
+    const expectedBytes = concatUint8Arrays(flightChunks);
+
+    const transform = createRscEmbedTransform(createByteStream(flightChunks));
+
+    expect(runEmbedScripts(text(await transform.finalize()))).toEqual(expectedBytes);
+  });
+
+  it("preserves binary boundaries while coalescing adjacent text chunks", async () => {
+    const transform = createRscEmbedTransform(
+      createByteStream([
+        new TextEncoder().encode("first"),
+        new Uint8Array([0xff]),
+        new TextEncoder().encode("second"),
+        new TextEncoder().encode("third"),
+      ]),
+    );
+
+    const finalScripts = text(await transform.finalize());
+    const firstIndex = finalScripts.indexOf('.rsc.push("first")');
+    const binaryIndex = finalScripts.indexOf('.rsc.push([3,"/w=="])');
+    const remainingTextIndex = finalScripts.indexOf('.rsc.push("secondthird")');
+
+    expect(firstIndex).toBeGreaterThanOrEqual(0);
+    expect(binaryIndex).toBeGreaterThan(firstIndex);
+    expect(remainingTextIndex).toBeGreaterThan(binaryIndex);
+  });
+
+  it("embeds non-UTF-8 RSC chunks as base64 binary chunks", async () => {
+    // Ported from Next.js: test/e2e/app-dir/binary/rsc-binary.test.ts
+    // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/binary/rsc-binary.test.ts
+    const transform = createRscEmbedTransform(
+      createByteStream([new Uint8Array([0xff, 0, 1, 2, 3])]),
+      { mirrorNextFlight: true },
+    );
+
+    const finalScripts = text(await transform.finalize());
+
+    expect(finalScripts).toContain('.rsc.push([3,"/wABAgM="])');
+    expect(finalScripts).toContain('self.__next_f.push([3,"/wABAgM="])');
+  });
+
+  it("does not lose incomplete UTF-8 bytes before a binary chunk", async () => {
+    const transform = createRscEmbedTransform(
+      createByteStream([new Uint8Array([0x41, 0xc3]), new Uint8Array([0xff])]),
+    );
+
+    expect(runEmbedScripts(text(await transform.finalize()))).toEqual(
+      new Uint8Array([0x41, 0xc3, 0xff]),
+    );
+  });
+
+  it("embeds a character split across chunks as text", async () => {
+    // React cuts its output into fixed-size chunks, even inside a character.
+    const row = new TextEncoder().encode('0:D{"name":"page"}\n1:{"t":"あい😀"}\n');
+    const firstSplit = row.indexOf(0x81) + 1; // inside あ
+    const secondSplit = row.indexOf(0x9f) + 1; // inside 😀
+    const transform = createRscEmbedTransform(
+      createByteStream([
+        row.slice(0, firstSplit),
+        row.slice(firstSplit, secondSplit),
+        row.slice(secondSplit),
+      ]),
+    );
+
+    const finalScripts = text(await transform.finalize());
+
+    expect(finalScripts).not.toContain("[3,");
+    expect(runEmbedScripts(finalScripts)).toEqual(row);
+  });
+
+  it("embeds bytes held for an incomplete character when flushed with the stream open", async () => {
+    // A binary row's last byte can look like the start of a character. The
+    // browser needs it before React writes anything else.
+    const encoder = new TextEncoder();
+    const binaryRow = new Uint8Array([...encoder.encode("1:A2,"), 0x01, 0xe3]);
+    let streamController!: ReadableStreamDefaultController<Uint8Array>;
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        streamController = controller;
+        controller.enqueue(binaryRow);
+      },
+    });
+    const transform = createRscEmbedTransform(stream);
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const firstScripts = text(transform.flush());
+    expect(runEmbedScripts(firstScripts)).toEqual(binaryRow);
+
+    // The bytes after a flushed incomplete character may complete it.
+    const character = encoder.encode("あ");
+    const rest = new Uint8Array([...encoder.encode("2:T6,"), ...character, ...character]);
+    const split = new Uint8Array([...encoder.encode('3:"'), character[0]]);
+    streamController.enqueue(split);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const secondScripts = text(transform.flush());
+    streamController.enqueue(new Uint8Array([...character.slice(1), ...encoder.encode('"\n')]));
+    streamController.enqueue(rest);
+    streamController.close();
+    const finalScripts = text(await transform.finalize());
+
+    expect(finalScripts).toContain('.rsc.push("\\"\\n2:T6,ああ")');
+    expect(runEmbedScripts(firstScripts + secondScripts + finalScripts)).toEqual(
+      concatUint8Arrays([binaryRow, split, character.slice(1), encoder.encode('"\n'), rest]),
+    );
+  });
+
+  // React copies a small binary row into the same chunk as the rows around it.
+  function chunkWithBinaryRow(): { payload: Uint8Array; lines: string[] } {
+    const encoder = new TextEncoder();
+    const binaryLine = new Uint8Array([
+      ...encoder.encode("1:A1,"),
+      0xff,
+      ...encoder.encode('2:["done"]\n'),
+    ]);
+    const payload = new Uint8Array([
+      ...encoder.encode('0:D{"name":"page"}\n'),
+      ...binaryLine,
+      ...encoder.encode('3:"tail"\n'),
+    ]);
+    return {
+      payload,
+      lines: [
+        JSON.stringify('0:D{"name":"page"}\n'),
+        `[3,"${Buffer.from(binaryLine).toString("base64")}"]`,
+        JSON.stringify('3:"tail"\n'),
+      ],
+    };
+  }
+
+  it("base64s only the lines of a chunk that aren't text", async () => {
+    const { payload, lines } = chunkWithBinaryRow();
+    const transform = createRscEmbedTransform(createByteStream([payload]));
+
+    const finalScripts = text(await transform.finalize());
+
+    const indexes = lines.map((line) => finalScripts.indexOf(`.rsc.push(${line})`));
+    expect(indexes[0]).toBeGreaterThanOrEqual(0);
+    expect(indexes[1]).toBeGreaterThan(indexes[0]);
+    expect(indexes[2]).toBeGreaterThan(indexes[1]);
+    expect(new Uint8Array(await transform.getRawBuffer())).toEqual(payload);
+  });
+
+  it("replays a chunk split around a binary row into a late mirror once", async () => {
+    const { payload, lines } = chunkWithBinaryRow();
+    let streamController!: ReadableStreamDefaultController<Uint8Array>;
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        streamController = controller;
+        controller.enqueue(payload);
+      },
+    });
+    let mirror = false;
+    const transform = createRscEmbedTransform(stream, { mirrorNextFlight: () => mirror });
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(text(transform.flush())).not.toContain("self.__next_f");
+    mirror = true;
+    streamController.enqueue(new TextEncoder().encode('4:"after"\n'));
+    streamController.close();
+    const finalScripts = text(await transform.finalize());
+
+    const mirrored = [
+      ...finalScripts.matchAll(/self\.__next_f\.push\((\[[13],.*?\])\)<\/script>/g),
+    ].map((match) => match[1]);
+    expect(mirrored).toEqual([
+      `[1,${lines[0]}]`,
+      lines[1],
+      `[1,${lines[2]}]`,
+      `[1,${JSON.stringify('4:"after"\n')}]`,
+    ]);
+  });
+});
+
+// ── beforeInteractive pre-head splice ────────────────────────────────────────
+
+/**
+ * Pipe an HTML string (or chunks) through `createTickBufferedTransform` and
+ * collect the output. Uses a no-op RscEmbedTransform so we can exercise the
+ * pre-head splice path in isolation.
+ */
+async function runTransform(
+  chunks: string[],
+  options: {
+    injectHTML?: string;
+    injectAfterHeadOpenHTML?: string;
+    inlineCss?: Record<string, string>;
+    inlineCssPrependCss?: string;
+    inlineCssPrependFallbackHTML?: string;
+    inlineCssScriptNonce?: string;
+  } = {},
+): Promise<string> {
+  const transform = createTickBufferedTransform(
+    createNoopRscEmbedTransform(),
+    options.injectHTML ?? "",
+    options.injectAfterHeadOpenHTML ?? "",
+    options.inlineCss,
+    options.inlineCssPrependCss,
+    options.inlineCssPrependFallbackHTML,
+    options.inlineCssScriptNonce,
+  );
+  const source = createTextStream(chunks);
+  const piped = source.pipeThrough(transform);
+  const reader = piped.getReader();
+  const decoder = new TextDecoder();
+  let out = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    out += decoder.decode(value, { stream: true });
+  }
+  out += decoder.decode();
+  return out;
+}
+
+async function runDelayedTransform(
+  chunks: string[],
+  options: {
+    inlineCss?: Record<string, string>;
+  } = {},
+): Promise<string> {
+  const encoder = new TextEncoder();
+  const source = new ReadableStream<Uint8Array>({
+    start(controller) {
+      let index = 0;
+      const enqueueNext = (): void => {
+        const chunk = chunks[index++];
+        if (chunk === undefined) {
+          controller.close();
+          return;
+        }
+        controller.enqueue(encoder.encode(chunk));
+        setTimeout(enqueueNext, 5);
+      };
+      enqueueNext();
+    },
+  });
+
+  return new Response(
+    source.pipeThrough(
+      createTickBufferedTransform(createNoopRscEmbedTransform(), "", "", options.inlineCss),
+    ),
+  ).text();
+}
+
+async function readSingleTransformChunk(
+  transform: TransformStream<Uint8Array, Uint8Array>,
+  chunk: string,
+): Promise<string> {
+  const source = new TransformStream<Uint8Array, Uint8Array>();
+  const reader = source.readable.pipeThrough(transform).getReader();
+  const writer = source.writable.getWriter();
+
+  await writer.write(new TextEncoder().encode(chunk));
+  const result = await reader.read();
+  const close = writer.close();
+  while (!(await reader.read()).done) {
+    // Drain the transform so its asynchronous flush can finish before the
+    // helper releases the reader. Cancelling here races flush() under Node
+    // 24.20 and can close the controller before it emits the document suffix.
+  }
+  await close;
+
+  if (result.done) {
+    throw new Error("Expected transform to emit a chunk");
+  }
+
+  return new TextDecoder().decode(result.value);
+}
+
+function createFastSuspenseDocument() {
+  const ready = new Promise<void>((resolve) => queueMicrotask(resolve));
+
+  function FastContent() {
+    use(ready);
+    return createElement("p", { id: "resolved-fast" }, "resolved-fast");
+  }
+
+  return createElement(
+    "html",
+    null,
+    createElement("head"),
+    createElement(
+      "body",
+      null,
+      createElement(
+        Suspense,
+        { fallback: createElement("p", { id: "fallback-fast" }, "fallback-fast") },
+        createElement(FastContent),
+      ),
+    ),
+  );
+}
+
+async function renderFastSuspenseDocument(waitBeforePipe: boolean): Promise<string> {
+  const stream = await renderToReadableStream(createFastSuspenseDocument());
+  if (waitBeforePipe) {
+    await waitAtLeastOneReactRenderTask();
+  }
+  return new Response(
+    stream.pipeThrough(createTickBufferedTransform(createNoopRscEmbedTransform())),
+  ).text();
+}
+
+describe("dynamic App SSR stream pull scheduling", () => {
+  it("waits one React render task before pulling dynamic HTML streams", async () => {
+    const immediateHtml = await renderFastSuspenseDocument(false);
+    expect(immediateHtml).toContain("fallback-fast");
+    expect(immediateHtml).toContain("resolved-fast");
+
+    const delayedHtml = await renderFastSuspenseDocument(true);
+    expect(delayedHtml).not.toContain("fallback-fast");
+    expect(delayedHtml).toContain("resolved-fast");
+  });
+});
+
+describe("createTickBufferedTransform pre-head splice", () => {
+  it("emits injectAfterHeadOpenHTML immediately after <head> opens", async () => {
+    const html =
+      '<!DOCTYPE html><html><head><link rel="stylesheet" href="/a.css"/></head><body>x</body></html>';
+    const out = await runTransform([html], {
+      injectAfterHeadOpenHTML: '<script id="hoisted">init()</script>',
+    });
+
+    // The script must appear AFTER <head> and BEFORE the first link.
+    const headOpen = out.indexOf("<head>");
+    const scriptIdx = out.indexOf('<script id="hoisted">');
+    const stylesheetIdx = out.indexOf('<link rel="stylesheet"');
+    expect(headOpen).toBeGreaterThan(-1);
+    expect(scriptIdx).toBeGreaterThan(headOpen);
+    expect(scriptIdx).toBeLessThan(stylesheetIdx);
+  });
+
+  it("preserves existing injection point before </head>", async () => {
+    const html = "<!DOCTYPE html><html><head></head><body></body></html>";
+    const out = await runTransform([html], {
+      injectHTML: "<meta name='end-of-head'/>",
+      injectAfterHeadOpenHTML: "<meta name='start-of-head'/>",
+    });
+
+    const startIdx = out.indexOf("<meta name='start-of-head'/>");
+    const endIdx = out.indexOf("<meta name='end-of-head'/>");
+    const closeIdx = out.indexOf("</head>");
+    expect(startIdx).toBeGreaterThan(-1);
+    expect(endIdx).toBeGreaterThan(-1);
+    expect(startIdx).toBeLessThan(endIdx);
+    expect(endIdx).toBeLessThan(closeIdx);
+  });
+
+  it("handles <head> with attributes", async () => {
+    const html = '<!DOCTYPE html><html><head class="dark"></head><body></body></html>';
+    const out = await runTransform([html], {
+      injectAfterHeadOpenHTML: "<script>x</script>",
+    });
+    expect(out).toContain('<head class="dark"><script>x</script></head>');
+  });
+
+  it("never re-splices on subsequent chunks", async () => {
+    const out = await runTransform(
+      [
+        "<!DOCTYPE html><html><head>",
+        '<link rel="stylesheet" href="/a.css"/>',
+        "</head><body></body></html>",
+      ],
+      {
+        injectAfterHeadOpenHTML: "<script>once</script>",
+      },
+    );
+    // Only one occurrence — the marker must not be re-emitted when later
+    // chunks arrive after the splice already happened.
+    const matches = [...out.matchAll(/<script>once<\/script>/g)];
+    expect(matches).toHaveLength(1);
+  });
+
+  it("does not splice when injectAfterHeadOpenHTML is empty", async () => {
+    const html = "<!DOCTYPE html><html><head></head><body></body></html>";
+    const out = await runTransform([html], { injectAfterHeadOpenHTML: "" });
+    expect(out).toBe(html);
+  });
+
+  it("ignores the splice when <head> is missing", async () => {
+    const html = "<!DOCTYPE html><html><body>no head</body></html>";
+    const out = await runTransform([html], {
+      injectAfterHeadOpenHTML: "<script>x</script>",
+    });
+    expect(out).not.toContain("<script>x</script>");
+  });
+
+  // Ported from Next.js: test/e2e/app-dir/app/index.test.ts
+  // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/app/index.test.ts
+  // (regression for #1532)
+  describe("</body></html> suffix is the last thing in the stream", () => {
+    it("moves the </body></html> suffix to the end after trailing scripts and RSC chunks", async () => {
+      // Simulate React Fizz emitting the closing tags BEFORE flush appends
+      // trailing flight chunks / preinit scripts.
+      const rsc = {
+        flush: () => null,
+        finalize: async () => utf8('<script id="trailing-rsc">rsc()</script>'),
+        getRawBuffer: async () => new ArrayBuffer(0),
+      };
+      const transform = createTickBufferedTransform(rsc, "", "");
+      const source = createTextStream([
+        "<!DOCTYPE html><html><head></head><body><div>hi</div></body></html>",
+      ]);
+      const out = await new Response(source.pipeThrough(transform)).text();
+
+      const suffix = "</body></html>";
+      expect(out.endsWith(suffix)).toBe(true);
+      // Only one occurrence — the suffix must not appear in the middle.
+      expect(out.slice(0, -suffix.length)).not.toContain(suffix);
+      // Trailing scripts land before the suffix, not after it.
+      expect(out).toContain('<script id="trailing-rsc">rsc()</script></body></html>');
+    });
+
+    it("ensures the suffix is at the end even when injectHTML fallback fires", async () => {
+      // When `<head>` never appears, injectHTML falls back to end-of-stream
+      // emission. The closing tags must still come last.
+      const rsc = {
+        flush: () => null,
+        finalize: async () => new Uint8Array(),
+        getRawBuffer: async () => new ArrayBuffer(0),
+      };
+      const transform = createTickBufferedTransform(rsc, "<meta data-injected='1'/>", "");
+      const source = createTextStream(["<!DOCTYPE html><html><body></body></html>"]);
+      const out = await new Response(source.pipeThrough(transform)).text();
+
+      const suffix = "</body></html>";
+      expect(out.endsWith(suffix)).toBe(true);
+      expect(out.slice(0, -suffix.length)).not.toContain(suffix);
+      expect(out).toContain("<meta data-injected='1'/>");
+    });
+
+    it("adds the suffix at the end even when the source stream omits it", async () => {
+      // Defense-in-depth: if React Fizz somehow ends without `</body></html>`,
+      // we still emit a well-formed document close.
+      const rsc = {
+        flush: () => null,
+        finalize: async () => new Uint8Array(),
+        getRawBuffer: async () => new ArrayBuffer(0),
+      };
+      const transform = createTickBufferedTransform(rsc, "", "");
+      const source = createTextStream(["<!DOCTYPE html><html><head></head><body>oops"]);
+      const out = await new Response(source.pipeThrough(transform)).text();
+
+      expect(out.endsWith("</body></html>")).toBe(true);
+    });
+  });
+
+  it("re-evaluates the insertion getter only when splice runs", async () => {
+    // For the function-shaped getter we need to confirm we read it lazily —
+    // once at splice time — so callers can pass a getter that snapshots state
+    // (e.g. captured Script content) that may not be populated until the
+    // tree has rendered.
+    let calls = 0;
+    const transform = createTickBufferedTransform(createNoopRscEmbedTransform(), "", () => {
+      calls++;
+      return "<script>fn</script>";
+    });
+    const source = createTextStream(["<!DOCTYPE html><html><head></head><body></body></html>"]);
+    const out = await new Response(source.pipeThrough(transform)).text();
+    expect(out).toContain("<script>fn</script>");
+    // One call at splice time, one at end-of-stream `flush` for the
+    // post-injected emit fallback. Don't pin an exact count — just confirm
+    // it's a small, bounded number rather than per-chunk.
+    expect(calls).toBeGreaterThanOrEqual(1);
+    expect(calls).toBeLessThan(10);
+  });
+});
+
+/**
+ * Pipe chunks through `createTickBufferedTransform`, one source tick per entry
+ * of `ticks`, with an RSC embed that emits a numbered script at every flush.
+ */
+async function runTickedTransform(
+  ticks: (string | Uint8Array)[][],
+  options: {
+    injectHTML?: string | (() => string);
+    injectAfterHeadOpenHTML?: string;
+    inlineCss?: Record<string, string>;
+  } = {},
+): Promise<Uint8Array[]> {
+  let flushes = 0;
+  // Each tick waits for the transform's flush of the previous one, so a
+  // loaded machine can't close the source before the flush timer fires.
+  let onFlush = (): void => {};
+  const rscEmbed = {
+    flush: () => {
+      const scripts = utf8(`<script>rsc(${++flushes})</script>`);
+      onFlush();
+      return scripts;
+    },
+    finalize: async () => utf8("<script>done()</script>"),
+    getRawBuffer: async () => new ArrayBuffer(0),
+  };
+  const encoder = new TextEncoder();
+  const source = new ReadableStream<Uint8Array>({
+    start(controller) {
+      let index = 0;
+      const enqueueNext = (): void => {
+        const tick = ticks[index++];
+        if (tick === undefined) {
+          controller.close();
+          return;
+        }
+        onFlush = () => {
+          onFlush = () => {};
+          setTimeout(enqueueNext, 0);
+        };
+        for (const chunk of tick) {
+          controller.enqueue(typeof chunk === "string" ? encoder.encode(chunk) : chunk);
+        }
+      };
+      enqueueNext();
+    },
+  });
+  const reader = source
+    .pipeThrough(
+      createTickBufferedTransform(
+        rscEmbed,
+        options.injectHTML,
+        options.injectAfterHeadOpenHTML,
+        options.inlineCss,
+      ),
+    )
+    .getReader();
+  const out: Uint8Array[] = [];
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) return out;
+    out.push(value);
+  }
+}
+
+/**
+ * Run `ticks` through the transform and through its text path, which an
+ * inline CSS manifest forces, and expect the same bytes from both.
+ */
+async function runTickedTransformMatchingTextPath(
+  ticks: (string | Uint8Array)[][],
+  options: { insertPerFlush?: boolean; injectAfterHeadOpenHTML?: string } = {},
+): Promise<string> {
+  const makeOptions = () => {
+    // Server-inserted HTML numbered per call, restarting for each run.
+    let insertions = 0;
+    return {
+      injectHTML: options.insertPerFlush ? () => `<style>s${++insertions}</style>` : undefined,
+      injectAfterHeadOpenHTML: options.injectAfterHeadOpenHTML,
+    };
+  };
+  const bytes = concatUint8Arrays(await runTickedTransform(ticks, makeOptions()));
+  const textPathBytes = concatUint8Arrays(
+    await runTickedTransform(ticks, {
+      ...makeOptions(),
+      inlineCss: { "/never-linked.css": "a{}" },
+    }),
+  );
+  expect(bytes).toEqual(textPathBytes);
+  return new TextDecoder().decode(bytes);
+}
+
+describe("createTickBufferedTransform byte pass-through", () => {
+  it("forwards Fizz's bytes after the head instead of re-encoding them", async () => {
+    const body = new TextEncoder().encode("<p>body</p>");
+    const out = await runTickedTransform([
+      ["<!DOCTYPE html><html><head></head><body>"],
+      [body],
+      ["</body></html>"],
+    ]);
+
+    // The body batch is emitted as a view of the source chunk's buffer.
+    expect(out.some((chunk) => chunk.buffer === body.buffer)).toBe(true);
+    expect(new TextDecoder().decode(concatUint8Arrays(out))).toBe(
+      "<!DOCTYPE html><html><head></head><body><script>rsc(1)</script><p>body</p>" +
+        "<script>rsc(2)</script><script>rsc(3)</script><script>done()</script></body></html>",
+    );
+  });
+
+  it("keeps multi-byte characters split across chunks and ticks whole", async () => {
+    // "<p>caf" é " " ✓ " " 😀 "</p>": é is bytes 6-7, ✓ 9-11, 😀 13-16.
+    const bytes = new TextEncoder().encode("<p>café ✓ 😀</p>");
+    const out = await runTickedTransformMatchingTextPath([
+      ["<!DOCTYPE html><html><head></head><body>"],
+      [bytes.subarray(0, 7), bytes.subarray(7, 9)],
+      [bytes.subarray(9, 15)],
+      [bytes.subarray(15), "</body></html>"],
+    ]);
+
+    expect(out).toBe(
+      "<!DOCTYPE html><html><head></head><body><script>rsc(1)</script><p>café " +
+        "<script>rsc(2)</script>✓ <script>rsc(3)</script>😀</p><script>rsc(4)</script>" +
+        "<script>done()</script></body></html>",
+    );
+  });
+
+  it("splices the head of a single-batch document whose text and byte offsets differ", async () => {
+    const bom = new Uint8Array([0xef, 0xbb, 0xbf]);
+    const html = new TextEncoder().encode(
+      "<!DOCTYPE html><html><head><title>Café ✓ 😀</title></head><body><p>ü</p></body></html>",
+    );
+    const out = await runTickedTransformMatchingTextPath([[concatUint8Arrays([bom, html])]], {
+      insertPerFlush: true,
+      injectAfterHeadOpenHTML: "<script>pre()</script>",
+    });
+
+    // The decoder drops the byte order mark, and so does the output.
+    expect(out).toBe(
+      "<!DOCTYPE html><html><head><script>pre()</script><title>Café ✓ 😀</title>" +
+        "<style>s1</style></head><body><p>ü</p><script>rsc(1)</script><style>s2</style>" +
+        "<script>done()</script></body></html>",
+    );
+  });
+
+  it("emits server-inserted HTML before each forwarded batch", async () => {
+    const out = await runTickedTransformMatchingTextPath(
+      [
+        ["<!DOCTYPE html><html><head><title>Café</title></head><body>"],
+        ["<p>ünïcødé</p>"],
+        ["</body></html>"],
+      ],
+      { insertPerFlush: true },
+    );
+
+    expect(out).toBe(
+      "<!DOCTYPE html><html><head><title>Café</title><style>s1</style></head><body>" +
+        "<script>rsc(1)</script><style>s2</style><p>ünïcødé</p><script>rsc(2)</script>" +
+        "<style>s3</style><script>rsc(3)</script><style>s4</style><script>done()</script>" +
+        "</body></html>",
+    );
+  });
+
+  it("moves a document close suffix split across chunks of one batch to the end", async () => {
+    const out = await runTickedTransformMatchingTextPath([
+      ["<!DOCTYPE html><html><head></head><body>"],
+      ["<p>ü</p></bo", "dy></html>"],
+    ]);
+
+    expect(out).toBe(
+      "<!DOCTYPE html><html><head></head><body><script>rsc(1)</script><p>ü</p>" +
+        "<script>rsc(2)</script><script>done()</script></body></html>",
+    );
+  });
+
+  it("matches the text path for a document close suffix split across batches", async () => {
+    await runTickedTransformMatchingTextPath([
+      ["<!DOCTYPE html><html><head></head><body>"],
+      ["<p>ü</p></bo"],
+      ["dy></html>"],
+    ]);
+  });
+
+  it("leaves a late preload link as written", async () => {
+    const out = await runTickedTransformMatchingTextPath([
+      ["<!DOCTYPE html><html><head></head><body>"],
+      ['<link rel="preload" href="/late.css" as="stylesheet"/><p>ü</p>'],
+      ["</body></html>"],
+    ]);
+
+    expect(out).toContain('<link rel="preload" href="/late.css" as="stylesheet"/><p>ü</p>');
+  });
+
+  it("replaces invalid UTF-8 with U+FFFD like the text path", async () => {
+    const out = await runTickedTransformMatchingTextPath([
+      ["<!DOCTYPE html><html><head></head><body>"],
+      [new Uint8Array([0x3c, 0x70, 0x3e, 0xff, 0x3c, 0x2f, 0x70, 0x3e])],
+      ["</body></html>"],
+    ]);
+
+    expect(out).toContain("<p>\uFFFD</p>");
+  });
+
+  it("inlines a late stylesheet link when an inline CSS manifest is present", async () => {
+    const out = new TextDecoder().decode(
+      concatUint8Arrays(
+        await runTickedTransform(
+          [
+            ["<!DOCTYPE html><html><head></head><body>"],
+            ['<link rel="stylesheet" href="/late.css" data-precedence="default"/><p>ü</p>'],
+            ["</body></html>"],
+          ],
+          { inlineCss: { "/late.css": "p{color:red}" } },
+        ),
+      ),
+    );
+
+    expect(out).toContain(
+      '<style data-vinext-inline-css data-precedence="default" data-href="/late.css">' +
+        "p{color:red}</style><p>ü</p>",
+    );
+  });
+});
+
+describe("createTickBufferedTransform inline CSS", () => {
+  it("replaces React stylesheet links with hoistable inline style tags", async () => {
+    const out = await runTransform(
+      [
+        '<html><head><link rel="stylesheet" href="/_next/static/app.css" data-precedence="vite-rsc/importer-resources"/></head><body></body></html>',
+      ],
+      {
+        inlineCss: {
+          "/_next/static/app.css": "p { color: yellow; }",
+        },
+      },
+    );
+
+    expect(out).not.toContain('rel="stylesheet"');
+    expect(out).toContain(
+      '<style data-vinext-inline-css data-precedence="vite-rsc/importer-resources" data-href="/_next/static/app.css">p { color: yellow; }</style>',
+    );
+  });
+
+  it("replaces stylesheet links when rel contains multiple tokens", async () => {
+    const out = await runTransform(
+      [
+        '<html><head><link rel="preload stylesheet" as="stylesheet" href="/_next/static/app.css" data-precedence="next"/></head></html>',
+      ],
+      {
+        inlineCss: {
+          "/_next/static/app.css": "p { color: yellow; }",
+        },
+      },
+    );
+
+    expect(out).toContain("data-vinext-inline-css");
+    expect(out).toContain("p { color: yellow; }");
+    expect(out).not.toContain('rel="preload stylesheet"');
+  });
+
+  it("replaces stylesheet links split across stream chunks", async () => {
+    const out = await runTransform(
+      [
+        '<html><head><link rel="style',
+        'sheet" href="/_next/static/app.css" data-precedence="next"/></head></html>',
+      ],
+      {
+        inlineCss: {
+          "/_next/static/app.css": "p { color: yellow; }",
+        },
+      },
+    );
+
+    expect(out).toContain("data-vinext-inline-css");
+    expect(out).toContain("p { color: yellow; }");
+    expect(out).not.toContain('<link rel="stylesheet"');
+  });
+
+  it("does not buffer incomplete link-like text when inline CSS is disabled", async () => {
+    const transform = createTickBufferedTransform(createNoopRscEmbedTransform());
+
+    const out = await readSingleTransformChunk(
+      transform,
+      "<html><body><script>const marker = '<link'",
+    );
+
+    expect(out).toContain("const marker = '<link'");
+  });
+
+  it("leaves stylesheet links intact when the emitted CSS asset is not in the inline manifest", async () => {
+    const html =
+      '<html><head><link rel="stylesheet" href="/_next/static/missing.css" data-precedence="vite-rsc/importer-resources"/></head><body></body></html>';
+
+    await expect(
+      runTransform([html], {
+        inlineCss: {
+          "/_next/static/app.css": "p { color: yellow; }",
+        },
+      }),
+    ).resolves.toContain('href="/_next/static/missing.css"');
+  });
+
+  it("does not rewrite preload or modulepreload links", async () => {
+    const html =
+      '<html><head><link rel="preload" href="/_next/static/app.css" as="style"/><link rel="modulepreload" href="/_next/static/app.js"/></head></html>';
+
+    const out = await runTransform([html], {
+      inlineCss: {
+        "/_next/static/app.css": "p { color: yellow; }",
+      },
+    });
+
+    expect(out).toContain('<link rel="preload" href="/_next/static/app.css" as="style"/>');
+    expect(out).toContain('<link rel="modulepreload" href="/_next/static/app.js"/>');
+    expect(out).not.toContain("data-vinext-inline-css");
+  });
+
+  it("escapes CSS closing style tags before embedding in HTML", async () => {
+    const out = await runTransform(
+      [
+        '<html><head><link rel="stylesheet" href="/_next/static/app.css" data-precedence="next"/></head></html>',
+      ],
+      {
+        inlineCss: {
+          "/_next/static/app.css": "body::before { content: '</style><script>x</script>'; }",
+        },
+      },
+    );
+
+    expect(out).toContain("<\\/style><script>x</script>");
+    expect(out).not.toContain("</style><script>x</script>");
+  });
+
+  it("matches absolute assetPrefix stylesheet URLs by pathname fallback", async () => {
+    const out = await runTransform(
+      [
+        '<html><head><link rel="stylesheet" href="https://cdn.example.com/_next/static/app.css" data-precedence="next"/></head></html>',
+      ],
+      {
+        inlineCss: {
+          "/_next/static/app.css": "p { color: yellow; }",
+        },
+      },
+    );
+
+    expect(out).toContain('data-href="https://cdn.example.com/_next/static/app.css"');
+    expect(out).toContain("p { color: yellow; }");
+  });
+
+  it("prepends SSR font CSS to the first inlined stylesheet", async () => {
+    const out = await runTransform(
+      [
+        '<html><head><link rel="stylesheet" href="/_next/static/app.css" data-precedence="next"/><link rel="stylesheet" href="/_next/static/route.css" data-precedence="next"/></head></html>',
+      ],
+      {
+        inlineCss: {
+          "/_next/static/app.css": "p { color: yellow; }",
+          "/_next/static/route.css": ".page { font-size: 100px; }",
+        },
+        inlineCssPrependCss:
+          "@font-face { font-family: '__local_font_0'; src: url('/_next/static/font.woff2'); }",
+        inlineCssPrependFallbackHTML:
+          "<style data-vinext-fonts>@font-face { font-family: '__local_font_0'; src: url('/_next/static/font.woff2'); }</style>",
+      },
+    );
+
+    const firstStyleStart = out.indexOf("<style");
+    const secondStyleStart = out.indexOf("<style", firstStyleStart + 1);
+    expect(firstStyleStart).toBeGreaterThanOrEqual(0);
+    expect(secondStyleStart).toBeGreaterThan(firstStyleStart);
+    expect(out.slice(firstStyleStart, secondStyleStart)).toContain("@font-face");
+    expect(out.slice(secondStyleStart)).not.toContain("@font-face");
+    expect(out).not.toContain("data-vinext-fonts");
+  });
+
+  it("does not prepend SSR font CSS before stylesheet imports", async () => {
+    const out = await runTransform(
+      [
+        '<html><head><link rel="stylesheet" href="/_next/static/app.css" data-precedence="next"/></head></html>',
+      ],
+      {
+        inlineCss: {
+          "/_next/static/app.css": '@import url("/reset.css");\np { color: yellow; }',
+        },
+        inlineCssPrependCss:
+          "@font-face { font-family: '__local_font_0'; src: url('/_next/static/font.woff2'); }",
+        inlineCssPrependFallbackHTML:
+          "<style data-vinext-fonts>@font-face { font-family: '__local_font_0'; src: url('/_next/static/font.woff2'); }</style>",
+      },
+    );
+
+    const inlineStyleStart = out.indexOf("<style data-vinext-inline-css");
+    const inlineStyleEnd = out.indexOf("</style>", inlineStyleStart);
+    const inlineStyle = out.slice(inlineStyleStart, inlineStyleEnd);
+    const fallbackStyleStart = out.indexOf("<style data-vinext-fonts>");
+
+    expect(inlineStyle).toContain('>@import url("/reset.css");');
+    expect(inlineStyle).not.toContain("@font-face");
+    expect(fallbackStyleStart).toBeGreaterThan(inlineStyleEnd);
+  });
+
+  it("does not prepend SSR font CSS before stylesheet namespaces", async () => {
+    const out = await runTransform(
+      [
+        '<html><head><link rel="stylesheet" href="/_next/static/app.css" data-precedence="next"/></head></html>',
+      ],
+      {
+        inlineCss: {
+          "/_next/static/app.css":
+            '@namespace svg url("http://www.w3.org/2000/svg");\nsvg|a { color: red; }',
+        },
+        inlineCssPrependCss:
+          "@font-face { font-family: '__local_font_0'; src: url('/_next/static/font.woff2'); }",
+        inlineCssPrependFallbackHTML:
+          "<style data-vinext-fonts>@font-face { font-family: '__local_font_0'; src: url('/_next/static/font.woff2'); }</style>",
+      },
+    );
+
+    const inlineStyleStart = out.indexOf("<style data-vinext-inline-css");
+    const inlineStyleEnd = out.indexOf("</style>", inlineStyleStart);
+    const inlineStyle = out.slice(inlineStyleStart, inlineStyleEnd);
+    const fallbackStyleStart = out.indexOf("<style data-vinext-fonts>");
+
+    expect(inlineStyle).toContain('>@namespace svg url("http://www.w3.org/2000/svg");');
+    expect(inlineStyle).not.toContain("@font-face");
+    expect(fallbackStyleStart).toBeGreaterThan(inlineStyleEnd);
+  });
+
+  it("does not rewrite link-like text inside inline scripts", async () => {
+    const fakeLink = '<link rel="stylesheet" href="/_next/static/app.css" data-precedence="next">';
+    const out = await runTransform(
+      [
+        `<html><head><script>const linkMarkup = '${fakeLink}';</script><link rel="stylesheet" href="/_next/static/app.css" data-precedence="next"/></head></html>`,
+      ],
+      {
+        inlineCss: {
+          "/_next/static/app.css": "p { color: yellow; }",
+        },
+      },
+    );
+
+    const scriptStart = out.indexOf("<script>");
+    const scriptEnd = out.indexOf("</script>", scriptStart);
+    const scriptHtml = out.slice(scriptStart, scriptEnd);
+    const afterScript = out.slice(scriptEnd);
+
+    expect(scriptHtml).toContain(fakeLink);
+    expect(scriptHtml).not.toContain("data-vinext-inline-css");
+    expect(afterScript).toContain(
+      '<style data-vinext-inline-css data-precedence="next" data-href="/_next/static/app.css">p { color: yellow; }</style>',
+    );
+  });
+
+  it("does not rewrite link-like text inside inline scripts split across stream chunks", async () => {
+    const fakeLink = '<link rel="stylesheet" href="/_next/static/app.css" data-precedence="next">';
+    const out = await runDelayedTransform(
+      [
+        `<html><head><script>const linkMarkup = '${fakeLink.slice(0, 30)}`,
+        `${fakeLink.slice(30)}';</script><link rel="stylesheet" href="/_next/static/app.css" data-precedence="next"/></head></html>`,
+      ],
+      {
+        inlineCss: {
+          "/_next/static/app.css": "p { color: yellow; }",
+        },
+      },
+    );
+
+    const scriptStart = out.indexOf("<script>");
+    const scriptEnd = out.indexOf("</script>", scriptStart);
+    const scriptHtml = out.slice(scriptStart, scriptEnd);
+    const afterScript = out.slice(scriptEnd);
+
+    expect(scriptHtml).toContain(fakeLink);
+    expect(scriptHtml).not.toContain("data-vinext-inline-css");
+    expect(afterScript).toContain(
+      '<style data-vinext-inline-css data-precedence="next" data-href="/_next/static/app.css">p { color: yellow; }</style>',
+    );
+  });
+
+  it("does not rewrite link-like text inside unterminated inline scripts", async () => {
+    const fakeLink = '<link rel="stylesheet" href="/_next/static/app.css" data-precedence="next">';
+    const out = await runTransform([`<html><head><script>const linkMarkup = '${fakeLink}';`], {
+      inlineCss: {
+        "/_next/static/app.css": "p { color: yellow; }",
+      },
+    });
+
+    expect(out).toContain(fakeLink);
+    expect(out).not.toContain("data-vinext-inline-css");
+  });
+
+  it("emits fallback SSR font CSS when no stylesheet link is inlined", async () => {
+    const out = await runTransform(["<html><head></head><body>No CSS link</body></html>"], {
+      inlineCss: {
+        "/_next/static/app.css": "p { color: yellow; }",
+      },
+      inlineCssPrependCss:
+        "@font-face { font-family: '__local_font_0'; src: url('/_next/static/font.woff2'); }",
+      inlineCssPrependFallbackHTML:
+        "<style data-vinext-fonts>@font-face { font-family: '__local_font_0'; src: url('/_next/static/font.woff2'); }</style>",
+    });
+
+    expect(out).toContain("<style data-vinext-fonts>");
+    expect(out).toContain("@font-face");
+  });
+
+  it("forwards the SSR script nonce onto inline style tags when the link has none", async () => {
+    // Without this, sites running `Content-Security-Policy: style-src 'nonce-…'`
+    // see the inlined `<style>` blocked at parse and render unstyled. React Fizz
+    // typically doesn't emit a nonce on the `<link>` it rewrites, so the SSR
+    // nonce is the only source for the inline style.
+    const out = await runTransform(
+      [
+        '<html><head><link rel="stylesheet" href="/_next/static/app.css" data-precedence="next"/></head></html>',
+      ],
+      {
+        inlineCss: { "/_next/static/app.css": "p { color: yellow; }" },
+        inlineCssScriptNonce: "abc123",
+      },
+    );
+
+    expect(out).toContain('<style data-vinext-inline-css nonce="abc123"');
+    expect(out).toContain("p { color: yellow; }");
+  });
+
+  it("prefers the link's own nonce over the SSR script nonce when both are present", async () => {
+    // If Fizz ever does emit a nonce on the source `<link>`, that nonce was
+    // chosen for this resource specifically and should win.
+    const out = await runTransform(
+      [
+        '<html><head><link rel="stylesheet" nonce="link-nonce" href="/_next/static/app.css" data-precedence="next"/></head></html>',
+      ],
+      {
+        inlineCss: { "/_next/static/app.css": "p { color: yellow; }" },
+        inlineCssScriptNonce: "ssr-nonce",
+      },
+    );
+
+    expect(out).toContain('nonce="link-nonce"');
+    expect(out).not.toContain('nonce="ssr-nonce"');
+  });
+
+  it("omits the nonce attribute when neither the link nor the SSR provides one", async () => {
+    const out = await runTransform(
+      [
+        '<html><head><link rel="stylesheet" href="/_next/static/app.css" data-precedence="next"/></head></html>',
+      ],
+      {
+        inlineCss: { "/_next/static/app.css": "p { color: yellow; }" },
+      },
+    );
+
+    expect(out).toContain("<style data-vinext-inline-css");
+    expect(out).not.toContain("nonce=");
+  });
+});

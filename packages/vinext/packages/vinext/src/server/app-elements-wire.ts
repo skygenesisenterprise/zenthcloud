@@ -1,0 +1,847 @@
+import { isValidElement, type ReactNode } from "react";
+import {
+  createArtifactCompatibilityEnvelope,
+  parseArtifactCompatibilityEnvelope,
+  type ArtifactCompatibilityEnvelope,
+} from "./artifact-compatibility.js";
+import type {
+  CacheEntryReuseProof,
+  CacheProofBreakerFallbackMode,
+  CacheProofFallbackScope,
+  CacheProofRejectionCode,
+} from "./cache-proof.js";
+import { isInterceptionMatchedUrlPath } from "./normalize-path.js";
+import type { BfcacheSegmentIdentity } from "./bfcache-identity.js";
+import { compareStrings } from "../utils/compare.js";
+import { isUnknownRecord } from "../utils/record.js";
+import {
+  createAppElementsWireSlotId,
+  isAppElementsWireSlotId,
+  parseAppElementsWireElementKey,
+  type AppElementsWireElementKey,
+} from "./app-elements-wire-key.js";
+
+const APP_INTERCEPTION_SEPARATOR = "\0";
+const LEGACY_APP_SOURCE_PAGE_KEY = "__sourcePage";
+
+export const APP_ARTIFACT_COMPATIBILITY_KEY = "__artifactCompatibility";
+export const APP_CACHE_ENTRY_REUSE_PROOF_KEY = "__cacheEntryReuseProof";
+export const APP_DYNAMIC_STALE_TIME_KEY = "__dynamicStaleTime";
+export const APP_INTERCEPTION_KEY = "__interception";
+export const APP_INTERCEPTION_CONTEXT_KEY = "__interceptionContext";
+export const APP_LAYOUT_IDS_KEY = "__layoutIds";
+export const APP_ROUTE_KEY = "__route";
+export const APP_ROOT_LAYOUT_KEY = "__rootLayout";
+export const APP_SKIPPED_LAYOUT_IDS_KEY = "__skippedLayoutIds";
+export const APP_SOURCE_PAGE_SEGMENTS_KEY = "__srcPage";
+export const APP_SLOT_BINDINGS_KEY = "__slotBindings";
+/** Opaque per-segment identities derived at the server route-graph boundary. */
+export const APP_BFCACHE_SEGMENT_IDENTITIES_KEY = "__bfcacheSegmentIdentities";
+/**
+ * Static sibling segment names for the matched route, surfaced so the client
+ * router can determine if a cached prefetch of a dynamic route can be reused
+ * when navigating to a static sibling URL.
+ *
+ * Mirrors Next.js's `staticSiblings` tuple element on the loader-tree dynamic
+ * segments (issue cloudflare/vinext#1525).
+ */
+export const APP_STATIC_SIBLINGS_KEY = "__staticSiblings";
+export const APP_UNMATCHED_SLOT_WIRE_VALUE = "__VINEXT_UNMATCHED_SLOT__";
+
+export const UNMATCHED_SLOT = Symbol.for("vinext.unmatchedSlot");
+
+function createCacheProofRejectionCodeSet<const T extends readonly CacheProofRejectionCode[]>(
+  codes: T &
+    ([CacheProofRejectionCode] extends [T[number]]
+      ? unknown
+      : readonly [
+          "Missing cache proof rejection codes",
+          Exclude<CacheProofRejectionCode, T[number]>,
+        ]),
+): ReadonlySet<string> {
+  return new Set(codes);
+}
+
+const CACHE_PROOF_REJECTION_CODES = createCacheProofRejectionCodeSet([
+  "CP_CACHE_ENTRY_PROOF_MISSING",
+  "CP_MODEL_DISABLED",
+  "CP_ARTIFACT_COMPATIBILITY_INCOMPATIBLE",
+  "CP_ARTIFACT_COMPATIBILITY_UNKNOWN",
+  "CP_DIMENSION_COUNT_EXCEEDED",
+  "CP_DIMENSION_NAME_MISSING",
+  "CP_DIMENSION_NAME_TOO_LONG",
+  "CP_DIMENSION_VALUE_COUNT_EXCEEDED",
+  "CP_DIMENSION_VALUE_TOO_LONG",
+  "CP_DIMENSION_VALUES_MISSING",
+  "CP_ENCODED_VARIANT_TOO_LONG",
+  "CP_INVALID_VARIANT_BUDGET",
+  "CP_ROUTE_VARIANT_BUDGET_ROUTE_MISMATCH",
+  "CP_ROUTE_VARIANT_CEILING_EXCEEDED",
+  "CP_UNSAFE_PUBLIC_DIMENSION",
+  "CP_BOUNDARY_OUTCOME_MISMATCH",
+  "CP_BOUNDARY_OUTCOME_UNKNOWN",
+  "CP_PRIVATE_DYNAMIC_DOWNGRADE",
+  "CP_STATIC_LAYOUT_CANDIDATE_OUTPUT_KIND",
+  "CP_STATIC_LAYOUT_CURRENT_OUTPUT_KIND",
+  "CP_STATIC_LAYOUT_ID_MISMATCH",
+  "CP_STATIC_LAYOUT_OBSERVATION_OUTPUT_KIND",
+  "CP_STATIC_LAYOUT_OBSERVATION_OUTPUT_MISMATCH",
+  "CP_STATIC_LAYOUT_PRIVATE_DYNAMIC_DOWNGRADE",
+  "CP_STATIC_LAYOUT_REQUEST_API_OBSERVED",
+  "CP_STATIC_LAYOUT_REQUEST_API_UNKNOWN",
+  "CP_STATIC_LAYOUT_ROOT_BOUNDARY_MISMATCH",
+  "CP_STATIC_LAYOUT_ROOT_BOUNDARY_UNKNOWN",
+  "CP_STATIC_LAYOUT_VARIANT_DIMENSION_UNPROVEN",
+]);
+
+type AppElementsSlotBindingState = "active" | "default" | "unmatched";
+
+export type AppElementsSlotBinding = Readonly<{
+  activeRouteId?: string | null;
+  interceptionId?: string | null;
+  interceptionSourceMatchedUrl?: string | null;
+  ownerLayoutId: string | null;
+  slotId: string;
+  state: AppElementsSlotBindingState;
+}>;
+
+export type AppElementsInterception = Readonly<{
+  sourceMatchedUrl: string;
+  sourceRouteId: string;
+  slotId: string;
+  targetMatchedUrl: string;
+  targetRouteId: string;
+}>;
+
+export const compareAppElementsSlotIds = compareStrings;
+
+function compareAppElementsSlotBindingsBySlotId(
+  left: Pick<AppElementsSlotBinding, "slotId">,
+  right: Pick<AppElementsSlotBinding, "slotId">,
+): number {
+  return compareAppElementsSlotIds(left.slotId, right.slotId);
+}
+
+export function normalizeAppElementsSlotBindings(
+  slotBindings: readonly AppElementsSlotBinding[],
+  options: { layoutIds?: readonly string[] } = {},
+): readonly AppElementsSlotBinding[] {
+  const ownerLayoutIds = options.layoutIds ? new Set(options.layoutIds) : null;
+  const seenSlotIds = new Set<string>();
+  const normalized: AppElementsSlotBinding[] = [];
+
+  for (const binding of slotBindings) {
+    if (seenSlotIds.has(binding.slotId)) {
+      throw new Error("[vinext] Invalid __slotBindings in App Router payload: duplicate slot id");
+    }
+    seenSlotIds.add(binding.slotId);
+
+    if (
+      ownerLayoutIds &&
+      binding.ownerLayoutId !== null &&
+      !ownerLayoutIds.has(binding.ownerLayoutId)
+    ) {
+      throw new Error(
+        "[vinext] Invalid __slotBindings in App Router payload: owner layout id missing from __layoutIds",
+      );
+    }
+
+    normalized.push({ ...binding });
+  }
+
+  return normalized.sort(compareAppElementsSlotBindingsBySlotId);
+}
+
+export type AppElementValue =
+  | ReactNode
+  | typeof UNMATCHED_SLOT
+  | string
+  | null
+  | AppElementsBfcacheSegmentIdentities
+  | ArtifactCompatibilityEnvelope
+  | CacheEntryReuseProof
+  | AppElementsInterception
+  | readonly string[]
+  | readonly AppElementsSlotBinding[];
+type AppWireElementValue =
+  | ReactNode
+  | string
+  | null
+  | AppElementsBfcacheSegmentIdentities
+  | ArtifactCompatibilityEnvelope
+  | CacheEntryReuseProof
+  | AppElementsInterception
+  | readonly string[]
+  | readonly AppElementsSlotBinding[];
+
+export type AppElements = Readonly<Record<string, AppElementValue>>;
+export type AppWireElements = Readonly<Record<string, AppWireElementValue>>;
+
+export type AppElementsBfcacheSegmentIdentities = Readonly<Record<string, BfcacheSegmentIdentity>>;
+
+type AppElementsMetadata = {
+  artifactCompatibility: ArtifactCompatibilityEnvelope;
+  cacheEntryReuseProof?: CacheEntryReuseProof;
+  dynamicStaleTimeSeconds?: number;
+  interception: AppElementsInterception | null;
+  interceptionContext: string | null;
+  layoutIds: readonly string[];
+  routeId: string;
+  rootLayoutTreePath: string | null;
+  bfcacheSegmentIdentities: AppElementsBfcacheSegmentIdentities;
+  skippedLayoutIds: readonly string[];
+  slotBindings: readonly AppElementsSlotBinding[];
+  sourcePage: string | null;
+};
+
+type AppElementsWireMetadataInput = {
+  dynamicStaleTimeSeconds?: number;
+  interception?: AppElementsInterception | null;
+  interceptionContext: string | null;
+  layoutIds?: readonly string[];
+  routeId: string;
+  rootLayoutTreePath: string | null;
+  bfcacheSegmentIdentities?: AppElementsBfcacheSegmentIdentities;
+  slotBindings?: readonly AppElementsSlotBinding[];
+  sourcePage?: string | null;
+};
+
+type AppElementsWireMetadataEntries = Readonly<{
+  [APP_DYNAMIC_STALE_TIME_KEY]?: number;
+  [APP_ROUTE_KEY]: string;
+  [APP_INTERCEPTION_KEY]?: AppElementsInterception;
+  [APP_INTERCEPTION_CONTEXT_KEY]: string | null;
+  [APP_LAYOUT_IDS_KEY]: readonly string[];
+  [APP_ROOT_LAYOUT_KEY]: string | null;
+  [APP_BFCACHE_SEGMENT_IDENTITIES_KEY]?: AppElementsBfcacheSegmentIdentities;
+  [APP_SOURCE_PAGE_SEGMENTS_KEY]?: readonly string[];
+  [APP_SLOT_BINDINGS_KEY]?: readonly AppElementsSlotBinding[];
+}>;
+
+/**
+ * The outgoing wire payload shape. Includes ReactNode values for the
+ * rendered tree plus metadata values attached under known keys (e.g.
+ * __artifactCompatibility). Distinct from AppElements / AppWireElements
+ * which only carry render-time values.
+ */
+export type AppOutgoingElements = Readonly<
+  Record<
+    string,
+    | ReactNode
+    | AppElementsBfcacheSegmentIdentities
+    | ArtifactCompatibilityEnvelope
+    | CacheEntryReuseProof
+    | AppElementsInterception
+    | number
+    | readonly string[]
+    | readonly AppElementsSlotBinding[]
+  >
+>;
+
+type AppElementsWireKeys = {
+  readonly artifactCompatibility: typeof APP_ARTIFACT_COMPATIBILITY_KEY;
+  readonly cacheEntryReuseProof: typeof APP_CACHE_ENTRY_REUSE_PROOF_KEY;
+  readonly dynamicStaleTime: typeof APP_DYNAMIC_STALE_TIME_KEY;
+  readonly interception: typeof APP_INTERCEPTION_KEY;
+  readonly interceptionContext: typeof APP_INTERCEPTION_CONTEXT_KEY;
+  readonly layoutIds: typeof APP_LAYOUT_IDS_KEY;
+  readonly rootLayout: typeof APP_ROOT_LAYOUT_KEY;
+  readonly route: typeof APP_ROUTE_KEY;
+  readonly bfcacheSegmentIdentities: typeof APP_BFCACHE_SEGMENT_IDENTITIES_KEY;
+  readonly skippedLayoutIds: typeof APP_SKIPPED_LAYOUT_IDS_KEY;
+  readonly slotBindings: typeof APP_SLOT_BINDINGS_KEY;
+  readonly sourcePageSegments: typeof APP_SOURCE_PAGE_SEGMENTS_KEY;
+};
+
+type AppElementsWireCodec = {
+  readonly keys: AppElementsWireKeys;
+  readonly unmatchedSlotValue: typeof APP_UNMATCHED_SLOT_WIRE_VALUE;
+  createMetadataEntries(input: AppElementsWireMetadataInput): AppElementsWireMetadataEntries;
+  decode(elements: AppWireElements): AppElements;
+  decodeCacheKey(cacheKey: string): { interceptionContext: string | null; rscUrl: string };
+  encodeCacheKey(rscUrl: string, interceptionContext: string | null): string;
+  encodeLayoutId(treePath: string): string;
+  encodeOutgoingPayload(input: {
+    element: ReactNode | AppElements;
+    artifactCompatibility?: ArtifactCompatibilityEnvelope;
+    cacheEntryReuseProof?: CacheEntryReuseProof;
+    dynamicStaleTimeSeconds?: number;
+  }): ReactNode | AppOutgoingElements;
+  encodePageId(routePath: string, interceptionContext: string | null): string;
+  encodeRouteId(routePath: string, interceptionContext: string | null): string;
+  encodeSlotId(slotName: string, treePath: string): string;
+  encodeTemplateId(treePath: string): string;
+  isSlotId(key: string): boolean;
+  parseElementKey(key: string): AppElementsWireElementKey | null;
+  readMetadata(elements: Readonly<Record<string, unknown>>): AppElementsMetadata;
+};
+
+function appendInterceptionContext(identity: string, interceptionContext: string | null): string {
+  return interceptionContext === null
+    ? identity
+    : `${identity}${APP_INTERCEPTION_SEPARATOR}${interceptionContext}`;
+}
+
+function createAppPayloadRouteId(routePath: string, interceptionContext: string | null): string {
+  return appendInterceptionContext(`route:${routePath}`, interceptionContext);
+}
+
+function createAppPayloadPageId(routePath: string, interceptionContext: string | null): string {
+  return appendInterceptionContext(`page:${routePath}`, interceptionContext);
+}
+
+function createAppPayloadLayoutId(treePath: string): string {
+  return `layout:${treePath}`;
+}
+
+function createAppPayloadTemplateId(treePath: string): string {
+  return `template:${treePath}`;
+}
+
+function createAppPayloadCacheKey(rscUrl: string, interceptionContext: string | null): string {
+  return appendInterceptionContext(rscUrl, interceptionContext);
+}
+
+function parseAppPayloadCacheKey(cacheKey: string): {
+  interceptionContext: string | null;
+  rscUrl: string;
+} {
+  const separatorIndex = cacheKey.indexOf(APP_INTERCEPTION_SEPARATOR);
+  if (separatorIndex === -1) {
+    return { interceptionContext: null, rscUrl: cacheKey };
+  }
+  return {
+    interceptionContext: cacheKey.slice(separatorIndex + APP_INTERCEPTION_SEPARATOR.length),
+    rscUrl: cacheKey.slice(0, separatorIndex),
+  };
+}
+
+function isAppElementsWireBfcacheIdentityId(key: string): boolean {
+  const kind = parseAppElementsWireElementKey(key)?.kind;
+  return kind === "page" || kind === "layout" || kind === "template" || kind === "slot";
+}
+
+function isSourcePageSegments(value: unknown): value is readonly string[] {
+  return (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    value.every(
+      (segment) => typeof segment === "string" && segment.length > 0 && !segment.includes("/"),
+    )
+  );
+}
+
+function encodeSourcePageSegments(sourcePage: string | null | undefined): readonly string[] | null {
+  if (typeof sourcePage !== "string" || !sourcePage.startsWith("/")) return null;
+  const segments = sourcePage.slice(1).split("/");
+  return isSourcePageSegments(segments) ? segments : null;
+}
+
+function createAppElementsWireMetadataEntries(
+  input: AppElementsWireMetadataInput,
+): AppElementsWireMetadataEntries {
+  const layoutIds = [...(input.layoutIds ?? [])];
+  const sourcePageSegments = encodeSourcePageSegments(input.sourcePage);
+  const entries: AppElementsWireMetadataEntries = {
+    [APP_ROUTE_KEY]: input.routeId,
+    [APP_INTERCEPTION_CONTEXT_KEY]: input.interceptionContext,
+    [APP_LAYOUT_IDS_KEY]: layoutIds,
+    [APP_ROOT_LAYOUT_KEY]: input.rootLayoutTreePath,
+    ...(input.dynamicStaleTimeSeconds === undefined
+      ? {}
+      : { [APP_DYNAMIC_STALE_TIME_KEY]: input.dynamicStaleTimeSeconds }),
+    // Omitted when empty: an absent map round-trips as {} and means "no carried
+    // identity proof", so consumers fall back to a fresh-mint identity rather
+    // than inferring a binding from transport shape.
+    ...(input.bfcacheSegmentIdentities && Object.keys(input.bfcacheSegmentIdentities).length > 0
+      ? { [APP_BFCACHE_SEGMENT_IDENTITIES_KEY]: input.bfcacheSegmentIdentities }
+      : {}),
+    ...(sourcePageSegments === null ? {} : { [APP_SOURCE_PAGE_SEGMENTS_KEY]: sourcePageSegments }),
+  };
+  // Empty slot binding metadata is intentionally omitted. Missing
+  // __slotBindings round-trips as [] and means "no route-state proof", so
+  // default/unmatched slot preservation is not promoted for that payload.
+  const entriesWithInterception = input.interception
+    ? { ...entries, [APP_INTERCEPTION_KEY]: input.interception }
+    : entries;
+  if (input.slotBindings && input.slotBindings.length > 0) {
+    return {
+      ...entriesWithInterception,
+      [APP_SLOT_BINDINGS_KEY]: normalizeAppElementsSlotBindings(input.slotBindings, { layoutIds }),
+    };
+  }
+  return entriesWithInterception;
+}
+
+export function normalizeAppElements(elements: AppWireElements): AppElements {
+  let needsNormalization = false;
+  for (const [key, value] of Object.entries(elements)) {
+    if (isAppElementsWireSlotId(key) && value === APP_UNMATCHED_SLOT_WIRE_VALUE) {
+      needsNormalization = true;
+      break;
+    }
+  }
+
+  if (!needsNormalization) {
+    return elements;
+  }
+
+  const normalized: Record<string, AppElementValue> = {};
+  for (const [key, value] of Object.entries(elements)) {
+    normalized[key] =
+      isAppElementsWireSlotId(key) && value === APP_UNMATCHED_SLOT_WIRE_VALUE
+        ? UNMATCHED_SLOT
+        : value;
+  }
+
+  return normalized;
+}
+
+function parseLayoutIdList(value: unknown, fieldName: string): readonly string[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) {
+    throw new Error(
+      `[vinext] Invalid ${fieldName} in App Router payload: expected layout id string[]`,
+    );
+  }
+
+  const layoutIds: string[] = [];
+  for (const entry of value) {
+    if (typeof entry !== "string") {
+      throw new Error(
+        `[vinext] Invalid ${fieldName} in App Router payload: expected layout id string[]`,
+      );
+    }
+
+    const parsed = parseAppElementsWireElementKey(entry);
+    if (parsed?.kind !== "layout") {
+      throw new Error(`[vinext] Invalid ${fieldName} in App Router payload: expected layout ids`);
+    }
+
+    layoutIds.push(entry);
+  }
+  return layoutIds;
+}
+
+function parseLayoutIds(value: unknown): readonly string[] {
+  return parseLayoutIdList(value, APP_LAYOUT_IDS_KEY);
+}
+
+function parseSkippedLayoutIds(value: unknown): readonly string[] {
+  return parseLayoutIdList(value, APP_SKIPPED_LAYOUT_IDS_KEY);
+}
+
+function isSlotBindingState(value: unknown): value is AppElementsSlotBindingState {
+  return value === "active" || value === "default" || value === "unmatched";
+}
+
+function parseSlotBindings(
+  value: unknown,
+  options: { layoutIds?: readonly string[] } = {},
+): readonly AppElementsSlotBinding[] {
+  // Missing metadata is compatibility-safe but not semantic proof: callers see
+  // an empty binding list, so promoted default/unmatched slot preservation is
+  // denied instead of inferred from legacy transport shape.
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) {
+    throw new Error("[vinext] Invalid __slotBindings in App Router payload: expected array");
+  }
+
+  const slotBindings: AppElementsSlotBinding[] = [];
+  for (const entry of value) {
+    if (!isUnknownRecord(entry)) {
+      throw new Error("[vinext] Invalid __slotBindings in App Router payload: expected objects");
+    }
+
+    const slotId = entry.slotId;
+    if (typeof slotId !== "string" || parseAppElementsWireElementKey(slotId)?.kind !== "slot") {
+      throw new Error("[vinext] Invalid __slotBindings in App Router payload: expected slot ids");
+    }
+
+    const ownerLayoutId = entry.ownerLayoutId;
+    if (
+      ownerLayoutId !== null &&
+      (typeof ownerLayoutId !== "string" ||
+        parseAppElementsWireElementKey(ownerLayoutId)?.kind !== "layout")
+    ) {
+      throw new Error(
+        "[vinext] Invalid __slotBindings in App Router payload: expected owner layout ids",
+      );
+    }
+
+    const state = entry.state;
+    if (!isSlotBindingState(state)) {
+      throw new Error("[vinext] Invalid __slotBindings in App Router payload: expected state");
+    }
+
+    const activeRouteId = entry.activeRouteId;
+    if (
+      activeRouteId !== undefined &&
+      activeRouteId !== null &&
+      (typeof activeRouteId !== "string" ||
+        parseAppElementsWireElementKey(activeRouteId)?.kind !== "route")
+    ) {
+      throw new Error("[vinext] Invalid __slotBindings in App Router payload: expected route ids");
+    }
+
+    const interceptionId = entry.interceptionId;
+    if (
+      interceptionId !== undefined &&
+      interceptionId !== null &&
+      (typeof interceptionId !== "string" || interceptionId.length === 0)
+    ) {
+      throw new Error(
+        "[vinext] Invalid __slotBindings in App Router payload: expected interception ids",
+      );
+    }
+
+    const interceptionSourceMatchedUrl = entry.interceptionSourceMatchedUrl;
+    if (
+      interceptionSourceMatchedUrl !== undefined &&
+      interceptionSourceMatchedUrl !== null &&
+      typeof interceptionSourceMatchedUrl !== "string"
+    ) {
+      throw new Error(
+        "[vinext] Invalid __slotBindings in App Router payload: expected interception source URLs",
+      );
+    }
+    if (typeof interceptionSourceMatchedUrl === "string") {
+      parseInterceptionMatchedUrl(interceptionSourceMatchedUrl);
+    }
+
+    slotBindings.push({
+      ...(activeRouteId !== undefined ? { activeRouteId } : {}),
+      ...(interceptionId !== undefined ? { interceptionId } : {}),
+      ...(interceptionSourceMatchedUrl !== undefined ? { interceptionSourceMatchedUrl } : {}),
+      ownerLayoutId,
+      slotId,
+      state,
+    });
+  }
+  return normalizeAppElementsSlotBindings(slotBindings, options);
+}
+
+function readRequiredInterceptionString(
+  entry: Record<string, unknown>,
+  fieldName: keyof AppElementsInterception,
+): string {
+  const value = entry[fieldName];
+  if (typeof value !== "string") {
+    throw new Error("[vinext] Invalid __interception in App Router payload: expected strings");
+  }
+  return value;
+}
+
+function parseInterceptionMatchedUrl(value: string): string {
+  if (!isInterceptionMatchedUrlPath(value)) {
+    throw new Error("[vinext] Invalid __interception in App Router payload: expected path URLs");
+  }
+  return value;
+}
+
+function parseInterceptionRouteId(value: string, matchedUrl: string): string {
+  const parsed = parseAppElementsWireElementKey(value);
+  if (
+    parsed?.kind !== "route" ||
+    parsed.path !== matchedUrl ||
+    parsed.interceptionContext !== null
+  ) {
+    throw new Error("[vinext] Invalid __interception in App Router payload: expected route ids");
+  }
+  return value;
+}
+
+function parseInterceptionSlotId(value: string): string {
+  if (parseAppElementsWireElementKey(value)?.kind !== "slot") {
+    throw new Error("[vinext] Invalid __interception in App Router payload: expected slot id");
+  }
+  return value;
+}
+
+function parseInterceptionMetadata(value: unknown): AppElementsInterception | null {
+  if (value === undefined || value === null) return null;
+  if (!isUnknownRecord(value)) {
+    throw new Error("[vinext] Invalid __interception in App Router payload: expected object");
+  }
+
+  const sourceMatchedUrl = parseInterceptionMatchedUrl(
+    readRequiredInterceptionString(value, "sourceMatchedUrl"),
+  );
+  const targetMatchedUrl = parseInterceptionMatchedUrl(
+    readRequiredInterceptionString(value, "targetMatchedUrl"),
+  );
+  return {
+    sourceMatchedUrl,
+    sourceRouteId: parseInterceptionRouteId(
+      readRequiredInterceptionString(value, "sourceRouteId"),
+      sourceMatchedUrl,
+    ),
+    slotId: parseInterceptionSlotId(readRequiredInterceptionString(value, "slotId")),
+    targetMatchedUrl,
+    targetRouteId: parseInterceptionRouteId(
+      readRequiredInterceptionString(value, "targetRouteId"),
+      targetMatchedUrl,
+    ),
+  };
+}
+
+/**
+ * Type predicate for a plain (non-null, non-array) record of app payload values.
+ * Used to distinguish the App Router payload object from bare React elements at
+ * the render boundary. Narrows to `Readonly<Record<string, unknown>>` because
+ * the outgoing payload carries heterogeneous values (ReactNodes for the rendered
+ * tree, plus metadata like `__artifactCompatibility`, a plain object). Delegates
+ * to React's canonical `isValidElement` so we don't depend on React's internal
+ * `$$typeof` marker scheme.
+ */
+export function isAppElementsRecord(value: unknown): value is Readonly<Record<string, unknown>> {
+  if (typeof value !== "object" || value === null) return false;
+  if (Array.isArray(value)) return false;
+  if (isValidElement(value)) return false;
+  return true;
+}
+
+export function buildOutgoingAppPayload(input: {
+  element: ReactNode | AppElements;
+  artifactCompatibility?: ArtifactCompatibilityEnvelope;
+  cacheEntryReuseProof?: CacheEntryReuseProof;
+  dynamicStaleTimeSeconds?: number;
+}): ReactNode | AppOutgoingElements {
+  if (!isAppElementsRecord(input.element)) {
+    return input.element;
+  }
+  const payload: Record<
+    string,
+    | ReactNode
+    | AppElementsBfcacheSegmentIdentities
+    | ArtifactCompatibilityEnvelope
+    | CacheEntryReuseProof
+    | AppElementsInterception
+    | number
+    | readonly string[]
+    | readonly AppElementsSlotBinding[]
+  > = {};
+  for (const [key, value] of Object.entries(input.element)) {
+    payload[key] = value === UNMATCHED_SLOT ? APP_UNMATCHED_SLOT_WIRE_VALUE : value;
+  }
+  payload[APP_ARTIFACT_COMPATIBILITY_KEY] =
+    input.artifactCompatibility ?? createArtifactCompatibilityEnvelope();
+  if (input.cacheEntryReuseProof) {
+    payload[APP_CACHE_ENTRY_REUSE_PROOF_KEY] = input.cacheEntryReuseProof;
+  }
+  if (input.dynamicStaleTimeSeconds !== undefined) {
+    payload[APP_DYNAMIC_STALE_TIME_KEY] = input.dynamicStaleTimeSeconds;
+  }
+  return payload;
+}
+
+function readArtifactCompatibilityMetadata(value: unknown): ArtifactCompatibilityEnvelope {
+  if (value === undefined) return createArtifactCompatibilityEnvelope();
+
+  const artifactCompatibility = parseArtifactCompatibilityEnvelope(value);
+  // TODO(#726-COMPAT-04): hard-fail malformed compatibility metadata once
+  // cache/skip consumers depend on this proof. During Wave01 the field is
+  // emitted as scaffolding, so bad or future-version values degrade to an
+  // empty envelope instead of crashing render paths that do not read it.
+  return artifactCompatibility ?? createArtifactCompatibilityEnvelope();
+}
+
+function readSourcePageMetadata(value: unknown): string | null {
+  if (value === undefined || value === null) return null;
+  // Accept the legacy string form so cached payloads produced before the wire
+  // representation changed remain readable across rolling deployments.
+  if (typeof value === "string") {
+    return value.startsWith("/") ? value : null;
+  }
+  if (!isSourcePageSegments(value)) return null;
+  return `/${value.join("/")}`;
+}
+
+function createMissingCacheEntryReuseProof(): CacheEntryReuseProof {
+  return {
+    kind: "runtime-cache-entry",
+    decision: null,
+  };
+}
+
+function isCacheProofRejectionCode(value: unknown): value is CacheProofRejectionCode {
+  return typeof value === "string" && CACHE_PROOF_REJECTION_CODES.has(value);
+}
+
+function isCacheProofFallbackMode(value: unknown): value is CacheProofBreakerFallbackMode {
+  return value === "renderFresh" || value === "privateUncacheable";
+}
+
+function isCacheProofFallbackScope(value: unknown): value is CacheProofFallbackScope {
+  return value === "affectedOutput" || value === "route";
+}
+
+// Three-way wire semantics are intentional:
+// - null means the proof field was absent and no cache authority was claimed.
+// - { decision: null } means a present proof was malformed or unusable.
+// - { decision: ... } means the proof parsed into an explicit reuse decision.
+function parseCacheEntryReuseProofMetadata(value: unknown): CacheEntryReuseProof | null {
+  if (value === undefined) return null;
+  if (!isUnknownRecord(value) || value.kind !== "runtime-cache-entry") {
+    return createMissingCacheEntryReuseProof();
+  }
+
+  const decision = value.decision;
+  if (decision === null) return createMissingCacheEntryReuseProof();
+  if (!isUnknownRecord(decision)) return createMissingCacheEntryReuseProof();
+
+  if (
+    decision.kind === "reuse" &&
+    decision.canReuse === true &&
+    decision.code === "CP_STATIC_LAYOUT_REUSE_PROVEN" &&
+    // Static layout proofs are the only runtime cache-entry reuse class today.
+    // Extend this parser alongside any new reuse class before it can restore
+    // visited cache entries as commit-capable payloads.
+    decision.reuseClass === "static-layout"
+  ) {
+    return {
+      kind: "runtime-cache-entry",
+      decision: {
+        canReuse: true,
+        code: decision.code,
+        kind: "reuse",
+        reuseClass: decision.reuseClass,
+      },
+    };
+  }
+
+  if (
+    decision.kind === "reject" &&
+    decision.canReuse === false &&
+    isCacheProofRejectionCode(decision.code) &&
+    isCacheProofFallbackMode(decision.mode) &&
+    isCacheProofFallbackScope(decision.scope)
+  ) {
+    return {
+      kind: "runtime-cache-entry",
+      decision: {
+        canReuse: false,
+        code: decision.code,
+        kind: "reject",
+        mode: decision.mode,
+        scope: decision.scope,
+      },
+    };
+  }
+
+  return createMissingCacheEntryReuseProof();
+}
+
+function parseBfcacheSegmentIdentities(value: unknown): AppElementsBfcacheSegmentIdentities {
+  // Absent metadata round-trips as {}. Treat the map as one proof-bearing unit:
+  // if any entry is malformed, discard every entry so a valid-looking neighbour
+  // cannot remain authoritative beside untrusted metadata.
+  if (!isUnknownRecord(value)) return {};
+  const parsed: Record<string, string> = {};
+  for (const [key, entry] of Object.entries(value)) {
+    if (typeof entry !== "string" || !isAppElementsWireBfcacheIdentityId(key)) return {};
+    parsed[key] = entry;
+  }
+  return parsed;
+}
+
+export function readAppElementsMetadata(
+  elements: Readonly<Record<string, unknown>>,
+): AppElementsMetadata {
+  const routeId = elements[APP_ROUTE_KEY];
+  if (typeof routeId !== "string") {
+    throw new Error("[vinext] Missing __route string in App Router payload");
+  }
+
+  const interceptionContext = elements[APP_INTERCEPTION_CONTEXT_KEY];
+  if (
+    interceptionContext !== undefined &&
+    interceptionContext !== null &&
+    typeof interceptionContext !== "string"
+  ) {
+    throw new Error("[vinext] Invalid __interceptionContext in App Router payload");
+  }
+
+  const rootLayoutTreePath = elements[APP_ROOT_LAYOUT_KEY];
+  if (rootLayoutTreePath === undefined) {
+    throw new Error("[vinext] Missing __rootLayout key in App Router payload");
+  }
+  if (rootLayoutTreePath !== null && typeof rootLayoutTreePath !== "string") {
+    throw new Error("[vinext] Invalid __rootLayout in App Router payload: expected string or null");
+  }
+
+  const layoutIds = parseLayoutIds(elements[APP_LAYOUT_IDS_KEY]);
+  const skippedLayoutIds = parseSkippedLayoutIds(elements[APP_SKIPPED_LAYOUT_IDS_KEY]);
+  const slotBindings = parseSlotBindings(elements[APP_SLOT_BINDINGS_KEY], { layoutIds });
+  const interception = parseInterceptionMetadata(elements[APP_INTERCEPTION_KEY]);
+  const artifactCompatibility = readArtifactCompatibilityMetadata(
+    elements[APP_ARTIFACT_COMPATIBILITY_KEY],
+  );
+  const cacheEntryReuseProof = parseCacheEntryReuseProofMetadata(
+    elements[APP_CACHE_ENTRY_REUSE_PROOF_KEY],
+  );
+  const dynamicStaleTime = elements[APP_DYNAMIC_STALE_TIME_KEY];
+  const dynamicStaleTimeSeconds =
+    typeof dynamicStaleTime === "number" &&
+    Number.isFinite(dynamicStaleTime) &&
+    dynamicStaleTime >= 0
+      ? dynamicStaleTime
+      : undefined;
+  // Next.js carries source segments in its Flight router state and only joins
+  // them into window.next.__internal_src_page in the browser. The legacy key is
+  // retained only as a reader for cached payloads from rolling deployments.
+  const sourcePage = Object.hasOwn(elements, APP_SOURCE_PAGE_SEGMENTS_KEY)
+    ? readSourcePageMetadata(elements[APP_SOURCE_PAGE_SEGMENTS_KEY])
+    : readSourcePageMetadata(elements[LEGACY_APP_SOURCE_PAGE_KEY]);
+  const bfcacheSegmentIdentities = parseBfcacheSegmentIdentities(
+    elements[APP_BFCACHE_SEGMENT_IDENTITIES_KEY],
+  );
+
+  return {
+    artifactCompatibility,
+    ...(cacheEntryReuseProof ? { cacheEntryReuseProof } : {}),
+    ...(dynamicStaleTimeSeconds === undefined ? {} : { dynamicStaleTimeSeconds }),
+    interception,
+    interceptionContext: interceptionContext ?? null,
+    layoutIds,
+    routeId,
+    rootLayoutTreePath,
+    bfcacheSegmentIdentities,
+    skippedLayoutIds,
+    slotBindings,
+    sourcePage,
+  };
+}
+
+export const AppElementsWire: AppElementsWireCodec = {
+  // WIRE follow-ups use these stable key names when moving payload readers and writers
+  // behind the codec boundary.
+  keys: {
+    artifactCompatibility: APP_ARTIFACT_COMPATIBILITY_KEY,
+    cacheEntryReuseProof: APP_CACHE_ENTRY_REUSE_PROOF_KEY,
+    dynamicStaleTime: APP_DYNAMIC_STALE_TIME_KEY,
+    interception: APP_INTERCEPTION_KEY,
+    interceptionContext: APP_INTERCEPTION_CONTEXT_KEY,
+    layoutIds: APP_LAYOUT_IDS_KEY,
+    rootLayout: APP_ROOT_LAYOUT_KEY,
+    route: APP_ROUTE_KEY,
+    bfcacheSegmentIdentities: APP_BFCACHE_SEGMENT_IDENTITIES_KEY,
+    skippedLayoutIds: APP_SKIPPED_LAYOUT_IDS_KEY,
+    slotBindings: APP_SLOT_BINDINGS_KEY,
+    sourcePageSegments: APP_SOURCE_PAGE_SEGMENTS_KEY,
+  },
+  unmatchedSlotValue: APP_UNMATCHED_SLOT_WIRE_VALUE,
+  createMetadataEntries: createAppElementsWireMetadataEntries,
+  decode: normalizeAppElements,
+  decodeCacheKey: parseAppPayloadCacheKey,
+  encodeCacheKey: createAppPayloadCacheKey,
+  encodeLayoutId: createAppPayloadLayoutId,
+  encodeOutgoingPayload: buildOutgoingAppPayload,
+  encodePageId: createAppPayloadPageId,
+  encodeRouteId: createAppPayloadRouteId,
+  encodeSlotId: createAppElementsWireSlotId,
+  encodeTemplateId: createAppPayloadTemplateId,
+  isSlotId: isAppElementsWireSlotId,
+  parseElementKey: parseAppElementsWireElementKey,
+  readMetadata: readAppElementsMetadata,
+};

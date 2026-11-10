@@ -1,0 +1,657 @@
+/**
+ * next/head shim
+ *
+ * In the Pages Router, <Head> manages document <head> elements.
+ * - On the server: collects elements into a module-level array that the
+ *   dev-server reads after render and injects into the HTML <head>.
+ * - On the client: reduces all mounted <Head> instances into one deduped
+ *   document.head projection and applies it with DOM manipulation.
+ *
+ * In the App Router, <Head> renders nothing and leaves the document head to
+ * the Metadata API, as in Next.js.
+ */
+import React, { useEffect, useRef, Children, isValidElement } from "react";
+import { useIsAppRouterTree } from "./app-router-tree-context.js";
+
+type HeadProps = {
+  children?: React.ReactNode;
+};
+
+// --- SSR head collection ---
+// State uses a registration pattern so this module can be bundled for the
+// browser. The ALS-backed implementation lives in head-state.ts (server-only).
+
+let _ssrHeadChildren: React.ReactNode[] = [];
+let _documentInitialHead: React.ReactNode[] = [];
+/** @internal — exposed for unit tests of the client head projection. */
+export const _clientHeadChildren = new Map<symbol, React.ReactNode>();
+let _clientHeadSyncScheduled = false;
+
+let _getSSRHeadChildren = (): React.ReactNode[] => _ssrHeadChildren;
+let _resetSSRHeadImpl = (): void => {
+  _ssrHeadChildren = [];
+  _documentInitialHead = [];
+};
+let _getDocumentInitialHead = (): React.ReactNode[] => _documentInitialHead;
+let _setDocumentInitialHead = (head: React.ReactNode[]): void => {
+  _documentInitialHead = head;
+};
+
+/**
+ * Register ALS-backed state accessors. Called by head-state.ts on import.
+ * @internal
+ */
+export function _registerHeadStateAccessors(accessors: {
+  getSSRHeadChildren: () => React.ReactNode[];
+  resetSSRHead: () => void;
+  getDocumentInitialHead?: () => React.ReactNode[];
+  setDocumentInitialHead?: (head: React.ReactNode[]) => void;
+}): void {
+  _getSSRHeadChildren = accessors.getSSRHeadChildren;
+  _resetSSRHeadImpl = accessors.resetSSRHead;
+  if (accessors.getDocumentInitialHead) {
+    _getDocumentInitialHead = accessors.getDocumentInitialHead;
+  }
+  if (accessors.setDocumentInitialHead) {
+    _setDocumentInitialHead = accessors.setDocumentInitialHead;
+  }
+}
+
+/** Reset the SSR head collector. Call before render. */
+export function resetSSRHead(): void {
+  _resetSSRHeadImpl();
+}
+
+/**
+ * Register head tags returned by a user `_document.getInitialProps()` call.
+ * Mirrors Next.js: `_document` may extend the head array passed to its render,
+ * and those tags are merged into the final `<head>` output. We treat them the
+ * same as `next/head` children — they go through the same dedupe pipeline so
+ * later tags (by key or meta-type) win, matching Next.js semantics.
+ *
+ * Pass an empty array (or simply don't call this) to skip the merge.
+ */
+export function setDocumentInitialHead(head: React.ReactNode[]): void {
+  _setDocumentInitialHead(head);
+}
+
+/**
+ * Default head tags emitted alongside every Pages Router render — charset
+ * first, then viewport. Mirrors Next.js's `defaultHead()` in
+ * `packages/next/src/shared/lib/head.tsx`, which seeds the head array used
+ * by `HeadManagerContext` before any user `<Head>` reduces over it.
+ *
+ * The canonical Next.js order is `<meta charset>` then `<meta viewport>`
+ * then user tags, all with `data-next-head=""`. See assertion in
+ * `test/e2e/next-head/index.test.ts`.
+ */
+export function defaultHead(): React.ReactElement[] {
+  return [
+    React.createElement("meta", { charSet: "utf-8", key: "charset" }),
+    React.createElement("meta", {
+      name: "viewport",
+      content: "width=device-width",
+      key: "viewport",
+    }),
+  ];
+}
+
+/** Get collected head HTML. Call after render. */
+export function getSSRHeadHTML(): string {
+  // Order mirrors Next.js's `_document.tsx`: defaultHead seeds the head array,
+  // user `next/head` tags reduce over it, and then `_document.getInitialProps`
+  // may extend the array. The final `_document` render emits `{head}` (which
+  // contains the defaults + user tags + initial-props tags) ahead of any
+  // children declared inside `_document`'s own `<Head>`. Because the user
+  // children inside `_document`'s `<Head>` are tracked via React tree render
+  // (not next/head), they don't appear in this collector — so emitting
+  // `defaultHead + user + initialProps` here matches Next.js's serialised
+  // output up to that boundary.
+  return reduceHeadChildren([..._getSSRHeadChildren(), ..._getDocumentInitialHead()], defaultHead())
+    .map((child) => headChildToHTML(child.type as string, child.props as Record<string, unknown>))
+    .filter(Boolean)
+    .join("");
+}
+
+/**
+ * Tags allowed inside <head>. Anything else is silently dropped.
+ * This prevents injection of dangerous elements like <iframe>, <object>, etc.
+ */
+const ALLOWED_HEAD_TAGS = new Set(["title", "meta", "link", "style", "script", "base", "noscript"]);
+const ALLOWED_HEAD_TAGS_LIST = Array.from(ALLOWED_HEAD_TAGS).join(", ");
+const META_TYPES = ["name", "httpEquiv", "charSet", "itemProp"] as const;
+
+/** Self-closing tags: no inner content, emit as <tag ... /> */
+const SELF_CLOSING_HEAD_TAGS = new Set(["meta", "link", "base"]);
+
+/** Tags whose content is raw text — closing-tag sequences must be escaped during SSR. */
+const RAW_CONTENT_TAGS = new Set(["script", "style"]);
+
+// Pre-compiled regexes for escapeInlineContent. `gi` flags, no `lastIndex`
+// hazard since they're only used via String.prototype.replace.
+//
+// Script content matches React Fizz's `scriptRegex`: both `<script` and
+// `</script` are rewritten, because `<!--<script` moves the HTML tokenizer into
+// the double-escaped script state, where the element's real `</script>` no
+// longer closes it.
+const INLINE_SCRIPT_TAG_RE = /(<\/|<)(s)(cript)/gi;
+const INLINE_STYLE_CLOSE_TAG_RE = /<\/(style)/gi;
+
+type HeadDOMElement = Pick<HTMLElement, "innerHTML" | "setAttribute" | "textContent">;
+
+function warnDisallowedHeadTag(tag: string): void {
+  if (process.env.NODE_ENV !== "production") {
+    console.warn(
+      `[vinext] <Head> ignoring disallowed tag <${tag}>. ` +
+        `Only ${ALLOWED_HEAD_TAGS_LIST} are allowed.`,
+    );
+  }
+}
+
+function collectHeadElements(
+  list: React.ReactElement[],
+  child: React.ReactNode,
+): React.ReactElement[] {
+  if (
+    child == null ||
+    typeof child === "boolean" ||
+    typeof child === "string" ||
+    typeof child === "number"
+  ) {
+    return list;
+  }
+  if (!isValidElement(child)) {
+    return list;
+  }
+  if (child.type === React.Fragment) {
+    return Children.toArray((child.props as { children?: React.ReactNode }).children).reduce(
+      collectHeadElements,
+      list,
+    );
+  }
+  if (typeof child.type !== "string") {
+    return list;
+  }
+  if (!ALLOWED_HEAD_TAGS.has(child.type)) {
+    warnDisallowedHeadTag(child.type);
+    return list;
+  }
+  return list.concat(child);
+}
+
+function normalizeHeadKey(key: React.Key | null): string | null {
+  if (key == null || typeof key === "number") return null;
+  const normalizedKey = String(key);
+  const separatorIndex = normalizedKey.indexOf("$");
+  return separatorIndex > 0 ? normalizedKey.slice(separatorIndex + 1) : null;
+}
+
+function createUniqueHeadFilter(): (child: React.ReactElement) => boolean {
+  const keys = new Set<string>();
+  const tags = new Set<string>();
+  const metaTypes = new Set<string>();
+  const metaCategories = new Map<string, Set<string>>();
+
+  return (child) => {
+    let isUnique = true;
+    const normalizedKey = normalizeHeadKey(child.key);
+    const hasKey = normalizedKey !== null;
+    if (normalizedKey) {
+      if (keys.has(normalizedKey)) {
+        isUnique = false;
+      } else {
+        keys.add(normalizedKey);
+      }
+    }
+
+    switch (child.type) {
+      case "title":
+      case "base":
+        if (tags.has(child.type)) {
+          isUnique = false;
+        } else {
+          tags.add(child.type);
+        }
+        break;
+      case "meta": {
+        const props = child.props as Record<string, unknown>;
+        for (const metaType of META_TYPES) {
+          if (!Object.prototype.hasOwnProperty.call(props, metaType)) continue;
+          if (metaType === "charSet") {
+            if (metaTypes.has(metaType)) {
+              isUnique = false;
+            } else {
+              metaTypes.add(metaType);
+            }
+            continue;
+          }
+
+          const category = props[metaType];
+          if (typeof category !== "string") continue;
+
+          let categories = metaCategories.get(metaType);
+          if (!categories) {
+            categories = new Set<string>();
+            metaCategories.set(metaType, categories);
+          }
+
+          if ((metaType !== "name" || !hasKey) && categories.has(category)) {
+            isUnique = false;
+          } else {
+            categories.add(category);
+          }
+        }
+        break;
+      }
+      default:
+        break;
+    }
+
+    return isUnique;
+  };
+}
+
+export function reduceHeadChildren(
+  headChildren: React.ReactNode[],
+  defaults: React.ReactElement[] = [],
+): React.ReactElement[] {
+  // Like Next.js's reduceComponents(), the defaults join after the children
+  // are flattened, so they keep their raw `charset` / `viewport` keys.
+  // Children.toArray would turn those into user keys (`.$viewport`), which
+  // skip the meta[name] dedupe and let the default sit next to an unkeyed
+  // user viewport.
+  return headChildren
+    .reduce<React.ReactNode[]>(
+      (flattenedChildren, child) => flattenedChildren.concat(Children.toArray(child)),
+      [],
+    )
+    .reduce(collectHeadElements, [])
+    .reverse()
+    .concat(defaults.slice().reverse())
+    .filter(createUniqueHeadFilter())
+    .reverse();
+}
+
+/**
+ * Validate an HTML attribute name. Rejects names that could break out of
+ * the attribute context during SSR serialization, or that represent inline
+ * event handlers (on*). Only allows alphanumeric characters, hyphens, and
+ * common data-attribute patterns.
+ */
+const SAFE_ATTR_NAME_RE = /^[a-zA-Z][a-zA-Z0-9\-:.]*$/;
+
+export function isSafeAttrName(name: string): boolean {
+  if (!SAFE_ATTR_NAME_RE.test(name)) return false;
+  // Block inline event handlers (onclick, onerror, etc.). HTML attribute names
+  // are case-insensitive, so `ONERROR` or `Onload` become working handlers once
+  // parsed. Match React's server renderer, which drops every name longer than
+  // two characters that starts with "on" in any case.
+  if (
+    name.length > 2 &&
+    (name[0] === "o" || name[0] === "O") &&
+    (name[1] === "n" || name[1] === "N")
+  )
+    return false;
+  return true;
+}
+
+/**
+ * Map React JSX attribute names to their HTML serialised form for the small
+ * set of head-relevant attributes where the two differ. React's own renderer
+ * normalises these automatically, but we serialise tags by hand so they reach
+ * the final HTML in the canonical lowercase / kebab-case shape that browsers
+ * (and Next.js's `test/e2e/next-head/index.test.ts`) expect.
+ */
+const JSX_TO_HTML_ATTR_MAP: Record<string, string> = {
+  charSet: "charset",
+  httpEquiv: "http-equiv",
+  acceptCharset: "accept-charset",
+  itemProp: "itemprop",
+  itemType: "itemtype",
+  itemID: "itemid",
+  itemRef: "itemref",
+  itemScope: "itemscope",
+  crossOrigin: "crossorigin",
+  referrerPolicy: "referrerpolicy",
+};
+
+function jsxAttrToHtml(name: string): string {
+  return JSX_TO_HTML_ATTR_MAP[name] ?? name;
+}
+
+/**
+ * Convert props + tag to an HTML string for SSR head injection.
+ * Callers must only pass tags that have already been validated against
+ * ALLOWED_HEAD_TAGS (e.g. via reduceHeadChildren / collectHeadElements).
+ */
+function headChildToHTML(tag: string, props: Record<string, unknown>): string {
+  const attrs: string[] = [];
+  let innerHTML = "";
+
+  // dangerouslySetInnerHTML takes precedence over children, regardless of
+  // prop iteration order. Check it first to match Next.js semantics.
+  const rawHtml = getDangerouslySetInnerHTML(props.dangerouslySetInnerHTML);
+  if (rawHtml != null) {
+    // Intentionally raw — developer explicitly opted in.
+    // SECURITY NOTE: This injects raw HTML. Developers must never pass
+    // unsanitized user input here — it is a stored XSS vector.
+    innerHTML = rawHtml;
+  } else if (typeof props.children === "string") {
+    innerHTML = escapeHTML(props.children);
+  } else if (Array.isArray(props.children)) {
+    innerHTML = escapeHTML(props.children.join(""));
+  }
+
+  for (const [key, value] of Object.entries(props)) {
+    if (key === "children" || key === "dangerouslySetInnerHTML") {
+      continue;
+    } else if (key === "className") {
+      attrs.push(`class="${escapeAttr(String(value))}"`);
+    } else if (typeof value === "string") {
+      if (!isSafeAttrName(key)) continue;
+      attrs.push(`${jsxAttrToHtml(key)}="${escapeAttr(value)}"`);
+    } else if (typeof value === "boolean" && value) {
+      if (!isSafeAttrName(key)) continue;
+      attrs.push(jsxAttrToHtml(key));
+    }
+  }
+
+  const attrStr = attrs.length ? " " + attrs.join(" ") : "";
+
+  if (SELF_CLOSING_HEAD_TAGS.has(tag)) {
+    return `<${tag}${attrStr} data-next-head="" />`;
+  }
+
+  // For raw-content tags (script, style), escape closing-tag sequences so the
+  // HTML parser doesn't prematurely terminate the element.
+  if (RAW_CONTENT_TAGS.has(tag) && innerHTML) {
+    innerHTML = escapeInlineContent(innerHTML, tag);
+  }
+
+  return `<${tag}${attrStr} data-next-head="">${innerHTML}</${tag}>`;
+}
+
+function escapeHTML(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+export function escapeAttr(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/**
+ * Escape content that will be placed inside a raw <script> or <style> tag
+ * during SSR, so nothing in the content can move where the element ends.
+ *
+ * For scripts we mirror React Fizz's escaping of script children: `<script`
+ * and `</script` (case-insensitive) become `<\u0073cript` and `</\u0073cript`
+ * (`\u0053` for an uppercase `S`). The escape is equivalent in JS strings,
+ * regexes, template literals, comments and identifiers. Escaping only the
+ * closing tag is not enough: `<!--<script>` puts the tokenizer in the
+ * double-escaped script state, where the real `</script>` no longer closes it.
+ *
+ * For styles we replace `</style` with `<\/style`, which is harmless in CSS
+ * string context but prevents the HTML parser from seeing a closing tag.
+ */
+export function escapeInlineContent(content: string, tag: string): string {
+  if (tag === "script") {
+    return content.replace(
+      INLINE_SCRIPT_TAG_RE,
+      (_match, prefix: string, s: string, suffix: string) =>
+        `${prefix}${s === "s" ? "\\u0073" : "\\u0053"}${suffix}`,
+    );
+  }
+  if (tag === "style") return content.replace(INLINE_STYLE_CLOSE_TAG_RE, "<\\/$1");
+  return content;
+}
+
+function getDangerouslySetInnerHTML(value: unknown): string | undefined {
+  if (typeof value !== "object" || value === null) return undefined;
+
+  const html = Reflect.get(value, "__html");
+  return typeof html === "string" ? html : undefined;
+}
+
+export function _applyHeadPropsToElement(
+  domEl: HeadDOMElement,
+  props: Record<string, unknown>,
+): void {
+  const rawHtml = getDangerouslySetInnerHTML(props.dangerouslySetInnerHTML);
+
+  if (rawHtml != null) {
+    domEl.innerHTML = rawHtml;
+  } else if (typeof props.children === "string") {
+    domEl.textContent = props.children;
+  } else if (Array.isArray(props.children)) {
+    domEl.textContent = props.children.join("");
+  }
+
+  for (const [key, value] of Object.entries(props)) {
+    if (key === "children" || key === "dangerouslySetInnerHTML") {
+      continue;
+    } else if (key === "className") {
+      domEl.setAttribute("class", String(value));
+    } else if (typeof value === "boolean" && value) {
+      if (!isSafeAttrName(key)) continue;
+      // Map JSX attribute names (charSet, httpEquiv, ...) to the HTML form
+      // (charset, http-equiv, ...) so the client-side mutation matches the
+      // SSR output. `setAttribute` is case-insensitive for HTML elements, so
+      // `charSet` would land as `charset` by coincidence, but `httpEquiv`
+      // would lowercase to `httpequiv` rather than `http-equiv` and produce
+      // a hydration mismatch. The shared mapping in jsxAttrToHtml keeps both
+      // paths in lockstep.
+      domEl.setAttribute(jsxAttrToHtml(key), "");
+    } else if (typeof value === "string") {
+      if (!isSafeAttrName(key)) continue;
+      domEl.setAttribute(jsxAttrToHtml(key), value);
+    }
+  }
+}
+
+/**
+ * Compare an existing head element with a newly-created projection.
+ *
+ * Chromium and Firefox hide the nonce HTML attribute after a node is inserted
+ * under CSP while preserving the `nonce` property. Normalize that browser
+ * behavior before comparing so unchanged nonce-bearing scripts/styles are not
+ * removed, re-executed, and appended at the end of `<head>`.
+ *
+ * Ported from Next.js: packages/next/src/client/head-manager.ts.
+ */
+export function isEqualHeadNode(oldTag: Element, newTag: Element): boolean {
+  if (
+    typeof HTMLElement !== "undefined" &&
+    oldTag instanceof HTMLElement &&
+    newTag instanceof HTMLElement
+  ) {
+    const nonce = newTag.getAttribute("nonce");
+    if (nonce && !oldTag.getAttribute("nonce")) {
+      const cloneTag = newTag.cloneNode(true) as HTMLElement;
+      cloneTag.setAttribute("nonce", "");
+      cloneTag.nonce = nonce;
+      return nonce === oldTag.nonce && oldTag.isEqualNode(cloneTag);
+    }
+  }
+
+  return oldTag.isEqualNode(newTag);
+}
+
+function scheduleClientHeadSync(): void {
+  if (_clientHeadSyncScheduled) return;
+  _clientHeadSyncScheduled = true;
+  queueMicrotask(() => {
+    _clientHeadSyncScheduled = false;
+    _syncClientHead();
+  });
+}
+
+/** @internal — register/update one mounted Head instance and batch reconciliation. */
+export function _updateClientHeadInstance(instanceId: symbol, children: React.ReactNode): void {
+  _clientHeadChildren.delete(instanceId);
+  _clientHeadChildren.set(instanceId, children);
+  scheduleClientHeadSync();
+}
+
+/** @internal — unregister one mounted Head instance and batch reconciliation. */
+export function _removeClientHeadInstance(instanceId: symbol): void {
+  _clientHeadChildren.delete(instanceId);
+  scheduleClientHeadSync();
+}
+
+/**
+ * Reconcile the document <head> against the desired projection.
+ *
+ * Mirrors Next.js's client `head-manager.ts` `updateElements()`: rather than
+ * wiping every [data-next-head] node and re-appending (which reorders the
+ * SSR-emitted tags to the end of <head> and causes flicker on each update),
+ * we diff the desired tags against the existing ones with isEqualNode(). Tags
+ * that already match are left untouched in their original DOM position, only
+ * genuinely new tags are inserted, and stale tags are removed.
+ *
+ * The desired list seeds defaultHead() (charset + viewport) ahead of user
+ * tags — matching the SSR path in getSSRHeadHTML() and Next.js's
+ * reduceComponents(), which always concatenates defaultHead() on both server
+ * and client. Without it the first <Head> mount after hydration would drop the
+ * server-rendered defaults. A user <meta charSet> or <meta name="viewport">
+ * still replaces the matching default through the dedupe pipeline.
+ *
+ * @internal — exported for unit tests; called from the Head client effect.
+ */
+export function _syncClientHead(): void {
+  const headEl = document.head;
+  if (!headEl) return;
+
+  // Existing vinext-managed tags. Also fold in any <meta charset> even if it
+  // somehow lost the marker, so we never end up with a duplicate charset.
+  const oldTags = new Set<Element>(headEl.querySelectorAll("[data-next-head]"));
+  const charsetEl = headEl.querySelector("meta[charset]");
+  if (charsetEl) oldTags.add(charsetEl);
+
+  const desiredHead = reduceHeadChildren([..._clientHeadChildren.values()], defaultHead());
+  const title = desiredHead.find((child) => child.type === "title");
+  const titleChildren = (title?.props as { children?: React.ReactNode } | undefined)?.children;
+  const titleText =
+    typeof titleChildren === "string"
+      ? titleChildren
+      : Array.isArray(titleChildren)
+        ? titleChildren.join("")
+        : "";
+  if (document.title !== titleText) document.title = titleText;
+
+  // Next.js owns <title> through document.title rather than the element diff.
+  // Preserve the existing SSR title node and its position in the document.
+  for (const oldTag of oldTags) {
+    if (oldTag.tagName.toLowerCase() === "title") oldTags.delete(oldTag);
+  }
+
+  const newTags: Element[] = [];
+  for (const child of desiredHead) {
+    if (typeof child.type !== "string") continue;
+    if (child.type === "title") continue;
+
+    const domEl = document.createElement(child.type);
+    _applyHeadPropsToElement(domEl, child.props as Record<string, unknown>);
+    domEl.setAttribute("data-next-head", "");
+
+    // Reuse an identical node already in <head> so its DOM position (and thus
+    // the head ordering produced by SSR) is preserved.
+    //
+    let isNew = true;
+    for (const oldTag of oldTags) {
+      if (isEqualHeadNode(oldTag, domEl)) {
+        oldTags.delete(oldTag);
+        isNew = false;
+        break;
+      }
+    }
+    if (isNew) newTags.push(domEl);
+  }
+
+  // Remove tags that are no longer desired.
+  for (const oldTag of oldTags) {
+    oldTag.parentNode?.removeChild(oldTag);
+  }
+
+  // Insert genuinely new tags. Keep <meta charset> first in <head> so the
+  // declared encoding stays at the top.
+  //
+  // This deliberately diverges from Next.js's literal head-manager.ts, which
+  // does `if (charset) headEl.prepend(newTag)` with NO `else` and then
+  // unconditionally `headEl.appendChild(newTag)` — moving a newly-created
+  // charset node twice and landing it last. We use a proper if/else so a new
+  // charset is prepended and only prepended. Don't "fix" this back to match
+  // Next.js's sequence. (This branch only runs on client-only navigation; on
+  // SSR hydration the charset is reused in place via isEqualNode above.)
+  // Next.js reconciles changed tag types in this fixed order. Preserve JSX
+  // order within each type while matching that cross-type insertion contract.
+  const tagTypeOrder = ["meta", "base", "link", "style", "script", "noscript"];
+  const getTagTypeOrder = (tag: Element): number => {
+    const index = tagTypeOrder.indexOf(tag.tagName.toLowerCase());
+    return index === -1 ? Number.POSITIVE_INFINITY : index;
+  };
+  newTags.sort((left, right) => getTagTypeOrder(left) - getTagTypeOrder(right));
+  for (const newTag of newTags) {
+    if (newTag.tagName.toLowerCase() === "meta" && newTag.getAttribute("charset") !== null) {
+      headEl.prepend(newTag);
+    } else {
+      headEl.appendChild(newTag);
+    }
+  }
+}
+
+// --- Component ---
+
+function PagesRouterHead({ children }: HeadProps): React.ReactElement {
+  const headInstanceIdRef = useRef<symbol | null>(null);
+  if (headInstanceIdRef.current === null) {
+    headInstanceIdRef.current = Symbol("vinext-head");
+  }
+
+  // SSR path: collect elements for later injection
+  if (typeof window === "undefined") {
+    _getSSRHeadChildren().push(children);
+    return React.createElement(React.Fragment);
+  }
+
+  // Client path: update the shared head projection after hydration.
+  // oxlint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    const instanceId = headInstanceIdRef.current!;
+    return () => {
+      _removeClientHeadInstance(instanceId);
+    };
+  }, []);
+
+  // Keep updates separate from unmount cleanup. A children-dependent cleanup
+  // would remove the old projection before every render, so even unchanged
+  // tags would be recreated at the end of <head> during Fast Refresh.
+  // oxlint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    const instanceId = headInstanceIdRef.current!;
+    // Next.js removes the previous props.children registration and re-adds the
+    // updated one, making the most recently updated Head instance win dedupe.
+    // Batch every Head update/unmount in this passive-effects flush so a
+    // replacement instance can register before the final projection is diffed.
+    _updateClientHeadInstance(instanceId, children);
+  });
+
+  return React.createElement(React.Fragment);
+}
+
+/**
+ * Next.js ignores next/head in the App Router. Server components import a
+ * no-op Head, and client components get a HeadManagerContext without
+ * `mountedInstances`, so their tags never reach the document. Skip both the
+ * SSR collection and the client head sync there, so a client component
+ * shared with the Pages Router cannot override the Metadata API's tags.
+ */
+function Head(props: HeadProps): React.ReactElement {
+  if (useIsAppRouterTree()) return React.createElement(React.Fragment);
+  return React.createElement(PagesRouterHead, props);
+}
+
+export default Head;

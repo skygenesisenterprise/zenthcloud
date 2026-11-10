@@ -1,0 +1,485 @@
+// Expands Webpack's build-time `require.context(dir, recursive, regexp)` API
+// into a static module map backed by eager static imports.
+//
+// Webpack exposes `require.context` to build a map of modules at compile time.
+// Next.js apps still use it — typically written as `(require as any).context(...)`
+// so it type-checks — but Vite/Rolldown has no such API, so at runtime the call
+// throws `require is not defined`.
+//
+// This transform rewrites each genuine `require.context(...)` call into an IIFE
+// backed by modules selected at build time, exposing the subset of the Webpack
+// context interface used in practice:
+//
+//   const ctx = require.context("./dir", true, /\.js$/);
+//   ctx.keys();        // ["./a.js", "./b.js", ...] (relative to dir, sorted)
+//   ctx("./a.js");     // the module namespace object
+//   ctx.resolve("./a.js"); // the relative key (best-effort)
+//   ctx.id;            // the context base dir
+//
+// Only literal forms with a static string directory are rewritten; anything
+// dynamic is left untouched so we never silently break unrelated code.
+import type { Dirent } from "node:fs";
+import { readdir, realpath, stat } from "node:fs/promises";
+import path, { toSlash } from "pathslash";
+import type { ESTree, Plugin } from "vite";
+import MagicString from "magic-string";
+import {
+  booleanLiteralValue,
+  parseProgram,
+  SCRIPT_MODULE_ID_RE,
+  scriptParserLanguage,
+  stringLiteralValue,
+  walkAst,
+} from "./ast-utils.js";
+import { stripViteModuleQuery } from "../utils/path.js";
+import { magicStringTransformResult } from "./transform-result.js";
+
+type ParsedCall = {
+  range: ESTree.CallExpression;
+  dir: string;
+  recursive: boolean;
+  pattern: string;
+  flags: string;
+};
+
+type ContextModule = {
+  binding: string;
+  key: string;
+  specifier: string;
+};
+
+type WatchedContext = {
+  directory: string;
+  recursive: boolean;
+  pattern: string;
+  flags: string;
+};
+
+export function createRequireContextPlugin(): Plugin {
+  // Static imports make edits to existing matches visible automatically. Keep
+  // the context definitions as well so a create/delete event that changes the
+  // matched file set can invalidate and re-transform the importing module.
+  const watchedContexts = new WeakMap<object, Map<string, WatchedContext[]>>();
+
+  return {
+    name: "vinext:require-context",
+    // Run before TypeScript/JSX stripping so we still see the
+    // `(require as any).context(...)` form (a TSAsExpression callee object).
+    enforce: "pre",
+    transform: {
+      filter: {
+        id: SCRIPT_MODULE_ID_RE,
+        code: /\brequire\b[\s\S]*\.context/,
+      },
+      async handler(code, id) {
+        const transformed = await transformRequireContext(code, id);
+        const contextsForEnvironment =
+          watchedContexts.get(this.environment) ?? new Map<string, WatchedContext[]>();
+        watchedContexts.set(this.environment, contextsForEnvironment);
+
+        if (!transformed) {
+          contextsForEnvironment.delete(id);
+          return null;
+        }
+
+        contextsForEnvironment.set(id, transformed.contexts);
+        for (const context of transformed.contexts) {
+          this.addWatchFile(context.directory);
+        }
+
+        return {
+          code: transformed.code,
+          map: transformed.map,
+        };
+      },
+    },
+    hotUpdate({ type, file, modules }) {
+      const contextsForEnvironment = watchedContexts.get(this.environment);
+      if (!contextsForEnvironment) return;
+
+      // The event's own modules retransform after this update, but the
+      // transform filter skips modules that no longer call require.context —
+      // its map cleanup never runs for them. Drop their entries here instead;
+      // the transform re-adds any that still match.
+      for (const module of modules) {
+        if (module.id != null) contextsForEnvironment.delete(module.id);
+      }
+
+      if (type === "update") return;
+
+      const normalizedFile = toSlash(file);
+      const affectedModules = new Set(modules);
+      let addedImporter = false;
+
+      for (const [id, contexts] of contextsForEnvironment) {
+        if (!contexts.some((context) => matchesWatchedContext(normalizedFile, context))) continue;
+        const module = this.environment.moduleGraph.getModuleById(id);
+        if (!module || affectedModules.has(module)) continue;
+        affectedModules.add(module);
+        addedImporter = true;
+      }
+
+      return addedImporter ? [...affectedModules] : undefined;
+    },
+  };
+}
+
+type TransformResult = {
+  code: string;
+  map: ReturnType<MagicString["generateMap"]>;
+  contexts: WatchedContext[];
+};
+
+// Whitespace the parser skips between tokens: JS `\s`, plus U+0085 and U+200B,
+// which oxc also accepts.
+const CONTEXT_CALL_SPACE = String.raw`[\s\u0085\u200b]`;
+const LINE_TERMINATOR = String.raw`[\n\r\u2028\u2029]`;
+// `context`, with any character optionally spelled as a `\uXXXX` / `\u{X}`
+// escape; the parser decodes those to the same identifier name.
+const CONTEXT_PROPERTY = String.raw`(?:c|\\u(?:0063|\{0*63\}))(?:o|\\u(?:006f|\{0*6f\}))(?:n|\\u(?:006e|\{0*6e\}))(?:t|\\u(?:0074|\{0*74\}))(?:e|\\u(?:0065|\{0*65\}))(?:x|\\u(?:0078|\{0*78\}))(?:t|\\u(?:0074|\{0*74\}))`;
+// What may precede the property: a `.`, or a gap ending in a block comment
+// (`*/`) or a line comment (`//`, `<!--`, `-->`) that could hide the `.`.
+const CONTEXT_MEMBER_PREFIX = String.raw`(?:\.|\*\/|(?:\/\/|<!--|-->)[^\n\r\u2028\u2029]*${LINE_TERMINATOR})${CONTEXT_CALL_SPACE}*`;
+// A comment opener in any gap after the property counts as a match; the
+// prescan never scans a comment body.
+const COMMENT_OPENER = String.raw`\/[*/]|<!--|-->`;
+/**
+ * Cheap pre-parse gate for {@link transformRequireContext}. The transform only
+ * rewrites a `.context` member call whose first argument is a string literal,
+ * so the source must contain `.`, `context`, then — after optional closing
+ * parens of a `(require.context)` callee and an optional `?.` — a `(` followed
+ * by optional opening parens and a quote. TypeScript type arguments
+ * (`context<T>(...)`) are not scanned: any `<` after `context` keeps the parse.
+ *
+ * The transform filter admits every module that mentions both `require` and
+ * `.context` (React, TypeScript, ...), and parsing multi-MB dependencies that
+ * can never contain a matching call dominated this plugin's cost. The gate
+ * errs toward over-matching: a false positive costs one redundant parse,
+ * whereas a false negative would silently skip a real `require.context` call.
+ * Comments therefore count as a match instead of being scanned, and the match
+ * starts at `context` and looks back for the `.`. Every repetition then covers
+ * only whitespace and parens next to one `context`, so the scan stays linear.
+ */
+const REQUIRE_CONTEXT_CALL_PRESCAN = new RegExp(
+  String.raw`${CONTEXT_PROPERTY}(?<=${CONTEXT_MEMBER_PREFIX}${CONTEXT_PROPERTY})(?:${CONTEXT_CALL_SPACE}|\))*(?:\?\.${CONTEXT_CALL_SPACE}*)?(?:<|${COMMENT_OPENER}|\((?:${CONTEXT_CALL_SPACE}|\()*(?:["']|${COMMENT_OPENER}))`,
+  // Escape hex digits are case-insensitive; also matching `.Context(` is harmless.
+  "i",
+);
+
+export function _mayContainRequireContextCall(code: string): boolean {
+  return REQUIRE_CONTEXT_CALL_PRESCAN.test(code);
+}
+
+async function transformRequireContext(code: string, id: string): Promise<TransformResult | null> {
+  if (!REQUIRE_CONTEXT_CALL_PRESCAN.test(code)) return null;
+
+  const lang = scriptParserLanguage(id)!;
+
+  let ast: ESTree.Program;
+  try {
+    ast = parseProgram(code, { lang });
+  } catch {
+    return null;
+  }
+
+  const calls = collectRequireContextCalls(ast);
+  if (calls.length === 0) return null;
+
+  const output = new MagicString(code);
+  const importOffset = findImportInsertionOffset(ast);
+  const imports: string[] = [];
+  const contexts: WatchedContext[] = [];
+  // A fixed binding name could redeclare an identifier the source already
+  // uses; grow the prefix until it appears nowhere in the module.
+  let bindingPrefix = "__vinext_require_context";
+  while (code.includes(bindingPrefix)) bindingPrefix += "_";
+  for (const [callIndex, call] of calls.entries()) {
+    const resolved = await resolveContextModules(id, call, bindingPrefix, callIndex);
+    contexts.push(resolved.context);
+    for (const module of resolved.modules) {
+      imports.push(`import * as ${module.binding} from ${JSON.stringify(module.specifier)};`);
+    }
+    output.overwrite(call.range.start, call.range.end, buildReplacement(call, resolved.modules));
+  }
+  if (imports.length > 0) {
+    const importBlock = `${importOffset > 0 ? "\n" : ""}${imports.join("\n")}\n`;
+    output.appendLeft(importOffset, importBlock);
+  }
+
+  return {
+    ...magicStringTransformResult(output),
+    contexts,
+  };
+}
+
+function collectRequireContextCalls(ast: ESTree.Program): ParsedCall[] {
+  const calls: ParsedCall[] = [];
+
+  walkAst(ast, (node) => {
+    const parsed = parseRequireContextCall(node);
+    if (parsed) {
+      calls.push(parsed);
+      // A matched call's arguments are all literals (string/boolean/regexp), so
+      // there is nothing further to find inside it — stop descending here.
+      return false;
+    }
+  });
+  return calls;
+}
+
+function findImportInsertionOffset(ast: ESTree.Program): number {
+  let offset = ast.hashbang?.end ?? 0;
+  for (const statement of ast.body) {
+    if (statement.type !== "ExpressionStatement" || typeof statement.directive !== "string") {
+      break;
+    }
+    offset = statement.end;
+  }
+  return offset;
+}
+
+// Matches `require.context(dir, recursive?, regexp?)` where the callee object
+// is the `require` identifier, optionally wrapped in a `(require as any)`
+// TypeScript assertion or parentheses. Returns null for anything that does not
+// match exactly, so unrelated `.context(...)` calls are never rewritten.
+function parseRequireContextCall(node: ESTree.Node): ParsedCall | null {
+  if (node.type !== "CallExpression") return null;
+
+  const callee = node.callee;
+  if (callee.type !== "MemberExpression" || callee.computed === true || callee.optional === true) {
+    return null;
+  }
+  if (!isPropertyNamed(callee.property, "context")) return null;
+  if (!isRequireExpression(callee.object)) return null;
+
+  const args = node.arguments;
+  // First arg: the directory string. Required and must be a static, relative
+  // path so each matched file can become a relative static import. A
+  // bare/aliased specifier is left untouched.
+  const dir = stringLiteralValue(args[0]);
+  if (dir == null || !(dir.startsWith("./") || dir.startsWith("../"))) return null;
+
+  // Second arg: recursive flag. Optional; Webpack's `require.context` defaults
+  // `useSubdirectories` to `true` when omitted, so we match that to avoid a
+  // silently-shallower key set. We only rewrite when it is a literal boolean
+  // (or absent → true).
+  let recursive = true;
+  if (args.length >= 2) {
+    const value = booleanLiteralValue(args[1]);
+    if (value == null) return null;
+    recursive = value;
+  }
+
+  // Third arg: filter regexp. Optional; defaults to matching every module.
+  // Parity caveat: webpack's resolver can expose both extensionless and
+  // extension-qualified requests for one physical file. This transform maps
+  // each discovered file once, so the extensionless alias can be absent.
+  // Upstream Next.js's test for that case is disabled (Turbopack-pending), so
+  // this remains a documented, low-risk divergence.
+  let pattern = "";
+  let flags = "";
+  if (args.length >= 3) {
+    const regex = regexLiteralValue(args[2]);
+    if (regex == null) return null;
+    pattern = regex.pattern;
+    flags = regex.flags;
+  } else if (args.length > 3) {
+    return null;
+  }
+
+  return {
+    range: node,
+    dir,
+    recursive,
+    pattern,
+    flags,
+  };
+}
+
+// `require`, `(require)`, `(require as any)`, `(require as unknown as Foo)`, …
+function isRequireExpression(value: ESTree.Node): boolean {
+  let node: ESTree.Node = value;
+  // Unwrap TS assertion / non-null / parenthesized wrappers around `require`.
+  while (true) {
+    if (node.type === "Identifier") {
+      return node.name === "require";
+    }
+    if (node.type === "TSAsExpression" || node.type === "TSSatisfiesExpression") {
+      node = node.expression;
+      continue;
+    }
+    if (node.type === "TSNonNullExpression") {
+      node = node.expression;
+      continue;
+    }
+    if (node.type === "ParenthesizedExpression") {
+      node = node.expression;
+      continue;
+    }
+    return false;
+  }
+}
+
+function isPropertyNamed(value: ESTree.Node, name: string): boolean {
+  return value.type === "Identifier" && value.name === name;
+}
+
+function regexLiteralValue(value: ESTree.Node): { pattern: string; flags: string } | null {
+  if (value.type !== "Literal" || !("regex" in value)) return null;
+  // OXC attaches the regex source as a plain `{ pattern, flags }` object on the
+  // RegExp value — unlike the containing Literal, this object is not an AST node.
+  return value.regex;
+}
+
+// Builds an IIFE that produces a Webpack-compatible require.context function.
+// Webpack filters directory entries before it creates module dependencies. The
+// generated map must therefore contain only modules accepted by the regexp;
+// filtering a broad eager import here would already have evaluated excluded
+// modules and included them in the bundle.
+function buildReplacement(call: ParsedCall, modules: ContextModule[]): string {
+  const base = JSON.stringify(stripTrailingSlash(call.dir));
+  const entries = modules.map((module) => `${JSON.stringify(module.key)}: ${module.binding}`);
+  return [
+    "(() => {",
+    `  const __base = ${base};`,
+    `  const __map = Object.assign(Object.create(null), {${entries.join(",")}});`,
+    `  const __keys = ${JSON.stringify(modules.map((module) => module.key))};`,
+    "  const __ctx = (__key) => {",
+    "    if (__key in __map) return __map[__key];",
+    "    const __err = new Error('Cannot find module \\'' + __key + '\\'');",
+    "    __err.code = 'MODULE_NOT_FOUND';",
+    "    throw __err;",
+    "  };",
+    "  __ctx.keys = () => __keys.slice();",
+    "  __ctx.resolve = (__key) => __key;",
+    `  __ctx.id = __base;`,
+    "  return __ctx;",
+    "})()",
+  ].join("\n");
+}
+
+async function resolveContextModules(
+  id: string,
+  call: ParsedCall,
+  bindingPrefix: string,
+  callIndex: number,
+): Promise<{ context: WatchedContext; modules: ContextModule[] }> {
+  const importer = toSlash(stripViteModuleQuery(id));
+  const directory = path.resolve(path.dirname(importer), call.dir);
+  const context: WatchedContext = {
+    directory,
+    recursive: call.recursive,
+    pattern: call.pattern,
+    flags: filterFlags(call.flags),
+  };
+  const regexp = call.pattern ? new RegExp(call.pattern, context.flags) : null;
+  const accepted: Omit<ContextModule, "binding">[] = [];
+
+  for (const candidate of await listContextFiles(directory, call.recursive)) {
+    const key = `./${candidate}`;
+    if (regexp && !regexp.test(key)) continue;
+    accepted.push({ key, specifier: `${stripTrailingSlash(call.dir)}/${candidate}` });
+  }
+
+  // Assign binding indices after sorting: readdir order is filesystem
+  // dependent, and index-before-sort would leak that order into the generated
+  // identifiers, changing bundle bytes for an unchanged source tree.
+  accepted.sort((left, right) => (left.key < right.key ? -1 : left.key > right.key ? 1 : 0));
+  const modules = accepted.map((entry, index) => ({
+    ...entry,
+    binding: `${bindingPrefix}_${callIndex}_${index}`,
+  }));
+  return { context, modules };
+}
+
+// Enumerates candidate files like webpack's context walk: dot-entries are
+// skipped (matching the prior glob semantics), symlinks resolve through stats —
+// including symlinked directories in recursive contexts, which `fs.glob` does
+// not descend into — and a missing context directory yields an empty context
+// rather than an error. Cycles are broken by tracking realpaths along the
+// current recursion path only, so distinct symlink aliases of the same target
+// still enumerate under their own keys.
+async function listContextFiles(directory: string, recursive: boolean): Promise<string[]> {
+  const files: string[] = [];
+  const ancestorRealPaths = new Set<string>();
+
+  async function walk(currentDirectory: string, prefix: string): Promise<void> {
+    let realDirectory: string;
+    let entries: Dirent[];
+    try {
+      realDirectory = await realpath(currentDirectory);
+      entries = await readdir(currentDirectory, { withFileTypes: true });
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === "ENOENT" || code === "ENOTDIR") return;
+      throw error;
+    }
+    if (ancestorRealPaths.has(realDirectory)) return;
+    ancestorRealPaths.add(realDirectory);
+
+    try {
+      for (const entry of entries) {
+        if (entry.name.startsWith(".")) continue;
+        const entryPath = path.join(currentDirectory, entry.name);
+        let isFile = entry.isFile();
+        let isDirectory = entry.isDirectory();
+        // Covers symlinks and filesystems without dirent type info (NFS, SMB,
+        // FUSE), where entries report neither file nor directory. Broken links
+        // (ENOENT) and self-referential link loops (ELOOP) are unresolvable,
+        // so they cannot become context entries.
+        if (!isFile && !isDirectory) {
+          try {
+            const stats = await stat(entryPath);
+            isFile = stats.isFile();
+            isDirectory = stats.isDirectory();
+          } catch (error) {
+            const code = (error as NodeJS.ErrnoException).code;
+            if (code === "ENOENT" || code === "ELOOP") continue;
+            throw error;
+          }
+        }
+        if (isFile) files.push(`${prefix}${entry.name}`);
+        else if (isDirectory && recursive) await walk(entryPath, `${prefix}${entry.name}/`);
+      }
+    } finally {
+      ancestorRealPaths.delete(realDirectory);
+    }
+  }
+
+  await walk(directory, "");
+  return files;
+}
+
+function matchesWatchedContext(file: string, context: WatchedContext): boolean {
+  const candidate = path.relative(context.directory, file);
+  if (
+    candidate.length === 0 ||
+    candidate === ".." ||
+    candidate.startsWith("../") ||
+    candidate.split("/").some((segment) => segment.startsWith(".")) ||
+    (!context.recursive && candidate.includes("/"))
+  ) {
+    return false;
+  }
+
+  // A created or deleted directory in a recursive context can add or remove
+  // matching descendants even though its own path fails the file regexp (the
+  // watcher may only report the directory, e.g. a symlinked directory with
+  // followSymlinks disabled), so membership alone must invalidate.
+  if (context.recursive) return true;
+
+  return (
+    context.pattern === "" || new RegExp(context.pattern, context.flags).test(`./${candidate}`)
+  );
+}
+
+// Global and sticky regexps make repeated RegExp.test() calls stateful. They do
+// not change which individual context key should match, so normalize them once
+// before build-time filtering and development invalidation.
+function filterFlags(flags: string): string {
+  return flags.replace(/[gy]/g, "");
+}
+
+function stripTrailingSlash(value: string): string {
+  return value.endsWith("/") ? value.slice(0, -1) : value;
+}

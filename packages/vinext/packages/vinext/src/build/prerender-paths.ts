@@ -1,0 +1,1803 @@
+import fs from "node:fs";
+import path, { toSlash } from "pathslash";
+import type { Server as HttpServer } from "node:http";
+import {
+  loadNextConfig,
+  resolveNextConfig,
+  type NextRewrite,
+  type ResolvedNextConfig,
+} from "../config/next-config.js";
+import {
+  appRouteHasMainTreeLoadingBoundary,
+  appRouter,
+  matchAppRoute,
+} from "../routing/app-router.js";
+import { apiRouter, matchRoute, pagesRouter } from "../routing/pages-router.js";
+import {
+  normalizeStaticPathname,
+  normalizeStaticPathsEntry,
+  type StaticPathsEntry,
+} from "../routing/route-pattern.js";
+import {
+  getAppRouteRenderEntryPath,
+  classifyAppRoute,
+  classifyAppRouteHandler,
+  classifyPagesRoute,
+  extractExportConstString,
+  extractMiddlewareMatcherConfig,
+} from "./report.js";
+import { classifyAppPageRouteStaticEligibility } from "./app-page-static-eligibility.js";
+import {
+  buildUrlFromParams,
+  localizePagesPath,
+  layoutOnlyParamSets,
+  resolveParentParams,
+  routeStaticParamSets,
+  validateDiscoveredParams,
+  type StaticParamsMap,
+} from "./prerender.js";
+import { readPrerenderSecret } from "./server-manifest.js";
+import { tryRealpathSync } from "./ssr-manifest.js";
+import { startProdServer } from "../server/prod-server.js";
+import { loadMdxEsmReader } from "../utils/mdx-scan.js";
+import { findDir } from "../utils/project.js";
+import { BLOCKED_PAGES, PHASE_PRODUCTION_BUILD } from "vinext/shims/constants";
+import { VINEXT_PRERENDER_SECRET_HEADER } from "../server/headers.js";
+import type { VinextRouteRootConfig } from "../config/prerender.js";
+import { enterPrerenderPhase } from "./prerender-phase.js";
+import type { CdnCacheAdapterCapabilities } from "../cache/cache-adapters-virtual.js";
+import { isExternalUrl, matchHeaders, matchesRewriteSource } from "../config/config-matchers.js";
+import { pagesRouteHasPriorityOverAppRoute } from "../server/hybrid-route-priority.js";
+import { resolveAppPageDynamicConfig } from "../server/app-segment-config.js";
+import {
+  normalizeNextDataPagePathname,
+  shouldAddTrailingSlashToPagesDataPath,
+} from "../server/pages-data-route.js";
+import {
+  extractLocaleFromUrl,
+  normalizeDefaultLocalePathname,
+  shouldRestoreLocaleRootTrailingSlash,
+} from "../server/pages-i18n.js";
+import { normalizePathTrailingSlash } from "vinext/shims/url-utils";
+import { buildPagesDataHref } from "vinext/shims/internal/pages-data-url";
+import { resolveBuiltPagesEntryPath, resolveBuiltRscEntryPath } from "./server-entry.js";
+import {
+  matchesMiddlewarePathname,
+  type MatcherConfig,
+  type MiddlewareLocaleMatchContext,
+} from "../server/middleware-matcher.js";
+
+export type PrerenderRoutePattern = {
+  kind: "app-page" | "app-route" | "pages-page";
+  pattern: string;
+  /** Closed-world safety facts for probe coordinator optimizations. */
+  cacheabilityProbe?: {
+    canPrunePattern: boolean;
+    /** HTML pathname shared by alternate representations of this route. */
+    concretePathname?: string;
+    /** The uncached request stage may resolve this public path to another route. */
+    routeMayResolve?: boolean;
+    /** A request representation may terminate before reaching the response stage. */
+    requestStageMayTerminate?: boolean;
+    /**
+     * Not listed by the route's own static generation (`generateStaticParams`,
+     * `getStaticPaths` or a route without dynamic segments): picked from
+     * traffic, or, for an App page route, not listed by this route itself,
+     * which includes a route that isn't static or SSG and a path another
+     * route generates. A path both listed and picked counts as listed.
+     */
+    unlisted?: boolean;
+  };
+};
+export type PrerenderPathManifest = {
+  /** App Page HTML paths after hybrid route ownership has been resolved. */
+  appPaths?: string[];
+  basePath?: string;
+  buildId?: string;
+  /** Opaque per-build identity emitted by CDN adapter page responses. */
+  buildIdentity?: string;
+  deploymentId?: string;
+  /** Opaque per-build identity emitted by RSC responses. */
+  rscBuildId?: string;
+  responseVary?: CdnCacheAdapterCapabilities["responseVary"];
+  /** App Router paths discovered without rendering their page responses. */
+  rscPaths?: string[];
+  /** Statically eligible App Route Handler request paths. */
+  routeHandlerPaths?: string[];
+  /** App Router paths with an ordinary main-tree loading boundary. */
+  loadingShellPaths?: string[];
+  /** Every App page route pattern with an ordinary main-tree loading boundary. */
+  loadingBoundaryRoutePatterns?: string[];
+  /** Pages Router paths selected by the existing HTML warm discovery pass. */
+  pagesPaths?: string[];
+  /** Pages Router JSON data identities corresponding to discovered static paths. */
+  pagesDataPaths?: string[];
+  /** Public paths omitted because configured routes can replace their page response. */
+  excludedWarmPaths?: string[];
+  /** Static dynamic-route patterns with no build-discovered concrete path. */
+  fallbackRoutePatterns?: PrerenderRoutePattern[];
+  /** Resolved route ownership for grouping cacheability probes without re-matching paths. */
+  routePatterns?: Record<string, PrerenderRoutePattern>;
+  trailingSlash?: boolean;
+  paths: string[];
+};
+
+export const PRERENDER_PATH_DISCOVERY_ENV = "__VINEXT_PRERENDER_PATH_DISCOVERY";
+export const PRERENDER_PATHS_MANIFEST = "vinext-prerender-paths.json";
+
+const PATH_DISCOVERY_FETCH_TIMEOUT_MS = 30_000;
+export const DEFAULT_REMOTE_PATH_DISCOVERY_RETRY_DELAY_MS = 1_000;
+export const DEFAULT_REMOTE_PATH_DISCOVERY_PHASE_TIMEOUT_MS = 120_000;
+
+type PathDiscoveryRetryOptions = {
+  deadlineAt?: number;
+  phaseTimeoutMs?: number;
+  retries?: number;
+  retryDelayMs?: number;
+};
+
+function readDiscoveryUserFailure(response: Response, text: string): string | null {
+  if (
+    response.status !== 500 ||
+    !response.headers.get("content-type")?.includes("application/json")
+  ) {
+    return null;
+  }
+  try {
+    const value = JSON.parse(text) as unknown;
+    if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+    const error = (value as { error?: unknown }).error;
+    return typeof error === "string" && error.length > 0 ? error : null;
+  } catch {
+    return null;
+  }
+}
+
+type PrerenderPathDiscoveryOptions = {
+  root: string;
+  /** Additional concrete public paths to resolve through the route graph. */
+  candidatePaths?: readonly string[];
+  /** Resolve only candidate paths instead of enumerating dynamic route hooks. */
+  candidatePathsOnly?: boolean;
+  /** Fully resolved Next.js config. Loaded from disk when omitted. */
+  nextConfig?: ResolvedNextConfig;
+  appDir?: string | null;
+  pagesDir?: string | null;
+  routeRootConfig?: VinextRouteRootConfig | null;
+  pagesBundlePath?: string;
+  rscBundlePath?: string;
+  buildIdentity?: CdnCacheAdapterCapabilities["buildIdentity"];
+  responseVary?: CdnCacheAdapterCapabilities["responseVary"];
+  requestRouting?: CdnCacheAdapterCapabilities["requestRouting"];
+  isResponsePolicyHeader?: CdnCacheAdapterCapabilities["isResponsePolicyHeader"];
+  /** Include canonical RSC identities without claiming support for arbitrary Vary fields. */
+  includeCanonicalRsc?: boolean;
+  /** Execute dynamic path hooks against an already-uploaded Worker. */
+  pathDiscoveryTarget?: {
+    baseUrl: string;
+    headers?: HeadersInit;
+    /** Retry transient staged-version routing responses before failing discovery. */
+    phaseTimeoutMs?: number;
+    retries?: number;
+    retryDelayMs?: number;
+  };
+};
+
+function readBuiltBuildId(serverDir: string): string | null {
+  try {
+    const buildId = fs.readFileSync(path.join(serverDir, "BUILD_ID"), "utf-8").trim();
+    return buildId.length > 0 ? buildId : null;
+  } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") {
+      return null;
+    }
+    throw error;
+  }
+}
+
+function readBuiltRscBuildId(serverDir: string): string | null {
+  try {
+    const buildId = fs.readFileSync(path.join(serverDir, "RSC_BUILD_ID"), "utf-8").trim();
+    return buildId.length > 0 ? buildId : null;
+  } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") {
+      return null;
+    }
+    throw error;
+  }
+}
+
+function addPath(paths: string[], seen: Set<string>, pathname: string): void {
+  if (seen.has(pathname)) return;
+  seen.add(pathname);
+  paths.push(pathname);
+}
+
+function throwDiscoveryFailure(route: string, error: unknown): never {
+  const message = error instanceof Error ? error.message : String(error);
+  if (/cloudflare:|ERR_UNSUPPORTED_ESM_URL_SCHEME/i.test(message)) {
+    throw new Error(
+      `Failed to discover warmup path(s) for ${route}: Cloudflare runtime bindings cannot execute in the local Node prerender server. ` +
+        "Use `vinext-cloudflare deploy --warm-cache` so path discovery runs against the staged Worker version.",
+      { cause: error },
+    );
+  }
+  throw new Error(`Failed to discover warmup path(s) for ${route}: ${message}`, { cause: error });
+}
+
+function validatePagesStaticPathsResult(
+  value: unknown,
+  route: string,
+): { fallback: boolean | "blocking"; paths: StaticPathsEntry[] } {
+  const expected = "Expected { paths: [], fallback: boolean | 'blocking' }.";
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`Invalid value returned from getStaticPaths for ${route}. ${expected}`);
+  }
+
+  const result = value as Record<string, unknown>;
+  const extraKeys = Object.keys(result).filter((key) => key !== "paths" && key !== "fallback");
+  if (extraKeys.length > 0) {
+    throw new Error(
+      `Extra key(s) returned from getStaticPaths for ${route}: ${extraKeys.join(", ")}. ${expected}`,
+    );
+  }
+  if (typeof result.fallback !== "boolean" && result.fallback !== "blocking") {
+    throw new Error(`Invalid fallback returned from getStaticPaths for ${route}. ${expected}`);
+  }
+  if (!Array.isArray(result.paths)) {
+    throw new Error(
+      `Invalid paths returned from getStaticPaths for ${route}; paths must be an array.`,
+    );
+  }
+
+  return {
+    fallback: result.fallback,
+    paths: result.paths as StaticPathsEntry[],
+  };
+}
+
+function hasUnsafeRawUrlPathCharacter(value: string): boolean {
+  for (let index = 0; index < value.length; index++) {
+    const code = value.charCodeAt(index);
+    if (code === 92 || code <= 31 || code === 127) return true;
+  }
+  return false;
+}
+
+function validatePagesStaticPathsEntry(entry: StaticPathsEntry, pattern: string): StaticPathsEntry {
+  if (typeof entry === "string") {
+    if (
+      !entry.startsWith("/") ||
+      entry.includes("//") ||
+      entry.includes("?") ||
+      entry.includes("#") ||
+      hasUnsafeRawUrlPathCharacter(entry)
+    ) {
+      throw new Error(
+        `The provided path \`${entry}\` from getStaticPaths does not match the route pattern \`${pattern}\`.`,
+      );
+    }
+    let decodedSegments: string[];
+    try {
+      decodedSegments = entry.split("/").map((segment) => decodeURIComponent(segment));
+    } catch {
+      throw new Error(
+        `The provided path \`${entry}\` from getStaticPaths contains malformed percent-encoding.`,
+      );
+    }
+    if (decodedSegments.some((segment) => segment === "." || segment === "..")) {
+      throw new Error(
+        `The provided path \`${entry}\` from getStaticPaths contains a dot path segment.`,
+      );
+    }
+    return entry;
+  }
+  if (!entry || typeof entry !== "object" || Array.isArray(entry)) return entry;
+
+  const extraKeys = Object.keys(entry).filter((key) => key !== "params" && key !== "locale");
+  if (extraKeys.length > 0) {
+    throw new Error(
+      `Additional key(s) returned from getStaticPaths for ${pattern}: ${extraKeys.join(", ")}.`,
+    );
+  }
+  if (entry.locale !== undefined && typeof entry.locale !== "string") {
+    throw new Error(`Invalid locale returned from getStaticPaths for ${pattern}.`);
+  }
+  return {
+    ...entry,
+    params: validateDiscoveredParams(entry.params, pattern, "getStaticPaths"),
+  };
+}
+
+async function fetchDiscoveryEndpoint(
+  url: string,
+  headers: Record<string, string>,
+  retryOptions: PathDiscoveryRetryOptions = {},
+): Promise<string | null> {
+  const hasSharedPhaseDeadline = retryOptions.deadlineAt !== undefined;
+  const retryDelayMs = Math.max(
+    0,
+    retryOptions.retryDelayMs ??
+      (hasSharedPhaseDeadline ? DEFAULT_REMOTE_PATH_DISCOVERY_RETRY_DELAY_MS : 0),
+  );
+  const phaseTimeoutMs = Math.max(
+    1,
+    retryOptions.phaseTimeoutMs ?? DEFAULT_REMOTE_PATH_DISCOVERY_PHASE_TIMEOUT_MS,
+  );
+  // An explicit retry limit remains authoritative. Otherwise let fast
+  // transient responses keep retrying for the advertised phase duration
+  // instead of silently stopping halfway through it. A zero-delay caller uses
+  // the standard cadence only for calculating a bounded attempt budget; the
+  // deadline below remains the authoritative wall-clock limit.
+  const retryBudgetDelayMs =
+    retryDelayMs > 0 ? retryDelayMs : DEFAULT_REMOTE_PATH_DISCOVERY_RETRY_DELAY_MS;
+  const retries = Math.max(
+    0,
+    retryOptions.retries ??
+      (hasSharedPhaseDeadline ? Math.ceil(phaseTimeoutMs / retryBudgetDelayMs) : 0),
+  );
+  const deadlineAt = retryOptions.deadlineAt ?? Date.now() + phaseTimeoutMs;
+  let lastError: unknown;
+  let attemptsRun = 0;
+  let lastTransientStatus: number | undefined;
+
+  const attemptSummary = () =>
+    ` after ${attemptsRun} attempt(s)${
+      lastTransientStatus === undefined
+        ? ""
+        : `; last transient status was HTTP ${lastTransientStatus}`
+    }`;
+  const phaseTimeoutError = () =>
+    new Error(
+      `remote path discovery exceeded its ${phaseTimeoutMs}ms phase deadline${attemptSummary()}`,
+    );
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const remainingMs = deadlineAt - Date.now();
+    if (remainingMs <= 0) throw phaseTimeoutError();
+    attemptsRun++;
+
+    const controller = new AbortController();
+    const attemptTimeoutMs = Math.min(PATH_DISCOVERY_FETCH_TIMEOUT_MS, remainingMs);
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    let shouldRetry = true;
+    try {
+      const request = (async () => {
+        const res = await fetch(url, {
+          headers,
+          // Following a redirect would re-send the prerender secret and version
+          // headers to the Location origin, and trust its body as discovery data.
+          redirect: "manual",
+          signal: controller.signal,
+        });
+        return { res, text: await res.text() };
+      })();
+      const timedOut = new Promise<never>((_resolve, reject) => {
+        timeout = setTimeout(() => {
+          controller.abort();
+          reject(new DOMException(`Timed out after ${attemptTimeoutMs}ms`, "AbortError"));
+        }, attemptTimeoutMs);
+      });
+      const { res, text } = await Promise.race([request, timedOut]);
+      if (res.ok) {
+        if (res.status === 204) return null;
+        return text;
+      }
+
+      const redirected = res.status >= 300 && res.status < 400;
+      const userFailure = redirected ? null : readDiscoveryUserFailure(res, text);
+      const detail =
+        userFailure ??
+        (/cloudflare:|ERR_UNSUPPORTED_ESM_URL_SCHEME/i.test(text) ? text.trim() : "");
+      lastError = redirected
+        ? new Error(
+            `path discovery returned a redirect (HTTP ${res.status}); refusing to follow it with the prerender secret`,
+          )
+        : new Error(`path discovery returned HTTP ${res.status}${detail ? `: ${detail}` : ""}`);
+      // A newly applied route can briefly reach the previous Worker (404, or a
+      // Pages redirect when its capability doesn't match this build), and
+      // version-metadata validation rejects that mismatch with 503. Cloudflare
+      // can also return an unshaped 5xx while the uploaded version propagates.
+      // The authenticated endpoint's JSON { error } envelope is instead a real
+      // generateStaticParams/getStaticPaths failure and must surface once.
+      const transient =
+        redirected ||
+        res.status === 404 ||
+        (res.status >= 500 && res.status <= 599 && userFailure === null);
+      if (!transient) {
+        shouldRetry = false;
+        throw lastError;
+      }
+      lastTransientStatus = res.status;
+    } catch (error) {
+      if (Date.now() >= deadlineAt) throw phaseTimeoutError();
+      lastError =
+        error instanceof Error && error.name === "AbortError"
+          ? new Error(`path discovery timed out after ${attemptTimeoutMs}ms`)
+          : error;
+      if (!shouldRetry) throw lastError;
+    } finally {
+      if (timeout !== undefined) clearTimeout(timeout);
+    }
+
+    if (attempt < retries && retryDelayMs > 0) {
+      const delayMs = Math.min(retryDelayMs, Math.max(0, deadlineAt - Date.now()));
+      if (delayMs <= 0) throw phaseTimeoutError();
+      await new Promise<void>((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  const message = lastError instanceof Error ? lastError.message : String(lastError);
+  throw new Error(`${message}${attemptSummary()}`, { cause: lastError });
+}
+
+function resolveConfiguredRouteDirs(
+  root: string,
+  routeRootConfig: VinextRouteRootConfig | null | undefined,
+): { appDir: string | null; pagesDir: string | null } {
+  if (!routeRootConfig) {
+    return {
+      appDir: findDir(root, "app", "src/app"),
+      pagesDir: findDir(root, "pages", "src/pages"),
+    };
+  }
+
+  let baseDir: string;
+  if (routeRootConfig.appDir) {
+    baseDir = path.isAbsolute(routeRootConfig.appDir)
+      ? routeRootConfig.appDir
+      : path.resolve(root, routeRootConfig.appDir);
+    // The absolute branch above is the user-supplied appDir verbatim, which
+    // may carry native separators on Windows.
+    baseDir = toSlash(baseDir);
+  } else {
+    const hasRootApp = fs.existsSync(path.join(root, "app"));
+    const hasRootPages = fs.existsSync(path.join(root, "pages"));
+    const hasSrcApp = fs.existsSync(path.join(root, "src", "app"));
+    const hasSrcPages = fs.existsSync(path.join(root, "src", "pages"));
+    baseDir =
+      hasRootApp || hasRootPages ? root : hasSrcApp || hasSrcPages ? path.join(root, "src") : root;
+  }
+
+  const appDir = path.join(baseDir, "app");
+  const pagesDir = path.join(baseDir, "pages");
+  return {
+    appDir: !routeRootConfig.disableAppRouter && fs.existsSync(appDir) ? appDir : null,
+    pagesDir: fs.existsSync(pagesDir) ? pagesDir : null,
+  };
+}
+
+async function shouldStartPathDiscoveryServer(options: {
+  appDir: string | null;
+  pagesDir: string | null;
+  pageExtensions: readonly string[];
+}): Promise<boolean> {
+  if (options.appDir) {
+    const routes = await appRouter(options.appDir, options.pageExtensions);
+    if (routes.some((route) => route.isDynamic)) return true;
+  }
+
+  if (options.pagesDir) {
+    const routes = await pagesRouter(options.pagesDir, options.pageExtensions);
+    if (routes.some((route) => route.isDynamic)) return true;
+  }
+
+  return false;
+}
+
+async function withPrerenderEndpoints<T>(fn: () => Promise<T>): Promise<T> {
+  const restorePrerenderPhase = enterPrerenderPhase();
+  const previousPathDiscoveryFlag = process.env[PRERENDER_PATH_DISCOVERY_ENV];
+  process.env[PRERENDER_PATH_DISCOVERY_ENV] = "1";
+  try {
+    return await fn();
+  } finally {
+    restorePrerenderPhase();
+    if (previousPathDiscoveryFlag === undefined) delete process.env[PRERENDER_PATH_DISCOVERY_ENV];
+    else process.env[PRERENDER_PATH_DISCOVERY_ENV] = previousPathDiscoveryFlag;
+  }
+}
+
+async function collectPagesPaths(options: {
+  baseUrl: string | null;
+  enumerateDynamicPaths: boolean;
+  i18n: ResolvedNextConfig["i18n"];
+  pagesDir: string;
+  pageExtensions: readonly string[];
+  retryOptions?: PathDiscoveryRetryOptions;
+  secretHeaders: Record<string, string>;
+}): Promise<{
+  dataPaths: string[];
+  fallbackRoutePatterns: PrerenderRoutePattern[];
+  nonDynamicPaths: string[];
+  paths: string[];
+}> {
+  const [pageRoutes, apiRoutes] = await Promise.all([
+    pagesRouter(options.pagesDir, options.pageExtensions),
+    apiRouter(options.pagesDir, options.pageExtensions),
+  ]);
+  const apiPatterns = new Set(apiRoutes.map((route) => route.pattern));
+  const paths: string[] = [];
+  const seen = new Set<string>();
+  const dataPaths: string[] = [];
+  const seenDataPaths = new Set<string>();
+  const fallbackRoutePatterns: PrerenderRoutePattern[] = [];
+  const nonDynamicPaths: string[] = [];
+  const seenNonDynamicPaths = new Set<string>();
+
+  for (const route of pageRoutes) {
+    if (apiPatterns.has(route.pattern)) continue;
+    if (BLOCKED_PAGES.includes(route.pattern)) continue;
+    if (route.pattern === "/404" || route.pattern === "/500" || route.pattern === "/_error") {
+      continue;
+    }
+
+    const { hasServerSideProps, hasStaticProps, type } = classifyPagesRoute(route.filePath);
+    if (type === "api") continue;
+
+    if (!route.isDynamic) {
+      if (options.i18n) {
+        for (const locale of options.i18n.locales) {
+          const pathname = localizePagesPath(route.pattern, locale, options.i18n);
+          addPath(paths, seen, pathname);
+          addPath(nonDynamicPaths, seenNonDynamicPaths, pathname);
+          if (hasStaticProps || hasServerSideProps) addPath(dataPaths, seenDataPaths, pathname);
+        }
+      } else {
+        addPath(paths, seen, route.pattern);
+        addPath(nonDynamicPaths, seenNonDynamicPaths, route.pattern);
+        if (hasStaticProps || hasServerSideProps) {
+          addPath(dataPaths, seenDataPaths, route.pattern);
+        }
+      }
+      continue;
+    }
+
+    if (!options.enumerateDynamicPaths) continue;
+
+    // A dynamic GSSP route has no enumerable parameter source. It remains
+    // fail-closed unless another deployment input supplies a concrete path.
+    if (type === "ssr") continue;
+
+    if (!options.baseUrl) continue;
+
+    try {
+      const search = new URLSearchParams({ pattern: route.pattern });
+      if (options.i18n) {
+        search.set("locales", JSON.stringify(options.i18n.locales));
+        search.set("defaultLocale", options.i18n.defaultLocale);
+      }
+      const text = await fetchDiscoveryEndpoint(
+        `${options.baseUrl}/__vinext/prerender/pages-static-paths?${search}`,
+        options.secretHeaders,
+        options.retryOptions,
+      );
+      if (text === null) {
+        continue;
+      }
+
+      const pathsResult = validatePagesStaticPathsResult(JSON.parse(text), route.pattern);
+      if (pathsResult.fallback !== false) {
+        fallbackRoutePatterns.push({ kind: "pages-page", pattern: route.pattern });
+      }
+      for (const item of pathsResult.paths) {
+        const validatedItem = validatePagesStaticPathsEntry(item, route.pattern);
+        let itemToNormalize = validatedItem;
+        let locale = options.i18n?.defaultLocale;
+        if (options.i18n && typeof validatedItem === "string") {
+          const localeInfo = extractPagesStaticPathLocale(validatedItem, options.i18n);
+          itemToNormalize = localeInfo.url;
+        } else if (
+          options.i18n &&
+          validatedItem &&
+          typeof validatedItem === "object" &&
+          validatedItem.locale
+        ) {
+          if (!options.i18n.locales.includes(validatedItem.locale)) {
+            throw new Error(
+              `Invalid locale returned from getStaticPaths for ${route.pattern}: ${validatedItem.locale}`,
+            );
+          }
+          locale = validatedItem.locale;
+        }
+
+        const normalized = normalizeStaticPathsEntry(itemToNormalize, route.pattern);
+        if ("error" in normalized) {
+          throw new Error(normalized.error);
+        }
+        const pathname =
+          typeof validatedItem === "string"
+            ? normalizeStaticPathname(validatedItem)
+            : localizePagesPath(
+                buildUrlFromParams(route.pattern, normalized.params),
+                locale,
+                options.i18n,
+              );
+        addPath(paths, seen, pathname);
+        if (hasStaticProps) addPath(dataPaths, seenDataPaths, pathname);
+      }
+    } catch (error) {
+      throwDiscoveryFailure(route.pattern, error);
+    }
+  }
+
+  return { dataPaths, fallbackRoutePatterns, nonDynamicPaths, paths };
+}
+
+async function excludePagesApiWarmPaths(options: {
+  i18n: ResolvedNextConfig["i18n"];
+  pagesDir: string;
+  pageExtensions: readonly string[];
+  paths: readonly string[];
+}): Promise<string[]> {
+  const apiRoutes = await apiRouter(options.pagesDir, options.pageExtensions);
+  return options.paths.filter((pathname) => {
+    const pagesPathname = options.i18n
+      ? extractLocaleFromUrl(pathname, options.i18n).url
+      : pathname;
+    if (pagesPathname !== "/api" && !pagesPathname.startsWith("/api/")) return true;
+    return matchRoute(pagesPathname, apiRoutes) === null;
+  });
+}
+
+async function resolvePagesWarmRouteMetadata(options: {
+  i18n: ResolvedNextConfig["i18n"];
+  pagesDir: string;
+  pageExtensions: readonly string[];
+  paths: readonly string[];
+}): Promise<{
+  dataPaths: string[];
+  routePatterns: Record<string, PrerenderRoutePattern>;
+}> {
+  const pageRoutes = await pagesRouter(options.pagesDir, options.pageExtensions);
+  const classifications = new Map<string, ReturnType<typeof classifyPagesRoute>>();
+  const dataPaths: string[] = [];
+  const routePatterns: Record<string, PrerenderRoutePattern> = {};
+  for (const pathname of options.paths) {
+    const pagesPathname = options.i18n
+      ? extractLocaleFromUrl(pathname, options.i18n).url
+      : pathname;
+    const match = matchRoute(pagesPathname, pageRoutes);
+    if (!match) continue;
+    routePatterns[pathname] = { kind: "pages-page", pattern: match.route.pattern };
+    let classification = classifications.get(match.route.filePath);
+    if (!classification) {
+      classification = classifyPagesRoute(match.route.filePath);
+      classifications.set(match.route.filePath, classification);
+    }
+    const { hasServerSideProps, hasStaticProps } = classification;
+    if (hasServerSideProps || hasStaticProps) dataPaths.push(pathname);
+  }
+  return { dataPaths, routePatterns };
+}
+
+/**
+ * Next.js data URLs always carry the locale segment, including the default
+ * locale that is omitted from the corresponding public HTML pathname.
+ *
+ * Ported from Next.js:
+ * packages/next/src/shared/lib/router/utils/format-next-pathname-info.ts
+ */
+function localizePagesDataPath(pathname: string, i18n: ResolvedNextConfig["i18n"]): string {
+  if (!i18n) return pathname;
+  if (extractPagesStaticPathLocale(pathname, i18n).explicitLocalePrefix) return pathname;
+  return pathname === "/" ? `/${i18n.defaultLocale}` : `/${i18n.defaultLocale}${pathname}`;
+}
+
+function extractPagesStaticPathLocale(
+  url: string,
+  i18n: NonNullable<ResolvedNextConfig["i18n"]>,
+): { explicitLocalePrefix?: string; locale: string; url: string } {
+  const queryIndex = url.indexOf("?");
+  const pathname = queryIndex === -1 ? url : url.slice(0, queryIndex);
+  const query = queryIndex === -1 ? "" : url.slice(queryIndex);
+  const parts = pathname.split("/").filter(Boolean);
+  const locale =
+    parts.length > 0
+      ? i18n.locales.find((candidate) => candidate.toLowerCase() === parts[0].toLowerCase())
+      : undefined;
+  if (!locale) return extractLocaleFromUrl(url, i18n);
+  const rest = `/${parts.slice(1).join("/")}`;
+  return { explicitLocalePrefix: parts[0], locale, url: `${rest || "/"}${query}` };
+}
+
+/** Keys a path an App page route lists by the route and the pathname together. */
+function appPageListingKey(routePattern: string, pathname: string): string {
+  return `${routePattern}\0${pathname}`;
+}
+
+async function collectAppPaths(options: {
+  appDir: string;
+  baseUrl: string | null;
+  cacheComponents: boolean;
+  enumerateDynamicPaths: boolean;
+  pageExtensions: readonly string[];
+  retryOptions?: PathDiscoveryRetryOptions;
+  root: string;
+  secretHeaders: Record<string, string>;
+}): Promise<{
+  fallbackRoutePatterns: PrerenderRoutePattern[];
+  nonDynamicPaths: string[];
+  paths: string[];
+  routeHandlerPaths: string[];
+  /**
+   * Keys (`appPageListingKey`) of the paths each static or SSG App page route
+   * lists in its own static generation.
+   */
+  listedRoutePaths: Set<string>;
+}> {
+  const routes = await appRouter(options.appDir, options.pageExtensions);
+  const paths: string[] = [];
+  const seen = new Set<string>();
+  const routeHandlerPaths: string[] = [];
+  const seenRouteHandlerPaths = new Set<string>();
+  const fallbackRoutePatterns: PrerenderRoutePattern[] = [];
+  const nonDynamicPaths: string[] = [];
+  const seenNonDynamicPaths = new Set<string>();
+  const listedRoutePaths = new Set<string>();
+  const staticParamsCache = new Map<string, Promise<Record<string, string | string[]>[] | null>>();
+  let requireNonEmptyStaticParams = false;
+  const staticParamsMap = new Proxy({} as StaticParamsMap, {
+    get(_target, pattern: string) {
+      return async ({ params }: { params: Record<string, string | string[]> }) => {
+        if (!options.baseUrl) return null;
+        // Under Cache Components every empty result is rejected below, so a
+        // composed resolver must not pass parents through one.
+        const rejectEmptyResults = requireNonEmptyStaticParams;
+        const cacheKey = `${pattern}\0${JSON.stringify(params)}\0${rejectEmptyResults}`;
+        let request = staticParamsCache.get(cacheKey);
+        if (request === undefined) {
+          request = (async () => {
+            const search = new URLSearchParams({ pattern });
+            if (Object.keys(params).length > 0) {
+              search.set("parentParams", JSON.stringify(params));
+            }
+            if (rejectEmptyResults) search.set("rejectEmptyResults", "1");
+            const text = await fetchDiscoveryEndpoint(
+              `${options.baseUrl}/__vinext/prerender/static-params?${search}`,
+              options.secretHeaders,
+              options.retryOptions,
+            );
+            if (text === null) return null;
+            const value = JSON.parse(text) as unknown;
+            if (!Array.isArray(value)) {
+              throw new Error(`generateStaticParams must return an array for ${pattern}.`);
+            }
+            return value.map((entry) => {
+              if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+                throw new Error(
+                  `generateStaticParams must return parameter objects for ${pattern}.`,
+                );
+              }
+              return validateDiscoveredParams(
+                { ...params, ...(entry as Record<string, unknown>) },
+                pattern,
+                "generateStaticParams",
+              );
+            });
+          })();
+          void request.catch(() => staticParamsCache.delete(cacheKey));
+          staticParamsCache.set(cacheKey, request);
+        }
+        const value = await request;
+        if (rejectEmptyResults && value?.length === 0) {
+          throw new Error(
+            "When using Cache Components, all `generateStaticParams` functions must return at least one result. " +
+              "This is to ensure that we can perform build-time validation that there is no other dynamic accesses that would cause a runtime error.\n\n" +
+              "Learn more: https://nextjs.org/docs/messages/empty-generate-static-params",
+          );
+        }
+        return value;
+      };
+    },
+    has() {
+      return false;
+    },
+  });
+
+  const readMdxEsm =
+    !options.cacheComponents && options.pageExtensions.includes("mdx")
+      ? await loadMdxEsmReader(options.root)
+      : null;
+  for (const route of routes) {
+    const isRouteHandler = route.routePath !== null && route.pagePath === null;
+    const renderEntryPath = isRouteHandler ? route.routePath : getAppRouteRenderEntryPath(route);
+    if (!renderEntryPath) continue;
+    if (isRouteHandler) {
+      const classification = classifyAppRouteHandler(route.routePath!);
+      if (!classification.hasGet || !classification.staticGenerationEnabled) continue;
+    } else {
+      const { type } = classifyAppRoute(renderEntryPath, route.routePath, route.isDynamic);
+      if (type === "api") continue;
+    }
+    // Next.js's build lists paths only for a static or SSG page route, and
+    // renders each under the route that generated it. Paths discovered for any
+    // other route stay warm paths but aren't listed. A cacheComponents build
+    // keeps every page route eligible, as dispatch does.
+    const staticEligibility =
+      isRouteHandler || options.cacheComponents
+        ? "eligible"
+        : classifyAppPageRouteStaticEligibility(route, readMdxEsm);
+    const isStaticEligible = staticEligibility !== "ineligible";
+
+    const addDiscoveredPath = (pathname: string): void => {
+      if (isRouteHandler) {
+        addPath(routeHandlerPaths, seenRouteHandlerPaths, pathname);
+        return;
+      }
+      addPath(paths, seen, pathname);
+      if (isStaticEligible) listedRoutePaths.add(appPageListingKey(route.pattern, pathname));
+    };
+
+    if (!route.isDynamic) {
+      addDiscoveredPath(route.pattern);
+      addPath(nonDynamicPaths, seenNonDynamicPaths, route.pattern);
+      continue;
+    }
+
+    if (!options.enumerateDynamicPaths) continue;
+
+    // Next.js enables Cache Components PPR validation only for App Pages.
+    // App Route Handlers still permit empty generateStaticParams results.
+    requireNonEmptyStaticParams = options.cacheComponents && !isRouteHandler;
+    try {
+      const generateStaticParams = staticParamsMap[route.pattern];
+      if (typeof generateStaticParams !== "function") continue;
+
+      const parentParamSets = await resolveParentParams(route, staticParamsMap);
+      let paramSets: Record<string, string | string[]>[] | null;
+
+      if (parentParamSets.length > 0) {
+        paramSets = [];
+        for (const parentParams of parentParamSets) {
+          const childResults = await generateStaticParams({ params: parentParams });
+          if (childResults === null) {
+            // The route's own segments have no generateStaticParams, so its
+            // layouts' params stand alone.
+            paramSets = layoutOnlyParamSets(route, parentParamSets);
+            break;
+          }
+          if (Array.isArray(childResults)) {
+            // As for a layout, an empty own result passes the parent set
+            // through (build/static-paths/app.ts generateRouteStaticParams);
+            // routeStaticParamSets below still drops it if incomplete.
+            if (childResults.length === 0) paramSets.push(parentParams);
+            for (const childParams of childResults) {
+              paramSets.push({ ...parentParams, ...childParams });
+            }
+          }
+        }
+        if (paramSets !== null) paramSets = routeStaticParamSets(route, paramSets);
+      } else {
+        const results = await generateStaticParams({ params: {} });
+        paramSets =
+          results === null
+            ? null
+            : routeStaticParamSets(route, Array.isArray(results) ? results : []);
+      }
+
+      if (!paramSets?.length) {
+        if (isRouteHandler) {
+          // App Route Handlers do not inherit page layouts or parallel slots.
+          // Match Next.js's route-module eligibility: an empty
+          // generateStaticParams result remains an on-demand static fallback,
+          // while a handler without generateStaticParams needs an explicit
+          // force-static/error contract.
+          const dynamicConfig = extractExportConstString(
+            fs.readFileSync(renderEntryPath, "utf8"),
+            "dynamic",
+          );
+          const hasStaticFallback =
+            paramSets !== null || dynamicConfig === "force-static" || dynamicConfig === "error";
+          if (hasStaticFallback) {
+            fallbackRoutePatterns.push({ kind: "app-route", pattern: route.pattern });
+          }
+          continue;
+        }
+
+        const parallelSegments = route.parallelSlots.flatMap((slot) =>
+          [
+            slot.layoutPath,
+            ...(slot.configLayoutPaths ?? []),
+            slot.pagePath ?? slot.defaultPath,
+          ].filter((filePath): filePath is string => typeof filePath === "string"),
+        );
+        const segmentClassifications = [...route.layouts, renderEntryPath, ...parallelSegments].map(
+          (filePath) => classifyAppRoute(filePath, null, false),
+        );
+        const hasDynamicSegment = segmentClassifications.some(
+          (classification) => classification.type === "ssr",
+        );
+        const readDynamicConfig = (filePath: string): { dynamic?: string } => {
+          const dynamic = extractExportConstString(fs.readFileSync(filePath, "utf8"), "dynamic");
+          return dynamic === null ? {} : { dynamic };
+        };
+        const dynamicConfig = resolveAppPageDynamicConfig({
+          layouts: route.layouts.map(readDynamicConfig),
+          page: readDynamicConfig(renderEntryPath),
+          parallelSegments: parallelSegments.map(readDynamicConfig),
+        });
+        const hasStaticFallback =
+          paramSets !== null || dynamicConfig === "force-static" || dynamicConfig === "error";
+        if (hasStaticFallback && !hasDynamicSegment && staticEligibility === "eligible") {
+          fallbackRoutePatterns.push({ kind: "app-page", pattern: route.pattern });
+        }
+        continue;
+      }
+
+      for (const params of paramSets) {
+        if (params === null || params === undefined) continue;
+        addDiscoveredPath(buildUrlFromParams(route.pattern, params));
+      }
+    } catch (error) {
+      throwDiscoveryFailure(route.pattern, error);
+    }
+  }
+
+  return {
+    fallbackRoutePatterns,
+    nonDynamicPaths,
+    paths,
+    routeHandlerPaths,
+    listedRoutePaths,
+  };
+}
+
+async function resolveAppWarmPaths(options: {
+  appDir: string;
+  i18n: ResolvedNextConfig["i18n"];
+  pagesDir: string | null;
+  pageExtensions: readonly string[];
+  paths: readonly string[];
+}): Promise<{
+  appPaths: string[];
+  appRoutePaths: string[];
+  htmlPaths: string[];
+  loadingBoundaryRoutePatterns: string[];
+  loadingShellPaths: string[];
+  pagesPaths: string[];
+  rscPaths: string[];
+  routePatterns: Record<string, PrerenderRoutePattern>;
+}> {
+  const appRoutes = await appRouter(options.appDir, options.pageExtensions);
+  // Read from the route graph for every App page route. A configured
+  // candidate path can be recorded without a matched route, so per-path
+  // metadata can't carry it.
+  const loadingBoundaryRoutePatterns = appRoutes
+    .filter(
+      (route) => !(route.routePath && !route.pagePath) && appRouteHasMainTreeLoadingBoundary(route),
+    )
+    .map((route) => route.pattern)
+    .sort();
+  const routeHandlerClassifications = new Map(
+    appRoutes.flatMap((route) =>
+      route.routePath && !route.pagePath
+        ? [[route.routePath, classifyAppRouteHandler(route.routePath)] as const]
+        : [],
+    ),
+  );
+  const [pageRoutes, apiRoutes] = options.pagesDir
+    ? await Promise.all([
+        pagesRouter(options.pagesDir, options.pageExtensions),
+        apiRouter(options.pagesDir, options.pageExtensions),
+      ])
+    : [[], []];
+
+  const rscPaths: string[] = [];
+  const appPaths: string[] = [];
+  const appRoutePaths: string[] = [];
+  const htmlPaths: string[] = [];
+  const loadingShellPaths: string[] = [];
+  const pagesPaths: string[] = [];
+  const routePatterns: Record<string, PrerenderRoutePattern> = {};
+  for (const pathname of options.paths) {
+    const appMatch = matchAppRoute(pathname, appRoutes);
+    // Pages Router i18n prefixes are routing metadata rather than part of the
+    // filesystem route. Production strips them before matching Pages/API
+    // routes, while the App Router still matches the original pathname.
+    const pagesPathname = options.i18n
+      ? extractLocaleFromUrl(pathname, options.i18n).url
+      : pathname;
+    // The App-to-Pages production bridge selects the API handler from the raw
+    // request pathname before the Pages matcher strips i18n metadata. A
+    // locale-prefixed `/fr/api/*` path therefore remains a page candidate,
+    // rather than becoming a Pages API request after normalization.
+    const isPagesApiRequest = pathname === "/api" || pathname.startsWith("/api/");
+    const pagesMatch = matchRoute(pagesPathname, isPagesApiRequest ? apiRoutes : pageRoutes);
+    if (
+      pagesMatch &&
+      (!appMatch || pagesRouteHasPriorityOverAppRoute(pagesMatch.route, appMatch.route))
+    ) {
+      if (!isPagesApiRequest) {
+        htmlPaths.push(pathname);
+        pagesPaths.push(pathname);
+        routePatterns[pathname] = { kind: "pages-page", pattern: pagesMatch.route.pattern };
+      }
+      continue;
+    }
+    if (!appMatch) continue;
+
+    // The trie returns the exact object from appRoutes. Its public matcher type
+    // exposes the shared AppRoute fields, so recover the graph-owned metadata
+    // here without rescanning the route table for every concrete path.
+    const matchedAppRoute = appMatch.route as (typeof appRoutes)[number];
+    if (matchedAppRoute.routePath && !matchedAppRoute.pagePath) {
+      const classification = routeHandlerClassifications.get(matchedAppRoute.routePath);
+      if (classification?.hasGet && classification.staticGenerationEnabled) {
+        appRoutePaths.push(pathname);
+        routePatterns[pathname] = { kind: "app-route", pattern: matchedAppRoute.pattern };
+      }
+      continue;
+    }
+
+    const appRenderEntryPath = getAppRouteRenderEntryPath(matchedAppRoute);
+    if (!appRenderEntryPath) continue;
+    if (
+      classifyAppRoute(appRenderEntryPath, matchedAppRoute.routePath, matchedAppRoute.isDynamic)
+        .type === "api"
+    ) {
+      continue;
+    }
+
+    appPaths.push(pathname);
+    htmlPaths.push(pathname);
+    rscPaths.push(pathname);
+    routePatterns[pathname] = { kind: "app-page", pattern: matchedAppRoute.pattern };
+    if (appRouteHasMainTreeLoadingBoundary(matchedAppRoute)) {
+      loadingShellPaths.push(pathname);
+    }
+  }
+  return {
+    appPaths,
+    appRoutePaths,
+    htmlPaths,
+    loadingBoundaryRoutePatterns,
+    loadingShellPaths,
+    pagesPaths,
+    routePatterns,
+    rscPaths,
+  };
+}
+
+function cachePolicyRuleMatchesWarmPath(
+  pathname: string,
+  rule: ResolvedNextConfig["headers"][number],
+  config: Pick<ResolvedNextConfig, "basePath" | "i18n" | "skipProxyUrlNormalize" | "trailingSlash">,
+): boolean {
+  const canonicalPathname = normalizePathTrailingSlash(pathname, config.trailingSlash);
+  const hostnames = [undefined, ...(config.i18n?.domains?.map((domain) => domain.domain) ?? [])];
+  return hostnames.some((hostname) => {
+    const matchPathname = normalizeDefaultLocalePathname(canonicalPathname, config.i18n, {
+      hostname,
+      restoreRootTrailingSlash: shouldRestoreLocaleRootTrailingSlash(canonicalPathname, config),
+    });
+    let sourceMatched = false;
+    matchHeaders(
+      matchPathname,
+      [rule],
+      {
+        cookies: {},
+        headers: new Headers(),
+        host: hostname ?? "",
+        query: new URLSearchParams(),
+      },
+      { basePath: config.basePath, hadBasePath: true },
+      () => {
+        sourceMatched = true;
+      },
+    );
+    return sourceMatched;
+  });
+}
+
+function cachePolicyRuleSourceMatchesWarmPath(
+  pathname: string,
+  rule: ResolvedNextConfig["headers"][number],
+  config: Pick<ResolvedNextConfig, "basePath" | "i18n" | "skipProxyUrlNormalize" | "trailingSlash">,
+): boolean {
+  return cachePolicyRuleMatchesWarmPath(
+    pathname,
+    { ...rule, has: undefined, missing: undefined },
+    config,
+  );
+}
+
+function staticConfigPatternSegments(pattern: string): string[] {
+  const segments: string[] = [];
+  for (const segment of pattern.split("/").filter(Boolean)) {
+    if (/[:*()[\]{}]/.test(segment)) break;
+    segments.push(segment);
+  }
+  return segments;
+}
+
+function routePatternCouldIntersectCachePolicyRule(
+  routePattern: string,
+  rule: ResolvedNextConfig["headers"][number],
+  basePath: string,
+): boolean {
+  let ruleSource = rule.source;
+  if (
+    rule.basePath !== false &&
+    basePath &&
+    (ruleSource === basePath || ruleSource.startsWith(`${basePath}/`))
+  ) {
+    ruleSource = ruleSource.slice(basePath.length) || "/";
+  }
+  const routeSegments = staticConfigPatternSegments(routePattern);
+  const ruleSegments = staticConfigPatternSegments(ruleSource);
+  const sharedLength = Math.min(routeSegments.length, ruleSegments.length);
+  for (let index = 0; index < sharedLength; index++) {
+    if (routeSegments[index] !== ruleSegments[index]) return false;
+  }
+  return true;
+}
+
+/**
+ * Certify only route-config bailouts that cannot hide a path- or
+ * request-specific next.config cache policy. The final Worker still evaluates
+ * every concrete response before emitting public cache headers.
+ */
+function annotateCacheabilityProbeSafety(
+  routePatterns: Record<string, PrerenderRoutePattern>,
+  config: Pick<
+    ResolvedNextConfig,
+    "basePath" | "headers" | "i18n" | "skipProxyUrlNormalize" | "trailingSlash"
+  >,
+  routeMayResolve: ReadonlySet<string>,
+  requestStageMayTerminate: ReadonlySet<string>,
+  unlisted: ReadonlySet<string>,
+  isResponsePolicyHeader: (name: string) => boolean,
+): Record<string, PrerenderRoutePattern> {
+  const cachePolicyRules = config.headers.filter((rule) =>
+    rule.headers.some((header) => isResponsePolicyHeader(header.key)),
+  );
+  const matchingPolicyRules = new Map(
+    Object.keys(routePatterns).map((pathname) => [
+      pathname,
+      new Set(
+        cachePolicyRules.filter((rule) => cachePolicyRuleMatchesWarmPath(pathname, rule, config)),
+      ),
+    ]),
+  );
+  const pathsByPattern = new Map<string, string[]>();
+  for (const [pathname, route] of Object.entries(routePatterns)) {
+    const key = `${route.kind}\0${route.pattern}`;
+    const paths = pathsByPattern.get(key) ?? [];
+    paths.push(pathname);
+    pathsByPattern.set(key, paths);
+  }
+  const canPrunePatterns = new Map<string, boolean>();
+  for (const [patternKey, patternPaths] of pathsByPattern) {
+    const routePattern = routePatterns[patternPaths[0]].pattern;
+    const relevantRules = cachePolicyRules.filter(
+      (rule) =>
+        patternPaths.some((path) => cachePolicyRuleSourceMatchesWarmPath(path, rule, config)) ||
+        routePatternCouldIntersectCachePolicyRule(routePattern, rule, config.basePath),
+    );
+    canPrunePatterns.set(
+      patternKey,
+      relevantRules.every(
+        (rule) =>
+          !rule.has?.length &&
+          !rule.missing?.length &&
+          patternPaths.every((path) => matchingPolicyRules.get(path)?.has(rule) === true),
+      ),
+    );
+  }
+
+  return Object.fromEntries(
+    Object.entries(routePatterns).map(([pathname, route]) => {
+      const patternKey = `${route.kind}\0${route.pattern}`;
+      const canPrunePattern = canPrunePatterns.get(patternKey) ?? false;
+      return [
+        pathname,
+        {
+          ...route,
+          cacheabilityProbe: {
+            canPrunePattern,
+            ...(routeMayResolve.has(pathname) ? { routeMayResolve: true } : {}),
+            ...(requestStageMayTerminate.has(pathname) ? { requestStageMayTerminate: true } : {}),
+            ...(unlisted.has(pathname) ? { unlisted: true } : {}),
+          },
+        },
+      ];
+    }),
+  );
+}
+
+function configuredRulesAffectWarmPath(
+  pathname: string,
+  rules: ReadonlyArray<NextRewrite>,
+  config: Pick<ResolvedNextConfig, "basePath" | "i18n" | "trailingSlash">,
+): boolean {
+  const canonicalPathname = normalizePathTrailingSlash(pathname, config.trailingSlash);
+  const hostnames = [undefined, ...(config.i18n?.domains?.map((domain) => domain.domain) ?? [])];
+  const matchPathnames = new Set(
+    hostnames.map((hostname) =>
+      normalizeDefaultLocalePathname(canonicalPathname, config.i18n, { hostname }),
+    ),
+  );
+  return rules.some((rule) =>
+    Array.from(matchPathnames).some((matchPathname) =>
+      matchesRewriteSource(matchPathname, rule, {
+        basePath: config.basePath,
+        hadBasePath: true,
+      }),
+    ),
+  );
+}
+
+/**
+ * Whether a configured rewrite can replace a route-owned warm response.
+ * Non-dynamic filesystem routes win before `afterFiles`, while every concrete
+ * path discovered here wins dynamic matching before `fallback`.
+ */
+function configuredRewritesCanReplaceWarmPath(
+  pathname: string,
+  rewrites: ResolvedNextConfig["rewrites"],
+  hasNonDynamicRoute: boolean,
+  config: Pick<ResolvedNextConfig, "basePath" | "i18n" | "trailingSlash">,
+  include: (rewrite: NextRewrite) => boolean,
+): boolean {
+  const applicableRewrites = [
+    ...rewrites.beforeFiles.filter(include),
+    ...(hasNonDynamicRoute ? [] : rewrites.afterFiles.filter(include)),
+  ];
+  return configuredRulesAffectWarmPath(pathname, applicableRewrites, config);
+}
+
+function canonicalDir(dir: string): string {
+  return toSlash(tryRealpathSync(dir) ?? dir);
+}
+
+function findMiddlewareConventionFile(
+  root: string,
+  appDir: string | null,
+  pagesDir: string | null,
+  pageExtensions: readonly string[],
+): string | null {
+  const routeDir = appDir ?? pagesDir;
+  const routeRoot = routeDir ? path.dirname(routeDir) : root;
+  // Compare real paths: `root` is resolved through symlinks, a user appDir may not be.
+  const conventionDir =
+    canonicalDir(routeRoot) === canonicalDir(path.join(root, "src")) ? routeRoot : root;
+  for (const name of ["proxy", "middleware"]) {
+    for (const extension of pageExtensions) {
+      const filePath = path.join(conventionDir, `${name}.${extension}`);
+      if (fs.existsSync(filePath)) return filePath;
+    }
+  }
+  return null;
+}
+
+/** @internal Match the pathname forms and locale provenance used by middleware runtime. */
+export function matchesMiddlewareWarmPath(
+  pathname: string,
+  matcher: MatcherConfig | undefined,
+  i18n: ResolvedNextConfig["i18n"],
+  options: {
+    basePath?: string;
+    /**
+     * Whether the path's Pages data request reaches middleware slashed
+     * (`shouldAddTrailingSlashToPagesDataPath`). Omit for a path without a
+     * Pages data target.
+     */
+    pagesDataTrailingSlash?: boolean;
+    skipProxyUrlNormalize?: boolean;
+    trailingSlash?: boolean;
+  } = {},
+): boolean {
+  const encodedPathname = new URL(pathname, "https://vinext.invalid").pathname;
+  // Runtime middleware gates on the pathname as requested. The HTML warm
+  // request carries the configured terminal slash, and its default-locale
+  // root is tested as `/en/` where Next.js restores that slash. A Pages data
+  // request is matched as its page, slashed as the runtime normalizes it.
+  const trailingSlash = options.trailingSlash ?? false;
+  // The warmer slashes the basePath-prefixed path, so a file-like basePath
+  // keeps an unslashed root.
+  const htmlRequestPathname = normalizePathTrailingSlash(
+    options.basePath
+      ? `${options.basePath}${encodedPathname === "/" ? "" : encodedPathname}`
+      : encodedPathname,
+    trailingSlash,
+  );
+  const firstSegment = encodedPathname.split("/", 3)[1]?.toLowerCase();
+  const localeContexts: Array<MiddlewareLocaleMatchContext | undefined> = i18n
+    ? i18n.locales.some((locale) => locale.toLowerCase() === firstSegment)
+      ? [{ kind: "literal" }]
+      : Array.from(
+          new Set([
+            i18n.defaultLocale,
+            ...(i18n.domains?.map((domain) => domain.defaultLocale) ?? []),
+          ]),
+          (defaultLocale) => ({ defaultLocale, kind: "defaulted" as const }),
+        )
+    : [undefined];
+  const requestSpellings = [
+    {
+      localeContexts: shouldRestoreLocaleRootTrailingSlash(htmlRequestPathname, options)
+        ? localeContexts.map((localeContext) =>
+            localeContext?.kind === "defaulted"
+              ? { ...localeContext, restoreRootTrailingSlash: true }
+              : localeContext,
+          )
+        : localeContexts,
+      pathname: normalizePathTrailingSlash(encodedPathname, trailingSlash),
+    },
+  ];
+  if (options.pagesDataTrailingSlash !== undefined) {
+    // The emitted data URL names the build's default locale, which the
+    // runtime then matches as a literal locale segment.
+    const dataLocaleContexts: Array<MiddlewareLocaleMatchContext | undefined> = [
+      i18n ? { kind: "literal" } : undefined,
+    ];
+    requestSpellings.push({
+      localeContexts: dataLocaleContexts,
+      pathname: normalizeNextDataPagePathname(
+        localizePagesDataPath(encodedPathname, i18n),
+        options.pagesDataTrailingSlash,
+      ),
+    });
+  }
+  return requestSpellings.some((spelling) => {
+    const matchPathnames = [spelling.pathname];
+    try {
+      const decodedPathname = decodeURIComponent(spelling.pathname);
+      if (decodedPathname !== spelling.pathname) matchPathnames.push(decodedPathname);
+    } catch {
+      // Match runtime middleware behavior: malformed encoding is non-fatal.
+    }
+    return matchPathnames.some((matchPathname) =>
+      spelling.localeContexts.some((localeContext) =>
+        matchesMiddlewarePathname(matchPathname, matcher, i18n, localeContext),
+      ),
+    );
+  });
+}
+
+async function startPathDiscoveryServer(options: {
+  serverDir: string;
+  pagesBundlePath?: string;
+  rscBundlePath?: string;
+}): Promise<{ server: HttpServer; port: number }> {
+  return startProdServer({
+    port: 0,
+    host: "127.0.0.1",
+    outDir: options.pagesBundlePath
+      ? path.dirname(path.dirname(options.pagesBundlePath))
+      : path.dirname(options.serverDir),
+    rscEntryPath: options.rscBundlePath,
+    serverDir: options.serverDir,
+    serverEntryPath: options.pagesBundlePath,
+    noCompression: true,
+    purpose: "prerender",
+  });
+}
+
+export async function discoverPrerenderPathManifest(
+  options: PrerenderPathDiscoveryOptions,
+): Promise<PrerenderPathManifest | null> {
+  const { root } = options;
+  const configuredRouteDirs = resolveConfiguredRouteDirs(root, options.routeRootConfig);
+  const appDir = options.appDir !== undefined ? options.appDir : configuredRouteDirs.appDir;
+  const pagesDir = options.pagesDir !== undefined ? options.pagesDir : configuredRouteDirs.pagesDir;
+
+  if (!appDir && !pagesDir) return null;
+
+  const configuredRscServerDir = options.routeRootConfig?.rscOutDir
+    ? path.resolve(root, options.routeRootConfig.rscOutDir)
+    : path.join(root, "dist", "server");
+  const defaultRscBundlePath = resolveBuiltRscEntryPath(configuredRscServerDir);
+  const rscBundlePath = options.rscBundlePath ?? defaultRscBundlePath;
+  const relativeRscEntryPath = path.relative(configuredRscServerDir, rscBundlePath);
+  const rscServerDir =
+    !relativeRscEntryPath.startsWith("../") && !path.isAbsolute(relativeRscEntryPath)
+      ? configuredRscServerDir
+      : path.dirname(rscBundlePath);
+  const pagesBundlePath =
+    options.pagesBundlePath ??
+    resolveBuiltPagesEntryPath(
+      path.resolve(root, options.routeRootConfig?.ssrOutDir ?? path.join("dist", "server")),
+    );
+  const bundleServerDir = fs.existsSync(rscBundlePath)
+    ? rscServerDir
+    : path.dirname(pagesBundlePath);
+  const manifestDir = path.join(root, "dist", "server");
+  const config = options.nextConfig
+    ? { ...options.nextConfig }
+    : { ...(await resolveNextConfig(await loadNextConfig(root, PHASE_PRODUCTION_BUILD), root)) };
+  const builtBuildId = readBuiltBuildId(manifestDir) ?? readBuiltBuildId(bundleServerDir);
+  const rscBuildId = readBuiltRscBuildId(manifestDir) ?? readBuiltRscBuildId(bundleServerDir);
+  if (builtBuildId) {
+    config.buildId = builtBuildId;
+  }
+
+  const paths: string[] = [];
+  const seen = new Set<string>();
+  const discoveredPagesPaths: string[] = [];
+  const seenPagesPaths = new Set<string>();
+  const discoveredPagesDataPaths: string[] = [];
+  const seenPagesDataPaths = new Set<string>();
+  const discoveredRouteHandlerPaths: string[] = [];
+  const seenRouteHandlerPaths = new Set<string>();
+  const discoveredNonDynamicPathSet = new Set<string>();
+  const appListedRoutePaths = new Set<string>();
+  const candidateOnlyPathSet = new Set<string>();
+  const fallbackRoutePatterns: PrerenderRoutePattern[] = [];
+  await withPrerenderEndpoints(async () => {
+    let prodServer: { server: HttpServer; port: number } | null = null;
+    const needsServer = await shouldStartPathDiscoveryServer({
+      appDir,
+      pagesDir,
+      pageExtensions: config.pageExtensions,
+    });
+    if (needsServer && !options.pathDiscoveryTarget) {
+      try {
+        prodServer = await startPathDiscoveryServer({
+          serverDir: bundleServerDir,
+          pagesBundlePath: !appDir && pagesDir ? pagesBundlePath : undefined,
+          rscBundlePath: appDir ? rscBundlePath : undefined,
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`Failed to start prerender path discovery server: ${message}`, {
+          cause: error,
+        });
+      }
+    }
+
+    const baseUrl = options.pathDiscoveryTarget?.baseUrl
+      ? new URL(options.pathDiscoveryTarget.baseUrl).origin
+      : prodServer
+        ? `http://127.0.0.1:${prodServer.port}`
+        : null;
+    const prerenderSecret =
+      readPrerenderSecret(bundleServerDir) ?? readPrerenderSecret(manifestDir);
+    if (needsServer && options.pathDiscoveryTarget && !prerenderSecret) {
+      throw new Error(
+        "Cannot discover warmup paths from the staged Worker because dist/server/vinext-server.json does not contain a prerender secret. Rebuild the app before deploying.",
+      );
+    }
+    const secretHeaders: Record<string, string> = Object.fromEntries(
+      new Headers(options.pathDiscoveryTarget?.headers),
+    );
+    if (prerenderSecret) {
+      secretHeaders[VINEXT_PRERENDER_SECRET_HEADER] = prerenderSecret;
+    }
+    const pathDiscoveryRetryOptions = options.pathDiscoveryTarget
+      ? {
+          deadlineAt:
+            Date.now() +
+            Math.max(
+              1,
+              options.pathDiscoveryTarget.phaseTimeoutMs ??
+                DEFAULT_REMOTE_PATH_DISCOVERY_PHASE_TIMEOUT_MS,
+            ),
+          phaseTimeoutMs: options.pathDiscoveryTarget.phaseTimeoutMs,
+          retries: options.pathDiscoveryTarget.retries,
+          retryDelayMs: options.pathDiscoveryTarget.retryDelayMs,
+        }
+      : undefined;
+
+    try {
+      if (appDir) {
+        const appPathResult = await collectAppPaths({
+          appDir,
+          baseUrl,
+          cacheComponents: config.cacheComponents,
+          enumerateDynamicPaths: options.candidatePathsOnly !== true,
+          pageExtensions: config.pageExtensions,
+          retryOptions: pathDiscoveryRetryOptions,
+          root,
+          secretHeaders,
+        });
+        for (const pathname of appPathResult.paths) {
+          addPath(paths, seen, pathname);
+        }
+        for (const pathname of appPathResult.routeHandlerPaths) {
+          addPath(discoveredRouteHandlerPaths, seenRouteHandlerPaths, pathname);
+        }
+        for (const pathname of appPathResult.nonDynamicPaths) {
+          discoveredNonDynamicPathSet.add(pathname);
+        }
+        fallbackRoutePatterns.push(...appPathResult.fallbackRoutePatterns);
+        for (const key of appPathResult.listedRoutePaths) appListedRoutePaths.add(key);
+      }
+
+      if (pagesDir) {
+        const pagesPathResult = await collectPagesPaths({
+          baseUrl,
+          enumerateDynamicPaths: options.candidatePathsOnly !== true,
+          i18n: config.i18n,
+          pagesDir,
+          pageExtensions: config.pageExtensions,
+          retryOptions: pathDiscoveryRetryOptions,
+          secretHeaders,
+        });
+        for (const pathname of pagesPathResult.paths) {
+          addPath(paths, seen, pathname);
+          addPath(discoveredPagesPaths, seenPagesPaths, pathname);
+        }
+        for (const pathname of pagesPathResult.dataPaths) {
+          addPath(discoveredPagesDataPaths, seenPagesDataPaths, pathname);
+        }
+        for (const pathname of pagesPathResult.nonDynamicPaths) {
+          discoveredNonDynamicPathSet.add(pathname);
+        }
+        fallbackRoutePatterns.push(...pagesPathResult.fallbackRoutePatterns);
+      }
+    } finally {
+      if (prodServer) {
+        await new Promise<void>((resolve) => prodServer!.server.close(() => resolve()));
+      }
+    }
+  });
+
+  for (const publicPathname of options.candidatePaths ?? []) {
+    let pathname = normalizePathTrailingSlash(
+      new URL(publicPathname, "http://vinext.local").pathname,
+      false,
+    );
+    if (config.basePath) {
+      if (pathname === config.basePath) pathname = "/";
+      else if (pathname.startsWith(`${config.basePath}/`))
+        pathname = pathname.slice(config.basePath.length);
+      else continue;
+    }
+    if (!seen.has(pathname)) candidateOnlyPathSet.add(pathname);
+    addPath(paths, seen, pathname);
+    if (pagesDir) addPath(discoveredPagesPaths, seenPagesPaths, pathname);
+  }
+
+  const hasStagedRequestRouting = options.requestRouting === "uncached-stage";
+  const middlewarePath = hasStagedRequestRouting
+    ? findMiddlewareConventionFile(root, appDir, pagesDir, config.pageExtensions)
+    : null;
+  const middlewareMatcher = middlewarePath
+    ? extractMiddlewareMatcherConfig(middlewarePath)
+    : undefined;
+  const configuredMatcher = middlewareMatcher as MatcherConfig | undefined;
+  const routedWarmPaths = [...paths, ...discoveredRouteHandlerPaths];
+  const excludedWarmPathSet = new Set(
+    options.responseVary && !hasStagedRequestRouting
+      ? routedWarmPaths.filter(
+          (pathname) =>
+            configuredRulesAffectWarmPath(pathname, config.redirects, config) ||
+            configuredRewritesCanReplaceWarmPath(
+              pathname,
+              config.rewrites,
+              discoveredNonDynamicPathSet.has(pathname),
+              config,
+              () => true,
+            ),
+        )
+      : [],
+  );
+  const configuredPagesWarmPaths = discoveredPagesPaths.filter(
+    (pathname) => !excludedWarmPathSet.has(pathname),
+  );
+  const resolvedPagesWarmPaths =
+    !appDir && pagesDir
+      ? await excludePagesApiWarmPaths({
+          i18n: config.i18n,
+          pagesDir,
+          pageExtensions: config.pageExtensions,
+          paths: configuredPagesWarmPaths,
+        })
+      : configuredPagesWarmPaths;
+  const configuredCandidatePaths = paths.filter((pathname) => !excludedWarmPathSet.has(pathname));
+  const configuredRouteHandlerPaths = discoveredRouteHandlerPaths.filter(
+    (pathname) => !excludedWarmPathSet.has(pathname),
+  );
+  const pagesWarmMetadata = pagesDir
+    ? await resolvePagesWarmRouteMetadata({
+        i18n: config.i18n,
+        pagesDir,
+        pageExtensions: config.pageExtensions,
+        paths: resolvedPagesWarmPaths,
+      })
+    : { dataPaths: [], routePatterns: {} };
+  for (const pathname of pagesWarmMetadata.dataPaths) {
+    addPath(discoveredPagesDataPaths, seenPagesDataPaths, pathname);
+  }
+  const discoveredPagesDataPathSet = new Set(discoveredPagesDataPaths);
+  const pagesOnlyWarmPaths = resolvedPagesWarmPaths.filter(
+    (pathname) => pagesWarmMetadata.routePatterns[pathname] !== undefined,
+  );
+  const appOwnedWarmPaths = appDir
+    ? await resolveAppWarmPaths({
+        appDir,
+        i18n: config.i18n,
+        pagesDir,
+        pageExtensions: config.pageExtensions,
+        paths: [...configuredCandidatePaths, ...configuredRouteHandlerPaths],
+      })
+    : {
+        appPaths: [],
+        appRoutePaths: [],
+        htmlPaths: pagesOnlyWarmPaths,
+        loadingBoundaryRoutePatterns: [],
+        loadingShellPaths: [],
+        pagesPaths: pagesOnlyWarmPaths,
+        routePatterns: pagesWarmMetadata.routePatterns,
+        rscPaths: [],
+      };
+  const pagesDataRequestsGetTrailingSlash = shouldAddTrailingSlashToPagesDataPath(
+    true,
+    config.trailingSlash,
+    config.skipProxyUrlNormalize,
+  );
+  // Route metadata is shared by a Pages page and its data target. In a hybrid
+  // app, only a path the Pages Router owns emits that target.
+  const pagesOwnedPathSet = appDir ? new Set(appOwnedWarmPaths.pagesPaths) : null;
+  const middlewareMatchesWarmPath = (pathname: string): boolean =>
+    middlewarePath !== null &&
+    matchesMiddlewareWarmPath(pathname, configuredMatcher, config.i18n, {
+      basePath: config.basePath,
+      pagesDataTrailingSlash:
+        discoveredPagesDataPathSet.has(pathname) && (pagesOwnedPathSet?.has(pathname) ?? true)
+          ? pagesDataRequestsGetTrailingSlash
+          : undefined,
+      skipProxyUrlNormalize: config.skipProxyUrlNormalize,
+      trailingSlash: config.trailingSlash,
+    });
+  const routeMayResolveWarmPathSet = new Set(
+    hasStagedRequestRouting
+      ? routedWarmPaths.filter(
+          (pathname) =>
+            middlewareMatchesWarmPath(pathname) ||
+            configuredRewritesCanReplaceWarmPath(
+              pathname,
+              config.rewrites,
+              discoveredNonDynamicPathSet.has(pathname),
+              config,
+              (rewrite) => !isExternalUrl(rewrite.destination),
+            ),
+        )
+      : [],
+  );
+  const requestStageMayTerminateWarmPathSet = new Set(
+    hasStagedRequestRouting
+      ? routedWarmPaths.filter(
+          (pathname) =>
+            middlewareMatchesWarmPath(pathname) ||
+            configuredRulesAffectWarmPath(pathname, config.redirects, config) ||
+            configuredRewritesCanReplaceWarmPath(
+              pathname,
+              config.rewrites,
+              discoveredNonDynamicPathSet.has(pathname),
+              config,
+              (rewrite) => isExternalUrl(rewrite.destination),
+            ),
+        )
+      : [],
+  );
+  for (const pathname of configuredCandidatePaths) {
+    if (
+      appOwnedWarmPaths.routePatterns[pathname] ||
+      (!routeMayResolveWarmPathSet.has(pathname) &&
+        !requestStageMayTerminateWarmPathSet.has(pathname))
+    ) {
+      continue;
+    }
+    appOwnedWarmPaths.htmlPaths.push(pathname);
+    (appDir ? appOwnedWarmPaths.appPaths : appOwnedWarmPaths.pagesPaths).push(pathname);
+    if (appDir && routeMayResolveWarmPathSet.has(pathname)) {
+      appOwnedWarmPaths.rscPaths.push(pathname);
+    }
+    appOwnedWarmPaths.routePatterns[pathname] = {
+      kind: appDir ? "app-page" : "pages-page",
+      pattern: pathname,
+    };
+  }
+  const warmPaths = appOwnedWarmPaths.htmlPaths;
+  const pagesOwnedWarmPaths = appOwnedWarmPaths.pagesPaths;
+  const resolvedPagesDataWarmPaths = pagesOwnedWarmPaths.filter((pathname) =>
+    discoveredPagesDataPathSet.has(pathname),
+  );
+  const pagesDataPaths = resolvedPagesDataWarmPaths.map((pathname) =>
+    buildPagesDataHref(
+      config.basePath,
+      config.buildId,
+      localizePagesDataPath(pathname, config.i18n),
+      "",
+    ),
+  );
+  // A path's listing belongs to the route that owns it at runtime. A path
+  // another route generates, for example a catch-all generating a path a more
+  // specific route owns, is build-rendered under the generating route, never
+  // under its owner. Pages pages and Route Handlers keep a traffic-picked path
+  // unlisted.
+  const unlistedPathSet = new Set(
+    Object.entries(appOwnedWarmPaths.routePatterns).flatMap(([pathname, route]) =>
+      (
+        route.kind === "app-page"
+          ? !appListedRoutePaths.has(appPageListingKey(route.pattern, pathname))
+          : candidateOnlyPathSet.has(pathname)
+      )
+        ? [pathname]
+        : [],
+    ),
+  );
+  const routePatterns = annotateCacheabilityProbeSafety(
+    appOwnedWarmPaths.routePatterns,
+    config,
+    routeMayResolveWarmPathSet,
+    requestStageMayTerminateWarmPathSet,
+    unlistedPathSet,
+    (name) =>
+      name.trim().toLowerCase() === "cache-control" ||
+      options.isResponsePolicyHeader?.(name) === true,
+  );
+  for (let index = 0; index < resolvedPagesDataWarmPaths.length; index++) {
+    const route = routePatterns[resolvedPagesDataWarmPaths[index]];
+    if (route) {
+      const htmlPathname =
+        resolvedPagesDataWarmPaths[index] === "/"
+          ? config.basePath || "/"
+          : `${config.basePath}${resolvedPagesDataWarmPaths[index]}`;
+      routePatterns[pagesDataPaths[index]] = {
+        ...route,
+        cacheabilityProbe: {
+          ...route.cacheabilityProbe!,
+          concretePathname: htmlPathname,
+        },
+      };
+    }
+  }
+
+  const includeCanonicalRsc = options.responseVary || options.includeCanonicalRsc;
+
+  const manifest: PrerenderPathManifest = {
+    ...(appDir ? { appPaths: appOwnedWarmPaths.appPaths } : {}),
+    ...(config.basePath ? { basePath: config.basePath } : {}),
+    buildId: config.buildId,
+    ...(rscBuildId && options.buildIdentity === "response-header"
+      ? { buildIdentity: rscBuildId }
+      : {}),
+    ...(config.deploymentId ? { deploymentId: config.deploymentId } : {}),
+    ...(pagesDir
+      ? {
+          pagesDataPaths,
+          pagesPaths: pagesOwnedWarmPaths,
+        }
+      : {}),
+    ...(excludedWarmPathSet.size > 0 ? { excludedWarmPaths: Array.from(excludedWarmPathSet) } : {}),
+    ...(fallbackRoutePatterns.length > 0 ? { fallbackRoutePatterns } : {}),
+    ...(appOwnedWarmPaths.loadingBoundaryRoutePatterns.length > 0
+      ? { loadingBoundaryRoutePatterns: appOwnedWarmPaths.loadingBoundaryRoutePatterns }
+      : {}),
+    ...(rscBuildId ? { rscBuildId } : {}),
+    ...(options.responseVary ? { responseVary: options.responseVary } : {}),
+    ...(includeCanonicalRsc ? { rscPaths: appOwnedWarmPaths.rscPaths } : {}),
+    ...(Object.keys(routePatterns).length > 0 ? { routePatterns } : {}),
+    ...(appOwnedWarmPaths.appRoutePaths.length > 0
+      ? { routeHandlerPaths: appOwnedWarmPaths.appRoutePaths }
+      : {}),
+    ...(includeCanonicalRsc ? { loadingShellPaths: appOwnedWarmPaths.loadingShellPaths } : {}),
+    trailingSlash: config.trailingSlash,
+    paths: warmPaths,
+  };
+  console.log(
+    `  Discovered ${warmPaths.length + appOwnedWarmPaths.appRoutePaths.length} CDN warmup path(s).`,
+  );
+
+  return manifest;
+}
+
+export async function emitPrerenderPathManifest(
+  options: PrerenderPathDiscoveryOptions,
+): Promise<PrerenderPathManifest | null> {
+  const manifest = await discoverPrerenderPathManifest(options);
+  if (!manifest) return null;
+
+  const manifestDir = path.join(options.root, "dist", "server");
+  fs.mkdirSync(manifestDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(manifestDir, PRERENDER_PATHS_MANIFEST),
+    JSON.stringify(manifest, null, 2) + "\n",
+    "utf-8",
+  );
+  return manifest;
+}

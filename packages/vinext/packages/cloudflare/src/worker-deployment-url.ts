@@ -1,0 +1,96 @@
+import { stripVTControlCharacters } from "node:util";
+import { parseWorkersDevUrl } from "./workers-dev-url.js";
+
+export function parseWorkerDeploymentUrl(output: string): string | null {
+  return parseWorkersDevUrl(output) ?? parseCustomDomainUrl(output);
+}
+
+/**
+ * Parse the concrete hostname that Wrangler reports after applying Worker
+ * triggers. Catch-all routes are valid warmup targets even though they are not
+ * canonical deployment URLs for general CLI reporting. Warmup requests carry the
+ * prerender secret, so an `http://`-only route (which Cloudflare does not match
+ * for HTTPS requests) is never used as a target.
+ */
+export function parseCdnWarmupDeploymentUrl(output: string): string | null {
+  return (
+    parseCustomDomainUrl(output) ??
+    parseCatchAllWorkerRouteOrigin(output) ??
+    parseWorkersDevUrl(output)
+  );
+}
+
+/** Output lines without color or the `│` gutter cf prints before each line of its log. */
+function outputLines(output: string): string[] {
+  return stripVTControlCharacters(output)
+    .split(/\r?\n/)
+    .map((line) => line.replace(/^\s*[│|](?=\s)/, ""));
+}
+
+function parseCatchAllWorkerRouteOrigin(output: string): string | null {
+  for (const line of outputLines(output)) {
+    const route = line.trim().split(/\s+/, 1)[0];
+    if (!route || !route.endsWith("/*")) continue;
+
+    try {
+      const url = new URL(route.includes("://") ? route : `https://${route}`);
+      if (
+        url.protocol !== "https:" ||
+        url.hostname.includes("*") ||
+        url.username !== "" ||
+        url.password !== "" ||
+        url.port !== "" ||
+        url.pathname !== "/*" ||
+        url.search !== "" ||
+        url.hash !== ""
+      ) {
+        continue;
+      }
+      return url.origin;
+    } catch {
+      continue;
+    }
+  }
+
+  return null;
+}
+
+function parseCustomDomainUrl(output: string): string | null {
+  // Wrangler adds a scheme only to workers.dev targets. A successful custom-domain
+  // deployment is printed as a bare hostname with this explicit route-type marker.
+  for (const line of outputLines(output)) {
+    const match =
+      /^\s*(\S+)\s+\(custom domain(?: - zone (?:id|name): [^)]+)?\)(?: \[([^\]\r\n]+)\])?\s*$/.exec(
+        line,
+      );
+    const hostname = match?.[1];
+    if (!hostname) continue;
+    // cf flags a domain that does not serve production traffic as `production: disabled`.
+    if (
+      match[2]
+        ?.split(",")
+        .some((flag) => ["disabled", "production: disabled"].includes(flag.trim()))
+    ) {
+      continue;
+    }
+
+    try {
+      const url = new URL(`https://${hostname}`);
+      if (
+        url.username !== "" ||
+        url.password !== "" ||
+        url.port !== "" ||
+        url.pathname !== "/" ||
+        url.search !== "" ||
+        url.hash !== ""
+      ) {
+        continue;
+      }
+      return url.origin;
+    } catch {
+      continue;
+    }
+  }
+
+  return null;
+}

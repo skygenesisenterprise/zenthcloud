@@ -1,0 +1,92 @@
+import type { NextRequest } from "next/server";
+
+export function middleware(_request: NextRequest) {
+  return new Response("blocked by middleware", {
+    status: 403,
+    headers: { "x-auth-guard": "blocked" },
+  });
+}
+
+export const config = {
+  matcher: [
+    "/(admin|dashboard)/:path*",
+    "/",
+    "/(de|en)/:path*",
+    "/docs/:lang(en|fr)*",
+    "/manual/:lang(en|fr)+",
+    "/(foo.*|bar)/:path*",
+    "/report{.:ext}",
+    "/archive/:date(\\d{4}(?:-\\d{2}){2})",
+    "/codes/:value((?:[A-Z]{2})+)",
+    "/shared/:value((?:ab|ac)+)",
+    "/mixed/:value((?:[a-z]|[0-9])+)",
+    "/shorthand/:value((?:\\d|[a-z])+)",
+    "/bracket-shorthand/:value((?:[\\d]|[a-z])+)",
+    {
+      source: "/conditioned",
+      has: [
+        { type: "query", key: "role", value: "admin" },
+        { type: "query", key: "present", value: "" },
+        { type: "header", key: "x-present", value: "" },
+        { type: "cookie", key: "session", value: "" },
+        { type: "host", value: "" },
+      ],
+      missing: [{ type: "query", key: "blocked", value: "1" }],
+    },
+    {
+      // Matches the negative-lookahead shape recommended in the Next.js docs.
+      // The header keeps this broad matcher isolated to the encoded-path auth
+      // regression without changing the fixture's existing public routes.
+      source: "/((?!api|_next/static|_next/image|favicon.ico).*)",
+      has: [{ type: "header", key: "x-encoded-path-auth", value: "1" }],
+    },
+    {
+      // Clerk's recommended static-asset exclusion. Its extension alternation
+      // has bounded optional branches (`html?`, `jpe?g`, `woff2?`).
+      source:
+        "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+      has: [{ type: "header", key: "x-static-asset-auth", value: "1" }],
+    },
+    {
+      source: "/orders/:id(\\d+)",
+      has: [{ type: "header", key: "x-encoded-delimiter-auth", value: "1" }],
+    },
+    {
+      source: "/xx/admin/dash/board",
+      has: [{ type: "header", key: "x-encoded-delimiter-auth", value: "1" }],
+    },
+    {
+      source: "/billing/invoices/current/q3",
+      has: [{ type: "header", key: "x-encoded-delimiter-auth", value: "1" }],
+    },
+    {
+      // Prefixes whose parent path is outside the matcher, probed with
+      // `.rsc`-suffixed last segments, which stay ordinary segments.
+      source: "/:locale/admin/:page",
+      has: [{ type: "header", key: "x-rsc-dot-segment-auth", value: "1" }],
+    },
+    {
+      source: "/billing/invoices/:path+",
+      has: [{ type: "header", key: "x-rsc-dot-segment-auth", value: "1" }],
+    },
+    {
+      // Exact metadata route paths. Next.js runs middleware for every spelling
+      // of them, including encoded `.rsc` suffixes, which it routes as part of
+      // the file name.
+      source: "/sitemap.xml",
+      has: [{ type: "header", key: "x-metadata-route-auth", value: "1" }],
+    },
+    {
+      source: "/robots.txt",
+      has: [{ type: "header", key: "x-metadata-route-auth", value: "1" }],
+    },
+    {
+      source: "/staff/:path*",
+      has: [{ type: "header", key: "x-hybrid-pages-auth", value: "1" }],
+    },
+    {
+      source: "/api/staff/:path*",
+      has: [{ type: "header", key: "x-hybrid-pages-auth", value: "1" }],
+    },
+  ],
+};

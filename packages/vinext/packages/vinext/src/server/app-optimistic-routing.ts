@@ -1,0 +1,714 @@
+import { createElement, isValidElement, Suspense, type ReactNode } from "react";
+import { isUnknownRecord } from "../utils/record.js";
+import { stripBasePath } from "../utils/base-path.js";
+import { decodeMatchedParams, splitPathnameForRouteMatch } from "../routing/utils.js";
+import {
+  buildOptimisticRouteTrie,
+  matchOptimisticRouteTrie,
+  type OptimisticRouteTrieMatch,
+  type OptimisticRouteTrieNode as TrieNode,
+} from "../routing/optimistic-route-trie.js";
+import type {
+  BrowserRouteManifest,
+  BrowserRouteManifestRoute,
+} from "../routing/browser-route-manifest.js";
+import { extractRawRoutePatternParams, matchRoutePattern } from "../routing/route-pattern.js";
+import {
+  createNestedBfcacheSlotSegmentId,
+  deriveBfcacheSegmentIdentity,
+  isNestedBfcacheSlotSegmentId,
+} from "./bfcache-identity.js";
+import { stripRscCacheBustingSearchParam } from "./app-rsc-cache-busting.js";
+import {
+  AppElementsWire,
+  APP_BFCACHE_SEGMENT_IDENTITIES_KEY,
+  APP_PREFETCH_LOADING_SHELL_MARKER_KEY,
+  APP_STREAMING_METADATA_BODY_ID_PREFIX,
+  setOptimisticStateKeyRebinder,
+  type AppElementValue,
+  type AppElements,
+} from "./app-elements.js";
+import {
+  APP_PAGE_DEFAULT_SEGMENT_KEY,
+  APP_PAGE_SEGMENT_KEY,
+  canonicalizeAppPageParams,
+  createAppPageSegmentStateKeyRebinder,
+  resolveAppPagePatternStateKey,
+  resolveAppPageSemanticSegmentStateKey,
+} from "./app-page-segment-state.js";
+
+type OptimisticRouteTrieNode = TrieNode<BrowserRouteManifestRoute>;
+type OptimisticRouteMatch = OptimisticRouteTrieMatch<BrowserRouteManifestRoute>;
+
+export type OptimisticRouteTemplate = {
+  elements: AppElements;
+  mountedSlotsHeader: string | null;
+  omittedBfcacheSegmentIds: readonly string[];
+  omittedLayoutIds: readonly string[];
+  pageElementIds: readonly string[];
+  /** The navigation params of the URL the template was learned from. */
+  params: Readonly<Record<string, string | string[]>>;
+  routeId: string;
+};
+
+type OptimisticNavigationPayload = {
+  elements: AppElements;
+  params: Record<string, string | string[]>;
+  routeParams: Record<string, string | string[]>;
+  template: OptimisticRouteTemplate;
+  urlParts: readonly string[];
+};
+
+const routeTrieCache = new WeakMap<BrowserRouteManifest, OptimisticRouteTrieNode>();
+// Shared never-settling thenable used to suspend optimistic page segments until
+// the real RSC payload replaces them.
+const OPTIMISTIC_ROUTE_SEGMENT_SUSPENSE_TRIGGER = new Promise<never>(() => {});
+
+export function getOptimisticRouteTemplateKey(options: {
+  interceptionContext: string | null;
+  mountedSlotsHeader: string | null;
+  routeId: string;
+}): string {
+  return `${options.routeId}\0${options.interceptionContext ?? ""}\0${options.mountedSlotsHeader ?? ""}`;
+}
+
+export function getOptimisticPrefetchSourceKey(options: {
+  cacheKey: string;
+  interceptionContext: string | null;
+  mountedSlotsHeader: string | null;
+}): string {
+  return `${options.cacheKey}\0${options.interceptionContext ?? ""}\0${options.mountedSlotsHeader ?? ""}`;
+}
+
+function buildRouteTrie(routeManifest: BrowserRouteManifest): OptimisticRouteTrieNode {
+  return buildOptimisticRouteTrie(
+    routeManifest.segmentGraph.routes.values(),
+    import.meta.env.DEV
+      ? (existingParamName, part) =>
+          console.warn(
+            `[vinext] Optimistic route trie found conflicting dynamic segments at the same level: :${existingParamName} vs ${part}`,
+          )
+      : undefined,
+  );
+}
+
+function getRouteTrie(routeManifest: BrowserRouteManifest): OptimisticRouteTrieNode {
+  const existing = routeTrieCache.get(routeManifest);
+  if (existing) return existing;
+
+  const trie = buildRouteTrie(routeManifest);
+  routeTrieCache.set(routeManifest, trie);
+  return trie;
+}
+
+function hrefToRouteParts(
+  href: string,
+  basePath: string,
+): { normalized: string[]; raw: string[] } | null {
+  let url: URL;
+  try {
+    url = new URL(href, "https://vinext.local");
+  } catch {
+    return null;
+  }
+
+  stripRscCacheBustingSearchParam(url);
+  const appPathname = stripBasePath(url.pathname, basePath);
+  const pathname = appPathname === "" ? "/" : appPathname;
+  return {
+    normalized: splitPathnameForRouteMatch(pathname),
+    raw: pathname.split("/").filter(Boolean),
+  };
+}
+
+export function matchOptimisticRouteManifestRoute(options: {
+  basePath: string;
+  href: string;
+  routeManifest: BrowserRouteManifest;
+}): OptimisticRouteMatch | null {
+  const urlParts = hrefToRouteParts(options.href, options.basePath);
+  if (urlParts === null) return null;
+
+  const match = matchOptimisticRouteTrie(getRouteTrie(options.routeManifest), urlParts.normalized);
+  if (match === null) return null;
+
+  decodeMatchedParams(match.params);
+  return match;
+}
+
+function mergeParams(
+  target: Record<string, string | string[]>,
+  source: Record<string, string | string[]>,
+): void {
+  for (const [key, value] of Object.entries(source)) {
+    target[key] = value;
+  }
+}
+
+function resolveOptimisticNavigationParams(options: {
+  match: OptimisticRouteMatch;
+  rawUrlParts: readonly string[];
+  routeManifest: BrowserRouteManifest;
+  urlParts: readonly string[];
+}): {
+  navigationParams: Record<string, string | string[]>;
+  routeParams: Record<string, string | string[]>;
+} {
+  const routeParams = extractRawRoutePatternParams(
+    options.match.route.patternParts,
+    options.rawUrlParts,
+  );
+  canonicalizeAppPageParams(routeParams);
+  const navigationParams: Record<string, string | string[]> = { ...routeParams };
+  const routeParamNames = new Set(options.match.route.paramNames);
+
+  for (const binding of options.routeManifest.segmentGraph.slotBindings.values()) {
+    if (binding.routeId !== options.match.route.id || binding.state !== "active") {
+      continue;
+    }
+
+    const patternParts = binding.slotPatternParts;
+    if (!patternParts) {
+      continue;
+    }
+    if (binding.slotParamNames?.every((name) => routeParamNames.has(name))) {
+      continue;
+    }
+
+    const matched = matchRoutePattern(options.urlParts, patternParts);
+    if (matched) {
+      mergeParams(navigationParams, matched);
+    }
+  }
+
+  return { navigationParams, routeParams };
+}
+
+export function resolveOptimisticNavigationParamsForHref(options: {
+  basePath: string;
+  href: string;
+  routeManifest: BrowserRouteManifest;
+}): Record<string, string | string[]> | null {
+  const urlParts = hrefToRouteParts(options.href, options.basePath);
+  if (urlParts === null) return null;
+
+  const match = matchOptimisticRouteManifestRoute(options);
+  if (match === null) return null;
+
+  return resolveOptimisticNavigationParams({
+    match,
+    rawUrlParts: urlParts.raw,
+    routeManifest: options.routeManifest,
+    urlParts: urlParts.normalized,
+  }).navigationParams;
+}
+
+function collectRenderedBfcacheSegmentIds(
+  value: unknown,
+  candidates: ReadonlySet<string>,
+  rendered: Set<string>,
+  depth = 0,
+): void {
+  if (depth > 100) return;
+  if (Array.isArray(value)) {
+    for (const entry of value) {
+      collectRenderedBfcacheSegmentIds(entry, candidates, rendered, depth + 1);
+    }
+    return;
+  }
+  if (!isValidElement(value)) return;
+
+  const props = Reflect.get(value, "props");
+  if (!isUnknownRecord(props)) return;
+  const id = Reflect.get(props, "id");
+  if (typeof id === "string" && candidates.has(id)) {
+    rendered.add(id);
+  }
+  for (const prop of Object.values(props)) {
+    collectRenderedBfcacheSegmentIds(prop, candidates, rendered, depth + 1);
+  }
+}
+
+function getOmittedBfcacheSegmentIds(elements: AppElements): string[] {
+  const identities = AppElementsWire.readMetadata(elements).bfcacheSegmentIdentities;
+  const candidates = new Set(
+    Object.keys(identities).filter(
+      (id) => isNestedBfcacheSlotSegmentId(id) && Object.hasOwn(elements, id),
+    ),
+  );
+  if (candidates.size === 0) return [];
+
+  const rendered = new Set<string>();
+  for (const value of Object.values(elements)) {
+    collectRenderedBfcacheSegmentIds(value, candidates, rendered);
+  }
+  return [...candidates].filter((id) => !rendered.has(id));
+}
+
+function resolveTargetBfcacheSegmentIdentity(options: {
+  routeId: string;
+  routeManifest: BrowserRouteManifest;
+  segmentId: string;
+  targetRouteParams: Readonly<Record<string, string | string[]>>;
+  targetUrlParts: readonly string[];
+}): string | undefined {
+  const route = options.routeManifest.segmentGraph.routes.get(options.routeId);
+  if (!route) return undefined;
+  const routeParamNames = new Set(route.paramNames);
+
+  for (const binding of options.routeManifest.segmentGraph.slotBindings.values()) {
+    if (binding.routeId !== options.routeId) continue;
+
+    const needsSlotParamOverride =
+      binding.state === "active" &&
+      binding.slotPatternParts !== undefined &&
+      binding.slotPatternParts.length > 0 &&
+      !binding.slotParamNames?.every((name) => routeParamNames.has(name));
+    const segmentParams = needsSlotParamOverride
+      ? (matchRoutePattern(options.targetUrlParts, binding.slotPatternParts!) ??
+        options.targetRouteParams)
+      : options.targetRouteParams;
+
+    const ownerLayout = binding.ownerLayoutId
+      ? options.routeManifest.segmentGraph.layouts.get(binding.ownerLayoutId)
+      : undefined;
+    const ownerStateKey = ownerLayout
+      ? resolveAppPagePatternStateKey(ownerLayout.patternParts, options.targetRouteParams)
+      : "";
+    const deriveLevelIdentity = (segmentKeys: readonly string[]) => {
+      const identityKey = JSON.stringify(segmentKeys);
+      return deriveBfcacheSegmentIdentity({
+        activeRouteGraphId: null,
+        boundSegmentKey: ownerStateKey ? JSON.stringify([ownerStateKey, identityKey]) : identityKey,
+        interceptionTargetRouteGraphId: null,
+        kind: "slot",
+        ownerLayoutGraphId: binding.ownerLayoutId,
+        slotGraphId: binding.slotId,
+        state: binding.state,
+      });
+    };
+    const boundSegmentKeys: string[] = [];
+    let level = 0;
+    for (const segment of binding.routeSegments ?? []) {
+      if (segment.startsWith("@")) continue;
+      level += 1;
+      boundSegmentKeys.push(
+        resolveAppPageSemanticSegmentStateKey(
+          { marker: null, paramSource: "slot", segment },
+          segmentParams,
+        ),
+      );
+      if (createNestedBfcacheSlotSegmentId(binding.slotId, level) !== options.segmentId) continue;
+
+      return deriveLevelIdentity(boundSegmentKeys);
+    }
+    // The level below the last segment is keyed by the page or default it
+    // renders, as the segment plan keys it.
+    if (
+      level > 0 &&
+      createNestedBfcacheSlotSegmentId(binding.slotId, level + 1) === options.segmentId
+    ) {
+      return deriveLevelIdentity([
+        ...boundSegmentKeys,
+        binding.state === "default" ? APP_PAGE_DEFAULT_SEGMENT_KEY : APP_PAGE_SEGMENT_KEY,
+      ]);
+    }
+
+    if (level === 0 && createNestedBfcacheSlotSegmentId(binding.slotId, 1) === options.segmentId) {
+      return deriveBfcacheSegmentIdentity({
+        activeRouteGraphId: null,
+        boundSegmentKey: ownerStateKey ? JSON.stringify([ownerStateKey, ""]) : "",
+        interceptionTargetRouteGraphId: null,
+        kind: "slot",
+        ownerLayoutGraphId: binding.ownerLayoutId,
+        slotGraphId: binding.slotId,
+        state: binding.state,
+      });
+    }
+  }
+  return undefined;
+}
+
+function elementHasSuspenseFallback(value: unknown, depth = 0): boolean {
+  if (depth > 100) return false;
+  if (Array.isArray(value)) {
+    return value.some((entry) => elementHasSuspenseFallback(entry, depth + 1));
+  }
+  if (!isValidElement(value)) return false;
+
+  const props = Reflect.get(value, "props");
+  if (value.type === Suspense && isUnknownRecord(props)) {
+    const fallback = Reflect.get(props, "fallback");
+    if (fallback !== null && fallback !== undefined) return true;
+  }
+
+  if (!isUnknownRecord(props)) return false;
+  return elementHasSuspenseFallback(Reflect.get(props, "children"), depth + 1);
+}
+
+function getPageElementIds(
+  elements: AppElements,
+  route: Pick<BrowserRouteManifestRoute, "pageId" | "slotIds">,
+): string[] {
+  const pageElementIds = new Set<string>();
+  if (route.pageId && Object.hasOwn(elements, route.pageId)) {
+    pageElementIds.add(route.pageId);
+  }
+  for (const slotId of route.slotIds) {
+    const parsed = AppElementsWire.parseElementKey(slotId);
+    if (parsed?.kind === "slot" && parsed.name === "children" && Object.hasOwn(elements, slotId)) {
+      pageElementIds.add(slotId);
+    }
+  }
+  for (const key of Object.keys(elements)) {
+    if (AppElementsWire.parseElementKey(key)?.kind === "page") {
+      pageElementIds.add(key);
+    }
+  }
+  return Array.from(pageElementIds).sort();
+}
+
+function OptimisticRouteSegment(): null {
+  throw OPTIMISTIC_ROUTE_SEGMENT_SUSPENSE_TRIGGER;
+}
+
+export function createOptimisticRouteTemplate(options: {
+  allowLoadingShell?: boolean;
+  basePath: string;
+  elements: AppElements;
+  href: string;
+  interceptionContext: string | null;
+  mountedSlotsHeader: string | null;
+  routeManifest: BrowserRouteManifest;
+}): OptimisticRouteTemplate | null {
+  const match = matchOptimisticRouteManifestRoute({
+    basePath: options.basePath,
+    href: options.href,
+    routeManifest: options.routeManifest,
+  });
+  if (match === null || (!options.allowLoadingShell && !match.route.isDynamic)) return null;
+  if (options.interceptionContext !== null) return null;
+
+  const metadata = AppElementsWire.readMetadata(options.elements);
+  if (metadata.interception !== null || metadata.interceptionContext !== null) return null;
+
+  const routeElement = options.elements[metadata.routeId];
+  // Full-prefetch learning is intentionally heuristic: legacy full prefetches
+  // are accepted only when the serialized route subtree still contains a
+  // Suspense fallback. Authoritative loading-shell prefetches use the marker
+  // check below instead.
+  if (!options.allowLoadingShell && !elementHasSuspenseFallback(routeElement)) return null;
+  if (
+    options.allowLoadingShell &&
+    options.elements[APP_PREFETCH_LOADING_SHELL_MARKER_KEY] !== "LoadingBoundary"
+  ) {
+    return null;
+  }
+  // Shell prefetches must include the eagerly-rendered loading component. A
+  // null route element means the server had no route loading boundary.
+  if (options.allowLoadingShell && (routeElement === undefined || routeElement === null))
+    return null;
+
+  const pageElementIds = getPageElementIds(options.elements, match.route);
+  if (pageElementIds.length === 0) return null;
+  const urlParts = hrefToRouteParts(options.href, options.basePath);
+  if (urlParts === null) return null;
+
+  return {
+    elements: options.elements,
+    mountedSlotsHeader: options.mountedSlotsHeader,
+    omittedBfcacheSegmentIds:
+      options.elements[APP_PREFETCH_LOADING_SHELL_MARKER_KEY] === "LoadingBoundary"
+        ? getOmittedBfcacheSegmentIds(options.elements)
+        : [],
+    omittedLayoutIds:
+      options.elements[APP_PREFETCH_LOADING_SHELL_MARKER_KEY] === "LoadingBoundary"
+        ? metadata.layoutIds.filter((layoutId) => !Object.hasOwn(options.elements, layoutId))
+        : [],
+    pageElementIds,
+    params: resolveOptimisticNavigationParams({
+      match,
+      rawUrlParts: urlParts.raw,
+      routeManifest: options.routeManifest,
+      urlParts: urlParts.normalized,
+    }).navigationParams,
+    routeId: match.route.id,
+  };
+}
+
+export function createOptimisticRouteElements(
+  template: OptimisticRouteTemplate,
+  params: Readonly<Record<string, string | string[]>> = template.params,
+): AppElements {
+  const elements: Record<string, AppElementValue> = { ...template.elements };
+  for (const pageElementId of template.pageElementIds) {
+    elements[pageElementId] = createElement(OptimisticRouteSegment);
+  }
+  // Like Next.js's reifyRouteTree for the route tree it learned: segments keyed
+  // by a param the two URLs bind differently key by the target's value, so the
+  // optimistic segments don't replace the learned URL's retained entry. A
+  // level without a layout keeps its key on a retention boundary inside the
+  // learned tree, which rebinds it with the same function.
+  const reify = createAppPageSegmentStateKeyRebinder(template.params, params);
+  if (reify === null) return elements;
+  setOptimisticStateKeyRebinder(elements, reify);
+
+  const metadata = AppElementsWire.readMetadata(template.elements);
+  const identities = metadata.bfcacheSegmentIdentities;
+  if (Object.keys(identities).length > 0) {
+    elements[APP_BFCACHE_SEGMENT_IDENTITIES_KEY] = Object.fromEntries(
+      Object.entries(identities).map(([id, identity]) => [id, reify(identity)]),
+    );
+  }
+  return elements;
+}
+
+function findStreamingMetadataBody(elements: AppElements): string | null {
+  for (const id of Object.keys(elements)) {
+    if (id.startsWith(APP_STREAMING_METADATA_BODY_ID_PREFIX)) return id;
+  }
+  return null;
+}
+
+/**
+ * The optimistic shell reveals the prefetch's streamed metadata, such as its
+ * title. React won't hide revealed content again in a transition, so while the
+ * authoritative payload's own metadata streams, its whole commit, page
+ * included, would wait for it. Render that metadata in a new boundary whose
+ * fallback is the shell's instead, so the page commits as it streams and the
+ * prefetched title stays until the payload's arrives. Next.js likewise renders
+ * the prefetched head until the dynamic one resolves (`Head` in app-router.tsx).
+ *
+ * A payload streams at most one route's metadata. The shell's may carry
+ * another concrete route id, since a template learned for one set of params
+ * is reused for others. `navigationKey` remounts the boundary on every
+ * navigation, so one that already revealed an earlier navigation's metadata
+ * can't hold back the next, as Next.js keys `Head` by its vary path.
+ */
+export function keepOptimisticStreamingMetadata(
+  elements: AppElements,
+  optimisticElements: AppElements,
+  navigationKey: string,
+): AppElements {
+  const id = findStreamingMetadataBody(elements);
+  const optimisticId = findStreamingMetadataBody(optimisticElements);
+  if (id === null || optimisticId === null) return elements;
+  const optimisticMetadata = optimisticElements[optimisticId];
+  if (optimisticMetadata == null) return elements;
+  return {
+    ...elements,
+    [id]: createElement(
+      Suspense,
+      { fallback: optimisticMetadata as ReactNode, key: navigationKey },
+      elements[id] as ReactNode,
+    ),
+  };
+}
+
+/**
+ * A loading-shell prefetch stops at the first loading boundary, so layouts
+ * below that boundary are present in the route metadata but absent from the
+ * rendered shell. Do not commit that ancestor fallback when one of those
+ * omitted layouts is already mounted with the same semantic identity. Next.js
+ * keeps the shared segment active in this case, which also means the ancestor
+ * loading boundary does not re-trigger.
+ */
+export function canCommitOptimisticRouteTemplate(options: {
+  currentElements: AppElements;
+  currentLayoutIds: readonly string[];
+  currentParams: Readonly<Record<string, string | string[]>>;
+  /** Whether a hidden BFCache entry retains a segment identity. */
+  isBfcacheIdentityRetained?: (identity: string) => boolean;
+  routeManifest: BrowserRouteManifest;
+  /**
+   * The elements on screen, when a shell earlier in this navigation replaced
+   * the current ones. Defaults to `currentElements`.
+   */
+  shownElements?: AppElements;
+  /** The shell's elements for the target. */
+  targetElements?: AppElements;
+  targetRouteParams: Readonly<Record<string, string | string[]>>;
+  targetUrlParts: readonly string[];
+  template: OptimisticRouteTemplate;
+}): boolean {
+  const currentIdentities = AppElementsWire.readMetadata(
+    options.currentElements,
+  ).bfcacheSegmentIdentities;
+
+  // A target segment retained in a hidden BFCache entry is shown again with
+  // its state. The shell replaces its page with a placeholder, under
+  // boundaries keyed for the URL it was learned from, so committing it would
+  // remount the entry. Next.js shows the entry's loading state while keeping
+  // it mounted; without the shell, the current page stays until the payload
+  // reveals the entry.
+  const { isBfcacheIdentityRetained, targetElements } = options;
+  if (isBfcacheIdentityRetained && targetElements) {
+    const shownIdentities = new Set(
+      Object.values(
+        options.shownElements
+          ? AppElementsWire.readMetadata(options.shownElements).bfcacheSegmentIdentities
+          : currentIdentities,
+      ),
+    );
+    for (const identity of Object.values(
+      AppElementsWire.readMetadata(targetElements).bfcacheSegmentIdentities,
+    )) {
+      if (!shownIdentities.has(identity) && isBfcacheIdentityRetained(identity)) return false;
+    }
+  }
+
+  if (
+    options.template.omittedLayoutIds.length === 0 &&
+    options.template.omittedBfcacheSegmentIds.length === 0
+  ) {
+    return true;
+  }
+
+  const currentLayoutIds = new Set(options.currentLayoutIds);
+
+  for (const layoutId of options.template.omittedLayoutIds) {
+    if (!currentLayoutIds.has(layoutId)) continue;
+    if (!Object.hasOwn(options.currentElements, layoutId)) continue;
+
+    const layout = options.routeManifest.segmentGraph.layouts.get(layoutId);
+    if (layout === undefined) continue;
+    const currentIdentity = currentIdentities[layoutId];
+    if (currentIdentity !== undefined) {
+      const targetIdentity = deriveBfcacheSegmentIdentity({
+        boundSegmentKey: resolveAppPagePatternStateKey(
+          layout.patternParts,
+          options.targetRouteParams,
+        ),
+        graphId: layout.id,
+        kind: "layout",
+        rootBoundaryId: layout.rootBoundaryId,
+      });
+      if (currentIdentity === targetIdentity) return false;
+      continue;
+    }
+    if (
+      resolveAppPagePatternStateKey(layout.patternParts, options.currentParams) ===
+      resolveAppPagePatternStateKey(layout.patternParts, options.targetRouteParams)
+    ) {
+      return false;
+    }
+  }
+
+  for (const segmentId of options.template.omittedBfcacheSegmentIds) {
+    if (!Object.hasOwn(options.currentElements, segmentId)) continue;
+    const currentIdentity = currentIdentities[segmentId];
+    const targetIdentity = resolveTargetBfcacheSegmentIdentity({
+      routeId: options.template.routeId,
+      routeManifest: options.routeManifest,
+      segmentId,
+      targetRouteParams: options.targetRouteParams,
+      targetUrlParts: options.targetUrlParts,
+    });
+    if (
+      currentIdentity !== undefined &&
+      targetIdentity !== undefined &&
+      currentIdentity === targetIdentity
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export function resolveOptimisticNavigationPayload(options: {
+  basePath: string;
+  href: string;
+  interceptionContext: string | null;
+  mountedSlotsHeader: string | null;
+  routeManifest: BrowserRouteManifest;
+  templates: ReadonlyMap<string, OptimisticRouteTemplate>;
+}): OptimisticNavigationPayload | null {
+  if (options.interceptionContext !== null) return null;
+
+  const urlParts = hrefToRouteParts(options.href, options.basePath);
+  if (urlParts === null) return null;
+
+  const match = matchOptimisticRouteManifestRoute({
+    basePath: options.basePath,
+    href: options.href,
+    routeManifest: options.routeManifest,
+  });
+  if (match === null) return null;
+
+  const template = options.templates.get(
+    getOptimisticRouteTemplateKey({
+      interceptionContext: options.interceptionContext,
+      mountedSlotsHeader: options.mountedSlotsHeader,
+      routeId: match.route.id,
+    }),
+  );
+  if (template === undefined) return null;
+  if (template.mountedSlotsHeader !== options.mountedSlotsHeader) return null;
+
+  const { navigationParams, routeParams } = resolveOptimisticNavigationParams({
+    match,
+    rawUrlParts: urlParts.raw,
+    routeManifest: options.routeManifest,
+    urlParts: urlParts.normalized,
+  });
+  return {
+    elements: createOptimisticRouteElements(template, navigationParams),
+    params: navigationParams,
+    routeParams,
+    template,
+    urlParts: urlParts.normalized,
+  };
+}
+
+export type LearnedOptimisticRouteTemplate = {
+  key: string;
+  template: OptimisticRouteTemplate;
+};
+
+/**
+ * Optimistic route templates and the prefetch sources they were learned from.
+ * `clear()` retires every template, so none can outlive the prefetch payload
+ * it was derived from, and drops any result a learning started before the
+ * clear resolves to. Sources that are still cached are learned again on the
+ * next optimistic navigation.
+ */
+export function createOptimisticRouteTemplateStore() {
+  const templates = new Map<string, OptimisticRouteTemplate>();
+  const learnedSources = new Set<string>();
+  const learning = new Map<string, Promise<void>>();
+  let generation = 0;
+
+  return {
+    templates: templates as ReadonlyMap<string, OptimisticRouteTemplate>,
+    clear(): void {
+      generation += 1;
+      templates.clear();
+      learnedSources.clear();
+      learning.clear();
+    },
+    hasSource(sourceKey: string): boolean {
+      return learnedSources.has(sourceKey) || learning.has(sourceKey);
+    },
+    learn(
+      sourceKey: string,
+      learnTemplate: () => Promise<LearnedOptimisticRouteTemplate | null>,
+    ): Promise<void> {
+      const learnedGeneration = generation;
+      const promise: Promise<void> = learnTemplate()
+        .then((learned) => {
+          if (learned === null || learnedGeneration !== generation) return;
+          templates.set(learned.key, learned.template);
+          learnedSources.add(sourceKey);
+        })
+        .finally(() => {
+          if (learning.get(sourceKey) === promise) learning.delete(sourceKey);
+        });
+      learning.set(sourceKey, promise);
+      return promise;
+    },
+    pendingLearning(): Promise<void>[] {
+      return [...learning.values()];
+    },
+  };
+}

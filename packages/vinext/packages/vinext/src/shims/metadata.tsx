@@ -1,0 +1,1586 @@
+/**
+ * Metadata support for App Router.
+ *
+ * Handles `export const metadata` and `export async function generateMetadata()`.
+ * Resolves metadata from layouts and pages (pages override layouts).
+ */
+import React from "react";
+import type { ViewportLayout } from "@vinext/types/next/upstream/dist/lib/metadata/types/extra-types";
+import type {
+  ResolvedViewport as NextResolvedViewport,
+  Viewport as NextViewport,
+} from "@vinext/types/next/upstream/dist/lib/metadata/types/metadata-interface";
+import { makeThenableParams, type ThenableParamsObserver } from "./thenable-params.js";
+import { isAbsoluteOrProtocolRelativeUrl } from "./url-utils.js";
+import {
+  withUseCachePageMarker,
+  withUseCacheLayoutMarker,
+} from "./internal/app-page-props-cache-key.js";
+
+const USE_CACHE_FUNCTION_SYMBOL = Symbol.for("vinext.useCacheFunction");
+const USE_CACHE_ACCEPTS_SECOND_ARGUMENT_SYMBOL = Symbol.for("vinext.useCacheAcceptsSecondArgument");
+
+// ---------------------------------------------------------------------------
+// Viewport types and resolution
+// ---------------------------------------------------------------------------
+
+export type Viewport = NextViewport;
+export type ResolvedViewport = NextResolvedViewport;
+
+/**
+ * Resolve viewport config from a module. Handles both static `viewport` export
+ * and async `generateViewport()` function.
+ */
+export async function resolveModuleViewport(
+  mod: Record<string, unknown>,
+  params: Record<string, string | string[]> = {},
+  searchParams?: Record<string, string | string[]>,
+  parent: Promise<ResolvedViewport> = Promise.resolve(mergeViewport([])),
+  searchParamsObserver?: ThenableParamsObserver,
+): Promise<Viewport | null> {
+  if (typeof mod.generateViewport === "function") {
+    const asyncParams = makeThenableParams(params);
+    // Only page segments receive searchParams; like Next.js
+    // (resolve-metadata.ts `createSegmentProps`), a "use cache" page resolver
+    // also gets the `$$isPage` marker.
+    const props =
+      searchParams === undefined
+        ? withUseCacheLayoutMarker(mod.generateViewport, { params: asyncParams })
+        : withUseCachePageMarker(mod.generateViewport, {
+            params: asyncParams,
+            searchParams: makeThenableParams(searchParams, searchParamsObserver),
+          });
+    return (await callSegmentResolver(
+      mod.generateViewport as SegmentResolver<ResolvedViewport>,
+      props,
+      parent,
+    )) as Viewport | null;
+  }
+  if (mod.viewport && typeof mod.viewport === "object") {
+    return mod.viewport as Viewport;
+  }
+  return null;
+}
+
+type SegmentResolver<TParent> = (props: object, parent?: Promise<TParent>) => unknown;
+
+/**
+ * Call a segment's generateMetadata() or generateViewport() with `parent`, as
+ * Next.js's getResult does for both.
+ * https://github.com/vercel/next.js/blob/canary/packages/next/src/lib/metadata/resolve-metadata.ts (getResult)
+ */
+function callSegmentResolver<TParent>(
+  resolver: SegmentResolver<TParent>,
+  props: object,
+  parent: Promise<TParent>,
+): unknown {
+  // Next.js always passes `parent` to regular resolvers. Cached resolvers are
+  // different: an unused parent must stay out of the cache key because it can
+  // contain non-serializable values such as a URL metadataBase. The use-cache
+  // transform records whether the declaration accepts a second argument,
+  // including default and rest parameters that Function.length omits.
+  const isUseCacheFunction = Reflect.get(resolver, USE_CACHE_FUNCTION_SYMBOL) === true;
+  if (!isUseCacheFunction) return resolver(props, parent);
+  const acceptsSecondArgument = Reflect.get(resolver, USE_CACHE_ACCEPTS_SECOND_ARGUMENT_SYMBOL);
+  const passesParent =
+    typeof acceptsSecondArgument === "boolean" ? acceptsSecondArgument : resolver.length >= 2;
+  if (!passesParent) return resolver(props);
+  // A cached resolver encodes its arguments before it runs, so one that
+  // reads `parent` waits for it. Like Next.js, it isn't called before that
+  // parent settles, which another cached resolver may still be computing.
+  return parent.then(() => resolver(props, parent));
+}
+
+/**
+ * Merge viewport configs from multiple sources (layouts + page).
+ * Later entries override earlier ones.
+ */
+export const DEFAULT_VIEWPORT: ResolvedViewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: null,
+  colorScheme: null,
+};
+
+export function mergeViewport(viewportList: readonly Viewport[]): ResolvedViewport {
+  const merged: ResolvedViewport = { ...DEFAULT_VIEWPORT };
+  for (const viewport of viewportList) {
+    for (const viewportKey in viewport) {
+      const key = viewportKey as keyof Viewport;
+      switch (key) {
+        case "themeColor":
+          merged.themeColor = resolveThemeColor(viewport.themeColor);
+          break;
+        case "colorScheme":
+          merged.colorScheme = viewport.colorScheme || null;
+          break;
+        case "width":
+          merged.width = viewport.width;
+          break;
+        case "height":
+          merged.height = viewport.height;
+          break;
+        case "initialScale":
+          merged.initialScale = viewport.initialScale;
+          break;
+        case "minimumScale":
+          merged.minimumScale = viewport.minimumScale;
+          break;
+        case "maximumScale":
+          merged.maximumScale = viewport.maximumScale;
+          break;
+        case "userScalable":
+          merged.userScalable = viewport.userScalable;
+          break;
+        case "viewportFit":
+          merged.viewportFit = viewport.viewportFit;
+          break;
+        case "interactiveWidget":
+          merged.interactiveWidget = viewport.interactiveWidget;
+          break;
+        default:
+          key satisfies never;
+      }
+    }
+  }
+  return merged;
+}
+
+const VIEWPORT_META_NAMES = {
+  width: "width",
+  height: "height",
+  initialScale: "initial-scale",
+  minimumScale: "minimum-scale",
+  maximumScale: "maximum-scale",
+  userScalable: "user-scalable",
+  viewportFit: "viewport-fit",
+  interactiveWidget: "interactive-widget",
+} as const satisfies Record<keyof ViewportLayout, string>;
+
+/**
+ * React component that renders viewport meta tags into <head>.
+ */
+export function ViewportHead({ viewport }: { viewport: Viewport }) {
+  const resolvedViewport = mergeViewport([viewport]);
+  const elements: React.ReactElement[] = [];
+  let key = 0;
+
+  // Build viewport content string
+  const parts: string[] = [];
+  for (const key of Object.keys(VIEWPORT_META_NAMES) as Array<keyof ViewportLayout>) {
+    const value = resolvedViewport[key];
+    if (value == null) continue;
+    parts.push(
+      `${VIEWPORT_META_NAMES[key]}=${key === "userScalable" ? (value ? "yes" : "no") : value}`,
+    );
+  }
+
+  if (parts.length > 0) {
+    elements.push(<meta key={key++} name="viewport" content={parts.join(", ")} />);
+  }
+
+  // Theme color
+  if (resolvedViewport.themeColor) {
+    for (const entry of resolvedViewport.themeColor) {
+      elements.push(
+        <meta
+          key={key++}
+          name="theme-color"
+          content={entry.color}
+          {...(entry.media ? { media: entry.media } : {})}
+        />,
+      );
+    }
+  }
+
+  // Color scheme
+  if (resolvedViewport.colorScheme) {
+    elements.push(<meta key={key++} name="color-scheme" content={resolvedViewport.colorScheme} />);
+  }
+
+  return <>{elements}</>;
+}
+
+function resolveThemeColor(themeColor: Viewport["themeColor"]): ResolvedViewport["themeColor"] {
+  if (!themeColor) return null;
+  const descriptors = Array.isArray(themeColor) ? themeColor : [themeColor];
+  return descriptors.map((descriptor) =>
+    typeof descriptor === "string"
+      ? { color: descriptor }
+      : { color: descriptor.color, media: descriptor.media },
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Metadata types and resolution
+// ---------------------------------------------------------------------------
+
+type MetadataTitle = string | { default?: string; template?: string | null; absolute?: string };
+
+export type Metadata = {
+  title?: MetadataTitle;
+  description?: string;
+  generator?: string;
+  applicationName?: string;
+  referrer?: string;
+  keywords?: string | string[];
+  authors?: Array<{ name?: string; url?: string }> | { name?: string; url?: string };
+  creator?: string;
+  publisher?: string;
+  robots?:
+    | string
+    | {
+        index?: boolean;
+        follow?: boolean;
+        googleBot?: string | { index?: boolean; follow?: boolean; [key: string]: unknown };
+        [key: string]: unknown;
+      };
+  openGraph?: {
+    title?: MetadataTitle;
+    description?: string;
+    url?: string | URL;
+    siteName?: string;
+    images?: string | URL | SocialImageDescriptor | Array<string | URL | SocialImageDescriptor>;
+    videos?: OGVideo | OGVideo[];
+    audio?: OGAudio | OGAudio[];
+    emails?: string | string[];
+    phoneNumbers?: string | string[];
+    faxNumbers?: string | string[];
+    locale?: string;
+    alternateLocale?: string | string[];
+    type?: string;
+    publishedTime?: string;
+    modifiedTime?: string;
+    authors?: string[];
+  } | null;
+  twitter?: {
+    card?: string;
+    site?: string;
+    siteId?: string;
+    title?: MetadataTitle;
+    description?: string;
+    images?: string | URL | SocialImageDescriptor | Array<string | URL | SocialImageDescriptor>;
+    creator?: string;
+    creatorId?: string;
+    players?: TwitterPlayerDescriptor | TwitterPlayerDescriptor[];
+    app?: TwitterAppDescriptor;
+  } | null;
+  icons?: IconsMetadata;
+  manifest?: string | URL;
+  alternates?: {
+    canonical?: string | URL;
+    languages?: Record<string, string | URL>;
+    media?: Record<string, string | URL>;
+    types?: Record<string, string | URL>;
+  };
+  verification?: {
+    google?: string;
+    yahoo?: string;
+    yandex?: string;
+    other?: Record<string, string | string[]>;
+  };
+  metadataBase?: URL | null;
+  appleWebApp?: {
+    capable?: boolean;
+    title?: string;
+    statusBarStyle?: string;
+    startupImage?: string | Array<{ url: string; media?: string }>;
+  };
+  formatDetection?: {
+    email?: boolean;
+    address?: boolean;
+    telephone?: boolean;
+  };
+  category?: string;
+  itunes?: {
+    appId: string;
+    appArgument?: string;
+  };
+  appLinks?: {
+    ios?: AppLinksApple | AppLinksApple[];
+    iphone?: AppLinksApple | AppLinksApple[];
+    ipad?: AppLinksApple | AppLinksApple[];
+    android?: AppLinksAndroid | AppLinksAndroid[];
+    windows_phone?: AppLinksWindows | AppLinksWindows[];
+    windows?: AppLinksWindows | AppLinksWindows[];
+    windows_universal?: AppLinksWindows | AppLinksWindows[];
+    web?: AppLinksWeb | AppLinksWeb[];
+  };
+  other?: Record<string, string | string[]>;
+  [key: string]: unknown;
+};
+
+type AppLinksApple = {
+  url: string | URL;
+  app_store_id?: string | number;
+  app_name?: string;
+};
+
+type AppLinksAndroid = {
+  package: string;
+  url?: string | URL;
+  class?: string;
+  app_name?: string;
+};
+
+type AppLinksWindows = {
+  url: string | URL;
+  app_id?: string;
+  app_name?: string;
+};
+
+type AppLinksWeb = {
+  url: string | URL;
+  should_fallback?: boolean;
+};
+
+type TwitterPlayerDescriptor = {
+  playerUrl: string | URL;
+  streamUrl: string | URL;
+  width: number;
+  height: number;
+};
+
+type TwitterAppDescriptor = {
+  id: {
+    iphone?: string | number;
+    ipad?: string | number;
+    googleplay?: string;
+  };
+  url?: {
+    iphone?: string | URL;
+    ipad?: string | URL;
+    googleplay?: string | URL;
+  };
+  name?: string;
+};
+
+type OGVideoDescriptor = {
+  url: string | URL;
+  secureUrl?: string | URL;
+  type?: string;
+  width?: string | number;
+  height?: string | number;
+};
+
+type OGVideo = string | URL | OGVideoDescriptor;
+
+type OGAudioDescriptor = {
+  url: string | URL;
+  secureUrl?: string | URL;
+  type?: string;
+};
+
+type OGAudio = string | URL | OGAudioDescriptor;
+
+type SocialImageDescriptor = {
+  url: string | URL;
+  alt?: string;
+  width?: number;
+  height?: number;
+  type?: string;
+};
+
+type IconDescriptor = {
+  url: string | URL;
+  type?: string;
+  sizes?: string;
+  color?: string;
+  rel?: string;
+  media?: string;
+  fetchPriority?: "high" | "low" | "auto";
+};
+
+type IconInput = string | URL | IconDescriptor;
+
+type IconsMap = {
+  icon?: IconInput | IconInput[];
+  shortcut?: IconInput | IconInput[];
+  apple?: IconInput | IconInput[];
+  // Next.js accepts a single descriptor or an array (see resolveIcons in
+  // .nextjs-ref/packages/next/src/lib/metadata/resolvers/resolve-icons.ts —
+  // values pass through resolveAsArrayOrUndefined before iteration).
+  other?: IconDescriptor | IconDescriptor[];
+};
+
+type IconsMetadata = IconInput | IconInput[] | IconsMap;
+
+export type MetadataMergeEntry = {
+  /** Passes on the title template it received rather than its own. */
+  isPage?: boolean;
+  metadata: Metadata;
+};
+
+/**
+ * Merge metadata from multiple sources (layouts + page).
+ *
+ * The list is ordered [rootLayout, nestedLayout, ..., page], with titles
+ * resolved as {@link mergeMetadataEntries} does.
+ *
+ * Shallow merge: later entries override earlier ones (per Next.js docs).
+ */
+export function mergeMetadata(metadataList: Metadata[]): Metadata {
+  const merged = mergeMetadataEntries(
+    metadataList.map((metadata, index) => ({
+      isPage: index === metadataList.length - 1,
+      metadata,
+    })),
+  );
+  return postProcessMetadata(merged);
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return (
+    typeof value === "object" && value !== null && !Array.isArray(value) && !(value instanceof URL)
+  );
+}
+
+function isOtherMetadata(value: unknown): value is NonNullable<Metadata["other"]> {
+  if (!isPlainObject(value)) return false;
+  return Object.values(value).every((item) => {
+    if (typeof item === "string") return true;
+    return Array.isArray(item) && item.every((nestedItem) => typeof nestedItem === "string");
+  });
+}
+
+/**
+ * Extract a plain string title from a metadata title value.
+ */
+function resolveStringTitle(title: Metadata["title"]): string | undefined {
+  if (typeof title === "string") return title;
+  if (title && typeof title === "object") {
+    return title.absolute ?? title.default ?? undefined;
+  }
+  return undefined;
+}
+
+/** The text a social title renders, a raw `{ default }` title's default if it is not resolved. */
+function renderedTitle(title: MetadataTitle | undefined): string | undefined {
+  return title && typeof title === "object" ? title.absolute || title.default : title;
+}
+
+function applyTitleTemplate(template: string | undefined, title: string): string {
+  return template ? template.replace(/%s/g, title) : title;
+}
+
+function resolveTitle(title: Metadata["title"], stashedTemplate: string | undefined) {
+  if (typeof title === "string") {
+    return applyTitleTemplate(stashedTemplate, title);
+  }
+
+  if (title && typeof title === "object") {
+    let resolved =
+      title.default === undefined ? undefined : applyTitleTemplate(stashedTemplate, title.default);
+
+    if (title.absolute) {
+      resolved = title.absolute;
+    }
+
+    return resolved;
+  }
+
+  return undefined;
+}
+
+/**
+ * Post-process merged metadata to cross-fill openGraph and Twitter fields.
+ *
+ * Next.js runs this once after all layouts/pages and file-based metadata
+ * have been resolved. When openGraph exists, it auto-fills missing
+ * twitter:title/description/images from openGraph (falling back to root
+ * metadata title/description). Existing openGraph/twitter objects also inherit
+ * missing title/description from root metadata.
+ *
+ * Ported from Next.js:
+ * https://github.com/vercel/next.js/blob/canary/packages/next/src/lib/metadata/resolve-metadata.ts
+ */
+export function postProcessMetadata(merged: Metadata): Metadata {
+  // Shallow-clone to avoid mutating the caller's object.
+  // Both current call sites (mergeMetadata, resolveAppPageHead) pass
+  // freshly-constructed objects, but this guards against future misuse.
+  const result = { ...merged };
+
+  const resolvedTitle = resolveStringTitle(result.title);
+
+  // openGraph inherits title/description from root metadata when absent
+  if (result.openGraph) {
+    const og = { ...result.openGraph };
+    if (!og.title && resolvedTitle) {
+      og.title = resolvedTitle;
+    }
+    if (!og.description && result.description) {
+      og.description = result.description;
+    }
+    result.openGraph = og;
+  }
+
+  if (result.openGraph) {
+    const autoFill: {
+      title?: MetadataTitle;
+      description?: string;
+      images?: NonNullable<Metadata["twitter"]>["images"];
+    } = {};
+
+    const existingTwitter = result.twitter;
+    const hasTwTitle = existingTwitter ? Boolean(existingTwitter.title) : false;
+    const hasTwDescription = existingTwitter ? Boolean(existingTwitter.description) : false;
+    const hasTwImages = existingTwitter
+      ? Object.prototype.hasOwnProperty.call(existingTwitter, "images") &&
+        Boolean(existingTwitter.images)
+      : false;
+
+    if (!hasTwTitle) {
+      if (result.openGraph.title) {
+        autoFill.title = result.openGraph.title;
+      } else if (resolvedTitle) {
+        autoFill.title = resolvedTitle;
+      }
+    }
+    if (!hasTwDescription) {
+      autoFill.description = result.openGraph.description || result.description || undefined;
+    }
+    if (!hasTwImages && result.openGraph.images !== undefined) {
+      autoFill.images = result.openGraph.images;
+    }
+
+    if (Object.keys(autoFill).length > 0) {
+      if (existingTwitter) {
+        result.twitter = { ...existingTwitter, ...autoFill };
+      } else {
+        result.twitter = autoFill;
+      }
+    }
+  }
+
+  if (result.twitter) {
+    const tw = { ...result.twitter };
+    if (!tw.title && resolvedTitle) {
+      tw.title = resolvedTitle;
+    }
+    if (!tw.description && result.description) {
+      tw.description = result.description;
+    }
+    result.twitter = tw;
+  }
+
+  // If twitter exists (either originally or via auto-fill), ensure card type is set.
+  // Next.js resolveTwitter defaults: summary_large_image when images present, else summary.
+  if (result.twitter) {
+    const tw = { ...result.twitter };
+    if (!tw.card) {
+      const images = tw.images;
+      const hasImages = Array.isArray(images) ? images.length > 0 : Boolean(images);
+      tw.card = hasImages ? "summary_large_image" : "summary";
+    }
+    result.twitter = tw;
+  }
+
+  return result;
+}
+
+/**
+ * Merge metadata from multiple sources (layouts + page).
+ *
+ * The list is ordered [rootLayout, nestedLayout, ..., page]. Like Next.js's
+ * accumulateMetadata, each title resolves with the template of the title
+ * before it: a `title.template` wraps later titles, not its own entry's
+ * `title.default`, and a plain-string title, or one without a template,
+ * clears it. An `isPage` entry passes on the template it received.
+ * `title.absolute` skips all templates.
+ *
+ * For top-level keys, later entries override earlier ones. `other` custom meta
+ * tags are the exception: Next.js merges those across segments.
+ * https://github.com/vercel/next.js/blob/canary/packages/next/src/lib/metadata/resolve-metadata.ts (accumulateMetadata)
+ */
+export function mergeMetadataEntries(entries: readonly MetadataMergeEntry[]): Metadata {
+  return mergeEntries(entries, false);
+}
+
+/**
+ * Merge metadata into the `parent` a later segment's resolver receives. Like
+ * {@link mergeMetadataEntries}, except the title stays resolved as Next.js's
+ * `{ absolute, template }`, so `(await parent).title?.absolute` reads the
+ * title so far. `template` is the last title's own, the one the next title
+ * gets, so merging this parent with later entries resolves their titles as
+ * the full merge does.
+ * https://github.com/vercel/next.js/blob/canary/packages/next/src/lib/metadata/resolvers/resolve-title.ts
+ */
+export function mergeParentMetadataEntries(entries: readonly MetadataMergeEntry[]): Metadata {
+  return mergeEntries(entries, true);
+}
+
+// The other keys whose `title` takes its own template, like `title`'s.
+const SOCIAL_TITLE_KEYS = ["openGraph", "twitter"] as const;
+type TitleTemplates = Record<"title" | (typeof SOCIAL_TITLE_KEYS)[number], string | null>;
+
+// Next.js's resolved title keeps an empty template as `""`; applying one is a no-op.
+function titleTemplateOf(title: MetadataTitle | undefined): string | null {
+  return typeof title === "object" && title ? (title.template ?? null) : null;
+}
+
+function mergeEntries(entries: readonly MetadataMergeEntry[], resolvedTitle: boolean): Metadata {
+  if (entries.length === 0) return {};
+
+  const merged: Metadata = {};
+
+  // The resolved titles' own templates, as Next.js's resolveTitle returns
+  // them, and the ones the next titles get (Next.js's `titleTemplates`). An
+  // `openGraph` or `twitter` value replaces the whole object, so one without a
+  // title clears its template.
+  const titleTemplates: TitleTemplates = { title: null, openGraph: null, twitter: null };
+  let stashedTemplates: TitleTemplates = { ...titleTemplates };
+
+  for (const entry of entries) {
+    const meta = entry.metadata;
+
+    // Merge non-title keys
+    for (const key of Object.keys(meta)) {
+      if (key === "title") continue; // Handle title separately below
+
+      const incoming = meta[key];
+      const existing = merged[key];
+
+      if (key === "other" && isOtherMetadata(existing) && isOtherMetadata(incoming)) {
+        merged.other = { ...existing, ...incoming };
+      } else {
+        // Plain replacement for everything else
+        merged[key] = incoming;
+      }
+    }
+
+    // Title resolution
+    if (meta.title !== undefined) {
+      merged.title = resolveTitle(meta.title, stashedTemplates.title ?? undefined);
+      titleTemplates.title = titleTemplateOf(meta.title);
+    }
+    for (const key of SOCIAL_TITLE_KEYS) {
+      if (!Object.hasOwn(meta, key)) continue;
+      const social = meta[key];
+      titleTemplates[key] = titleTemplateOf(social?.title);
+      // Like Next.js's resolveOpenGraph and resolveTwitter, a present but
+      // falsy value, `undefined` included, resolves to `null`.
+      merged[key] = social
+        ? { ...social, title: resolveTitle(social.title, stashedTemplates[key] ?? undefined) }
+        : null;
+    }
+    if (!entry.isPage) stashedTemplates = { ...titleTemplates };
+  }
+
+  if (resolvedTitle) {
+    if (Object.hasOwn(merged, "title")) {
+      merged.title = {
+        absolute: resolveStringTitle(merged.title) ?? "",
+        template: titleTemplates.title,
+      };
+    }
+    for (const key of SOCIAL_TITLE_KEYS) {
+      const social = merged[key];
+      if (social) {
+        merged[key] = {
+          ...social,
+          title: {
+            absolute: resolveStringTitle(social.title) ?? "",
+            template: titleTemplates[key],
+          },
+        };
+      }
+    }
+  }
+
+  return merged;
+}
+
+/**
+ * Resolve metadata from a module. Handles both static `metadata` export
+ * and async `generateMetadata()` function.
+ *
+ * @param parent - A Promise that resolves to the accumulated (merged) metadata
+ *   from all ancestor segments. Passed as the second argument to
+ *   `generateMetadata()`, matching Next.js's eager-execution-with-serial-
+ *   resolution approach. If not provided, defaults to a promise that resolves
+ *   to an empty object (so `await parent` never throws).
+ */
+export async function resolveModuleMetadata(
+  mod: Record<string, unknown>,
+  params: Record<string, string | string[]> = {},
+  searchParams?: Record<string, string | string[]>,
+  parent: Promise<Metadata> = Promise.resolve({}),
+  searchParamsObserver?: ThenableParamsObserver,
+): Promise<Metadata | null> {
+  if (typeof mod.generateMetadata === "function") {
+    const generateMetadata = mod.generateMetadata;
+    // Next.js 16 passes params/searchParams as Promises (async pattern).
+    // makeThenableParams() normalises null-prototype + preserves sync access.
+    const asyncParams = makeThenableParams(params);
+    // Only page segments receive searchParams; like Next.js
+    // (resolve-metadata.ts `createSegmentProps`), a "use cache" page resolver
+    // also gets the `$$isPage` marker.
+    const props =
+      searchParams === undefined
+        ? withUseCacheLayoutMarker(generateMetadata, { params: asyncParams })
+        : withUseCachePageMarker(generateMetadata, {
+            params: asyncParams,
+            searchParams: makeThenableParams(searchParams, searchParamsObserver),
+          });
+    return (await callSegmentResolver(
+      generateMetadata as SegmentResolver<Metadata>,
+      props,
+      parent,
+    )) as Metadata | null;
+  }
+  if (mod.metadata && typeof mod.metadata === "object") {
+    return mod.metadata as Metadata;
+  }
+  return null;
+}
+
+/**
+ * React component that renders metadata as HTML head elements.
+ * Used by the RSC entry to inject into the <head>.
+ */
+function isIconDescriptor(value: unknown): value is IconDescriptor {
+  if (typeof value !== "object" || value === null || value instanceof URL || Array.isArray(value)) {
+    return false;
+  }
+  const urlValue = Reflect.get(value, "url");
+  return typeof urlValue === "string" || urlValue instanceof URL;
+}
+
+function isIconsMap(value: IconsMetadata): value is IconsMap {
+  return (
+    typeof value === "object" &&
+    !(value instanceof URL) &&
+    !Array.isArray(value) &&
+    !isIconDescriptor(value)
+  );
+}
+
+function normalizeUrlDescriptor<T extends { url: string | URL }>(
+  value: string | URL | T,
+  createDescriptor: (url: string | URL) => T,
+): T {
+  if (typeof value === "string" || value instanceof URL) {
+    return createDescriptor(value);
+  }
+  return value;
+}
+
+function normalizeUrlDescriptorEntries<T extends { url: string | URL }>(
+  value: string | URL | T | Array<string | URL | T> | undefined,
+  createDescriptor: (url: string | URL) => T,
+): T[] {
+  if (!value) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((entry) => normalizeUrlDescriptor(entry, createDescriptor));
+  }
+
+  return [normalizeUrlDescriptor(value, createDescriptor)];
+}
+
+function stringifyUrl(url: string | URL): string {
+  return typeof url === "string" ? url : url.toString();
+}
+
+function createLocalMetadataBase(): URL {
+  const protocol = process.env.__NEXT_EXPERIMENTAL_HTTPS ? "https" : "http";
+  return new URL(`${protocol}://localhost:${process.env.PORT || 3000}`);
+}
+
+function getPreviewDeploymentUrl(): URL | null {
+  const origin = process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL;
+  return origin ? new URL(`https://${origin}`) : null;
+}
+
+function getProductionDeploymentUrl(): URL | null {
+  const origin = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  return origin ? new URL(`https://${origin}`) : null;
+}
+
+function getSocialImageMetadataBaseFallback(metadataBase: URL | null | undefined): URL {
+  const defaultMetadataBase = createLocalMetadataBase();
+  const previewDeploymentUrl = getPreviewDeploymentUrl();
+  const productionDeploymentUrl = getProductionDeploymentUrl();
+
+  if (process.env.NODE_ENV === "development") {
+    return defaultMetadataBase;
+  }
+
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.VERCEL_ENV === "preview" &&
+    previewDeploymentUrl
+  ) {
+    return previewDeploymentUrl;
+  }
+
+  return metadataBase || productionDeploymentUrl || defaultMetadataBase;
+}
+
+function trimSlashes(value: string): string {
+  return value.replace(/^\/+|\/+$/g, "");
+}
+
+function joinMetadataPath(basePathname: string, pathname: string): string {
+  if (!basePathname || basePathname === "/") {
+    return pathname;
+  }
+
+  const base = trimSlashes(basePathname);
+  const path = trimSlashes(pathname);
+  return path ? `/${base}/${path}` : `/${base}`;
+}
+
+function resolveRelativeMetadataUrl(url: string, pathname: string): string {
+  if (url === "." || url === "./") {
+    return pathname || "/";
+  }
+  if (!url.startsWith("./")) {
+    return url;
+  }
+
+  const base = pathname === "/" ? "" : pathname.replace(/\/+$/g, "");
+  return `${base}/${url.slice(2)}`;
+}
+
+function formatResolvedMetadataUrl(url: URL): string {
+  if (url.pathname === "/" && url.search === "" && url.hash === "") {
+    return url.origin;
+  }
+  return url.href;
+}
+
+// Next.js's exact file-extension regex for trailingSlash canonical rule.
+// Matches paths like /foo.xml, /bar/baz.json but NOT /.well-known/... paths.
+const TRAILING_SLASH_FILE_REGEX =
+  /^(?:\/((?!\.well-known(?:\/.*)?)((?:[^/]+\/)*)([^/]+\.\w+)))(\/?|$)/i;
+
+function resolveMetadataUrl(
+  url: string | URL,
+  metadataBase: URL | null | undefined,
+  trailingSlash?: boolean,
+): string {
+  const value = stringifyUrl(url);
+  if (!metadataBase) {
+    return value;
+  }
+
+  try {
+    const isAbsolute = isAbsoluteOrProtocolRelativeUrl(value);
+    const composed = isAbsolute
+      ? new URL(value, metadataBase)
+      : new URL(joinMetadataPath(metadataBase.pathname, value), metadataBase);
+    if (isAbsolute && composed.origin !== metadataBase.origin) {
+      return value;
+    }
+    // Match Next.js's resolveAbsoluteUrlWithPathname: only ADD a trailing slash
+    // when trailingSlash is true; never strip when false. See
+    // packages/next/src/lib/metadata/resolvers/resolve-url.ts.
+    if (trailingSlash === true && composed.search === "") {
+      if (
+        composed.pathname !== "/" &&
+        !composed.pathname.endsWith("/") &&
+        !TRAILING_SLASH_FILE_REGEX.test(composed.pathname)
+      ) {
+        composed.pathname += "/";
+      }
+    }
+    const result = formatResolvedMetadataUrl(composed);
+    // formatResolvedMetadataUrl collapses pathname '/' with no query to bare
+    // origin (no trailing slash). For trailingSlash:true restore the slash.
+    if (trailingSlash === true && result === metadataBase.origin) {
+      return `${metadataBase.origin}/`;
+    }
+    return result;
+  } catch {
+    return value;
+  }
+}
+
+function resolveCanonicalUrl(
+  url: string | URL,
+  metadataBase: URL | null | undefined,
+  pathname: string,
+  trailingSlash?: boolean,
+): string {
+  if (url instanceof URL) {
+    return resolveMetadataUrl(url, metadataBase, trailingSlash);
+  }
+  return resolveMetadataUrl(resolveRelativeMetadataUrl(url, pathname), metadataBase, trailingSlash);
+}
+
+function resolveAlternateUrl(
+  url: string | URL,
+  metadataBase: URL | null | undefined,
+  pathname: string,
+  trailingSlash?: boolean,
+): string {
+  if (url instanceof URL) {
+    const resolvedUrl = new URL(pathname, url);
+    url.searchParams.forEach((value, key) => resolvedUrl.searchParams.set(key, value));
+    return resolveMetadataUrl(resolvedUrl, metadataBase, trailingSlash);
+  }
+  return resolveCanonicalUrl(url, metadataBase, pathname, trailingSlash);
+}
+
+function isSocialImageDescriptor(
+  value: string | URL | SocialImageDescriptor,
+): value is SocialImageDescriptor {
+  return typeof value === "object" && !(value instanceof URL);
+}
+
+function isMetadataRouteSocialImage(value: SocialImageDescriptor): boolean {
+  return Reflect.get(value, "metadataRoute") === true;
+}
+
+function resolveSocialImageUrl(
+  image: string | URL | SocialImageDescriptor,
+  metadataBase: URL | null | undefined,
+): string {
+  const imageUrl = isSocialImageDescriptor(image) ? image.url : image;
+  const metadataRoute = isSocialImageDescriptor(image) && isMetadataRouteSocialImage(image);
+  if (
+    typeof imageUrl === "string" &&
+    !isAbsoluteOrProtocolRelativeUrl(imageUrl) &&
+    (!metadataBase || metadataRoute)
+  ) {
+    return resolveMetadataUrl(imageUrl, getSocialImageMetadataBaseFallback(metadataBase));
+  }
+  return resolveMetadataUrl(imageUrl, metadataBase);
+}
+
+type MetadataHeadProps = {
+  metadata: Metadata;
+  pathname?: string;
+  trailingSlash?: boolean;
+  streamedIconKey?: string;
+};
+
+function escapeHtmlText(value: string): string {
+  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+}
+
+function escapeHtmlAttribute(value: string): string {
+  return escapeHtmlText(value).replaceAll('"', "&quot;");
+}
+
+function renderMetadataText(node: unknown): string {
+  if (node === null || node === undefined || typeof node === "boolean") return "";
+  if (Array.isArray(node)) return node.map(renderMetadataText).join("");
+  if (typeof node === "string" || typeof node === "number" || typeof node === "bigint") {
+    return escapeHtmlText(String(node));
+  }
+  return "";
+}
+
+function renderMetadataAttributes(props: object, names: readonly string[]): string {
+  const attributes: string[] = [];
+  for (const name of names) {
+    const value = Reflect.get(props, name);
+    if (value === null || value === undefined || typeof value === "boolean") continue;
+    const htmlName = name === "hrefLang" ? "hreflang" : name;
+    attributes.push(`${htmlName}="${escapeHtmlAttribute(String(value))}"`);
+  }
+  return attributes.length > 0 ? ` ${attributes.join(" ")}` : "";
+}
+
+function renderMetadataElementToHtml(node: unknown): string {
+  if (node === null || node === undefined || typeof node === "boolean") return "";
+  if (Array.isArray(node)) return node.map(renderMetadataElementToHtml).join("");
+  if (!React.isValidElement(node)) return renderMetadataText(node);
+
+  const props = typeof node.props === "object" && node.props !== null ? node.props : {};
+  if (node.type === React.Fragment) {
+    return renderMetadataElementToHtml(Reflect.get(props, "children"));
+  }
+  if (typeof node.type !== "string") return "";
+
+  switch (node.type) {
+    case "title":
+      return `<title>${renderMetadataText(Reflect.get(props, "children"))}</title>`;
+    case "meta":
+      return `<meta${renderMetadataAttributes(props, ["name", "property", "content"])}>`;
+    case "link":
+      return `<link${renderMetadataAttributes(props, [
+        "data-vinext-streamed-icon",
+        "rel",
+        "href",
+        "hrefLang",
+        "type",
+        "sizes",
+        "color",
+        "media",
+        "fetchPriority",
+      ])}>`;
+    default:
+      return "";
+  }
+}
+
+export function renderMetadataToHtml(
+  metadata: Metadata,
+  pathname = "/",
+  options?: { trailingSlash?: boolean; streamedIconKey?: string },
+): string {
+  return renderMetadataElementToHtml(
+    MetadataHead({
+      metadata,
+      pathname,
+      trailingSlash: options?.trailingSlash,
+      streamedIconKey: options?.streamedIconKey,
+    }),
+  );
+}
+
+export function MetadataHead({
+  metadata,
+  pathname = "/",
+  trailingSlash,
+  streamedIconKey,
+}: MetadataHeadProps) {
+  const elements: React.ReactElement[] = [];
+  let key = 0;
+
+  // Resolve metadataBase for URL composition
+  const base = metadata.metadataBase;
+  function resolveUrl(url: string | URL): string;
+  function resolveUrl(url: string | URL | undefined): string | undefined;
+  function resolveUrl(url: string | URL | undefined): string | undefined {
+    if (!url) return undefined;
+    return resolveMetadataUrl(url, base);
+  }
+
+  // Title
+  const title =
+    typeof metadata.title === "string"
+      ? metadata.title
+      : typeof metadata.title === "object"
+        ? metadata.title.absolute || metadata.title.default
+        : undefined;
+  if (title) {
+    elements.push(<title key={key++}>{title}</title>);
+  }
+
+  // Description
+  if (metadata.description) {
+    elements.push(<meta key={key++} name="description" content={metadata.description} />);
+  }
+
+  // Generator
+  if (metadata.generator) {
+    elements.push(<meta key={key++} name="generator" content={metadata.generator} />);
+  }
+
+  // Application name
+  if (metadata.applicationName) {
+    elements.push(<meta key={key++} name="application-name" content={metadata.applicationName} />);
+  }
+
+  // Referrer
+  if (metadata.referrer) {
+    elements.push(<meta key={key++} name="referrer" content={metadata.referrer} />);
+  }
+
+  // Keywords
+  if (metadata.keywords) {
+    const kw = Array.isArray(metadata.keywords) ? metadata.keywords.join(",") : metadata.keywords;
+    elements.push(<meta key={key++} name="keywords" content={kw} />);
+  }
+
+  // Authors
+  if (metadata.authors) {
+    const authorList = Array.isArray(metadata.authors) ? metadata.authors : [metadata.authors];
+    for (const author of authorList) {
+      if (author.name) {
+        elements.push(<meta key={key++} name="author" content={author.name} />);
+      }
+      if (author.url) {
+        elements.push(<link key={key++} rel="author" href={author.url} />);
+      }
+    }
+  }
+
+  // Creator
+  if (metadata.creator) {
+    elements.push(<meta key={key++} name="creator" content={metadata.creator} />);
+  }
+
+  // Publisher
+  if (metadata.publisher) {
+    elements.push(<meta key={key++} name="publisher" content={metadata.publisher} />);
+  }
+
+  // Format detection
+  if (metadata.formatDetection) {
+    const parts: string[] = [];
+    if (metadata.formatDetection.telephone === false) parts.push("telephone=no");
+    if (metadata.formatDetection.address === false) parts.push("address=no");
+    if (metadata.formatDetection.email === false) parts.push("email=no");
+    if (parts.length > 0) {
+      elements.push(<meta key={key++} name="format-detection" content={parts.join(", ")} />);
+    }
+  }
+
+  // Category
+  if (metadata.category) {
+    elements.push(<meta key={key++} name="category" content={metadata.category} />);
+  }
+
+  // Robots
+  if (metadata.robots) {
+    if (typeof metadata.robots === "string") {
+      elements.push(<meta key={key++} name="robots" content={metadata.robots} />);
+    } else {
+      const { googleBot, ...robotsRest } = metadata.robots;
+      const robotParts: string[] = [];
+      for (const [k, v] of Object.entries(robotsRest)) {
+        if (v === true) robotParts.push(k);
+        else if (v === false) robotParts.push(`no${k}`);
+        else if (typeof v === "string" || typeof v === "number") robotParts.push(`${k}:${v}`);
+      }
+      if (robotParts.length > 0) {
+        elements.push(<meta key={key++} name="robots" content={robotParts.join(", ")} />);
+      }
+      // googlebot
+      if (googleBot) {
+        if (typeof googleBot === "string") {
+          elements.push(<meta key={key++} name="googlebot" content={googleBot} />);
+        } else {
+          const gbParts: string[] = [];
+          for (const [k, v] of Object.entries(googleBot)) {
+            if (v === true) gbParts.push(k);
+            else if (v === false) gbParts.push(`no${k}`);
+            else if (typeof v === "string" || typeof v === "number") gbParts.push(`${k}:${v}`);
+          }
+          if (gbParts.length > 0) {
+            elements.push(<meta key={key++} name="googlebot" content={gbParts.join(", ")} />);
+          }
+        }
+      }
+    }
+  }
+
+  // Open Graph
+  if (metadata.openGraph) {
+    const og = metadata.openGraph;
+    const ogTitle = renderedTitle(og.title);
+    if (ogTitle) elements.push(<meta key={key++} property="og:title" content={ogTitle} />);
+    if (og.description)
+      elements.push(<meta key={key++} property="og:description" content={og.description} />);
+    if (og.url) {
+      elements.push(
+        <meta
+          key={key++}
+          property="og:url"
+          content={resolveCanonicalUrl(og.url, base, pathname, trailingSlash)}
+        />,
+      );
+    }
+    if (og.siteName)
+      elements.push(<meta key={key++} property="og:site_name" content={og.siteName} />);
+    if (og.type) elements.push(<meta key={key++} property="og:type" content={og.type} />);
+    if (og.locale) elements.push(<meta key={key++} property="og:locale" content={og.locale} />);
+    if (og.publishedTime)
+      elements.push(
+        <meta key={key++} property="article:published_time" content={og.publishedTime} />,
+      );
+    if (og.modifiedTime)
+      elements.push(
+        <meta key={key++} property="article:modified_time" content={og.modifiedTime} />,
+      );
+    if (og.authors) {
+      for (const author of og.authors) {
+        elements.push(<meta key={key++} property="article:author" content={author} />);
+      }
+    }
+    if (og.images) {
+      const imgList =
+        typeof og.images === "string" || og.images instanceof URL
+          ? [{ url: og.images }]
+          : Array.isArray(og.images)
+            ? og.images
+            : [og.images];
+      for (const img of imgList) {
+        elements.push(
+          <meta key={key++} property="og:image" content={resolveSocialImageUrl(img, base)} />,
+        );
+        if (typeof img !== "string" && !(img instanceof URL)) {
+          if (img.width)
+            elements.push(
+              <meta key={key++} property="og:image:width" content={String(img.width)} />,
+            );
+          if (img.height)
+            elements.push(
+              <meta key={key++} property="og:image:height" content={String(img.height)} />,
+            );
+          if (img.type)
+            elements.push(<meta key={key++} property="og:image:type" content={img.type} />);
+          if (img.alt)
+            elements.push(<meta key={key++} property="og:image:alt" content={img.alt} />);
+        }
+      }
+    }
+    // Next.js accepts a single value or an array, and each entry may be a
+    // plain URL or a descriptor. Unlike images, video and audio URLs are
+    // rendered as written, without resolving them against metadataBase.
+    if (og.videos) {
+      const videos = normalizeUrlDescriptorEntries(og.videos, (url): OGVideoDescriptor => ({
+        url,
+      }));
+      for (const video of videos) {
+        if (video.url)
+          elements.push(<meta key={key++} property="og:video" content={stringifyUrl(video.url)} />);
+        if (video.secureUrl)
+          elements.push(
+            <meta
+              key={key++}
+              property="og:video:secure_url"
+              content={stringifyUrl(video.secureUrl)}
+            />,
+          );
+        if (video.type)
+          elements.push(<meta key={key++} property="og:video:type" content={video.type} />);
+        if (video.width)
+          elements.push(
+            <meta key={key++} property="og:video:width" content={String(video.width)} />,
+          );
+        if (video.height)
+          elements.push(
+            <meta key={key++} property="og:video:height" content={String(video.height)} />,
+          );
+      }
+    }
+    if (og.audio) {
+      const audios = normalizeUrlDescriptorEntries(og.audio, (url): OGAudioDescriptor => ({ url }));
+      for (const audio of audios) {
+        if (audio.url)
+          elements.push(<meta key={key++} property="og:audio" content={stringifyUrl(audio.url)} />);
+        if (audio.secureUrl)
+          elements.push(
+            <meta
+              key={key++}
+              property="og:audio:secure_url"
+              content={stringifyUrl(audio.secureUrl)}
+            />,
+          );
+        if (audio.type)
+          elements.push(<meta key={key++} property="og:audio:type" content={audio.type} />);
+      }
+    }
+    const ogListTags = [
+      ["og:email", og.emails],
+      ["og:phone_number", og.phoneNumbers],
+      ["og:fax_number", og.faxNumbers],
+      ["og:locale:alternate", og.alternateLocale],
+    ] as const;
+    for (const [property, value] of ogListTags) {
+      if (!value) continue;
+      for (const content of Array.isArray(value) ? value : [value]) {
+        elements.push(<meta key={key++} property={property} content={content} />);
+      }
+    }
+  }
+
+  // Twitter
+  if (metadata.twitter) {
+    const tw = metadata.twitter;
+    if (tw.card) elements.push(<meta key={key++} name="twitter:card" content={tw.card} />);
+    if (tw.site) elements.push(<meta key={key++} name="twitter:site" content={tw.site} />);
+    if (tw.siteId) elements.push(<meta key={key++} name="twitter:site:id" content={tw.siteId} />);
+    const twTitle = renderedTitle(tw.title);
+    if (twTitle) elements.push(<meta key={key++} name="twitter:title" content={twTitle} />);
+    if (tw.description)
+      elements.push(<meta key={key++} name="twitter:description" content={tw.description} />);
+    if (tw.creator) elements.push(<meta key={key++} name="twitter:creator" content={tw.creator} />);
+    if (tw.creatorId)
+      elements.push(<meta key={key++} name="twitter:creator:id" content={tw.creatorId} />);
+    if (tw.images) {
+      const imgList =
+        typeof tw.images === "string" || tw.images instanceof URL
+          ? [tw.images]
+          : Array.isArray(tw.images)
+            ? tw.images
+            : [tw.images];
+      for (const img of imgList) {
+        elements.push(
+          <meta key={key++} name="twitter:image" content={resolveSocialImageUrl(img, base)} />,
+        );
+        if (typeof img !== "string" && !(img instanceof URL)) {
+          if (img.type) {
+            elements.push(<meta key={key++} name="twitter:image:type" content={img.type} />);
+          }
+          if (img.width) {
+            elements.push(
+              <meta key={key++} name="twitter:image:width" content={String(img.width)} />,
+            );
+          }
+          if (img.height) {
+            elements.push(
+              <meta key={key++} name="twitter:image:height" content={String(img.height)} />,
+            );
+          }
+          if (img.alt) {
+            elements.push(<meta key={key++} name="twitter:image:alt" content={img.alt} />);
+          }
+        }
+      }
+    }
+    // Twitter player cards
+    if (tw.card === "player" && tw.players) {
+      const players = Array.isArray(tw.players) ? tw.players : [tw.players];
+      for (const player of players) {
+        const playerUrl = player.playerUrl.toString();
+        const streamUrl = player.streamUrl.toString();
+        elements.push(<meta key={key++} name="twitter:player" content={resolveUrl(playerUrl)} />);
+        elements.push(
+          <meta key={key++} name="twitter:player:stream" content={resolveUrl(streamUrl)} />,
+        );
+        elements.push(
+          <meta key={key++} name="twitter:player:width" content={String(player.width)} />,
+        );
+        elements.push(
+          <meta key={key++} name="twitter:player:height" content={String(player.height)} />,
+        );
+      }
+    }
+    // Twitter app cards
+    if (tw.card === "app" && tw.app) {
+      const { app } = tw;
+      for (const platform of ["iphone", "ipad", "googleplay"] as const) {
+        if (app.name) {
+          elements.push(
+            <meta key={key++} name={`twitter:app:name:${platform}`} content={app.name} />,
+          );
+        }
+        if (app.id[platform]) {
+          elements.push(
+            <meta
+              key={key++}
+              name={`twitter:app:id:${platform}`}
+              content={String(app.id[platform])}
+            />,
+          );
+        }
+        if (app.url?.[platform]) {
+          const appUrl = app.url[platform]!.toString();
+          elements.push(
+            <meta key={key++} name={`twitter:app:url:${platform}`} content={resolveUrl(appUrl)} />,
+          );
+        }
+      }
+    }
+  }
+
+  // Icons
+  if (metadata.icons) {
+    const iconEntries = isIconsMap(metadata.icons)
+      ? normalizeUrlDescriptorEntries(metadata.icons.icon, (url): IconDescriptor => ({ url }))
+      : normalizeUrlDescriptorEntries(metadata.icons, (url): IconDescriptor => ({ url }));
+
+    let streamedIconOrder = 0;
+    const appendIcons = (entries: IconDescriptor[], defaultRel: string) => {
+      for (const { url, rel, type, sizes, color, media, fetchPriority } of entries) {
+        elements.push(
+          <link
+            key={key++}
+            data-vinext-streamed-icon={
+              streamedIconKey ? `${streamedIconKey}:${streamedIconOrder++}` : undefined
+            }
+            rel={rel || defaultRel}
+            href={stringifyUrl(url)}
+            type={type}
+            sizes={sizes}
+            color={color}
+            media={media}
+            fetchPriority={fetchPriority}
+          />,
+        );
+      }
+    };
+
+    // Shortcut icon
+    if (isIconsMap(metadata.icons) && metadata.icons.shortcut) {
+      appendIcons(
+        normalizeUrlDescriptorEntries(metadata.icons.shortcut, (url): IconDescriptor => ({ url })),
+        "shortcut icon",
+      );
+    }
+    // Icon
+    if (iconEntries.length > 0) {
+      appendIcons(iconEntries, "icon");
+    }
+    // Apple touch icon
+    if (isIconsMap(metadata.icons) && metadata.icons.apple) {
+      appendIcons(
+        normalizeUrlDescriptorEntries(metadata.icons.apple, (url): IconDescriptor => ({ url })),
+        "apple-touch-icon",
+      );
+    }
+    // Other custom icon relations. Next.js accepts a single descriptor or an
+    // array; normalize before iterating.
+    if (isIconsMap(metadata.icons) && metadata.icons.other) {
+      appendIcons(
+        normalizeUrlDescriptorEntries(metadata.icons.other, (url): IconDescriptor => ({ url })),
+        "icon",
+      );
+    }
+  }
+
+  // Manifest
+  if (metadata.manifest) {
+    elements.push(<link key={key++} rel="manifest" href={stringifyUrl(metadata.manifest)} />);
+  }
+
+  // Alternates
+  if (metadata.alternates) {
+    const alt = metadata.alternates;
+    if (alt.canonical) {
+      elements.push(
+        <link
+          key={key++}
+          rel="canonical"
+          href={resolveCanonicalUrl(alt.canonical, base, pathname, trailingSlash)}
+        />,
+      );
+    }
+    if (alt.languages) {
+      for (const [lang, href] of Object.entries(alt.languages)) {
+        elements.push(
+          <link
+            key={key++}
+            rel="alternate"
+            hrefLang={lang}
+            href={resolveAlternateUrl(href, base, pathname, trailingSlash)}
+          />,
+        );
+      }
+    }
+    if (alt.media) {
+      for (const [media, href] of Object.entries(alt.media)) {
+        elements.push(
+          <link
+            key={key++}
+            rel="alternate"
+            media={media}
+            href={resolveAlternateUrl(href, base, pathname, trailingSlash)}
+          />,
+        );
+      }
+    }
+    if (alt.types) {
+      for (const [type, href] of Object.entries(alt.types)) {
+        elements.push(
+          <link
+            key={key++}
+            rel="alternate"
+            type={type}
+            href={resolveAlternateUrl(href, base, pathname, trailingSlash)}
+          />,
+        );
+      }
+    }
+  }
+
+  // Verification
+  if (metadata.verification) {
+    const v = metadata.verification;
+    if (v.google)
+      elements.push(<meta key={key++} name="google-site-verification" content={v.google} />);
+    if (v.yahoo) elements.push(<meta key={key++} name="y_key" content={v.yahoo} />);
+    if (v.yandex) elements.push(<meta key={key++} name="yandex-verification" content={v.yandex} />);
+    if (v.other) {
+      for (const [name, content] of Object.entries(v.other)) {
+        const values = Array.isArray(content) ? content : [content];
+        for (const val of values) {
+          elements.push(<meta key={key++} name={name} content={val} />);
+        }
+      }
+    }
+  }
+
+  // Apple Web App
+  if (metadata.appleWebApp) {
+    const awa = metadata.appleWebApp;
+    if (awa.capable !== false) {
+      elements.push(<meta key={key++} name="mobile-web-app-capable" content="yes" />);
+    }
+    if (awa.title) {
+      elements.push(<meta key={key++} name="apple-mobile-web-app-title" content={awa.title} />);
+    }
+    if (awa.statusBarStyle) {
+      elements.push(
+        <meta
+          key={key++}
+          name="apple-mobile-web-app-status-bar-style"
+          content={awa.statusBarStyle}
+        />,
+      );
+    }
+    if (awa.startupImage) {
+      const imgs =
+        typeof awa.startupImage === "string" ? [{ url: awa.startupImage }] : awa.startupImage;
+      for (const img of imgs) {
+        elements.push(
+          <link
+            key={key++}
+            rel="apple-touch-startup-image"
+            href={resolveUrl(img.url)}
+            {...(img.media ? { media: img.media } : {})}
+          />,
+        );
+      }
+    }
+  }
+
+  // iTunes
+  if (metadata.itunes) {
+    const { appId, appArgument } = metadata.itunes;
+    let content = `app-id=${appId}`;
+    if (appArgument) {
+      content += `, app-argument=${appArgument}`;
+    }
+    elements.push(<meta key={key++} name="apple-itunes-app" content={content} />);
+  }
+
+  // App Links
+  if (metadata.appLinks) {
+    const al = metadata.appLinks;
+    const platforms = [
+      "ios",
+      "iphone",
+      "ipad",
+      "android",
+      "windows_phone",
+      "windows",
+      "windows_universal",
+      "web",
+    ] as const;
+    for (const platform of platforms) {
+      const entries = al[platform];
+      if (!entries) continue;
+      const list = Array.isArray(entries) ? entries : [entries];
+      for (const entry of list) {
+        for (const [k, v] of Object.entries(entry)) {
+          if (v === undefined || v === null) continue;
+          const str = String(v);
+          const content = k === "url" ? resolveUrl(str) : str;
+          elements.push(<meta key={key++} property={`al:${platform}:${k}`} content={content} />);
+        }
+      }
+    }
+  }
+
+  // Other custom meta tags
+  if (metadata.other) {
+    for (const [name, content] of Object.entries(metadata.other)) {
+      const values = Array.isArray(content) ? content : [content];
+      for (const val of values) {
+        elements.push(<meta key={key++} name={name} content={val} />);
+      }
+    }
+  }
+
+  return <>{elements}</>;
+}

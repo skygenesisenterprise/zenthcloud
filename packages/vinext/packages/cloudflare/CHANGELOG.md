@@ -1,0 +1,487 @@
+# @vinext/cloudflare
+
+## 1.3.3
+
+### Bug Fixes
+
+- **Cloudflare:** reject --config for cloudflare.config.ts deploys and show Wrangler-only flags only for Wrangler projects (#4521)
+
+### Contributors
+
+- @james-elicx
+
+## 1.3.2
+
+### Bug Fixes
+
+- **App Router:** send an intercepted response's params to useParams() (#4489)
+- **Cloudflare:** skip /cdn-cgi and static asset paths in traffic-aware warming (#4480)
+
+### Contributors
+
+- @james-elicx
+
+## 1.3.1
+
+### Bug Fixes
+
+#### Cache
+
+- key Response Store route handlers and metadata routes by path like Next.js (#4445)
+- support custom cacheLife profiles from next.config (#4398)
+- return unstable_cache and "use cache" misses without waiting for the write (#4465)
+
+### Contributors
+
+- @james-elicx
+
+## 1.3.0
+
+Read the [Vinext 1.4 release post](https://vinext.dev/blog/vinext-1-4) for the highlights.
+
+### Features
+
+#### Cloudflare
+
+- share one Response Store App Router entry across hosts (#3897)
+- store both parts of a page whenever Workers Cache renders one (#4333)
+- store both parts of a page whenever Response Store stores or regenerates one (#4332)
+- store the page's document when an RSC request misses its Response Store entry (#4331)
+- add --vite-config to deploy (#4215)
+
+### Bug Fixes
+
+#### Cloudflare
+
+- share one Workers Cache entry across hosts (#3924)
+- share one Response Store static Pages entry across hosts (#3898)
+- don't purge the edge copy of a page's other part on Response Store (#4342)
+
+#### Misc
+
+- **Cache:** date "use cache" entries from when their generation started, like Next.js (#4348)
+- **Response Store:** refreshes overtaken by invalidate(), purge() or revalidatePath() land like Next.js, without the R2 head (#4323)
+- **Response Store:** drop concurrent refreshes of a revision another write already replaced (#4307)
+
+### Contributors
+
+- @Gourav224
+- @james-elicx
+
+## 1.2.1
+
+### Bug Fixes
+
+- **Cloudflare:** stop non-replayable Response Store data refreshes from spending edge purges (#4259)
+- default NODE_ENV to production for vinext-cloudflare deploy and vinext typegen (#4267)
+- **Cloudflare:** serve KV entries of a tag revalidated with a cacheLife profile stale until it expires (#4258)
+
+### Contributors
+
+- @james-elicx
+
+## 1.2.0
+
+Read the [Vinext 1.3 release post](https://vinext.dev/blog/vinext-1-3) for the highlights.
+
+### Features
+
+- **Cloudflare:** support Worker Previews via vinext-cloudflare previews deploy (#3900)
+
+### Bug Fixes
+
+- **Cloudflare:** return redirects from cache-facing fetches (#3242)
+- **Cache:** batch CDN tag purges per request and log purge failures (#4074)
+
+### Contributors
+
+- @james-elicx
+- @JamesbbBriz
+- @ktKongTong
+
+## 1.1.1
+
+Read the [Vinext 1.2 release post](https://vinext.dev/blog/vinext-1-2) for the highlights.
+
+### Bug Fixes
+
+#### Cloudflare
+
+- don't share an in-flight static assets cache index fetch across requests (#3965)
+- never warm through an http-only Worker route (#3931)
+- make --warm-cache-include-fallbacks a no-op (#3906)
+- answer a stored page's conditional request as Next.js does (#3832)
+- never store a conditional request's 304 in the Response Store (#3827)
+- keep Workers Cache off Worker-wide in every generated config (#3820)
+
+#### Misc
+
+- **Cache:** treat x-api-key as a credential for shared response caches (#3879)
+- **PPR:** key fallback shells apart from the pages of their literal paths (#3891)
+- **Cache:** key oversized cache identities by a SHA-256 digest (#3876)
+
+### Performance
+
+- **Cloudflare:** share the pending static assets cache index fetch across requests (#3972)
+- **Cloudflare:** skip getStaticPaths when Workers Cache revalidates a stored Pages entry (#3960)
+- **Pages Router:** skip getStaticPaths when Response Store regenerates a stored entry (#3959)
+
+### Contributors
+
+- @james-elicx
+
+## 1.1.0
+
+### Features
+
+- **Prerender:** write a page's special error that escapes the shell with its status (#3716)
+- **Response Store:** mark tag invalidations stale instead of regenerating them (#3712)
+- **Cloudflare:** soft-invalidate Workers Cache for stale-while-revalidate invalidations (#3707)
+
+### Bug Fixes
+
+#### App Router
+
+- stream a special error a Suspense boundary caught as a 200, as Next.js does (#3711)
+- store an RSC-first ISR render with its real status, and never cache unmatched 404s (#3710)
+- store a page's special-error render in the ISR cache (#3702)
+- let only the render decide whether a page is dynamic (#3698)
+
+#### Cloudflare
+
+- keep KV entries until their expire (#3735)
+- render Response Store and Workers Cache regenerations and warm-ups whole (#3737)
+- send no-store while Response Store admission is pending (#3708)
+- store the other entries a Response Store page replay recomputes (#3704)
+- store Response Store data entries without expire as stale indefinitely (#3675)
+
+#### Misc
+
+- **Cache:** use Flight arguments for cache identity and replay (#3600)
+- **Response Store:** let writers opt hard-expired reads into a miss (#3696)
+
+### Contributors
+
+- @james-elicx
+
+## 1.0.1
+
+### Bug Fixes
+
+#### Cloudflare
+
+- serve prerendered Pages Router from Static Assets (#3603)
+- render CDN bypass requests inline (#3597)
+- support colon cache tags in KV (#3569)
+
+#### Misc
+
+- **Cache:** separate browser headers from framework storage policy (#3540)
+
+### Contributors
+
+- @james-elicx
+
+## 1.0.0
+
+### Features
+
+- share one cached HTML, RSC and loading-shell entry across the query strings of a static App Router page, as Next.js does, on KV, in-memory, Workers Response Store and Static Assets, and on Workers Cache for paths its deploy manifest marks static (#3462, #3463, #3465, #3490, #3531)
+- match Next.js for `useSearchParams()` and client page `searchParams` on cacheable App Router pages: server rendering shows the nearest `<Suspense>` fallback and the browser renders the real query after hydration (#3455, #3457)
+- cache App Router pages only when Next.js would treat the route as static or SSG, default them to `revalidate = false`, never store a render that used a dynamic API, and send Next.js's never-cache header on pages that can't be static (#3451, #3452, #3453, #3454, #3456, #3461, #3489, #3500)
+- **Init:** default Cloudflare projects to cf (#3504)
+- **Cloudflare:** add read-only Static Assets prerender cache (#3344)
+- **CLI:** stabilize cache warming flags (#3502)
+
+### Bug Fixes
+
+#### Cloudflare
+
+- use cf/config for typed configuration (#3535)
+- tolerate Response Store lookup outages (#3523)
+- remove manual binding provisioning steps (#3529)
+- allow KV namespace autoprovisioning (#3528)
+- replace deploy prerendering with cache warming (#3340)
+- use configured domains for traffic-aware warming (#3512)
+- rename cdnAdapter to workersCacheCdnAdapter (#3503)
+
+#### Misc
+
+- expire every KV cache entry after the adapter's `ttlSeconds`, including `revalidate = false` pages, raising values below 60 to KV's minimum, and stop expiring tag invalidation markers (#3488)
+
+### Contributors
+
+- @james-elicx
+
+## 1.0.0-beta.11
+
+### Features
+
+- support direct `vite dev` and `vite build` commands with vinext's development, prerendering, and Cloudflare deployment lifecycle (#3381)
+- **Cloudflare:** support cf Build Output deployments (#3230)
+
+### Bug Fixes
+
+- **Cloudflare:** accept response store account and observability options (#3499)
+- **Cache:** replay "use cache" params under the original cache key (#3430)
+
+### Contributors
+
+- @james-elicx
+
+## 1.0.0-beta.10
+
+### Features
+
+- **Response Store:** expose metadata location hints (#3383)
+
+### Bug Fixes
+
+- **Cache:** protect cache function references (#3385)
+
+### Performance
+
+- **Cloudflare:** reuse response-stage invocations (#3388)
+- **Cache:** overlap Response Store soft-tag lookup (#3373)
+
+### Contributors
+
+- @james-elicx
+
+## 1.0.0-beta.9
+
+### Features
+
+- **Response Store:** read response metadata from R2 (#3339)
+- **Tracing:** add Next.js-compatible OpenTelemetry instrumentation with Sentry and Cloudflare Workers tracing support (#3261)
+- **Cloudflare:** allow version uploads without promotion (#3337)
+- **Response Store:** support for sharded durable objects (#3301)
+
+### Bug Fixes
+
+- **Cache:** bypass shared lookup for force-dynamic routes (#3346)
+- **Cloudflare:** prewarm KV through deployed Workers (#3324)
+- **Response Store:** stabilize cached variant selection (#3308)
+
+### Contributors
+
+- @james-elicx
+
+## 1.0.0-beta.8
+
+### Features
+
+#### Cache
+
+- support self-contained response store (#3246)
+- lazily resolve response store tag expirations (#3203)
+- stream response-store cache misses (#3200)
+- seed RSC during response-store warmup (#3196)
+- add Workers Response Store POC (#3192)
+
+#### Cloudflare
+
+- scaffold Response Store Wrangler config (#3249)
+- isolate cached response entrypoint (#3152)
+- summarize CDN warmup by route (#3163)
+
+### Bug Fixes
+
+#### Cloudflare
+
+- declare response store durable object export (#3262)
+- restore bounded probe scheduling (#3171)
+- reduce staged CDN probe work (#3168)
+- prewarm routed response stages (#3153)
+- wait for per-route version propagation (#3164)
+
+#### Misc
+
+- **Cache:** align response store HTML identity (#3209)
+- **Cache:** preserve staged cache invalidation parity (#3158)
+- **Build:** preserve staged prerender routing (#3151)
+
+### Performance
+
+- **Cache:** reduce response store Durable Object load (#3213)
+- **Cloudflare:** cut KV data cache round trips from 3 to 2 per tagged hit (#3187)
+
+### Contributors
+
+- @james-elicx
+- @LubomirGeorgiev
+
+## 1.0.0-beta.7
+
+### Features
+
+#### Cache
+
+- classify and warm static Route Handlers (#3113)
+- probe Pages Router cacheability (#3098)
+- deploy probed manifests in two stages (#3093)
+
+#### Cloudflare
+
+- configure warmup promotion delay (#3017)
+- allow warmup without promotion (#3016)
+- prewarm canonical ISR RSC requests (#3002)
+
+### Bug Fixes
+
+#### Cloudflare
+
+- finalize CDN version metadata output (#3137)
+- support explicit CDN warm targets (#3138)
+- harden post-deploy readiness checks (#3136)
+- restore web CDN warmup deploy (#3135)
+- classify CDN cacheability per concrete route (#3115)
+- discover prewarm paths from staged worker (#3090)
+- verify Worker version IDs during CDN warmup (#3072)
+- complete warmup response and promotion contracts (#3046)
+- harden canonical RSC warmup end to end (#3040)
+- default CDN warmup concurrency to 25 (#3015)
+
+#### Misc
+
+- **Cache:** certify staged cache fills before promotion (#3094)
+- **Cache:** gate CDN admission on probed routes (#3092)
+- **Build:** validate CDN warm discovery and deploy inputs (#3057)
+
+### Contributors
+
+- @james-elicx
+
+## 1.0.0-beta.6
+
+### Bug Fixes
+
+- **Prerender:** cache use-cache metadata routes (#2848)
+- **Cache:** delegate CDN header cleanup to adapters (#2797)
+
+### Contributors
+
+- @james-elicx
+
+## 1.0.0-beta.5
+
+### Bug Fixes
+
+- **App Router:** honor cacheLife stale on the client router (#2708)
+
+### Contributors
+
+- @NathanDrake2406
+
+## 1.0.0-beta.4
+
+### Bug Fixes
+
+- **Cache:** preserve prerendered page cache tags (#709)
+
+### Contributors
+
+- @james-elicx
+
+## 1.0.0-beta.3
+
+### Bug Fixes
+
+- **Cloudflare:** report custom-domain deploy URLs (#2630)
+
+### Contributors
+
+- @NathanDrake2406
+
+## 1.0.0-beta.2
+
+### Bug Fixes
+
+- **Cache:** guard 'use cache' key against Cloudflare KV's 512-byte limit (#2606)
+- **Create:** make create-vinext-app work with npm and npx (#2618)
+
+### Contributors
+
+- @blitss
+- @james-elicx
+
+## 1.0.0-beta.1
+
+### Bug Fixes
+
+- **Build:** honor inline next config for static export (#2543)
+
+### Contributors
+
+- @james-elicx
+
+## 1.0.0-beta.0
+
+### Features
+
+- **Init:** mark CDN warmup flag experimental (#2533)
+- **Cloudflare:** warm prerendered paths before deploy (#2481)
+- **Cloudflare:** populate kv cache from prerendered routes (#2509)
+
+### Bug Fixes
+
+- **Cloudflare:** stream deploy logs (#2528)
+
+### Contributors
+
+- @james-elicx
+
+## 0.2.1
+
+### Bug Fixes
+
+- **Cloudflare:** respect TPR cache opt-outs (#2493)
+- **App Router:** align app static ISR lifecycle (#2472)
+- **Cloudflare:** allow pages deploy without custom worker (#2429)
+
+### Contributors
+
+- @james-elicx
+
+## 0.2.0
+
+### Features
+
+- **Build:** support prerender vite config (#2415)
+- **Cloudflare:** move deploy command to cloudflare package (#2405)
+- **Init:** scaffold for cloudflare and node (#2279)
+- **Images:** configure image optimization via vinext({ images }) adapter (#1873)
+
+### Contributors
+
+- @james-elicx
+
+## 0.1.2
+
+### Bug Fixes
+
+- **Cache:** Support stripping CDN ISR headers (#1908)
+
+### Contributors
+
+- @NathanDrake2406
+
+## 0.1.1
+
+### Bug Fixes
+
+- **Cloudflare:** update cache adapter jsdoc and examples (#1898)
+
+### Contributors
+
+- @james-elicx
+
+## 0.1.0
+
+### Features
+
+- **Cache:** extract Cloudflare cache adapters into @vinext/cloudflare (#1748)
+
+### Contributors
+
+- @james-elicx

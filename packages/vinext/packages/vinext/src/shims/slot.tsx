@@ -1,0 +1,891 @@
+"use client";
+
+import * as React from "react";
+import {
+  APP_BFCACHE_SEGMENT_IDENTITIES_KEY,
+  APP_SKIPPED_LAYOUT_IDS_KEY,
+  AppElementsWire,
+  readOptimisticStateKeyRebinder,
+  UNMATCHED_SLOT,
+  type AppElementValue,
+  type AppElements,
+  type AppElementsInterception,
+  type AppElementsBfcacheSegmentIdentities,
+  type AppElementsSlotBinding,
+} from "../server/app-elements.js";
+import type { ArtifactCompatibilityEnvelope } from "../server/artifact-compatibility.js";
+import {
+  isNestedBfcacheSlotSegmentId,
+  isNestedBfcacheSlotSegmentIdFor,
+} from "../server/bfcache-identity.js";
+import type { CacheEntryReuseProof } from "../server/cache-proof.js";
+import {
+  getBfcacheIdMapContext,
+  getBfcacheSegmentIdContext,
+  notFound,
+} from "./navigation-server.js";
+import type { ClientNavigationRenderSnapshot } from "./navigation.js";
+
+const EMPTY_ELEMENTS: AppElements = Object.freeze({});
+const warnedMissingEntryIds = new Set<string>();
+const warnedTransportMetadataEntryIds = new Set<string>();
+
+export { UNMATCHED_SLOT };
+
+/**
+ * Holds resolved AppElements (not a Promise). React 19's use(Promise) during
+ * hydration triggers "async Client Component" for native Promises that lack
+ * React's internal .status property. Storing resolved values sidesteps this.
+ */
+export const ElementsContext = React.createContext<AppElements>(EMPTY_ELEMENTS);
+
+export const ChildrenContext = React.createContext<React.ReactNode>(null);
+
+export const ParallelSlotsContext = React.createContext<Readonly<
+  Record<string, React.ReactNode>
+> | null>(null);
+
+/**
+ * The query the server rendered a Slot's element with. Client pages read it
+ * (see `client-page-root.tsx`), so a page that first renders under a later
+ * navigation (a kept branch a refresh fetched from its own URL, or one still
+ * streaming when an intercepted navigation keeps it) reads its own response's
+ * query.
+ */
+export const RenderedSearchContext = React.createContext<string | undefined>(undefined);
+
+type RenderedSearchSource =
+  | string
+  | Pick<ClientNavigationRenderSnapshot, "renderedSearch" | "search">;
+
+// Keyed by element value, which merges carry over by reference.
+const renderedSearchByElement = new WeakMap<object, RenderedSearchSource>();
+
+/** Record the query the server rendered these elements with. */
+export function setAppElementsRenderedSearch(elements: AppElements, search: string): void {
+  for (const element of Object.values(elements)) {
+    if (typeof element === "object" && element !== null) {
+      renderedSearchByElement.set(element, search);
+    }
+  }
+}
+
+/**
+ * Bind a payload's elements to the snapshot of the navigation that delivers
+ * them, unless they already carry a query (a merged supplemental refresh, or
+ * an element an earlier payload delivered). Read at render time, so a query
+ * that arrives after the head (initial hydration) is still seen.
+ */
+export function bindAppElementsRenderedSearch(
+  elements: AppElements,
+  snapshot: Pick<ClientNavigationRenderSnapshot, "renderedSearch" | "search">,
+): void {
+  for (const element of Object.values(elements)) {
+    if (typeof element === "object" && element !== null && !renderedSearchByElement.has(element)) {
+      renderedSearchByElement.set(element, snapshot);
+    }
+  }
+}
+
+function getElementRenderedSearch(element: unknown): string | undefined {
+  if (typeof element !== "object" || element === null) return undefined;
+  const source = renderedSearchByElement.get(element);
+  return typeof source === "object" ? (source.renderedSearch ?? source.search) : source;
+}
+
+const BfcacheIdMapContext = getBfcacheIdMapContext();
+const BfcacheSegmentIdContext = getBfcacheSegmentIdContext();
+const EMPTY_BFCACHE_STATE_KEYS: Readonly<Record<string, string>> = Object.freeze({});
+const MAX_BFCACHE_SLOT_ENTRIES_WITH_CACHE_COMPONENTS = 3;
+// Used by updateBfcacheSlotEntryOrder when invoked directly (unit tests) and
+// as a future-proof limit for non-flag-keyed entries; the current render path
+// (BfcacheActivitySlotBoundary) only runs under cacheComponents, so this 1-entry
+// branch is a contract bound for the helper, not live render code.
+const MAX_BFCACHE_SLOT_ENTRIES_WITHOUT_CACHE_COMPONENTS = 1;
+
+// What a list reports: its entry keys, the keys retained under its hidden
+// entries, and the reports of the lists inside its shown entry.
+type BfcacheRetainedKeysReport = {
+  activeReports: BfcacheRetainedKeysReports;
+  hiddenKeys: readonly string[];
+  keys: readonly string[];
+};
+// Keyed by each list's segment id, so a list that remounts replaces its report.
+type BfcacheRetainedKeysReports = Map<string, BfcacheRetainedKeysReport>;
+
+// The reports of the lists outside any BFCache entry.
+const rootBfcacheRetainedKeysReports: BfcacheRetainedKeysReports = new Map();
+
+// Whether a BFCache list holds an entry for a key, so a navigation can tell
+// when its target is retained. Callers exempt the entries on screen. A list
+// counts its own entries and the keys its hidden entries snapshotted, from the
+// root down through the shown entries, and a disconnected list still holds
+// the entry it last showed.
+export function isBfcacheIdentityRetained(identity: string): boolean {
+  return hasBfcacheRetainedKey(rootBfcacheRetainedKeysReports, identity);
+}
+
+function hasBfcacheRetainedKey(reports: BfcacheRetainedKeysReports, identity: string): boolean {
+  for (const report of reports.values()) {
+    if (report.keys.includes(identity) || report.hiddenKeys.includes(identity)) return true;
+    if (hasBfcacheRetainedKey(report.activeReports, identity)) return true;
+  }
+  return false;
+}
+
+// A hidden entry runs no effects, so the lists inside it stop reporting, and
+// its list snapshots their last reports as it hides the entry. A list keeps
+// its last report while its effects are disconnected, by a hidden ancestor
+// entry, a Suspense fallback or a user Activity. React cleans up an unmounted
+// list's effects the same way, so its report stays too, until it remounts or
+// its entry is evicted. Its keys then count as retained a while longer, which
+// only skips learned shells.
+const BfcacheRetainedKeysContext = React.createContext<BfcacheRetainedKeysReports>(
+  rootBfcacheRetainedKeysReports,
+);
+
+function collectBfcacheRetainedKeys(reports: BfcacheRetainedKeysReports, keys: Set<string>): void {
+  for (const report of reports.values()) {
+    for (const key of report.keys) keys.add(key);
+    for (const key of report.hiddenKeys) keys.add(key);
+    collectBfcacheRetainedKeys(report.activeReports, keys);
+  }
+}
+
+export const BfcacheIdentityMapContext =
+  React.createContext<Readonly<Record<string, string>>>(EMPTY_BFCACHE_STATE_KEYS);
+
+export type BfcacheSlotEntry = {
+  content: React.ReactNode;
+  elements?: AppElements;
+  /** Every entry key inside a hidden entry, its own included. */
+  retainedKeys?: readonly string[];
+  segmentId?: string;
+  stateKey: string;
+  stateKeyMap?: Readonly<Record<string, string>>;
+};
+
+function isCacheComponentsEnabled(): boolean {
+  return String(process.env.__NEXT_CACHE_COMPONENTS) === "true";
+}
+
+type MergeElementsOptions = {
+  clearAbsentSlots?: boolean;
+  preserveAbsentSlots?: boolean;
+  preserveElementIds?: readonly string[];
+  preserveElementSeedIds?: readonly string[];
+  preservePreviousSlotIds?: readonly string[];
+};
+
+function getBfcacheSlotEntryLimit(): number {
+  return isCacheComponentsEnabled()
+    ? MAX_BFCACHE_SLOT_ENTRIES_WITH_CACHE_COMPONENTS
+    : MAX_BFCACHE_SLOT_ENTRIES_WITHOUT_CACHE_COMPONENTS;
+}
+
+function normalizeBfcacheSlotEntryLimit(maxEntries: number): number {
+  if (!Number.isFinite(maxEntries)) return 1;
+  return Math.max(1, Math.trunc(maxEntries));
+}
+
+export function updateBfcacheSlotEntryOrder(
+  previousOrder: readonly string[],
+  activeStateKey: string,
+  maxEntries: number = getBfcacheSlotEntryLimit(),
+): string[] {
+  const entryLimit = normalizeBfcacheSlotEntryLimit(maxEntries);
+  const nextOrder = [activeStateKey];
+
+  for (const stateKey of previousOrder) {
+    if (nextOrder.length >= entryLimit) break;
+    if (stateKey === activeStateKey) continue;
+    nextOrder.push(stateKey);
+  }
+
+  return nextOrder;
+}
+
+function pruneBfcacheSlotEntrySnapshots(
+  snapshotsByStateKey: Map<string, BfcacheSlotEntry>,
+  retainedOrder: readonly string[],
+): void {
+  const retainedKeys = new Set(retainedOrder);
+  for (const stateKey of snapshotsByStateKey.keys()) {
+    if (!retainedKeys.has(stateKey)) {
+      snapshotsByStateKey.delete(stateKey);
+    }
+  }
+}
+
+function haveSameBfcacheSlotEntryOrder(left: readonly string[], right: readonly string[]): boolean {
+  if (left.length !== right.length) return false;
+  for (let index = 0; index < left.length; index++) {
+    if (left[index] !== right[index]) return false;
+  }
+  return true;
+}
+
+export function stageBfcacheSlotEntryForRender(
+  committedSnapshots: ReadonlyMap<string, BfcacheSlotEntry>,
+  committedOrder: readonly string[],
+  activeEntry: BfcacheSlotEntry,
+  maxEntries: number = getBfcacheSlotEntryLimit(),
+): Readonly<{
+  entries: BfcacheSlotEntry[];
+  order: string[];
+  snapshots: Map<string, BfcacheSlotEntry>;
+}> {
+  const snapshots = new Map(committedSnapshots);
+  snapshots.set(activeEntry.stateKey, activeEntry);
+  const order = updateBfcacheSlotEntryOrder(committedOrder, activeEntry.stateKey, maxEntries);
+  pruneBfcacheSlotEntrySnapshots(snapshots, order);
+  return {
+    entries: order
+      .map((stateKey) => snapshots.get(stateKey))
+      .filter((entry): entry is BfcacheSlotEntry => entry !== undefined),
+    order,
+    snapshots,
+  };
+}
+
+function isArtifactCompatibilityEnvelopeValue(
+  value: unknown,
+): value is ArtifactCompatibilityEnvelope {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  return (
+    "schemaVersion" in value &&
+    "appElementsSchemaVersion" in value &&
+    "rscPayloadSchemaVersion" in value &&
+    "graphVersion" in value &&
+    "deploymentVersion" in value &&
+    "rootBoundaryId" in value &&
+    "renderEpoch" in value
+  );
+}
+
+function isSlotBindingValue(value: unknown): value is AppElementsSlotBinding {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  return "ownerLayoutId" in value && "slotId" in value && "state" in value;
+}
+
+function isSlotBindingListValue(value: unknown): value is readonly AppElementsSlotBinding[] {
+  // Empty [] is valid metadata when parsed from a missing __slotBindings key,
+  // but it is not valid renderable slot content. Keep this guard non-empty so
+  // accidental [] entries under render keys are not silently swallowed.
+  return Array.isArray(value) && value.length > 0 && value.every(isSlotBindingValue);
+}
+
+function isSkippedLayoutIdsMetadataValue(id: string, value: unknown): value is readonly string[] {
+  return (
+    id === APP_SKIPPED_LAYOUT_IDS_KEY &&
+    Array.isArray(value) &&
+    value.every((entry) => typeof entry === "string")
+  );
+}
+
+function isBfcacheSegmentIdentitiesMetadataValue(
+  id: string,
+  value: unknown,
+): value is AppElementsBfcacheSegmentIdentities {
+  if (
+    id !== APP_BFCACHE_SEGMENT_IDENTITIES_KEY ||
+    typeof value !== "object" ||
+    value === null ||
+    Array.isArray(value)
+  ) {
+    return false;
+  }
+
+  return Object.entries(value).every(([elementId, identity]) => {
+    const parsed = AppElementsWire.parseElementKey(elementId);
+    return parsed !== null && parsed.kind !== "route" && typeof identity === "string";
+  });
+}
+
+function isInterceptionMetadataValue(value: unknown): value is AppElementsInterception {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  return (
+    "sourceMatchedUrl" in value &&
+    typeof value.sourceMatchedUrl === "string" &&
+    "sourceRouteId" in value &&
+    typeof value.sourceRouteId === "string" &&
+    "slotId" in value &&
+    typeof value.slotId === "string" &&
+    "targetMatchedUrl" in value &&
+    typeof value.targetMatchedUrl === "string" &&
+    "targetRouteId" in value &&
+    typeof value.targetRouteId === "string"
+  );
+}
+
+function isCacheEntryReuseProofValue(value: unknown): value is CacheEntryReuseProof {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  return "kind" in value && value.kind === "runtime-cache-entry" && "decision" in value;
+}
+
+function isTransportMetadataValue(
+  id: string,
+  value: AppElementValue | undefined,
+): value is
+  | AppElementsBfcacheSegmentIdentities
+  | ArtifactCompatibilityEnvelope
+  | CacheEntryReuseProof
+  | AppElementsInterception
+  | readonly string[]
+  | readonly AppElementsSlotBinding[] {
+  return (
+    isBfcacheSegmentIdentitiesMetadataValue(id, value) ||
+    isArtifactCompatibilityEnvelopeValue(value) ||
+    isCacheEntryReuseProofValue(value) ||
+    isInterceptionMetadataValue(value) ||
+    isSkippedLayoutIdsMetadataValue(id, value) ||
+    isSlotBindingListValue(value)
+  );
+}
+
+function warnTransportMetadataEntry(id: string): void {
+  if (process.env.NODE_ENV === "production") return;
+  if (warnedTransportMetadataEntryIds.has(id)) return;
+
+  warnedTransportMetadataEntryIds.add(id);
+  console.warn("[vinext] Transport metadata value found under App Router render entry: " + id);
+}
+
+/**
+ * Provider stack for Activity-retained BFCache entries. Each retained entry
+ * re-provides the elements, state-key map, and segment id it was captured with,
+ * falling back to the live boundary values for entries that predate per-entry
+ * capture.
+ */
+function BfcacheEntryProviders({
+  entry,
+  fallbackElements,
+  fallbackSegmentId,
+  fallbackStateKeyMap,
+  retainedKeysReports,
+  SegmentContext,
+}: {
+  entry: BfcacheSlotEntry;
+  fallbackElements: AppElements;
+  fallbackSegmentId: string;
+  fallbackStateKeyMap: Readonly<Record<string, string>>;
+  retainedKeysReports: BfcacheRetainedKeysReports;
+  SegmentContext: React.Context<string | null>;
+}) {
+  return (
+    <BfcacheIdentityMapContext.Provider value={entry.stateKeyMap ?? fallbackStateKeyMap}>
+      <ElementsContext.Provider value={entry.elements ?? fallbackElements}>
+        <SegmentContext.Provider value={entry.segmentId ?? fallbackSegmentId}>
+          <BfcacheRetainedKeysContext.Provider value={retainedKeysReports}>
+            {entry.content}
+          </BfcacheRetainedKeysContext.Provider>
+        </SegmentContext.Provider>
+      </ElementsContext.Provider>
+    </BfcacheIdentityMapContext.Provider>
+  );
+}
+
+// TODO(bfcache): Move retained segment ownership into the App Router commit
+// state once the navigation/BFCache bug queue stabilizes. This synchronous
+// slot-local cache intentionally makes Activity entries available in the same
+// render that observes the committed active state key; the long-term model
+// should let navigation commits update retained slot entries and keep Slot as a
+// pure Activity renderer.
+function useBfcacheSlotEntries(
+  listId: string,
+  activeEntry: BfcacheSlotEntry,
+): {
+  entries: BfcacheSlotEntry[];
+  getRetainedKeysReports: (stateKey: string) => BfcacheRetainedKeysReports;
+} {
+  const snapshotsByStateKey = React.useRef(new Map<string, BfcacheSlotEntry>());
+  const [entryOrder, setEntryOrder] = React.useState<string[]>(() => [activeEntry.stateKey]);
+  // One report map per entry key, kept until the entry is evicted.
+  const [retainedKeysReportsByStateKey] = React.useState(
+    () => new Map<string, BfcacheRetainedKeysReports>(),
+  );
+  const getRetainedKeysReports = (stateKey: string): BfcacheRetainedKeysReports => {
+    let reports = retainedKeysReportsByStateKey.get(stateKey);
+    if (!reports) {
+      reports = new Map();
+      retainedKeysReportsByStateKey.set(stateKey, reports);
+    }
+    return reports;
+  };
+
+  // The cache contains only committed snapshots. Reading it here lets a new
+  // Activity render preserve entries without publishing speculative writes.
+  // oxlint-disable-next-line react/refs -- this read is the committed input to a staged render
+  const committedSnapshots = snapshotsByStateKey.current;
+  const staged = stageBfcacheSlotEntryForRender(committedSnapshots, entryOrder, activeEntry);
+  // An entry hidden by this render snapshots the keys its lists last reported,
+  // before they clean up.
+  for (const [index, entry] of staged.entries.entries()) {
+    if (entry.stateKey === activeEntry.stateKey || entry.retainedKeys) continue;
+    const retainedKeys = new Set([entry.stateKey]);
+    collectBfcacheRetainedKeys(getRetainedKeysReports(entry.stateKey), retainedKeys);
+    const hiddenEntry = { ...entry, retainedKeys: [...retainedKeys] };
+    staged.entries[index] = hiddenEntry;
+    staged.snapshots.set(entry.stateKey, hiddenEntry);
+  }
+  const nextOrder = staged.order;
+  const orderChanged = !haveSameBfcacheSlotEntryOrder(entryOrder, nextOrder);
+
+  // Ref writes survive discarded renders. Publish the cloned snapshot set only
+  // after React commits this render so speculative eviction or replacement
+  // cannot mutate the previous committed entries.
+  React.useLayoutEffect(() => {
+    snapshotsByStateKey.current = staged.snapshots;
+    for (const stateKey of retainedKeysReportsByStateKey.keys()) {
+      if (!staged.snapshots.has(stateKey)) retainedKeysReportsByStateKey.delete(stateKey);
+    }
+  }, [retainedKeysReportsByStateKey, staged.snapshots]);
+
+  const hiddenKeys = [...new Set(staged.entries.flatMap((entry) => entry.retainedKeys ?? []))];
+  // Report to the entry this list is in, so hiding that entry retains these
+  // too, or to the root outside any entry.
+  const enclosingReports = React.useContext(BfcacheRetainedKeysContext);
+  const activeReports = getRetainedKeysReports(activeEntry.stateKey);
+  const report: BfcacheRetainedKeysReport = {
+    activeReports,
+    hiddenKeys,
+    keys: staged.entries.map((entry) => entry.stateKey),
+  };
+  React.useLayoutEffect(() => {
+    enclosingReports.set(listId, report);
+  });
+
+  // Future retention-policy changes must keep the active key in renderOrder.
+  if (process.env.NODE_ENV !== "production" && !staged.snapshots.has(activeEntry.stateKey)) {
+    throw new Error("BFCache Activity slot is missing the active entry snapshot");
+  }
+
+  if (orderChanged) {
+    setEntryOrder(nextOrder);
+  }
+
+  return { entries: staged.entries, getRetainedKeysReports };
+}
+
+function BfcacheActivitySlotBoundary({
+  activeStateKey,
+  content,
+  elements,
+  id,
+  SegmentContext,
+  stateKeyMap,
+}: {
+  activeStateKey: string;
+  content: React.ReactNode;
+  elements: AppElements;
+  id: string;
+  SegmentContext: React.Context<string | null>;
+  stateKeyMap: Readonly<Record<string, string>>;
+}) {
+  const latestActiveEntry: BfcacheSlotEntry = {
+    content,
+    elements,
+    segmentId: id,
+    stateKey: activeStateKey,
+    stateKeyMap,
+  };
+  const { entries: renderEntries, getRetainedKeysReports } = useBfcacheSlotEntries(
+    id,
+    latestActiveEntry,
+  );
+
+  return (
+    <>
+      {renderEntries.map((entry) => (
+        // Hidden Activity entries keep their DOM mounted, so duplicate userland
+        // ids can exist under cacheComponents. Consumers should query by visible
+        // scope when that distinction matters.
+        <React.Activity
+          key={entry.stateKey}
+          mode={entry.stateKey === activeStateKey ? "visible" : "hidden"}
+        >
+          <BfcacheEntryProviders
+            entry={entry}
+            fallbackElements={elements}
+            fallbackSegmentId={id}
+            fallbackStateKeyMap={stateKeyMap}
+            retainedKeysReports={getRetainedKeysReports(entry.stateKey)}
+            SegmentContext={SegmentContext}
+          />
+        </React.Activity>
+      ))}
+    </>
+  );
+}
+
+/**
+ * Adds a nested segment-owned Activity cache inside a flattened AppElements
+ * entry. Named parallel routes are transported as one slot value, but Next.js
+ * retains each descendant segment independently. This boundary recreates that
+ * ownership without requiring a separate wire entry for every nested segment.
+ */
+export function BfcacheSegmentBoundary({
+  children,
+  id,
+  stateKey,
+}: {
+  children: React.ReactNode;
+  id: string;
+  stateKey: string;
+}) {
+  const elements = React.useContext(ElementsContext);
+  const identityMap = React.useContext(BfcacheIdentityMapContext);
+  const bfcacheIdMap = React.useContext(BfcacheIdMapContext!);
+  const activeStateKey = resolveBfcacheSegmentStateKey(id, identityMap, bfcacheIdMap);
+
+  if (!BfcacheSegmentIdContext || activeStateKey === undefined) {
+    return <React.Fragment key={stateKey}>{children}</React.Fragment>;
+  }
+  if (!isCacheComponentsEnabled()) {
+    return (
+      <BfcacheSegmentIdContext.Provider key={activeStateKey} value={id}>
+        {children}
+      </BfcacheSegmentIdContext.Provider>
+    );
+  }
+
+  return (
+    <BfcacheActivitySlotBoundary
+      activeStateKey={activeStateKey}
+      content={children}
+      elements={elements}
+      id={id}
+      SegmentContext={BfcacheSegmentIdContext}
+      stateKeyMap={identityMap}
+    />
+  );
+}
+
+/**
+ * Retains a layout's children across navigations that change which segment
+ * they render. Each child keeps its own wrappers, so a page and a nested layout
+ * give the layout's children different element shapes, and a retention list
+ * inside the child would remount with them. Next.js keeps this Activity list in
+ * the parent's layout router, above the child's boundaries, so a page left for a
+ * sibling with its own layout keeps its state when navigating back.
+ */
+export function BfcacheChildrenBoundary({
+  children,
+  id,
+  stateKey,
+}: {
+  children: React.ReactNode;
+  /** The child element whose identity keys the entries. */
+  id?: string;
+  /** A fixed key, for a segment level with no element of its own. */
+  stateKey?: string;
+}) {
+  if (!BfcacheIdMapContext || !BfcacheSegmentIdContext || !isCacheComponentsEnabled()) {
+    return <>{children}</>;
+  }
+  return (
+    <BfcacheChildrenActivityBoundary
+      id={id}
+      IdMapContext={BfcacheIdMapContext}
+      SegmentContext={BfcacheSegmentIdContext}
+      stateKey={stateKey}
+    >
+      {children}
+    </BfcacheChildrenActivityBoundary>
+  );
+}
+
+function BfcacheChildrenActivityBoundary({
+  children,
+  id,
+  IdMapContext,
+  SegmentContext,
+  stateKey,
+}: {
+  children: React.ReactNode;
+  id: string | undefined;
+  IdMapContext: React.Context<Readonly<Record<string, string>> | null>;
+  SegmentContext: React.Context<string | null>;
+  stateKey: string | undefined;
+}) {
+  const elements = React.useContext(ElementsContext);
+  const identityMap = React.useContext(BfcacheIdentityMapContext);
+  const bfcacheIdMap = React.useContext(IdMapContext);
+  // The children keep the segment id of the layout that renders them.
+  const segmentId = React.useContext(SegmentContext);
+  // A fixed key is baked into the tree an optimistic shell reuses, so it names
+  // the URL the shell was learned from until the shell rebinds it.
+  const rebindStateKey = readOptimisticStateKeyRebinder(elements);
+  const activeStateKey =
+    stateKey !== undefined
+      ? (rebindStateKey?.(stateKey) ?? stateKey)
+      : id === undefined
+        ? undefined
+        : resolveBfcacheSegmentStateKey(id, identityMap, bfcacheIdMap);
+  if (segmentId === null || activeStateKey === undefined) {
+    return <>{children}</>;
+  }
+
+  return (
+    <BfcacheActivitySlotBoundary
+      activeStateKey={activeStateKey}
+      content={children}
+      elements={elements}
+      id={segmentId}
+      SegmentContext={SegmentContext}
+      stateKeyMap={identityMap}
+    />
+  );
+}
+
+export function getNonCacheComponentsSegmentKey(
+  id: string,
+  activeStateKey: string,
+): string | undefined {
+  const parsed = AppElementsWire.parseElementKey(id);
+  return parsed !== null && parsed.kind !== "route" ? activeStateKey : undefined;
+}
+
+export function resolveBfcacheSegmentStateKey(
+  id: string,
+  identityMap: Readonly<Record<string, string>>,
+  bfcacheIdMap: Readonly<Record<string, string>> | null,
+): string | undefined {
+  return identityMap[id] ?? bfcacheIdMap?.[id];
+}
+
+function BfcacheSlotBoundary({ content, id }: { content: React.ReactNode; id: string }) {
+  const SegmentContext = BfcacheSegmentIdContext;
+  const elements = React.useContext(ElementsContext);
+  const identityMap = React.useContext(BfcacheIdentityMapContext);
+  const bfcacheIdMap = React.useContext(BfcacheIdMapContext!);
+  const activeStateKey = resolveBfcacheSegmentStateKey(id, identityMap, bfcacheIdMap);
+  if (!SegmentContext) return <>{content}</>;
+  // Missing or rejected identity metadata must not leave a segment unkeyed:
+  // createNextBfcacheIdMap mints a fresh id for that case, so using the same id
+  // here conservatively remounts React state instead of preserving stale state.
+  if (activeStateKey === undefined) {
+    return <SegmentContext.Provider value={id}>{content}</SegmentContext.Provider>;
+  }
+
+  // Without cacheComponents there is no Activity retention, but Next.js still
+  // keys every active segment. Carrier identities only change when their owned
+  // segment changes, so stable ancestors and named-slot shells retain state
+  // while dynamic layouts and slot branches remount.
+  if (!isCacheComponentsEnabled()) {
+    return (
+      <SegmentContext.Provider key={getNonCacheComponentsSegmentKey(id, activeStateKey)} value={id}>
+        {content}
+      </SegmentContext.Provider>
+    );
+  }
+
+  return (
+    <BfcacheActivitySlotBoundary
+      activeStateKey={activeStateKey}
+      content={content}
+      elements={elements}
+      id={id}
+      SegmentContext={SegmentContext}
+      stateKeyMap={identityMap}
+    />
+  );
+}
+
+export function mergeElements(
+  prev: AppElements,
+  next: AppElements,
+  options: MergeElementsOptions | boolean = {},
+): AppElements {
+  const clearAbsentSlots =
+    typeof options === "boolean" ? options : (options.clearAbsentSlots ?? false);
+  const preserveAbsentSlots =
+    typeof options === "boolean" ? !options : (options.preserveAbsentSlots ?? true);
+  const preserveElementIds = typeof options === "boolean" ? [] : (options.preserveElementIds ?? []);
+  const preserveElementSeedIds =
+    typeof options === "boolean" ? [] : (options.preserveElementSeedIds ?? []);
+  const preservePreviousSlotIds =
+    typeof options === "boolean" ? [] : (options.preservePreviousSlotIds ?? []);
+  const merged: Record<string, AppElementValue> = { ...next };
+  const preservedIdentityIds = new Set<string>();
+
+  for (const id of preserveElementIds) {
+    if (Object.hasOwn(prev, id)) {
+      const value = prev[id];
+      if (value !== undefined) {
+        merged[id] = value;
+        preservedIdentityIds.add(id);
+      }
+    }
+  }
+
+  // A seed keeps only the previous server output, which holds no client state.
+  // Its identity stays the destination's, because that identity names the
+  // segment state the seed now mounts under and the bfcache id the destination
+  // assigned to it.
+  for (const id of preserveElementSeedIds) {
+    if (preservedIdentityIds.has(id) || !Object.hasOwn(prev, id)) continue;
+    const value = prev[id];
+    if (value !== undefined) merged[id] = value;
+  }
+
+  const slotKeys = new Set(
+    [...Object.keys(prev), ...Object.keys(next)].filter(
+      (key) => AppElementsWire.isSlotId(key) && !isNestedBfcacheSlotSegmentId(key),
+    ),
+  );
+  // On traversal (browser back/forward), the server renders the full destination
+  // route tree. A slot absent from next means the destination route tree does not
+  // include it, so clear it rather than keeping the stale prev value. The legacy
+  // absent-slot path stays opt-in for unpromoted fallbacks; promoted navigation
+  // commits preserve default/unmatched slots through planner-approved
+  // preservePreviousSlotIds.
+  if (clearAbsentSlots) {
+    for (const key of slotKeys) {
+      if (!Object.hasOwn(next, key)) {
+        delete merged[key];
+      }
+    }
+  } else if (preserveAbsentSlots) {
+    for (const key of slotKeys) {
+      if (!Object.hasOwn(merged, key) && Object.hasOwn(prev, key)) {
+        const value = prev[key];
+        if (value !== undefined) {
+          merged[key] = value;
+          preservedIdentityIds.add(key);
+        }
+      }
+    }
+  }
+
+  // Default/unmatched slot preservation is a router-state decision, not a
+  // consequence of a missing key or an unmatched marker on the transport. This
+  // loop intentionally runs after clear/preserve element handling so planner-
+  // approved slot content and binding proof win the final merged value.
+  for (const id of preservePreviousSlotIds) {
+    if (!AppElementsWire.isSlotId(id)) continue;
+    if (!Object.hasOwn(prev, id)) continue;
+    const value = prev[id];
+    if (value !== undefined && value !== UNMATCHED_SLOT) {
+      merged[id] = value;
+      preservedIdentityIds.add(id);
+      // Membership is independent from identity proof. A retained nested
+      // boundary still needs its synthetic address when the previous proof map
+      // was absent or rejected, so the reducer can mint a conservative fresh
+      // id instead of leaking the parent slot's id.
+      for (const nestedId of Object.keys(prev)) {
+        if (!isNestedBfcacheSlotSegmentIdFor(nestedId, id)) continue;
+        const nestedValue = prev[nestedId];
+        if (nestedValue !== undefined) merged[nestedId] = nestedValue;
+        preservedIdentityIds.add(nestedId);
+      }
+    }
+  }
+
+  if (preservedIdentityIds.size > 0) {
+    const previousIdentityValue = prev[APP_BFCACHE_SEGMENT_IDENTITIES_KEY];
+    const nextIdentityValue = next[APP_BFCACHE_SEGMENT_IDENTITIES_KEY];
+    const hasPreviousIdentities = isBfcacheSegmentIdentitiesMetadataValue(
+      APP_BFCACHE_SEGMENT_IDENTITIES_KEY,
+      previousIdentityValue,
+    );
+    const hasNextIdentities = isBfcacheSegmentIdentitiesMetadataValue(
+      APP_BFCACHE_SEGMENT_IDENTITIES_KEY,
+      nextIdentityValue,
+    );
+    const previousIdentities: Record<string, string> = hasPreviousIdentities
+      ? { ...previousIdentityValue }
+      : {};
+    const mergedIdentities: Record<string, string> = hasNextIdentities
+      ? { ...nextIdentityValue }
+      : {};
+    const identityIds = new Set([
+      ...Object.keys(previousIdentities),
+      ...Object.keys(mergedIdentities),
+    ]);
+    const preservedParentIds = new Set(preservedIdentityIds);
+    for (const parentId of preservedParentIds) {
+      for (const identityId of identityIds) {
+        if (isNestedBfcacheSlotSegmentIdFor(identityId, parentId)) {
+          preservedIdentityIds.add(identityId);
+        }
+      }
+    }
+
+    // Outside seeds, an element and its identity are one preservation unit.
+    // Keeping previous content beside the destination's identity would falsely
+    // prove that stale client state belongs to the destination graph. If the
+    // previous payload had no proof, remove any destination proof and let
+    // BFCache remint.
+    for (const id of preservedIdentityIds) {
+      const previousIdentity = previousIdentities[id];
+      if (previousIdentity === undefined) {
+        delete mergedIdentities[id];
+      } else {
+        mergedIdentities[id] = previousIdentity;
+      }
+    }
+    if (hasPreviousIdentities || hasNextIdentities) {
+      merged[APP_BFCACHE_SEGMENT_IDENTITIES_KEY] = mergedIdentities;
+    }
+  }
+
+  return merged;
+}
+
+export function Slot({
+  id,
+  children,
+  parallelSlots,
+}: {
+  id: string;
+  children?: React.ReactNode;
+  parallelSlots?: Readonly<Record<string, React.ReactNode>>;
+}) {
+  const elements = React.useContext(ElementsContext);
+
+  if (!Object.hasOwn(elements, id)) {
+    if (process.env.NODE_ENV !== "production" && !AppElementsWire.isSlotId(id)) {
+      if (!warnedMissingEntryIds.has(id)) {
+        warnedMissingEntryIds.add(id);
+        console.warn("[vinext] Missing App Router element entry during render: " + id);
+      }
+    }
+    return null;
+  }
+
+  const element = elements[id];
+  if (isTransportMetadataValue(id, element)) {
+    warnTransportMetadataEntry(id);
+    return null;
+  }
+  if (element === UNMATCHED_SLOT) {
+    notFound();
+  }
+  if (element === null) {
+    return null;
+  }
+
+  const content = (
+    <RenderedSearchContext.Provider value={getElementRenderedSearch(element)}>
+      <ParallelSlotsContext.Provider value={parallelSlots ?? null}>
+        <ChildrenContext.Provider value={children ?? null}>{element}</ChildrenContext.Provider>
+      </ParallelSlotsContext.Provider>
+    </RenderedSearchContext.Provider>
+  );
+
+  return BfcacheIdMapContext && BfcacheSegmentIdContext ? (
+    <BfcacheSlotBoundary id={id} content={content} />
+  ) : (
+    content
+  );
+}
+
+export function Children() {
+  return React.useContext(ChildrenContext);
+}
+
+export function ParallelSlot({ name }: { name: string }) {
+  const slots = React.useContext(ParallelSlotsContext);
+  return slots?.[name] ?? null;
+}

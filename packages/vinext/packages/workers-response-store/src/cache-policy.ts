@@ -1,0 +1,105 @@
+export type CachePolicy = {
+  createdAt: number;
+  initialAge: number;
+  freshUntil: number;
+  swrUntil: number;
+};
+
+function parseSeconds(value: string | undefined): number | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const match = /^(?:"(\d+)"|(\d+))$/.exec(value);
+  if (!match) {
+    return undefined;
+  }
+
+  const parsed = Number(match[1] ?? match[2]);
+  return Number.isSafeInteger(parsed) ? parsed : undefined;
+}
+
+/**
+ * `generatedAt` dates the response from when its generation started: it is at least that old,
+ * and its stale-while-revalidate window still ends that long after its max-age.
+ */
+export function deriveCachePolicy(
+  headers: Headers,
+  now = Date.now(),
+  generatedAt?: number,
+): CachePolicy {
+  const cacheControl =
+    headers.get("Cloudflare-CDN-Cache-Control") ??
+    headers.get("CDN-Cache-Control") ??
+    headers.get("Cache-Control");
+
+  const directives = new Map<string, string | undefined>();
+  for (const part of cacheControl?.split(",") ?? []) {
+    const [rawName, ...rawValue] = part.trim().split("=");
+    if (!rawName) {
+      continue;
+    }
+
+    directives.set(rawName.toLowerCase(), rawValue.length ? rawValue.join("=").trim() : undefined);
+  }
+
+  const cacheStorageForbidden = directives.has("no-store") || directives.has("private");
+  const staleServingForbidden =
+    directives.has("s-maxage") ||
+    directives.has("must-revalidate") ||
+    directives.has("proxy-revalidate");
+
+  const maxAge =
+    cacheStorageForbidden || directives.has("no-cache")
+      ? 0
+      : (parseSeconds(directives.get("s-maxage")) ?? parseSeconds(directives.get("max-age")) ?? 0);
+  // Windows count from the exact generation start; the stored `Age` is whole seconds.
+  const ageMs = Math.max(
+    (parseSeconds(headers.get("Age") ?? undefined) ?? 0) * 1000,
+    generatedAt !== undefined && generatedAt <= now ? now - generatedAt : 0,
+  );
+  const initialAge = Math.floor(ageMs / 1000);
+  const freshUntil = now + Math.max(0, maxAge * 1000 - ageMs);
+
+  const staleWhileRevalidate =
+    cacheStorageForbidden || staleServingForbidden
+      ? 0
+      : (parseSeconds(directives.get("stale-while-revalidate")) ?? 0);
+
+  const staleMsUsed = generatedAt === undefined ? 0 : Math.max(0, ageMs - maxAge * 1000);
+
+  return {
+    createdAt: now,
+    initialAge,
+    freshUntil,
+    swrUntil: freshUntil + Math.max(0, staleWhileRevalidate * 1000 - staleMsUsed),
+  };
+}
+
+export function representationAge(createdAt: number, initialAge: number, now = Date.now()): number {
+  return initialAge + Math.max(0, Math.floor((now - createdAt) / 1000));
+}
+
+export function edgeCacheControl(
+  freshUntil: number,
+  swrUntil: number,
+  now = Date.now(),
+  hasRevalidator = true,
+): string {
+  if (!hasRevalidator) {
+    // Its writer replaces it once it goes stale, so its edge copy ends there, never later
+    // (not even on an error), and the replacement needs no edge purge. The Store serves it
+    // stale meanwhile.
+    const remainingFreshSeconds = Math.max(0, Math.floor((freshUntil - now) / 1000));
+    return `max-age=${remainingFreshSeconds}, stale-while-revalidate=0, stale-if-error=0`;
+  }
+
+  if (now < freshUntil) {
+    const remainingFreshSeconds = Math.max(0, Math.ceil((freshUntil - now) / 1000));
+    const staleWhileRevalidateSeconds = Math.max(0, Math.ceil((swrUntil - freshUntil) / 1000));
+    return `max-age=${remainingFreshSeconds}, stale-while-revalidate=${staleWhileRevalidateSeconds}`;
+  }
+
+  const remainingStaleSeconds = Math.max(0, Math.ceil((swrUntil - now) / 1000));
+  return `max-age=0, stale-while-revalidate=${remainingStaleSeconds}`;
+}

@@ -1,0 +1,556 @@
+import { execFileSync, spawnSync, type ExecFileSyncOptions } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { stripVTControlCharacters } from "node:util";
+import {
+  buildNodeCliInvocation,
+  resolveCfBin,
+  resolveWranglerBin,
+  validateWranglerEnvName,
+  type DeployOptions,
+} from "./deploy.js";
+import { parseCdnWarmupDeploymentUrl } from "./worker-deployment-url.js";
+import { parseWorkersDevUrl } from "./workers-dev-url.js";
+
+export { parseWorkersDevUrl } from "./workers-dev-url.js";
+
+export type WranglerVersionUploadResult = {
+  versionId: string;
+  previewUrl: string | null;
+  workerName: string | null;
+  output: string;
+};
+
+export type WranglerVersionDeployResult = {
+  deployedUrl: string | null;
+  output: string;
+};
+
+export type WranglerVersionTraffic = {
+  versionId: string;
+  percentage: number;
+};
+
+export type WranglerDeploymentStatus = {
+  deploymentId: string | null;
+  versions: WranglerVersionTraffic[];
+  output: string;
+};
+
+type WranglerVersionArgs = {
+  args: string[];
+  env: string | undefined;
+};
+
+type CfVersionArgs = {
+  args: string[];
+  mode: string | undefined;
+};
+
+type JsonRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is JsonRecord {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export function readBuildOutputWorkerName(root: string): string {
+  const configPath = path.join(
+    root,
+    ".cloudflare",
+    "output",
+    "v0",
+    "workers",
+    "default",
+    "worker.config.json",
+  );
+  let config: unknown;
+  try {
+    config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+  } catch (cause) {
+    throw new Error(
+      "Could not read the generated Cloudflare Build Output config. Rebuild the app before deploying.",
+      { cause },
+    );
+  }
+  const name = isRecord(config) ? config.name : undefined;
+  if (typeof name !== "string" || name.length === 0) {
+    throw new Error("The generated Cloudflare Build Output config does not declare a Worker name.");
+  }
+  return name;
+}
+
+function parseJsonObject(output: string): JsonRecord | unknown[] | null {
+  const trimmed = output.trim();
+  if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return null;
+  try {
+    const parsed: unknown = JSON.parse(trimmed);
+    return isRecord(parsed) || Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function findStringInRecord(value: unknown, keys: readonly string[]): string | null {
+  if (!isRecord(value)) return null;
+  for (const key of keys) {
+    const field = value[key];
+    if (typeof field === "string" && field.length > 0) return field;
+  }
+  return null;
+}
+
+function findVersionIdInUploadJson(parsed: JsonRecord | unknown[] | null): string | null {
+  if (!isRecord(parsed)) return null;
+  return (
+    findStringInRecord(parsed, ["version_id", "versionId", "id"]) ??
+    findStringInRecord(parsed.version, ["version_id", "versionId", "id"]) ??
+    findStringInRecord(parsed.result, ["version_id", "versionId", "id"])
+  );
+}
+
+function findPreviewUrlInUploadJson(parsed: JsonRecord | unknown[] | null): string | null {
+  if (!isRecord(parsed)) return null;
+  return (
+    findStringInRecord(parsed, ["preview_url", "previewUrl", "url"]) ??
+    findStringInRecord(parsed.version, ["preview_url", "previewUrl", "url"]) ??
+    findStringInRecord(parsed.result, ["preview_url", "previewUrl", "url"])
+  );
+}
+
+export function parseVersionId(output: string): string | null {
+  const versionIdPattern =
+    "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
+  const labeledVersionId = output.match(
+    new RegExp(`Worker\\s+Version\\s+ID\\s*:\\s*(${versionIdPattern})\\b`, "i"),
+  )?.[1];
+  if (labeledVersionId) return labeledVersionId;
+  return output.match(new RegExp(`\\b${versionIdPattern}\\b`))?.[0] ?? null;
+}
+
+export function parseUploadedWorkerName(output: string): string | null {
+  return (
+    stripVTControlCharacters(output).match(
+      /^\s*(?:[│|]\s*)?Uploaded\s+(\S+)\s+\(\d+(?:\.\d+)?\s+sec\)\s*$/im,
+    )?.[1] ?? null
+  );
+}
+
+export function parseWranglerVersionUploadOutput(output: string): WranglerVersionUploadResult {
+  const parsed = parseJsonObject(output);
+  const versionId = findVersionIdInUploadJson(parsed) ?? parseVersionId(output);
+  const previewUrl = findPreviewUrlInUploadJson(parsed) ?? parseWorkersDevUrl(output);
+  const workerName = parseUploadedWorkerName(output);
+
+  if (!versionId) {
+    throw new Error("Could not detect Worker version ID from `wrangler versions upload` output.");
+  }
+
+  return { versionId, previewUrl, workerName, output };
+}
+
+export function buildWranglerVersionUploadArgs(
+  options: Pick<DeployOptions, "preview" | "env" | "name" | "config" | "verbose"> & {
+    previewAlias?: string;
+  },
+): WranglerVersionArgs {
+  const args = ["versions", "upload"];
+  const env = options.env || (options.preview ? "preview" : undefined);
+  if (options.config) {
+    args.push("--config", options.config);
+  }
+  if (options.name) {
+    args.push("--name", options.name);
+  }
+  if (env) {
+    args.push("--env", validateWranglerEnvName(env));
+  }
+  if (options.previewAlias) {
+    args.push("--preview-alias", options.previewAlias);
+  }
+  return { args, env };
+}
+
+export function buildCfVersionUploadArgs(
+  options: Pick<DeployOptions, "preview" | "env"> & { previewAlias?: string },
+): CfVersionArgs {
+  const mode = options.env || (options.preview ? "preview" : undefined);
+  const args = ["workers", "versions", "create", "--prebuilt"];
+  if (mode) args.push("--mode", validateWranglerEnvName(mode));
+  if (options.previewAlias) args.push("--preview-alias", options.previewAlias);
+  return { args, mode };
+}
+
+export function buildWranglerVersionDeployArgs(
+  versionTraffic: readonly WranglerVersionTraffic[],
+  options: Pick<DeployOptions, "preview" | "env" | "name" | "config" | "verbose">,
+): WranglerVersionArgs {
+  const args = [
+    "versions",
+    "deploy",
+    ...versionTraffic.map(({ versionId, percentage }) => `${versionId}@${percentage}%`),
+    "--yes",
+  ];
+  const env = options.env || (options.preview ? "preview" : undefined);
+  if (options.config) {
+    args.push("--config", options.config);
+  }
+  if (options.name) {
+    args.push("--name", options.name);
+  }
+  if (env) {
+    args.push("--env", validateWranglerEnvName(env));
+  }
+  return { args, env };
+}
+
+export function buildWranglerDeploymentsStatusArgs(
+  options: Pick<DeployOptions, "preview" | "env" | "name" | "config" | "verbose">,
+): WranglerVersionArgs {
+  const args = ["deployments", "status", "--json"];
+  const env = options.env || (options.preview ? "preview" : undefined);
+  if (options.config) {
+    args.push("--config", options.config);
+  }
+  if (options.name) {
+    args.push("--name", options.name);
+  }
+  if (env) {
+    args.push("--env", validateWranglerEnvName(env));
+  }
+  return { args, env };
+}
+
+export function buildWranglerTriggersDeployArgs(
+  options: Pick<DeployOptions, "preview" | "env" | "name" | "config" | "verbose">,
+): WranglerVersionArgs {
+  const args = ["triggers", "deploy"];
+  const env = options.env || (options.preview ? "preview" : undefined);
+  if (options.config) {
+    args.push("--config", options.config);
+  }
+  if (options.name) {
+    args.push("--name", options.name);
+  }
+  if (env) {
+    args.push("--env", validateWranglerEnvName(env));
+  }
+  return { args, env };
+}
+
+function runWranglerCommand(
+  root: string,
+  args: string[],
+  execute: typeof execFileSync = execFileSync,
+  verbose = false,
+): string {
+  const wranglerBin = resolveWranglerBin(root);
+  const invocation = buildNodeCliInvocation(wranglerBin, args);
+  const execOpts: ExecFileSyncOptions = {
+    cwd: root,
+    stdio: "pipe",
+    encoding: "utf-8",
+    shell: false,
+  };
+  const output = execute(invocation.file, invocation.args, execOpts) as string;
+  if (verbose && output.trim()) {
+    for (const line of output.trim().split("\n")) {
+      console.log(`  ${line}`);
+    }
+  }
+  return output;
+}
+
+/**
+ * cf writes its log, including `Worker Version ID:` and deployed URLs, to stderr and only JSON
+ * results to stdout, so `output` holds both streams and `stdout` stays parseable as JSON.
+ */
+function runCfCommand(
+  root: string,
+  args: string[],
+  execute: typeof spawnSync = spawnSync,
+  verbose = false,
+): { stdout: string; output: string } {
+  const invocation = buildNodeCliInvocation(resolveCfBin(root), args);
+  const result = execute(invocation.file, invocation.args, {
+    cwd: root,
+    stdio: "pipe",
+    encoding: "utf-8",
+    shell: false,
+  });
+  const stdout = result.stdout ?? "";
+  const stderr = result.stderr ?? "";
+  if (result.error) {
+    throw Object.assign(result.error, {
+      status: result.status,
+      signal: result.signal,
+      stdout,
+      stderr,
+    });
+  }
+  if (result.status !== 0) {
+    throw Object.assign(
+      new Error(`Command failed: ${[invocation.file, ...invocation.args].join(" ")}\n${stderr}`),
+      { status: result.status, signal: result.signal, stdout, stderr },
+    );
+  }
+  const output = [stdout, stderr].filter(Boolean).join("\n");
+  if (verbose && output.trim()) {
+    for (const line of output.trim().split("\n")) console.log(`  ${line}`);
+  }
+  return { stdout, output };
+}
+
+function errorText(error: unknown): string {
+  if (!error || typeof error !== "object") return String(error);
+  const parts = error instanceof Error ? [error.message] : [];
+  const record = error as Record<string, unknown>;
+  for (const field of ["stdout", "stderr", "output"] as const) {
+    const value = record[field];
+    if (Array.isArray(value)) {
+      parts.push(
+        ...value
+          .filter(
+            (entry): entry is string | Buffer =>
+              typeof entry === "string" || Buffer.isBuffer(entry),
+          )
+          .map((entry) => entry.toString()),
+      );
+    } else if (typeof value === "string" || Buffer.isBuffer(value)) {
+      parts.push(value.toString());
+    }
+  }
+  return parts.join("\n");
+}
+
+function isMissingWorkerVersionUploadError(error: unknown): boolean {
+  return /cannot upload a new version of a Worker that does not yet exist/i.test(errorText(error));
+}
+
+function withInitialDeployRequiredMessage(): Error {
+  const message =
+    "Version upload needs an existing Cloudflare Worker. " +
+    "Run `vinext-cloudflare deploy` once normally to create the Worker, then rerun the version-based deploy.";
+  return new Error(message);
+}
+
+function parseDeploymentVersions(value: unknown): WranglerVersionTraffic[] {
+  const deployment = Array.isArray(value) ? value.at(-1) : value;
+  if (!isRecord(deployment) || !Array.isArray(deployment.versions)) return [];
+
+  const versions: WranglerVersionTraffic[] = [];
+  for (const version of deployment.versions) {
+    if (!isRecord(version)) continue;
+    const versionId = version.version_id;
+    const percentage = version.percentage;
+    if (typeof versionId !== "string" || typeof percentage !== "number") continue;
+    versions.push({ versionId, percentage });
+  }
+  return versions;
+}
+
+export function parseWranglerDeploymentStatusOutput(output: string): WranglerDeploymentStatus {
+  const parsed = parseJsonObject(output);
+  if (!parsed) {
+    throw new Error("Could not parse `wrangler deployments status --json` output.");
+  }
+
+  const deployment = Array.isArray(parsed) ? parsed.at(-1) : parsed;
+  const deploymentId = findStringInRecord(deployment, ["id", "deployment_id", "deploymentId"]);
+  return { deploymentId, versions: parseDeploymentVersions(parsed), output };
+}
+
+/** The first entry is the deployment currently serving traffic. */
+export function parseCfDeploymentStatusOutput(output: string): WranglerDeploymentStatus {
+  const parsed = parseJsonObject(output);
+  if (!isRecord(parsed) || !Array.isArray(parsed.deployments) || !parsed.deployments.length) {
+    throw new Error(
+      "Could not parse the active deployment from `cf workers deployments list` output.",
+    );
+  }
+  const current = parsed.deployments[0];
+  const deploymentId = findStringInRecord(current, ["id", "deployment_id", "deploymentId"]);
+  const versions = parseDeploymentVersions(current);
+  if (!deploymentId || !versions.length) {
+    throw new Error(
+      "The active `cf workers deployments list` entry is missing its ID or versions.",
+    );
+  }
+  return { deploymentId, versions, output };
+}
+
+export function runCfDeploymentStatus(
+  root: string,
+  options: { name: string; env?: string; verbose?: boolean },
+  execute: typeof spawnSync = spawnSync,
+): WranglerDeploymentStatus {
+  const { stdout } = runCfCommand(
+    root,
+    [
+      "workers",
+      "deployments",
+      "list",
+      "--worker",
+      options.name,
+      ...(options.env ? ["--mode", validateWranglerEnvName(options.env)] : []),
+    ],
+    execute,
+    options.verbose,
+  );
+  return parseCfDeploymentStatusOutput(stdout);
+}
+
+export function runCfVersionDeploy(
+  root: string,
+  versionTraffic: readonly WranglerVersionTraffic[],
+  options: { name: string; env?: string; verbose?: boolean },
+  _phase: "stage" | "promote-warmed" | "promote-uploaded" = "promote-uploaded",
+  execute: typeof spawnSync = spawnSync,
+): WranglerVersionDeployResult {
+  const versions = versionTraffic.map(({ versionId, percentage }) => ({
+    version_id: versionId,
+    percentage,
+  }));
+  const { output } = runCfCommand(
+    root,
+    [
+      "workers",
+      "deployments",
+      "create",
+      "--worker",
+      options.name,
+      "--strategy",
+      "percentage",
+      "--versions",
+      JSON.stringify(versions),
+      ...(options.env ? ["--mode", validateWranglerEnvName(options.env)] : []),
+    ],
+    execute,
+    options.verbose,
+  );
+  return { deployedUrl: parseWorkersDevUrl(output), output };
+}
+
+export function runCfTriggersDeploy(
+  root: string,
+  options: { env?: string; verbose?: boolean },
+  execute: typeof spawnSync = spawnSync,
+): WranglerVersionDeployResult {
+  const { output } = runCfCommand(
+    root,
+    [
+      "workers",
+      "triggers",
+      "deploy",
+      "--prebuilt",
+      ...(options.env ? ["--mode", validateWranglerEnvName(options.env)] : []),
+    ],
+    execute,
+    options.verbose,
+  );
+  return { deployedUrl: parseCdnWarmupDeploymentUrl(output), output };
+}
+
+export function runWranglerVersionUpload(
+  root: string,
+  options: Pick<DeployOptions, "preview" | "env" | "name" | "config" | "verbose"> & {
+    previewAlias?: string;
+  },
+  execute: typeof execFileSync = execFileSync,
+): WranglerVersionUploadResult {
+  const { args, env } = buildWranglerVersionUploadArgs(options);
+  if (env) {
+    console.log(`\n  Uploading Worker version for env: ${env}...`);
+  } else {
+    console.log("\n  Uploading Worker version for production...");
+  }
+  try {
+    const upload = parseWranglerVersionUploadOutput(
+      runWranglerCommand(root, args, execute, options.verbose === true),
+    );
+    console.log(`  Worker version ID: ${upload.versionId}`);
+    return upload;
+  } catch (error) {
+    if (isMissingWorkerVersionUploadError(error)) {
+      throw withInitialDeployRequiredMessage();
+    }
+    throw error;
+  }
+}
+
+export function runCfVersionUpload(
+  root: string,
+  options: Pick<DeployOptions, "preview" | "env" | "name" | "config" | "verbose"> & {
+    previewAlias?: string;
+  },
+  execute: typeof spawnSync = spawnSync,
+): WranglerVersionUploadResult {
+  const workerName = readBuildOutputWorkerName(root);
+  const { args, mode } = buildCfVersionUploadArgs(options);
+  console.log(
+    mode
+      ? `\n  Uploading Worker Build Output in mode: ${mode}...`
+      : "\n  Uploading Worker Build Output...",
+  );
+  try {
+    const result = parseWranglerVersionUploadOutput(
+      runCfCommand(root, args, execute, options.verbose === true).output,
+    );
+    return { ...result, workerName };
+  } catch (error) {
+    if (isMissingWorkerVersionUploadError(error)) throw withInitialDeployRequiredMessage();
+    throw error;
+  }
+}
+
+export function runWranglerVersionDeploy(
+  root: string,
+  versionTraffic: readonly WranglerVersionTraffic[],
+  options: Pick<DeployOptions, "preview" | "env" | "name" | "config" | "verbose">,
+  phase: "stage" | "promote-warmed" | "promote-uploaded" = "promote-uploaded",
+  execute: typeof execFileSync = execFileSync,
+): WranglerVersionDeployResult {
+  const { args, env } = buildWranglerVersionDeployArgs(versionTraffic, options);
+  const target = env ? `env: ${env}` : "production";
+  if (phase === "stage") {
+    console.log(`\n  Staging uploaded Worker version at 0% for CDN warmup in ${target}...`);
+  } else if (phase === "promote-warmed") {
+    console.log(`\n  Promoting warmed Worker version to ${target}...`);
+  } else {
+    console.log(`\n  Promoting uploaded Worker version to ${target}...`);
+  }
+  const output = runWranglerCommand(root, args, execute, options.verbose === true);
+  return { deployedUrl: parseWorkersDevUrl(output), output };
+}
+
+export function runWranglerDeploymentStatus(
+  root: string,
+  options: Pick<DeployOptions, "preview" | "env" | "name" | "config" | "verbose">,
+  execute: typeof execFileSync = execFileSync,
+): WranglerDeploymentStatus {
+  const { args, env } = buildWranglerDeploymentsStatusArgs(options);
+  if (options.verbose) {
+    if (env) {
+      console.log(`\n  Reading current Worker deployment for env: ${env}...`);
+    } else {
+      console.log("\n  Reading current Worker deployment...");
+    }
+  }
+  return parseWranglerDeploymentStatusOutput(
+    runWranglerCommand(root, args, execute, options.verbose === true),
+  );
+}
+
+export function runWranglerTriggersDeploy(
+  root: string,
+  options: Pick<DeployOptions, "preview" | "env" | "name" | "config" | "verbose">,
+  execute: typeof execFileSync = execFileSync,
+): WranglerVersionDeployResult {
+  const { args, env } = buildWranglerTriggersDeployArgs(options);
+  if (env) {
+    console.log(`\n  Applying Worker triggers for env: ${env}...`);
+  } else {
+    console.log("\n  Applying Worker triggers...");
+  }
+  const output = runWranglerCommand(root, args, execute, options.verbose === true);
+  return { deployedUrl: parseCdnWarmupDeploymentUrl(output), output };
+}

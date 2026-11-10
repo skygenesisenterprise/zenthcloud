@@ -1,0 +1,476 @@
+import { test, expect } from "@playwright/test";
+import { isAppRouterRscRequestForPath, waitForAppRouterHydration } from "../helpers";
+
+// Hardcoded BASE URL matches the convention used in all other E2E test files in
+// this directory (navigation.spec.ts, server-client-only.spec.ts, after.spec.ts,
+// etc.). Port 4174 is the vite preview default for the app-basic fixture.
+const BASE = "http://localhost:4174";
+const SLOW_SEARCH_RESOLUTION_WAIT_MS = 5_500;
+
+type RouterSideEffectWindow = Window & {
+  __APP_ROUTER_HISTORY_MARKER__?: string;
+  __NEXT_ROUTER_IMPORTED__?: boolean;
+};
+
+test.describe("Navigation regression tests (#652 Firefox hang fix)", () => {
+  test("cross-route navigation completes without hanging", async ({ page }) => {
+    await page.goto(`${BASE}/nav-flash/link-sync`);
+    await waitForAppRouterHydration(page);
+    await expect(page.locator("#page-title")).toHaveText("All Items");
+
+    // Set a marker to verify no full page reload
+    await page.evaluate(() => {
+      (window as any).__NAV_MARKER__ = true;
+    });
+
+    // Navigate to a different route (cross-route)
+    await page.click("#link-list");
+    await expect(page.locator("#list-title")).toHaveText("Nav Flash List", { timeout: 10_000 });
+
+    // Verify URL changed
+    expect(page.url()).toBe(`${BASE}/nav-flash/list`);
+
+    // Verify no full page reload
+    const marker = await page.evaluate(() => (window as any).__NAV_MARKER__);
+    expect(marker).toBe(true);
+  });
+
+  test("same-route navigation (search param change) works", async ({ page }) => {
+    await page.goto(`${BASE}/nav-flash/link-sync`);
+    await waitForAppRouterHydration(page);
+    await expect(page.locator("#page-title")).toHaveText("All Items");
+
+    await page.evaluate(() => {
+      (window as any).__NAV_MARKER__ = true;
+    });
+
+    // Navigate within the same route (search param change)
+    await page.click("#link-active");
+    await expect(page.locator("#page-title")).toHaveText("Filtered: active", { timeout: 10_000 });
+    expect(page.url()).toContain("filter=active");
+
+    // Hook values should be in sync
+    await expect(page.locator("#hook-filter")).toHaveText("filter: active");
+
+    // No full page reload
+    const marker = await page.evaluate(() => (window as any).__NAV_MARKER__);
+    expect(marker).toBe(true);
+  });
+
+  test("back/forward navigation works after cross-route nav", async ({ page }) => {
+    await page.goto(`${BASE}/nav-flash/link-sync`);
+    await waitForAppRouterHydration(page);
+    await expect(page.locator("#page-title")).toHaveText("All Items");
+
+    // Navigate to list page
+    await page.click("#link-list");
+    await expect(page.locator("#list-title")).toHaveText("Nav Flash List", { timeout: 10_000 });
+
+    // Go back
+    await page.goBack();
+    await expect(page.locator("#page-title")).toHaveText("All Items", { timeout: 10_000 });
+    expect(page.url()).toBe(`${BASE}/nav-flash/link-sync`);
+
+    // Go forward
+    await page.goForward();
+    await expect(page.locator("#list-title")).toHaveText("Nav Flash List", { timeout: 10_000 });
+    expect(page.url()).toBe(`${BASE}/nav-flash/list`);
+  });
+
+  test("importing next/router in an App Router client bundle does not hijack back/forward", async ({
+    page,
+  }) => {
+    const documentRequests: string[] = [];
+    page.on("request", (request) => {
+      if (request.isNavigationRequest() && request.resourceType() === "document") {
+        documentRequests.push(request.url());
+      }
+    });
+
+    await page.goto(`${BASE}/router-side-effect-leak`);
+    await waitForAppRouterHydration(page);
+    await expect(page.locator("h1")).toHaveText("Router side effect leak source");
+    await expect(page.locator("#router-shim-imported")).toHaveText("router shim imported");
+    await expect
+      .poll(() => page.evaluate(() => (window as RouterSideEffectWindow).__NEXT_ROUTER_IMPORTED__))
+      .toBe(true);
+
+    await page.evaluate(() => {
+      (window as RouterSideEffectWindow).__APP_ROUTER_HISTORY_MARKER__ = "alive";
+    });
+    documentRequests.length = 0;
+
+    await page.click("#side-effect-destination-link");
+    await expect(page.locator("h1")).toHaveText("Router side effect leak destination", {
+      timeout: 10_000,
+    });
+
+    await page.goBack();
+    await expect(page.locator("h1")).toHaveText("Router side effect leak source", {
+      timeout: 10_000,
+    });
+
+    await page.goForward();
+    await expect(page.locator("h1")).toHaveText("Router side effect leak destination", {
+      timeout: 10_000,
+    });
+
+    const marker = await page.evaluate(
+      () => (window as RouterSideEffectWindow).__APP_ROUTER_HISTORY_MARKER__,
+    );
+    expect(marker).toBe("alive");
+    expect(documentRequests).toEqual([]);
+  });
+
+  test("rapid same-route navigation settles correctly", async ({ page }) => {
+    await page.goto(`${BASE}/nav-flash/link-sync`);
+    await waitForAppRouterHydration(page);
+    await expect(page.locator("#page-title")).toHaveText("All Items");
+
+    // Rapidly click between filters
+    await page.click("#link-active");
+    await page.click("#link-completed");
+
+    // The final state should reflect the last click
+    await expect(page.locator("#page-title")).toHaveText("Filtered: completed", {
+      timeout: 10_000,
+    });
+    expect(page.url()).toContain("filter=completed");
+    await expect(page.locator("#hook-filter")).toHaveText("filter: completed");
+  });
+
+  test("cross-route then same-route navigation works", async ({ page }) => {
+    await page.goto(`${BASE}/nav-flash/list`);
+    await waitForAppRouterHydration(page);
+    await expect(page.locator("#list-title")).toHaveText("Nav Flash List");
+
+    // Use the slow fixture entry so the Suspense fallback is still mounted when
+    // the same-route navigation supersedes the cross-route stream.
+    await page.click("#to-query-sync-slow");
+    await expect(page.locator("#query-title")).toHaveText("Search", { timeout: 10_000 });
+    await expect(page.locator("#query-loading")).toBeVisible();
+
+    // Start the same-route navigation while the committed cross-route RSC
+    // stream is still resolving its Suspense boundary. Superseding the request
+    // must not abort a stream that already owns the mounted tree.
+    await page.click("#link-react");
+    await expect(page.locator("#query-title")).toHaveText("Search: react", { timeout: 10_000 });
+    await expect(page.locator("#hook-query")).toHaveText("q: react");
+    expect(page.url()).toContain("q=react");
+
+    await page.waitForTimeout(SLOW_SEARCH_RESOLUTION_WAIT_MS);
+    await expect(page.locator("#query-title")).toHaveText("Search: react");
+    await expect(page.locator("#hook-query")).toHaveText("q: react");
+  });
+
+  test("usePathname reflects correct value during cross-route navigation", async ({ page }) => {
+    await page.goto(`${BASE}/nav-flash/link-sync`);
+    await waitForAppRouterHydration(page);
+
+    await expect(page.locator("#hook-pathname")).toHaveText("pathname: /nav-flash/link-sync");
+
+    // Navigate to query-sync page via list
+    await page.click("#link-list");
+    await expect(page.locator("#list-title")).toHaveText("Nav Flash List", { timeout: 10_000 });
+
+    // Navigate to query-sync
+    await page.click("#to-query-sync");
+    await expect(page.locator("#hook-pathname")).toHaveText("pathname: /nav-flash/query-sync", {
+      timeout: 10_000,
+    });
+  });
+
+  test("useParams reflects correct value after param change", async ({ page }) => {
+    await page.goto(`${BASE}/nav-flash/param-sync/active`);
+    await waitForAppRouterHydration(page);
+
+    await expect(page.locator("#param-title")).toHaveText("Filter: active");
+    await expect(page.locator("#hook-params")).toHaveText("params.filter: active");
+
+    // Navigate to different param value
+    await page.click("#link-completed");
+    await expect(page.locator("#param-title")).toHaveText("Filter: completed", { timeout: 10_000 });
+    await expect(page.locator("#hook-params")).toHaveText("params.filter: completed");
+  });
+
+  test("navigation from home page to nav-flash routes", async ({ page }) => {
+    await page.goto(`${BASE}/`);
+    await waitForAppRouterHydration(page);
+    await expect(page.locator("h1")).toHaveText("Welcome to App Router");
+
+    // Navigate to nav-flash test
+    await page.click('[data-testid="nav-flash-link"]');
+    await expect(page.locator("#page-title")).toHaveText("All Items", { timeout: 10_000 });
+
+    // Verify the page rendered fully
+    await expect(page.locator("#filter-links")).toBeVisible();
+  });
+
+  test("cross-route round trip preserves SPA state", async ({ page }) => {
+    await page.goto(`${BASE}/nav-flash/link-sync`);
+    await waitForAppRouterHydration(page);
+
+    await page.evaluate(() => {
+      (window as any).__ROUND_TRIP_MARKER__ = "alive";
+    });
+
+    // Go to list
+    await page.click("#link-list");
+    await expect(page.locator("#list-title")).toHaveText("Nav Flash List", { timeout: 10_000 });
+
+    // Come back
+    await page.click("#back-to-sync");
+    await expect(page.locator("#page-title")).toHaveText("All Items", { timeout: 10_000 });
+
+    // Marker should survive (no full reload)
+    const marker = await page.evaluate(() => (window as any).__ROUND_TRIP_MARKER__);
+    expect(marker).toBe("alive");
+  });
+
+  test("provider page cross-route navigation between dynamic params", async ({ page }) => {
+    await page.goto(`${BASE}/nav-flash/provider/1`);
+    await waitForAppRouterHydration(page);
+    await expect(page.locator("#provider-title")).toHaveText("Provider 1");
+
+    // Navigate to provider 2 (cross-route: different dynamic param)
+    await page.click("#link-p2");
+    await expect(page.locator("#provider-title")).toHaveText("Provider 2", { timeout: 10_000 });
+    expect(page.url()).toBe(`${BASE}/nav-flash/provider/2`);
+
+    // Navigate to list (different route entirely)
+    await page.click("#link-list");
+    await expect(page.locator("#list-title")).toHaveText("Nav Flash List", { timeout: 10_000 });
+  });
+
+  test("cancelled slow navigation does not leak params to committed route", async ({ page }) => {
+    // This test verifies the fix for: stale navigation bailout leaving staged params
+    // that could be committed by the next navigation.
+    await page.goto(`${BASE}/nav-flash/slow-route/slow-value`);
+    await waitForAppRouterHydration(page);
+    await expect(page.locator("#slow-param")).toHaveText("Param: slow-value");
+
+    // Set marker to detect full page reload
+    await page.evaluate(() => {
+      (window as any).__CANCELLED_NAV_MARKER__ = "active";
+    });
+
+    // Verify the element exists before clicking — if the fixture is renamed,
+    // we want a clear failure instead of silently skipping the superseded click.
+    await expect(page.locator("#link-superseded")).toBeVisible();
+
+    // Start a slow navigation to a different param value
+    // This will be superseded before it completes
+    const _slowNavPromise = page.click("#link-superseded", { timeout: 100 }).catch(() => {
+      // Click may not complete if navigation is superseded — expected in this test.
+      // NB: This depends on the slow-route fixture delay (500ms) being > this timeout (100ms).
+      // If the fixture delay is reduced below 100ms, the click will complete normally
+      // and the superseded-navigation scenario won't actually be tested.
+    });
+
+    // Immediately navigate to a different route entirely (list)
+    // This should supersede the slow navigation
+    await page.click("#link-list");
+
+    // Wait for list to render
+    await expect(page.locator("#list-title")).toHaveText("Nav Flash List", { timeout: 10_000 });
+
+    // Verify we're on the list page
+    expect(page.url()).toBe(`${BASE}/nav-flash/list`);
+
+    // The list page doesn't use params, so there should be no leaked params
+    // Go back to a param-sync page to verify params state is clean
+    await page.click("#to-param-sync");
+    await expect(page.locator("#param-title")).toHaveText("Filter: active", { timeout: 10_000 });
+
+    // Verify the param reflects the route we navigated to, not the cancelled one
+    await expect(page.locator("#hook-params")).toHaveText("params.filter: active");
+
+    // No full page reload occurred
+    const marker = await page.evaluate(() => (window as any).__CANCELLED_NAV_MARKER__);
+    expect(marker).toBe("active");
+  });
+});
+
+test.describe("RSC request URLs for pathnames that start with //", () => {
+  test("a local href that resolves to a // pathname keeps its RSC fetch on the app origin", async ({
+    page,
+  }) => {
+    // "/.//a//attacker.example/z" starts with a single "/", so apps accept it
+    // as local, but its pathname is "//a//attacker.example/z". Next.js fetches
+    // that pathname on the app origin; it must never become a protocol-relative
+    // request to attacker.example.
+    await page.goto(`${BASE}/about`);
+    await waitForAppRouterHydration(page);
+
+    const offOriginRequests: string[] = [];
+    page.on("request", (request) => {
+      if (new URL(request.url()).origin !== BASE) offOriginRequests.push(request.url());
+    });
+    await page.route(
+      (url) => url.origin !== BASE,
+      (route) => route.fulfill({ status: 200, body: "off-origin" }),
+    );
+
+    const rscRequest = page.waitForRequest((request) =>
+      isAppRouterRscRequestForPath(request, "//a//attacker.example/z"),
+    );
+    await page.evaluate(() => {
+      const router = window.next?.router;
+      if (!router) throw new Error("window.next.router is not installed");
+      void router.push("/.//a//attacker.example/z");
+    });
+
+    expect(new URL((await rscRequest).url()).origin).toBe(BASE);
+    // As in Next.js, the server collapses the repeated slashes and the
+    // navigation settles on the same-origin path.
+    await expect(page).toHaveURL(`${BASE}/a/attacker.example/z`);
+    expect(offOriginRequests).toEqual([]);
+  });
+});
+
+test.describe("router.prefetch for hrefs that resolve to a // pathname", () => {
+  test("keeps the prefetch RSC request on the app origin", async ({ page }) => {
+    // "/.//a//attacker.example/p" starts with a single "/", but its pathname is
+    // "//a//attacker.example/p". Next.js prefetches the full same-origin URL;
+    // the credentialed prefetch fetch must never go to attacker.example.
+    await page.goto(`${BASE}/about`);
+    await waitForAppRouterHydration(page);
+
+    const offOriginRequests: string[] = [];
+    page.on("request", (request) => {
+      if (new URL(request.url()).origin !== BASE) offOriginRequests.push(request.url());
+    });
+    await page.route(
+      (url) => url.origin !== BASE,
+      (route) => route.fulfill({ status: 200, body: "off-origin" }),
+    );
+
+    // Match the RSC request wherever it is sent, so a regression reports the
+    // off-origin URL instead of timing out.
+    const rscRequest = page.waitForRequest((request) => {
+      const url = new URL(request.url());
+      return url.searchParams.has("_rsc") && url.href.includes("attacker.example");
+    });
+    await page.evaluate(() => {
+      const router = window.next?.router;
+      if (!router) throw new Error("window.next.router is not installed");
+      router.prefetch("/.//a//attacker.example/p");
+    });
+
+    const request = await rscRequest;
+    const requestUrl = new URL(request.url());
+    expect(requestUrl.origin).toBe(BASE);
+    expect(requestUrl.pathname).toBe("//a//attacker.example/p");
+    expect(request.headers()["next-router-prefetch"]).toBe("1");
+    expect(offOriginRequests).toEqual([]);
+  });
+});
+
+// Tag managers loaded after hydration (GTM History Change, GA4 enhanced
+// measurement) wrap history.pushState/replaceState to observe navigations.
+// Next.js writes router history through the live window.history methods, so a
+// wrapper installed after boot still sees every App Router navigation (#4339).
+test.describe("History API wrappers installed after hydration", () => {
+  type HistoryWrapperWindow = Window & {
+    __historyCalls__?: { method: string; url: string | null }[];
+  };
+
+  async function installHistoryWrapper(page: import("@playwright/test").Page) {
+    await page.evaluate(() => {
+      const calls: { method: string; url: string | null }[] = [];
+      (window as HistoryWrapperWindow).__historyCalls__ = calls;
+      for (const method of ["pushState", "replaceState"] as const) {
+        const previous = window.history[method];
+        window.history[method] = function (data, unused, url) {
+          calls.push({ method, url: url == null ? null : String(url) });
+          return previous.call(window.history, data, unused, url);
+        };
+      }
+    });
+  }
+
+  async function readHistoryCalls(page: import("@playwright/test").Page) {
+    // Let post-commit effects run so a trailing history write is not missed.
+    await page.evaluate(
+      () => new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 50))),
+    );
+    return page.evaluate(() => (window as HistoryWrapperWindow).__historyCalls__ ?? []);
+  }
+
+  test("a Link navigation calls the wrapped pushState", async ({ page }) => {
+    await page.goto(`${BASE}/nav-flash/link-sync`);
+    await waitForAppRouterHydration(page);
+    await installHistoryWrapper(page);
+
+    await page.click("#link-list");
+    await expect(page.locator("#list-title")).toHaveText("Nav Flash List");
+    await expect(page).toHaveURL(`${BASE}/nav-flash/list`);
+
+    // Like Next.js, one pushState per navigation and no extra state-only
+    // writes that a GTM History Change trigger would count as page views.
+    expect(await readHistoryCalls(page)).toEqual([
+      { method: "pushState", url: expect.stringMatching(/\/nav-flash\/list$/) },
+    ]);
+  });
+
+  test("router.push and router.replace call the wrapped history methods", async ({ page }) => {
+    await page.goto(`${BASE}/nextjs-compat/search-params-key`);
+    await waitForAppRouterHydration(page);
+    await installHistoryWrapper(page);
+
+    await page.click("#push-foo-bar");
+    await expect(page).toHaveURL(`${BASE}/nextjs-compat/search-params-key?foo=bar`);
+    await page.click("#replace-foo-baz");
+    await expect(page).toHaveURL(`${BASE}/nextjs-compat/search-params-key?foo=baz`);
+
+    expect(await readHistoryCalls(page)).toEqual([
+      { method: "pushState", url: expect.stringMatching(/\?foo=bar$/) },
+      { method: "replaceState", url: expect.stringMatching(/\?foo=baz$/) },
+    ]);
+  });
+});
+
+test.describe("redirect() targets whose pathname starts with //", () => {
+  // "/.//other.invalid/landing" starts with a single "/", so apps accept it as
+  // local, but its pathname is "//other.invalid/landing". Next.js sends the
+  // target as written and the browser stays on the app origin; it must never
+  // become a protocol-relative redirect to other.invalid.
+  const TARGET = `${BASE}/other.invalid/landing`;
+
+  async function trackOffOriginRequests(page: import("@playwright/test").Page) {
+    const offOriginRequests: string[] = [];
+    page.on("request", (request) => {
+      if (new URL(request.url()).origin !== BASE) offOriginRequests.push(request.url());
+    });
+    await page.route(
+      (url) => url.origin !== BASE,
+      (route) => route.fulfill({ status: 200, body: "off-origin" }),
+    );
+    return offOriginRequests;
+  }
+
+  test("a layout redirect() answering a client navigation stays on the app origin", async ({
+    page,
+  }) => {
+    const offOriginRequests = await trackOffOriginRequests(page);
+    await page.goto(`${BASE}/nextjs-compat/redirect-dot-segment`);
+    await waitForAppRouterHydration(page);
+
+    await page.click("#redirect-dot-segment-layout-redirect");
+
+    // As in Next.js, the server collapses the repeated slashes and the
+    // navigation settles on the same-origin path.
+    await expect(page).toHaveURL(TARGET);
+    expect(offOriginRequests).toEqual([]);
+  });
+
+  test("a metadata redirect() answered with a refresh meta tag stays on the app origin", async ({
+    page,
+  }) => {
+    const offOriginRequests = await trackOffOriginRequests(page);
+    await page.goto(`${BASE}/nextjs-compat/redirect-dot-segment/metadata-redirect`);
+
+    await expect(page).toHaveURL(TARGET);
+    expect(offOriginRequests).toEqual([]);
+  });
+});

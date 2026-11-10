@@ -1,0 +1,703 @@
+import { test, expect, type Page } from "@playwright/test";
+import { readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+
+import { isAppRouterRscRequestForPath, waitForAppRouterHydration } from "../helpers";
+
+const BASE = "http://localhost:4174";
+const SERVER_HMR_TOGGLE_FILE = path.join(
+  process.cwd(),
+  "tests/fixtures/app-basic/app/dev-overlay-hmr-toggle/server-hmr-toggle.tsx",
+);
+const LAYOUT_HMR_TOGGLE_FILE = path.join(
+  process.cwd(),
+  "tests/fixtures/app-basic/app/dev-overlay-layout-hmr-toggle/layout-hmr-toggle.tsx",
+);
+const CLIENT_HMR_TOGGLE_FILE = path.join(
+  process.cwd(),
+  "tests/fixtures/app-basic/app/dev-overlay-client-hmr-toggle/client-hmr-toggle.tsx",
+);
+const SERVER_HMR_TOGGLE_CLEAN = `export function ServerHmrToggle() {
+  return <p data-testid="server-hmr-toggle">server hmr clean</p>;
+}
+`;
+const SERVER_HMR_TOGGLE_BROKEN = `export function ServerHmrToggle() {
+  throw new Error("server hmr toggle failure");
+  return <p data-testid="server-hmr-toggle">server hmr clean</p>;
+}
+`;
+const SERVER_HMR_TOGGLE_BUILD_ERROR = `export function ServerHmrToggle() {
+  return <p data-testid="server-hmr-toggle" className="broken>server hmr clean</p>;
+}
+`;
+const LAYOUT_HMR_TOGGLE_CLEAN = `export function LayoutHmrToggle() {
+  return <p data-testid="layout-hmr-toggle">layout hmr clean</p>;
+}
+`;
+const LAYOUT_HMR_TOGGLE_BROKEN = `export function LayoutHmrToggle() {
+  throw new Error("layout hmr toggle failure");
+  return <p data-testid="layout-hmr-toggle">layout hmr clean</p>;
+}
+`;
+const CLIENT_HMR_TOGGLE_CLEAN = `"use client";
+
+export function ClientHmrToggle() {
+  return <p data-testid="client-hmr-toggle">client hmr clean</p>;
+}
+`;
+const CLIENT_HMR_TOGGLE_BROKEN = `"use client";
+
+export function ClientHmrToggle() {
+  throw new Error("client hmr toggle failure");
+  return <p data-testid="client-hmr-toggle">client hmr clean</p>;
+}
+`;
+const CLIENT_HMR_TOGGLE_BROKEN_UPDATED = `"use client";
+
+export function ClientHmrToggle() {
+  throw new Error("client hmr updated failure");
+  return <p data-testid="client-hmr-toggle">client hmr clean</p>;
+}
+`;
+const CLIENT_HMR_TOGGLE_BUILD_ERROR = `"use client";
+
+export function ClientHmrToggle() {
+  return <p data-testid="client-hmr-toggle" className="broken>client hmr clean</p>;
+}
+`;
+
+async function restoreHmrToggleFiles(): Promise<void> {
+  await writeFileIfChanged(SERVER_HMR_TOGGLE_FILE, SERVER_HMR_TOGGLE_CLEAN);
+  await writeFileIfChanged(LAYOUT_HMR_TOGGLE_FILE, LAYOUT_HMR_TOGGLE_CLEAN);
+  await writeFileIfChanged(CLIENT_HMR_TOGGLE_FILE, CLIENT_HMR_TOGGLE_CLEAN);
+}
+
+async function writeFileIfChanged(file: string, content: string): Promise<void> {
+  const current = await readFile(file, "utf8");
+  if (current !== content) {
+    await writeFile(file, content);
+  }
+}
+
+// React doesn't attach onClick until hydration completes. The click can land
+// before that, so retry until the overlay (or its minimized indicator) shows
+// up — matches the hydration-aware polling in error-interactive.spec.ts.
+async function clickUntilOverlay(page: Page, triggerTestId: string): Promise<void> {
+  const trigger = page.getByTestId(triggerTestId);
+  const dialog = page.getByTestId("vinext-dev-error-overlay");
+  const indicator = page.getByTestId("vinext-dev-error-indicator");
+  // Either the dialog or the corner indicator means the click landed.
+  const visibleSurface = dialog.or(indicator);
+
+  await expect(trigger).toBeVisible({ timeout: 10_000 });
+  await expect(async () => {
+    await trigger.click({ noWaitAfter: true });
+    await expect(visibleSurface.first()).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 20_000 });
+
+  // Caught errors start minimized; expand so callers can assert against the
+  // full dialog content. Dialog-already-visible cases (window-error,
+  // unhandled-rejection, etc.) are no-ops here.
+  if ((await indicator.count()) > 0 && (await dialog.count()) === 0) {
+    await indicator.click();
+    await expect(dialog).toBeVisible({ timeout: 2_000 });
+  }
+}
+
+test.describe("Dev error overlay", () => {
+  test("surfaces React render errors with no error.tsx boundary", async ({ page }) => {
+    await page.goto(`${BASE}/dev-overlay-test`);
+    await expect(page.getByTestId("dev-overlay-content")).toBeVisible();
+
+    await clickUntilOverlay(page, "trigger-render-error");
+
+    // Title may be "Runtime Error" (caught by NotFoundBoundary's
+    // getDerivedStateFromError before it rethrows) or "Unhandled Runtime Error"
+    // depending on which React error callback fires last. Either is fine — the
+    // point is that the developer sees the error.
+    await expect(page.getByTestId("vinext-dev-error-title")).toContainText("Runtime Error");
+    await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+      "DropZone is not defined",
+    );
+  });
+
+  test("surfaces an error that only the HTML render throws", async ({ page }) => {
+    // The shell error sends the `__next_error__` document, and the browser
+    // renders the page without the error, so only the document carries it.
+    const response = await page.goto(`${BASE}/dev-overlay-ssr-only-throw`);
+    expect(response?.status()).toBe(500);
+    await expect(page.getByTestId("ssr-only-throw-content")).toBeVisible();
+
+    const dialog = page.getByTestId("vinext-dev-error-overlay");
+    const indicator = page.getByTestId("vinext-dev-error-indicator");
+    await expect(dialog.or(indicator).first()).toBeVisible({ timeout: 10_000 });
+    if ((await dialog.count()) === 0) await indicator.click();
+    await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+      "ssr-only render failure",
+    );
+
+    // Client-rendering the error document clears the body, which detaches the
+    // host of an overlay mounted before it commits. Removing the host stands
+    // in for that: the next error attaches it again.
+    await page.evaluate(() => {
+      document.getElementById("__vinext_dev_error_overlay_root")?.remove();
+      setTimeout(() => {
+        throw new Error("error after the body was cleared");
+      });
+    });
+    await expect(page.locator("#__vinext_dev_error_overlay_root")).toBeAttached();
+    await expect(page.getByTestId("vinext-dev-error-pagination")).toBeVisible();
+  });
+
+  test("reports an error the browser's render throws again once", async ({ page }) => {
+    // The client page throws in the HTML render and again in the browser,
+    // where global-error.tsx catches it.
+    const response = await page.goto(`${BASE}/nextjs-compat/global-error-ssr`);
+    expect(response?.status()).toBe(500);
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator('[data-testid="global-error-message"]')).toHaveText(
+      "client page error",
+    );
+
+    const dialog = page.getByTestId("vinext-dev-error-overlay");
+    const indicator = page.getByTestId("vinext-dev-error-indicator");
+    await expect(dialog.or(indicator).first()).toBeVisible({ timeout: 10_000 });
+    if ((await dialog.count()) === 0) await indicator.click();
+    // A root-level boundary caught the browser's error, so the replay drops
+    // the document's copy and the overlay shows only the browser's report.
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            (window as Window & { __VINEXT_INITIAL_DEV_ERRORS__?: unknown[] })
+              .__VINEXT_INITIAL_DEV_ERRORS__?.length,
+        ),
+      )
+      .toBe(0);
+    await expect(page.getByTestId("vinext-dev-error-title")).toContainText("Runtime Error");
+    await expect(page.getByTestId("vinext-dev-error-message")).toContainText("client page error");
+    await expect(page.getByTestId("vinext-dev-error-pagination")).toBeHidden();
+  });
+
+  test("replays no HTML render error once global-error.tsx catches the browser's", async ({
+    page,
+  }) => {
+    // The browser's render throws again with a different message, and
+    // global-error.tsx catches it.
+    const response = await page.goto(`${BASE}/dev-overlay-root-rethrow`);
+    expect(response?.status()).toBe(500);
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByTestId("global-error-message")).toHaveText(
+      "root rethrow in the browser",
+    );
+
+    const dialog = page.getByTestId("vinext-dev-error-overlay");
+    const indicator = page.getByTestId("vinext-dev-error-indicator");
+    await expect(dialog.or(indicator).first()).toBeVisible({ timeout: 10_000 });
+    if ((await dialog.count()) === 0) await indicator.click();
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            (window as Window & { __VINEXT_INITIAL_DEV_ERRORS__?: unknown[] })
+              .__VINEXT_INITIAL_DEV_ERRORS__?.length,
+        ),
+      )
+      .toBe(0);
+    await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+      "root rethrow in the browser",
+    );
+    await expect(page.getByTestId("vinext-dev-error-pagination")).toBeHidden();
+  });
+
+  test("replays the HTML render error when global-error.tsx throws in the browser", async ({
+    page,
+  }) => {
+    // React reports only global-error.tsx's throw, which the default global
+    // error catches, so the replay still reports the page's error.
+    const response = await page.goto(`${BASE}/dev-overlay-root-rethrow/global-error-throws`);
+    expect(response?.status()).toBe(500);
+    await page.waitForLoadState("networkidle");
+
+    const dialog = page.getByTestId("vinext-dev-error-overlay");
+    const indicator = page.getByTestId("vinext-dev-error-indicator");
+    await expect(dialog.or(indicator).first()).toBeVisible({ timeout: 10_000 });
+    if ((await dialog.count()) === 0) await indicator.click();
+    await expect(page.getByTestId("vinext-dev-error-counter")).toHaveText("2 of 2");
+    await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+      "root rethrow on the server",
+    );
+    await page.getByTestId("vinext-dev-error-prev").click();
+    await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+      "global error threw in the browser",
+    );
+  });
+
+  test("surfaces global script errors via window.onerror", async ({ page }) => {
+    await page.goto(`${BASE}/dev-overlay-test`);
+    await expect(page.getByTestId("dev-overlay-content")).toBeVisible();
+
+    await clickUntilOverlay(page, "trigger-window-error");
+
+    await expect(page.getByTestId("vinext-dev-error-title")).toHaveText("Unhandled Script Error");
+    await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+      "uncaught timer error",
+    );
+  });
+
+  // Next.js only reports window "error" events that carry an `error` value:
+  // https://github.com/vercel/next.js/blob/canary/packages/next/src/next-devtools/userspace/app/errors/use-error-handler.ts
+  test("ignores window error events without an error value (ResizeObserver loop)", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      const messages: string[] = [];
+      (window as unknown as { __nullErrorMessages: string[] }).__nullErrorMessages = messages;
+      window.addEventListener("error", (event) => {
+        if (event.error === null) messages.push(event.message);
+      });
+    });
+    await page.goto(`${BASE}/dev-overlay-test`);
+    await waitForAppRouterHydration(page);
+
+    await page.getByTestId("trigger-resize-observer-loop").click();
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => (window as unknown as { __nullErrorMessages: string[] }).__nullErrorMessages,
+        ),
+      )
+      .toContainEqual(expect.stringContaining("ResizeObserver loop"));
+
+    // The browser event has already been dispatched to every listener. A real
+    // error reported afterwards must be the only entry in the overlay.
+    await page.evaluate(() => {
+      setTimeout(() => {
+        throw new Error("real error after resize loop");
+      }, 0);
+    });
+    await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+      "real error after resize loop",
+    );
+    await expect(page.getByTestId("vinext-dev-error-pagination")).toBeHidden();
+  });
+
+  // Next.js coerces non-Error values before reporting uncaught errors in dev:
+  // https://github.com/vercel/next.js/blob/canary/packages/next/src/client/react-client-callbacks/error-boundary-callbacks.ts
+  test("surfaces a falsy value that reaches the implicit root error boundary", async ({ page }) => {
+    await page.goto(`${BASE}/dev-overlay-global-error-throw-undefined`);
+    await waitForAppRouterHydration(page);
+
+    await page.getByTestId("trigger-global-error-throw-undefined").click();
+
+    await expect(page.getByTestId("vinext-dev-error-title")).toHaveText("Unhandled Script Error");
+    await expect(page.getByTestId("vinext-dev-error-message")).toHaveText("undefined");
+  });
+
+  test("surfaces unhandled promise rejections", async ({ page }) => {
+    await page.goto(`${BASE}/dev-overlay-test`);
+    await expect(page.getByTestId("dev-overlay-content")).toBeVisible();
+
+    await clickUntilOverlay(page, "trigger-unhandled-rejection");
+
+    await expect(page.getByTestId("vinext-dev-error-title")).toHaveText(
+      "Unhandled Promise Rejection",
+    );
+    await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+      "unhandled rejection from button",
+    );
+  });
+
+  test("dismiss button hides the overlay", async ({ page }) => {
+    await page.goto(`${BASE}/dev-overlay-test`);
+    await clickUntilOverlay(page, "trigger-window-error");
+
+    await page.getByTestId("vinext-dev-error-close").click();
+    await expect(page.getByTestId("vinext-dev-error-overlay")).toBeHidden();
+  });
+
+  test("subsequent errors update the overlay and expose pagination", async ({ page }) => {
+    await page.goto(`${BASE}/dev-overlay-test`);
+    await clickUntilOverlay(page, "trigger-window-error");
+    // With a single error, pagination is not rendered.
+    await expect(page.getByTestId("vinext-dev-error-pagination")).toBeHidden();
+
+    // The dialog covers the page; minimize so the next trigger is reachable.
+    await page.keyboard.press("Escape");
+    await page.getByTestId("trigger-unhandled-rejection").click();
+    // A non-caught error re-expands the dialog automatically.
+    await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+      "unhandled rejection from button",
+    );
+    await expect(page.getByTestId("vinext-dev-error-counter")).toHaveText("2 of 2");
+  });
+
+  test("prev/next pagination switches between reported errors", async ({ page }) => {
+    await page.goto(`${BASE}/dev-overlay-test`);
+    await clickUntilOverlay(page, "trigger-window-error");
+    await page.keyboard.press("Escape");
+    await page.getByTestId("trigger-unhandled-rejection").click();
+    await expect(page.getByTestId("vinext-dev-error-counter")).toHaveText("2 of 2");
+
+    await page.getByTestId("vinext-dev-error-prev").click();
+    await expect(page.getByTestId("vinext-dev-error-counter")).toHaveText("1 of 2");
+    await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+      "uncaught timer error",
+    );
+
+    await page.getByTestId("vinext-dev-error-next").click();
+    await expect(page.getByTestId("vinext-dev-error-counter")).toHaveText("2 of 2");
+    await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+      "unhandled rejection from button",
+    );
+  });
+
+  // Next.js keeps pagination mounted when the active error changes:
+  // https://github.com/vercel/next.js/blob/canary/packages/next/src/next-devtools/dev-overlay/components/errors/error-overlay-pagination/error-overlay-pagination.tsx
+  test("keyboard pagination preserves focus and resets ignored frames", async ({ page }) => {
+    await page.route("**/__vinext_original-stack-trace", async (route) => {
+      const { stack } = route.request().postDataJSON() as { stack: string };
+      await route.fulfill({ json: { stack, ignoredFrames: [false, true] } });
+    });
+    await page.goto(`${BASE}/dev-overlay-test`);
+    await waitForAppRouterHydration(page);
+    await page.evaluate(() => {
+      for (let index = 1; index <= 3; index++) {
+        const error = new Error(`pagination error ${index}`);
+        error.stack = `${error.name}: ${error.message}\n    at userFrame (/app/page.tsx:1:1)\n    at ignoredFrame (/node_modules/framework/index.js:2:1)`;
+        window.dispatchEvent(new ErrorEvent("error", { error, message: error.message }));
+      }
+    });
+
+    const counter = page.getByTestId("vinext-dev-error-counter");
+    const previous = page.getByRole("button", { name: "Previous error" });
+    const next = page.getByRole("button", { name: "Next error" });
+    const toggle = page.getByTestId("vinext-dev-error-ignored-frames-toggle");
+    const frames = page.getByTestId("vinext-dev-error-stack").locator("li");
+
+    await expect(counter).toHaveText("3 of 3");
+    await expect(frames).toHaveCount(1);
+    await toggle.click();
+    await expect(frames).toHaveCount(2);
+
+    await previous.focus();
+    await page.keyboard.press("Enter");
+    await expect(counter).toHaveText("2 of 3");
+    await expect(previous).toBeFocused();
+    await expect(toggle).toHaveAttribute("data-vinext-ignored-frames-open", "false");
+    await expect(frames).toHaveCount(1);
+    // Do not focus the button again: the second Enter must use retained focus.
+    await page.keyboard.press("Enter");
+    await expect(counter).toHaveText("1 of 3");
+
+    await toggle.click();
+    await expect(frames).toHaveCount(2);
+    await next.focus();
+    await page.keyboard.press("Enter");
+    await expect(counter).toHaveText("2 of 3");
+    await expect(next).toBeFocused();
+    await expect(toggle).toHaveAttribute("data-vinext-ignored-frames-open", "false");
+    await expect(frames).toHaveCount(1);
+    await page.keyboard.press("Enter");
+    await expect(counter).toHaveText("3 of 3");
+    // Returning to an error must not restore its previously expanded frames.
+    await expect(toggle).toHaveAttribute("data-vinext-ignored-frames-open", "false");
+    await expect(frames).toHaveCount(1);
+  });
+
+  test("renders a parsed stack when one is available", async ({ page }) => {
+    await page.goto(`${BASE}/dev-overlay-test`);
+    await clickUntilOverlay(page, "trigger-window-error");
+
+    const stack = page.getByTestId("vinext-dev-error-stack");
+    await expect(stack).toBeVisible();
+    // Each frame is its own <li>; we should see at least one.
+    await expect(stack.locator("li")).not.toHaveCount(0);
+  });
+
+  // A soft-nav to a route whose render throws should still move the URL to
+  // that route, so the dev overlay surfaces which page is broken and HMR's
+  // rsc:update — which fetches RSC for window.location.pathname — targets
+  // the route the developer is actually editing.
+  test("soft-nav to a broken route still updates the URL", async ({ page }) => {
+    await page.goto(`${BASE}/dev-overlay-test`);
+    await expect(page.getByTestId("dev-overlay-content")).toBeVisible();
+    await expect(page.getByTestId("link-to-broken")).toBeVisible();
+    // Wait for the Link's onClick handler to attach so the click drives a soft
+    // RSC navigation (with historyUpdateMode = "push") instead of a full reload.
+    // The navigation runtime publishes `functions.navigate` before React commits
+    // the hydrated tree, so waiting on it alone lets a click land on an anchor
+    // with no listener yet — the browser then follows the href and the reload
+    // canary below is lost. `waitForAppRouterHydration` additionally requires
+    // `__VINEXT_HYDRATED_AT`, which App Router writes from a post-commit effect.
+    await waitForAppRouterHydration(page);
+    await page.evaluate(() => {
+      (window as unknown as { __vinextReloadCanary?: boolean }).__vinextReloadCanary = true;
+    });
+
+    await page.getByTestId("link-to-broken").click();
+
+    // The error is caught by the user's global-error.tsx, so it surfaces as a
+    // minimized indicator rather than a full dialog. Expand it to inspect the
+    // message.
+    const indicator = page.getByTestId("vinext-dev-error-indicator");
+    const dialog = page.getByTestId("vinext-dev-error-overlay");
+    await expect(indicator.or(dialog).first()).toBeVisible({ timeout: 10_000 });
+    if ((await indicator.count()) > 0 && (await dialog.count()) === 0) {
+      await indicator.click();
+    }
+    await expect(dialog).toBeVisible({ timeout: 2_000 });
+    await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+      "dev-overlay-broken: client render failure",
+    );
+
+    // URL has moved to the navigation target rather than being stuck on the
+    // previous page.
+    await expect(page).toHaveURL(`${BASE}/dev-overlay-broken`, { timeout: 10_000 });
+
+    // No full reload happened — the canary set before the navigation is still
+    // there.
+    const canary = await page.evaluate(
+      () => (window as unknown as { __vinextReloadCanary?: boolean }).__vinextReloadCanary,
+    );
+    expect(canary).toBe(true);
+  });
+
+  // The dev recovery boundary should keep BrowserRoot mounted when a render
+  // error fires, so navigating away resets the boundary and lands on a fresh
+  // page without a full document reload. The window-level canary survives
+  // soft navigation but not a full reload.
+  test("render error does not trigger a full page reload", async ({ page }) => {
+    await page.goto(`${BASE}/dev-overlay-test`);
+    await page.evaluate(() => {
+      (window as unknown as { __vinextReloadCanary?: boolean }).__vinextReloadCanary = true;
+    });
+
+    await clickUntilOverlay(page, "trigger-render-error");
+
+    const canaryAfterError = await page.evaluate(
+      () => (window as unknown as { __vinextReloadCanary?: boolean }).__vinextReloadCanary,
+    );
+    expect(canaryAfterError).toBe(true);
+
+    // The boundary itself rendered null, so any in-page link inside the route
+    // tree is gone. Drive a soft RSC navigation programmatically through the
+    // navigation runtime the framework installs — the dispatched tree bumps
+    // renderId, the boundary resets, and the home page renders without a
+    // document reload.
+    await page.evaluate(() => {
+      const runtime = Reflect.get(window, Symbol.for("vinext.navigationRuntime"));
+      const navigate =
+        typeof runtime === "object" &&
+        runtime !== null &&
+        "functions" in runtime &&
+        typeof runtime.functions === "object" &&
+        runtime.functions !== null &&
+        "navigate" in runtime.functions &&
+        typeof runtime.functions.navigate === "function"
+          ? runtime.functions.navigate
+          : null;
+      if (!navigate) throw new Error("App Router navigation runtime is not installed");
+      navigate("/");
+    });
+    await expect(page.locator("h1")).toHaveText("Welcome to App Router");
+
+    const canaryAfterNav = await page.evaluate(
+      () => (window as unknown as { __vinextReloadCanary?: boolean }).__vinextReloadCanary,
+    );
+    expect(canaryAfterNav).toBe(true);
+  });
+
+  test("clicking the backdrop minimizes the dialog to a corner indicator", async ({ page }) => {
+    await page.goto(`${BASE}/dev-overlay-test`);
+    await clickUntilOverlay(page, "trigger-window-error");
+
+    // Click the backdrop (an area outside the dialog rectangle) — proper
+    // modal behavior: dismisses the overlay without reaching the page
+    // underneath.
+    await page.getByTestId("vinext-dev-error-backdrop").click({ position: { x: 5, y: 5 } });
+
+    await expect(page.getByTestId("vinext-dev-error-overlay")).toBeHidden();
+    const indicator = page.getByTestId("vinext-dev-error-indicator");
+    await expect(indicator).toBeVisible();
+    await expect(page.getByTestId("vinext-dev-error-indicator-count")).toHaveText("1");
+
+    // Clicking the indicator restores the full dialog.
+    await indicator.click();
+    await expect(page.getByTestId("vinext-dev-error-overlay")).toBeVisible();
+    await expect(indicator).toBeHidden();
+  });
+
+  test.describe("HMR updates", () => {
+    test.describe.configure({ mode: "serial" });
+
+    test.beforeEach(restoreHmrToggleFiles);
+    test.afterEach(restoreHmrToggleFiles);
+
+    test("server component HMR updates the overlay when a throw is toggled", async ({ page }) => {
+      // Mirrors Next.js redbox recovery coverage:
+      // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/error-on-next-codemod-comment/error-on-next-codemod-comment.test.ts
+      await page.goto(`${BASE}/dev-overlay-hmr-toggle`);
+      await expect(page.getByTestId("server-hmr-toggle")).toHaveText("server hmr clean");
+      await expect(page.getByTestId("vinext-dev-error-overlay")).toBeHidden();
+      await waitForAppRouterHydration(page);
+
+      const waitForBrokenRsc = page.waitForResponse(
+        (response) => isAppRouterRscRequestForPath(response.request(), "/dev-overlay-hmr-toggle"),
+        { timeout: 10_000 },
+      );
+      await writeFile(SERVER_HMR_TOGGLE_FILE, SERVER_HMR_TOGGLE_BROKEN);
+      await waitForBrokenRsc;
+      await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+        "server hmr toggle failure",
+        { timeout: 10_000 },
+      );
+
+      const waitForCleanRsc = page.waitForResponse(
+        (response) => isAppRouterRscRequestForPath(response.request(), "/dev-overlay-hmr-toggle"),
+        { timeout: 10_000 },
+      );
+      await writeFile(SERVER_HMR_TOGGLE_FILE, SERVER_HMR_TOGGLE_CLEAN);
+      await waitForCleanRsc;
+      await expect(page.getByTestId("vinext-dev-error-overlay")).toBeHidden({ timeout: 10_000 });
+    });
+
+    // FIXME(#1811): flaky — after writing the clean file back, the build-error
+    // overlay intermittently stays visible past the 10s timeout in CI.
+    // https://github.com/cloudflare/vinext/issues/1811
+    test.fixme("server component HMR surfaces Vite build errors after a clean load", async ({
+      page,
+    }) => {
+      // Next.js dev redbox labels build-time failures as "Build Error":
+      // https://github.com/vercel/next.js/blob/canary/test/e2e/swc-plugins/index.test.ts
+      await page.goto(`${BASE}/dev-overlay-hmr-toggle`);
+      await expect(page.getByTestId("server-hmr-toggle")).toHaveText("server hmr clean");
+      await expect(page.getByTestId("vinext-dev-error-overlay")).toBeHidden();
+      await waitForAppRouterHydration(page);
+
+      await writeFile(SERVER_HMR_TOGGLE_FILE, SERVER_HMR_TOGGLE_BUILD_ERROR);
+      await expect(page.getByTestId("vinext-dev-error-title")).toHaveText("Build Error", {
+        timeout: 10_000,
+      });
+      await expect(page.getByTestId("vinext-dev-error-build-message")).toBeVisible();
+      await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+        "Transform failed with 1 error",
+      );
+      await expect(page.getByTestId("vinext-dev-error-build-message")).toContainText(
+        "server-hmr-toggle.tsx",
+      );
+      await expect(page.getByTestId("vinext-dev-error-code-frame")).toBeHidden();
+      await expect(page.getByTestId("vinext-dev-error-stack-container")).toBeHidden();
+      await expect(page.locator("vite-error-overlay")).toHaveCount(0);
+
+      const waitForCleanRsc = page.waitForResponse(
+        (response) => isAppRouterRscRequestForPath(response.request(), "/dev-overlay-hmr-toggle"),
+        { timeout: 10_000 },
+      );
+      await writeFile(SERVER_HMR_TOGGLE_FILE, SERVER_HMR_TOGGLE_CLEAN);
+      await waitForCleanRsc;
+      await expect(page.getByTestId("vinext-dev-error-overlay")).toBeHidden({ timeout: 10_000 });
+    });
+
+    test("layout server component HMR updates the overlay when a throw is toggled", async ({
+      page,
+    }) => {
+      // Mirrors Next.js redbox recovery coverage:
+      // https://github.com/vercel/next.js/blob/canary/test/e2e/app-dir/error-on-next-codemod-comment/error-on-next-codemod-comment.test.ts
+      await page.goto(`${BASE}/dev-overlay-layout-hmr-toggle`);
+      await expect(page.getByTestId("layout-hmr-toggle")).toHaveText("layout hmr clean");
+      await expect(page.getByTestId("vinext-dev-error-overlay")).toBeHidden();
+      await waitForAppRouterHydration(page);
+
+      const waitForBrokenRsc = page.waitForResponse(
+        (response) =>
+          isAppRouterRscRequestForPath(response.request(), "/dev-overlay-layout-hmr-toggle"),
+        { timeout: 10_000 },
+      );
+      await writeFile(LAYOUT_HMR_TOGGLE_FILE, LAYOUT_HMR_TOGGLE_BROKEN);
+      await waitForBrokenRsc;
+      await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+        "layout hmr toggle failure",
+        { timeout: 10_000 },
+      );
+
+      const waitForCleanRsc = page.waitForResponse(
+        (response) =>
+          isAppRouterRscRequestForPath(response.request(), "/dev-overlay-layout-hmr-toggle"),
+        { timeout: 10_000 },
+      );
+      await writeFile(LAYOUT_HMR_TOGGLE_FILE, LAYOUT_HMR_TOGGLE_CLEAN);
+      await waitForCleanRsc;
+      await expect(page.getByTestId("vinext-dev-error-overlay")).toBeHidden({ timeout: 10_000 });
+    });
+
+    test("client component Fast Refresh updates the overlay when a throw is toggled", async ({
+      page,
+    }) => {
+      await page.goto(`${BASE}/dev-overlay-client-hmr-toggle`);
+      await expect(page.getByTestId("client-hmr-toggle")).toHaveText("client hmr clean");
+      await expect(page.getByTestId("vinext-dev-error-overlay")).toBeHidden();
+      await waitForAppRouterHydration(page);
+
+      await writeFile(CLIENT_HMR_TOGGLE_FILE, CLIENT_HMR_TOGGLE_BROKEN);
+      await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+        "client hmr toggle failure",
+        { timeout: 10_000 },
+      );
+
+      await writeFile(CLIENT_HMR_TOGGLE_FILE, CLIENT_HMR_TOGGLE_CLEAN);
+      await expect(page.getByTestId("client-hmr-toggle")).toHaveText("client hmr clean", {
+        timeout: 10_000,
+      });
+      await expect(page.getByTestId("vinext-dev-error-overlay")).toBeHidden({ timeout: 10_000 });
+    });
+
+    test("client component Fast Refresh replaces a previous runtime error", async ({ page }) => {
+      await page.goto(`${BASE}/dev-overlay-client-hmr-toggle`);
+      await expect(page.getByTestId("client-hmr-toggle")).toHaveText("client hmr clean");
+      await expect(page.getByTestId("vinext-dev-error-overlay")).toBeHidden();
+      await waitForAppRouterHydration(page);
+
+      await writeFile(CLIENT_HMR_TOGGLE_FILE, CLIENT_HMR_TOGGLE_BROKEN);
+      await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+        "client hmr toggle failure",
+        { timeout: 10_000 },
+      );
+
+      await writeFile(CLIENT_HMR_TOGGLE_FILE, CLIENT_HMR_TOGGLE_BROKEN_UPDATED);
+      await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+        "client hmr updated failure",
+        { timeout: 10_000 },
+      );
+      await expect(page.getByTestId("vinext-dev-error-message")).not.toContainText(
+        "client hmr toggle failure",
+      );
+      await expect(page.getByTestId("vinext-dev-error-pagination")).toBeHidden();
+    });
+
+    test("client component build errors replace a previous runtime error", async ({ page }) => {
+      await page.goto(`${BASE}/dev-overlay-client-hmr-toggle`);
+      await expect(page.getByTestId("client-hmr-toggle")).toHaveText("client hmr clean");
+      await expect(page.getByTestId("vinext-dev-error-overlay")).toBeHidden();
+      await waitForAppRouterHydration(page);
+
+      await writeFile(CLIENT_HMR_TOGGLE_FILE, CLIENT_HMR_TOGGLE_BROKEN);
+      await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+        "client hmr toggle failure",
+        { timeout: 10_000 },
+      );
+
+      await writeFile(CLIENT_HMR_TOGGLE_FILE, CLIENT_HMR_TOGGLE_BUILD_ERROR);
+      await expect(page.getByTestId("vinext-dev-error-title")).toHaveText("Build Error", {
+        timeout: 10_000,
+      });
+      await expect(page.getByTestId("vinext-dev-error-message")).toContainText(
+        "Transform failed with 1 error",
+      );
+      await expect(page.getByTestId("vinext-dev-error-message")).not.toContainText(
+        "client hmr toggle failure",
+      );
+      await expect(page.getByTestId("vinext-dev-error-pagination")).toBeHidden();
+    });
+  });
+});

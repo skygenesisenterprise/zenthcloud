@@ -1,0 +1,271 @@
+import { describe, expect, it } from "vite-plus/test";
+import { generateRscEntry } from "../packages/vinext/src/entries/app-rsc-entry.js";
+import type { AppRoute } from "../packages/vinext/src/routing/app-router.js";
+
+describe("generateRscEntry ISR code generation", () => {
+  // Minimal route list — only the generated ISR guard logic matters here
+  const minimalRoutes = [
+    {
+      pattern: "/",
+      pagePath: "/tmp/test/app/page.tsx",
+      routePath: null,
+      layouts: ["/tmp/test/app/layout.tsx"],
+      templates: [],
+      parallelSlots: [],
+      loadingPath: null,
+      errorPath: null,
+      layoutErrorPaths: [null],
+      notFoundPath: null,
+      forbiddenPaths: [],
+      forbiddenPath: null,
+      unauthorizedPaths: [],
+      unauthorizedPath: null,
+      routeSegments: [],
+      layoutTreePositions: [0],
+      isDynamic: false,
+      params: [],
+    },
+  ] as any[];
+
+  it('generated code contains process.env.NODE_ENV === "production" guard for ISR cache read', () => {
+    const code = generateRscEntry("/tmp/test/app", minimalRoutes);
+    expect(code).toContain('process.env.NODE_ENV === "production"');
+  });
+
+  it("classifies static generation from the route's own segments and slots", () => {
+    const code = generateRscEntry("/tmp/test/app", minimalRoutes);
+    // The generateStaticParams walk reads the main tree and every slot branch,
+    // including each slot's owner position and whether it (or children)
+    // renders its default.
+    expect(code)
+      .toContain(`hasGenerateStaticParams: __hasAppPageGenerateStaticParamsAtLastDynamicSegment({
+      childrenSlot: route.childrenSlot,
+      layouts: route.layouts,
+      layoutTreePositions: route.layoutTreePositions,
+      page: route.page,
+      parallelBranches: segmentConfigBranches,
+      routeSegments: route.routeSegments,
+    }),`);
+    expect(code).toContain("isDefault: !slot.page,");
+    expect(code).toContain("ownerTreePosition: slot.ownerTreePosition,");
+    // Any segment's generator still sets the route's revalidate default.
+    expect(code).toContain("hasAnyGenerateStaticParams: __generateStaticParams.length > 0,");
+    // The runtime merges across the whole loader tree, slots included.
+    expect(code).toContain(`isStaticGenerationEdgeRuntime: __isEdgeRuntime(
+      __resolveAppPageStaticGenerationRuntime(
+        __collectAppPageStaticGenerationRuntimes({
+          childrenSlot: route.childrenSlot,
+          layouts: route.layouts,
+          layoutTreePositions: route.layoutTreePositions,
+          page: route.page,
+          parallelBranches: segmentConfigBranches,
+          routeSegments: route.routeSegments,
+        }),
+      ),
+    ),`);
+    // The matched route and any other route dispatch renders, such as an
+    // intercept's source, are classified from the same inputs.
+    expect(code).toContain(
+      "const __staticGeneration = __resolveRouteStaticGeneration(route, __segmentConfigBranches);",
+    );
+    expect(code).toContain("hasGenerateStaticParams: __staticGeneration.hasGenerateStaticParams,");
+    expect(code).toContain(
+      "isStaticGenerationEdgeRuntime: __staticGeneration.isStaticGenerationEdgeRuntime,",
+    );
+    expect(code).toContain(`resolveRouteStaticEligible(targetRoute) {
+        return __resolveRouteStaticEligible(targetRoute);
+      },`);
+    expect(code).toContain(`  return __isAppPageStaticEligible({
+    ...__resolveRouteStaticGeneration(route, segmentConfigBranches),
+    dynamicConfig: segmentConfig.dynamicConfig,
+    isDynamicRoute: route.isDynamic,
+    revalidateSeconds: segmentConfig.revalidateSeconds,
+  });`);
+  });
+
+  it("generated handler delegates request and ctx handling to createAppRscHandler", () => {
+    const code = generateRscEntry("/tmp/test/app", minimalRoutes);
+    expect(code).toContain("createAppRscHandler");
+    expect(code).toContain("const __appRscHandler = createAppRscHandler({");
+    expect(code).toContain("export default __appRscHandler;");
+  });
+
+  it("configures the cache through the lightweight handler runtime", () => {
+    const code = generateRscEntry("/tmp/test/app", minimalRoutes);
+    expect(code).toContain(
+      'configureMemoryCacheHandler as __configureMemoryCacheHandler } from "vinext/shims/cache-handler"',
+    );
+    expect(code).not.toContain(
+      'configureMemoryCacheHandler as __configureMemoryCacheHandler } from "next/cache"',
+    );
+  });
+
+  it("generated code stores root layout params separately from leaf params", () => {
+    const routes = [
+      {
+        ...minimalRoutes[0],
+        pattern: "/[lang]/[locale]/other/[slug]",
+        patternParts: [":lang", ":locale", "other", ":slug"],
+        params: ["lang", "locale", "slug"],
+        rootParamNames: ["lang", "locale"],
+        routeSegments: ["[lang]", "[locale]", "other", "[slug]"],
+        layoutTreePositions: [2],
+      },
+    ] as any[];
+
+    const code = generateRscEntry("/tmp/test/app", routes);
+
+    // The user-declared rootParamNames must flow through to the route's entry,
+    // narrower than the full leaf params list. The typed RSC handler owns
+    // setting the per-request root params from this route shape.
+    expect(code).toContain('rootParamNames: ["lang","locale"]');
+    expect(code).not.toContain('rootParamNames: ["lang","locale","slug"]');
+    expect(code).toContain("rootParamNamesByPattern: rootParamNamesMap");
+    expect(code).not.toContain("__setRootParams(__pickRootParams(params, route.rootParamNames));");
+    expect(code).toContain("clearAppRequestContext as __clearRequestContext");
+    expect(code).toContain("server/app-request-context.js");
+    expect(code).not.toContain("function __clearRequestContext() {");
+  });
+
+  it("root params runtime getter returns current request values", async () => {
+    const { getRootParam, pickRootParams, setRootParams } =
+      await import("../packages/vinext/src/shims/root-params.js");
+
+    expect(pickRootParams({ lang: "en", locale: "us", slug: "post" }, ["lang", "locale"])).toEqual({
+      lang: "en",
+      locale: "us",
+    });
+
+    setRootParams({ lang: "en", locale: "us" });
+
+    await expect(getRootParam("lang")).resolves.toBe("en");
+    await expect(getRootParam("locale")).resolves.toBe("us");
+    await expect(getRootParam("slug")).resolves.toBeUndefined();
+
+    setRootParams(null);
+  });
+
+  it("generated code threads intercept layout modules through slot overrides", () => {
+    const routeWithInterceptLayouts: AppRoute = {
+      errorPath: null,
+      forbiddenPaths: [],
+      forbiddenPath: null,
+      isDynamic: false,
+      layoutErrorPaths: [null],
+      layouts: ["/tmp/test/app/layout.tsx"],
+      layoutTreePositions: [0],
+      loadingPath: null,
+      notFoundPath: null,
+      notFoundPaths: [null],
+      pagePath: "/tmp/test/app/page.tsx",
+      parallelSlots: [
+        {
+          defaultPath: "/tmp/test/app/@modal/default.tsx",
+          errorPath: null,
+          interceptingRoutes: [
+            {
+              convention: ".",
+              layoutPaths: ["/tmp/test/app/@modal/(.)explicit-layout/layout.tsx"],
+              pagePath: "/tmp/test/app/@modal/(.)explicit-layout/deeper/page.tsx",
+              params: [],
+              targetPattern: "/explicit-layout/deeper",
+              sourceMatchPattern: "/",
+            },
+          ],
+          key: "modal@@modal",
+          layoutIndex: 0,
+          layoutPath: "/tmp/test/app/@modal/layout.tsx",
+          loadingPath: null,
+          name: "modal",
+          hasPage: false,
+          ownerDir: "/tmp/test/app/@modal",
+          ownerTreePath: "/",
+          pagePath: null,
+          routeSegments: null,
+        },
+      ],
+      params: [],
+      pattern: "/",
+      patternParts: [],
+      routePath: null,
+      routeSegments: [],
+      templates: [],
+      templateTreePositions: [],
+      unauthorizedPaths: [],
+      unauthorizedPath: null,
+      siblingIntercepts: [],
+    };
+
+    const code = generateRscEntry("/tmp/test/app", [routeWithInterceptLayouts]);
+
+    // Intercept-layout modules are wired into the route's intercept entry as
+    // lazy loaders: `interceptLayouts` holds `null` placeholders and the
+    // `__loadInterceptLayouts` array carries the `load_N` import thunks
+    // (load_N/mod_N are the generator's alias schemes — a module reference, not
+    // the original layout path string).
+    expect(code).toContain("interceptLayouts: [null]");
+    expect(code).toMatch(/__loadInterceptLayouts:\s*\[load_\d+\]/);
+    expect(code).not.toMatch(/interceptLayouts:\s*\[\s*"\/tmp\/test\/app/);
+    expect(code).not.toMatch(/__loadInterceptLayouts:\s*\[\s*"\/tmp\/test\/app/);
+  });
+
+  it("generated code seeds root params around prerender generateStaticParams", () => {
+    const routeWithRootParams: AppRoute = {
+      errorPath: null,
+      forbiddenPath: null,
+      forbiddenPaths: [],
+      isDynamic: true,
+      layoutErrorPaths: [null],
+      layouts: ["/tmp/test/app/[locale]/layout.tsx"],
+      layoutTreePositions: [1],
+      loadingPath: null,
+      notFoundPath: null,
+      notFoundPaths: [null],
+      pagePath: "/tmp/test/app/[locale]/blog/[slug]/page.tsx",
+      parallelSlots: [],
+      params: ["locale", "slug"],
+      pattern: "/:locale/blog/:slug",
+      patternParts: [":locale", "blog", ":slug"],
+      rootParamNames: ["locale"],
+      routePath: null,
+      routeSegments: ["[locale]", "blog", "[slug]"],
+      templates: [],
+      templateTreePositions: [],
+      unauthorizedPaths: [],
+      unauthorizedPath: null,
+      siblingIntercepts: [],
+    };
+
+    const code = generateRscEntry("/tmp/test/app", [routeWithRootParams]);
+
+    // The user-declared dynamic-segment names must flow into the generated
+    // entry so prerender static-params know which params are root-scoped.
+    expect(code).toContain('"/:locale/blog/:slug"');
+    expect(code).toContain('["locale"]');
+  });
+
+  it("generated code exposes prerender cache seeding from the RSC module graph", () => {
+    const code = generateRscEntry("/tmp/test/app", minimalRoutes);
+
+    expect(code).toMatch(/await import\("[^"]*seed-cache\.js"\)/);
+    expect(code).not.toMatch(
+      /import \{\s*seedMemoryCacheFromPrerender as __seedMemoryCacheFromPrerender/,
+    );
+    expect(code).toContain("isrSetPrerenderedAppPage as __isrSetPrerenderedAppPage");
+    expect(code).toContain("export async function seedMemoryCacheFromPrerender(serverDir)");
+    expect(code).toContain("buildAppPageHtmlKey(pathname)");
+    expect(code).toContain("return __isrHtmlKey(pathname)");
+    expect(code).toContain("buildAppPageRscKey(pathname)");
+    expect(code).toContain("return __isrRscKey(pathname)");
+    expect(code).toContain("buildAppPageFallbackShellKey(pathname, suffix)");
+    expect(code).toContain("return __isrFallbackShellKey(pathname, suffix)");
+    expect(code).toContain("writeAppPageEntry(key, data, metadata)");
+    expect(code).toContain("return __isrSetPrerenderedAppPage(key, data, metadata)");
+  });
+
+  it("generated code delegates server-action header handling to the typed handler", () => {
+    const code = generateRscEntry("/tmp/test/app", minimalRoutes);
+    expect(code).toContain("handleServerActionRequest({");
+    expect(code).toContain("actionId,");
+  });
+});

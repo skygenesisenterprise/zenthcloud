@@ -1,0 +1,844 @@
+import "./server-globals.js";
+import type { NextI18nConfig } from "../config/next-config.js";
+import { normalizeHost } from "../config/request-context.js";
+import { normalizePathnameForRouteMatchStrict } from "../routing/utils.js";
+import path from "pathslash";
+import {
+  getRequestExecutionContext,
+  runWithExecutionContext,
+  type ExecutionContextLike,
+} from "vinext/shims/request-context";
+import { NextFetchEvent, NextRequest } from "vinext/shims/server";
+import { runInWorkStoreScope } from "vinext/shims/internal/work-store-scope";
+import { normalizePath } from "./normalize-path.js";
+import {
+  MIDDLEWARE_HEADER_PREFIX,
+  MIDDLEWARE_NEXT_HEADER,
+  MIDDLEWARE_REWRITE_HEADER,
+} from "./headers.js";
+import {
+  matchesMiddleware,
+  matchesMiddlewarePathname,
+  type MatcherConfig,
+  type MiddlewareLocaleMatchContext,
+} from "./middleware-matcher.js";
+import { shouldKeepMiddlewareHeader } from "../utils/middleware-request-headers.js";
+import { dropEmptyMiddlewareSetCookie, processMiddlewareHeaders } from "./request-pipeline.js";
+import { badRequestResponse, internalServerErrorResponse } from "./http-error-responses.js";
+import { isOpenRedirectShaped } from "./open-redirect.js";
+import {
+  addBasePathToPathname,
+  hasBasePath,
+  removeTrailingSlash,
+  stripBasePath,
+} from "../utils/base-path.js";
+import { normalizeDefaultLocalePathname } from "./pages-i18n.js";
+import { nextDataMiddlewareMatchPathname } from "./pages-data-route.js";
+import { reportRequestError } from "./instrumentation.js";
+import { isValidNavigationSignalError } from "../utils/navigation-signal.js";
+import { frameworkTracer } from "./tracer.js";
+import { logRequestError } from "./request-error-log.js";
+
+export type MiddlewareModule = Record<string, unknown>;
+
+export type MiddlewareResult = {
+  continue: boolean;
+  /** True when this pathname can match middleware for some request context. */
+  pathnameEligible?: boolean;
+  redirectUrl?: string;
+  redirectStatus?: number;
+  rewriteUrl?: string;
+  /** False when a same-origin rewrite target was outside the basePath. */
+  rewriteHadBasePath?: boolean;
+  rewriteStatus?: number;
+  status?: number;
+  responseHeaders?: Headers;
+  response?: Response;
+  waitUntilPromises?: Promise<unknown>[];
+};
+
+type MiddlewareHandler = (
+  request: NextRequest,
+  event: NextFetchEvent,
+) => Response | undefined | void | Promise<Response | undefined | void>;
+
+type MiddlewareConfigExport = {
+  matcher?: MatcherConfig;
+};
+
+type ExecuteMiddlewareOptions = {
+  basePath?: string;
+  filePath?: string;
+  /**
+   * Whether the incoming request was inside the configured basePath. Drives
+   * the `nextUrl.basePath` the middleware observes: in-basePath requests are
+   * re-prefixed so NextURL reports the configured basePath, while
+   * out-of-basePath ("absolute path") requests stay un-prefixed so middleware
+   * sees `nextUrl.basePath === ""` (Next.js `getNextPathnameInfo` semantics —
+   * see test/e2e/middleware-base-path "should execute from absolute paths").
+   * When omitted it is derived from the request URL, which is correct for the
+   * Pages prod/deploy adapters because they pass the original (un-stripped)
+   * URL. Callers that pass an already-stripped URL (dev server, App Router)
+   * must set this explicitly.
+   */
+  hadBasePath?: boolean;
+  i18nConfig?: NextI18nConfig | null;
+  includeErrorDetails?: boolean;
+  /**
+   * Whether the incoming request was recognized as a Next.js `_next/data`
+   * fetch. Internal headers are stripped before middleware runs, so adapters
+   * must derive and forward this from trusted URL normalization.
+   */
+  isDataRequest?: boolean;
+  /**
+   * The data request names a buildId other than the current build. Adapters
+   * pass it raw to middleware only under `skipProxyUrlNormalize`.
+   */
+  isStaleDataRequest?: boolean;
+  isProxy: boolean;
+  module: MiddlewareModule;
+  normalizedPathname?: string;
+  /** Called only after the configured matcher accepts this request. */
+  onMatch?: () => void;
+  /** Called when the pathname matches, before request `has`/`missing` checks. */
+  onPathMatch?: () => void;
+  /**
+   * The caller already created an isolated body branch for middleware. This
+   * lets App Router normalize that branch's URL and headers without adding a
+   * second tee whose preserved side would never be consumed.
+   */
+  requestBodyAlreadyIsolated?: boolean;
+  /**
+   * `shouldRestoreLocaleRootTrailingSlash` for the raw request pathname. Next.js
+   * then tests the as-requested root as `/en/` after default-locale insertion.
+   */
+  restoreLocaleRootTrailingSlash?: boolean;
+  request: Request;
+  /**
+   * The user's `trailingSlash` config. Plumbed into the NextRequest's NextURL
+   * so `request.nextUrl.toString()` formats with the configured slash policy,
+   * which feeds into `NextResponse.redirect(request.nextUrl)` Location headers.
+   * Also used to normalize redirect Location pathnames returned via plain
+   * `new URL('/x', req.url)`.
+   */
+  trailingSlash?: boolean;
+  /**
+   * next.config `skipTrailingSlashRedirect`. Middleware then sees requests in
+   * either slash form, so NextURL keeps each request's own trailing slash and
+   * redirect Locations keep theirs, as Next.js's `getNextPathnameInfo` does.
+   */
+  skipTrailingSlashRedirect?: boolean;
+};
+
+function reportProxyError(options: ExecuteMiddlewareOptions, error: unknown): Promise<void> {
+  const url = new URL(options.request.url);
+  return reportRequestError(
+    error,
+    {
+      path: url.pathname + url.search,
+      method: options.request.method,
+      headers: Object.fromEntries(options.request.headers.entries()),
+    },
+    {
+      routerKind: "Pages Router",
+      routePath: "/proxy",
+      routeType: "proxy",
+      revalidateReason: undefined,
+    },
+  );
+}
+
+type RunGeneratedMiddlewareOptions = ExecuteMiddlewareOptions & {
+  ctx?: ExecutionContextLike;
+};
+
+function isMiddlewareHandler(value: unknown): value is MiddlewareHandler {
+  return typeof value === "function";
+}
+
+function isMiddlewareConfigExport(value: unknown): value is MiddlewareConfigExport {
+  return !!value && typeof value === "object";
+}
+
+function middlewareExpectedExport(isProxy: boolean): string {
+  return isProxy ? "proxy" : "middleware";
+}
+
+function middlewareDisplayPath(filePath: string): string {
+  const fileName = path.basename(filePath);
+  return path.basename(path.dirname(filePath)) === "src" ? `./src/${fileName}` : `./${fileName}`;
+}
+
+export function createMiddlewareMissingExportError(filePath: string | undefined, isProxy: boolean) {
+  const expectedExport = middlewareExpectedExport(isProxy);
+  const displayPath = filePath ? middlewareDisplayPath(filePath) : undefined;
+  const resolvedPath = displayPath ? ` "${displayPath}"` : "";
+  const migrationReason = isProxy
+    ? "- You are migrating from `middleware` to `proxy`, but haven't updated the exported function.\n"
+    : "";
+  return new Error(
+    `The file${resolvedPath} must export a function, either as a default export or as a named "${expectedExport}" export.\n` +
+      `This function is what Next.js runs for every request handled by this ${isProxy ? "proxy (previously called middleware)" : "middleware"}.\n\n` +
+      `Why this happens:\n` +
+      migrationReason +
+      `- The file exists but doesn't export a function.\n` +
+      `- The export is not a function (e.g., an object or constant).\n` +
+      `- There's a syntax error preventing the export from being recognized.\n\n` +
+      `To fix it:\n` +
+      `- Ensure this file has either a default or "${expectedExport}" function export.\n\n` +
+      `Learn more: https://nextjs.org/docs/messages/middleware-to-proxy`,
+  );
+}
+
+export function resolveMiddlewareModuleHandler(
+  mod: MiddlewareModule,
+  options: { filePath?: string; isProxy: boolean },
+): MiddlewareHandler {
+  const handler = options.isProxy ? (mod.proxy ?? mod.default) : (mod.middleware ?? mod.default);
+  if (isMiddlewareHandler(handler)) return handler;
+
+  throw createMiddlewareMissingExportError(options.filePath, options.isProxy);
+}
+
+function middlewareMatcher(mod: MiddlewareModule): MatcherConfig | undefined {
+  const config = mod.config;
+  if (!isMiddlewareConfigExport(config)) return undefined;
+  return config.matcher;
+}
+
+// Next.js drops these from every middleware response before using its
+// headers (`ipcForbiddenHeaders` plus `content-length` in resolve-routes.ts).
+// They describe middleware's own message, so they must not frame the response
+// that is actually sent: a stale Content-Length on a streamed page leaves
+// surplus bytes on a kept-alive connection.
+// https://github.com/vercel/next.js/blob/canary/packages/next/src/server/lib/router-utils/resolve-routes.ts
+// https://github.com/vercel/next.js/blob/canary/packages/next/src/server/lib/server-ipc/utils.ts
+const MIDDLEWARE_MESSAGE_HEADER_NAMES = [
+  "accept-encoding",
+  "connection",
+  "content-encoding",
+  "content-length",
+  "expect",
+  "keep-alive",
+  "keepalive",
+  "transfer-encoding",
+];
+
+function deleteMiddlewareMessageHeaders(headers: Headers): void {
+  for (const name of MIDDLEWARE_MESSAGE_HEADER_NAMES) headers.delete(name);
+}
+
+function processMiddlewareResponseHeaders(headers: Headers): void {
+  processMiddlewareHeaders(headers);
+  deleteMiddlewareMessageHeaders(headers);
+}
+
+function stripMiddlewareHeadersFromResponse(response: Response): Response {
+  const headers = new Headers(response.headers);
+  processMiddlewareResponseHeaders(headers);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
+/**
+ * Make a same-host URL relative to the request origin unless removing the
+ * origin would create a protocol-relative redirect. Cross-origin URLs are
+ * returned unchanged. Based on Next.js's `getRelativeURL` behaviour:
+ * https://github.com/vercel/next.js/blob/canary/packages/next/src/shared/lib/router/utils/relativize-url.ts
+ */
+function relativizeLocation(location: string, requestUrl: string): string {
+  let parsed: URL;
+  try {
+    parsed = new URL(location, requestUrl);
+  } catch {
+    return location;
+  }
+  const base = new URL(requestUrl);
+  if (parsed.origin !== base.origin) return parsed.toString();
+  // A leading double slash is a valid same-origin pathname while the URL is
+  // absolute, but becomes a protocol-relative redirect if the origin is
+  // removed. Keep the absolute form for every shape covered by the shared
+  // redirect guard.
+  if (isOpenRedirectShaped(parsed.pathname)) return parsed.toString();
+  return parsed.pathname + parsed.search + parsed.hash;
+}
+
+/**
+ * Translate a middleware redirect Response into the soft-redirect protocol
+ * used by Next.js for `_next/data` requests: a 200 OK with the redirect target
+ * carried in the `x-nextjs-redirect` header. The client router consumes this
+ * header to perform the navigation, avoiding CORS issues that would arise from
+ * an actual cross-origin HTTP redirect on a data fetch.
+ *
+ * Reference: packages/next/src/server/web/adapter.ts
+ * https://github.com/vercel/next.js/blob/canary/packages/next/src/server/web/adapter.ts
+ */
+function dataRedirectResponse(target: string, originalResponse: Response): Response {
+  const headers = new Headers(originalResponse.headers);
+  processMiddlewareResponseHeaders(headers);
+  // Headers.delete is case-insensitive per the Fetch spec, so a single call
+  // covers `Location` / `location` / `LOCATION`.
+  headers.delete("Location");
+  headers.set("x-nextjs-redirect", target);
+  return new Response(null, { status: 200, headers });
+}
+
+function collectMiddlewareHeaders(response: Response): Headers {
+  const responseHeaders = new Headers();
+  for (const [key, value] of response.headers) {
+    if (!key.startsWith(MIDDLEWARE_HEADER_PREFIX) || shouldKeepMiddlewareHeader(key)) {
+      responseHeaders.append(key, value);
+    }
+  }
+  dropEmptyMiddlewareSetCookie(responseHeaders);
+  deleteMiddlewareMessageHeaders(responseHeaders);
+  return responseHeaders;
+}
+
+function drainFetchEvent(fetchEvent: NextFetchEvent): Promise<unknown>[] {
+  const waitUntilPromises = fetchEvent.waitUntilPromises;
+  const drained = fetchEvent.drainWaitUntil();
+  const executionContext = getRequestExecutionContext();
+  if (executionContext) {
+    executionContext.waitUntil(drained);
+  } else {
+    void drained;
+  }
+  return waitUntilPromises;
+}
+
+function resolveMiddlewarePathname(request: Request): string | Response {
+  const url = new URL(request.url);
+  try {
+    return normalizePath(normalizePathnameForRouteMatchStrict(url.pathname));
+  } catch {
+    return badRequestResponse();
+  }
+}
+
+/** The same path and query on another origin. */
+function withOrigin(url: URL, origin: string): URL {
+  const result = new URL(origin);
+  if (result.origin === url.origin) return url;
+  result.pathname = url.pathname;
+  result.search = url.search;
+  return result;
+}
+
+function createNextRequest(
+  request: Request,
+  url: URL,
+  i18nConfig?: NextI18nConfig | null,
+  basePath?: string,
+  trailingSlash?: boolean,
+  hadBasePath?: boolean,
+  requestBodyAlreadyIsolated = false,
+  skipTrailingSlashRedirect = false,
+): NextRequest {
+  // Middleware gets an isolated body branch; downstream routing keeps owning
+  // the original request body.
+  let mwRequest =
+    !requestBodyAlreadyIsolated && request.body && !request.bodyUsed ? request.clone() : request;
+  // NextURL._stripBasePath only recognises basePath when the request URL's
+  // pathname actually starts with the configured prefix. Dev requests may
+  // arrive after Vite has stripped that prefix, so restore it for requests
+  // known to have crossed the basePath boundary. NextURL strips it again
+  // during construction and preserves nextUrl.basePath. Out-of-basePath
+  // ("absolute path") requests stay unprefixed so middleware observes
+  // nextUrl.basePath === "" (Next.js getNextPathnameInfo semantics).
+  const requestPathname = url.pathname;
+  const mwPathname =
+    basePath && hadBasePath && !hasBasePath(requestPathname, basePath)
+      ? addBasePathToPathname(requestPathname, basePath)
+      : requestPathname;
+  if (mwPathname !== url.pathname || url.href !== request.url) {
+    const mwUrl = new URL(url);
+    mwUrl.pathname = mwPathname;
+    mwRequest = new Request(mwUrl, mwRequest);
+  }
+
+  const hasNextConfig = basePath || i18nConfig || trailingSlash || skipTrailingSlashRedirect;
+  const nextConfig = hasNextConfig
+    ? {
+        basePath: basePath ?? "",
+        i18n: i18nConfig ?? undefined,
+        trailingSlash: trailingSlash ?? undefined,
+        skipTrailingSlashRedirect,
+      }
+    : undefined;
+
+  // On the server's own origin the URL no longer names the host the client
+  // asked for, which still decides the i18n domain locale.
+  const requestUrl = new URL(request.url);
+  const requestHost = requestUrl.origin === url.origin ? undefined : requestUrl.host;
+  const nextRequest =
+    mwRequest instanceof NextRequest && (!mwRequest.body || mwRequest.bodyUsed)
+      ? mwRequest
+      : new NextRequest(mwRequest, nextConfig ? { nextConfig, requestHost } : undefined);
+  if (mwRequest !== request && mwRequest.body && !mwRequest.bodyUsed && !mwRequest.body.locked) {
+    void mwRequest.body.cancel().catch(() => {});
+  }
+  return nextRequest;
+}
+
+function releaseMiddlewareRequestBody(
+  request: NextRequest,
+  waitUntilPromises: Promise<unknown>[],
+  retainedByResponse = false,
+): void {
+  const body = request.body;
+  if (!body || retainedByResponse) return;
+
+  const cancel = () => {
+    if (!body.locked) {
+      void body.cancel().catch(() => {});
+    }
+  };
+  if (waitUntilPromises.length === 0) {
+    cancel();
+    return;
+  }
+
+  // waitUntil work is allowed to keep reading the middleware request after
+  // the handler returns. Release the branch only once that work has settled.
+  void Promise.allSettled(waitUntilPromises).then(cancel);
+}
+
+export function executeMiddleware(options: ExecuteMiddlewareOptions): Promise<MiddlewareResult> {
+  // Next.js runs middleware with a work store, in Pages Router apps too.
+  return runInWorkStoreScope(() => executeMiddlewareModule(options));
+}
+
+async function executeMiddlewareModule(
+  options: ExecuteMiddlewareOptions,
+): Promise<MiddlewareResult> {
+  const middlewareFn = resolveMiddlewareModuleHandler(options.module, {
+    filePath: options.filePath,
+    isProxy: options.isProxy,
+  });
+  const normalizedPathname =
+    options.normalizedPathname ?? resolveMiddlewarePathname(options.request);
+  if (normalizedPathname instanceof Response) {
+    return { continue: false, response: normalizedPathname };
+  }
+  const requestUrl = new URL(options.request.url);
+  const requestPathname = requestUrl.pathname;
+
+  // Default: derive in-basePath state from the request URL. The Pages
+  // prod/deploy adapters pass the original URL — prefixed for in-basePath
+  // requests, bare for out-of-basePath requests — so the URL itself is the
+  // source of truth. Callers that pass pre-stripped URLs (dev server, App
+  // Router) override this with an explicit `hadBasePath: true`.
+  const hadBasePath =
+    options.hadBasePath ?? (!options.basePath || hasBasePath(requestPathname, options.basePath));
+
+  // Matcher patterns use basePath-stripped paths (e.g. /about, not /root/about),
+  // matching Next.js behavior where the matcher is evaluated against the path
+  // without the basePath prefix. When normalizedPathname was explicitly provided
+  // by the caller (e.g. App Router passes cleanPathname which is already stripped),
+  // stripBasePath is a no-op. When it is auto-derived from the request URL and the
+  // URL carries the basePath (because the adapter passed the original URL), we must
+  // strip before matching so patterns like "/about" fire correctly.
+  const basePathStrippedPathname = options.basePath
+    ? stripBasePath(normalizedPathname, options.basePath)
+    : normalizedPathname;
+  const matchPathname = basePathStrippedPathname;
+  // Next.js tests the normalized encoded pathname first, then retries after
+  // decoding the full path once. Testing only a segment-decoded form lets
+  // percent-encoded line terminators turn into characters that `.` cannot
+  // match, while preserving encoded delimiters misses matchers that Next.js
+  // evaluates against their decoded path structure.
+  // https://github.com/vercel/next.js/blob/canary/packages/next/src/server/next-server.ts
+  // The slash-stripped pathname decides locale provenance. The matcher itself
+  // tests the pathname as requested (below). The matcher compiler appends its
+  // own optional terminal delimiter, so a source without a slash matches both
+  // request spellings while a source that includes a slash remains distinct.
+  const encodedRequestPathname = removeTrailingSlash(normalizePath(requestPathname));
+  const matcher = middlewareMatcher(options.module);
+  const prepareMatcherPathname = (candidate: string): string | null => {
+    if (!options.basePath) return candidate;
+    if (hasBasePath(candidate, options.basePath)) {
+      return stripBasePath(candidate, options.basePath);
+    }
+    if (
+      candidate.length === options.basePath.length + 1 &&
+      candidate.startsWith(options.basePath) &&
+      (candidate.endsWith("?") || candidate.endsWith("#"))
+    ) {
+      return "/";
+    }
+    // App Router and Pages dev may pass a URL that the adapter already
+    // stripped after recording that it crossed the configured basePath.
+    if (options.hadBasePath === true) return candidate;
+    // Next.js prefixes configured matchers with basePath at build time. Keep
+    // default middleware eligible on absolute paths, but custom matchers must
+    // not apply outside the basePath.
+    return matcher === undefined ? candidate : null;
+  };
+  // With `skipProxyUrlNormalize`, a Pages data request reaches middleware with
+  // its raw `_next/data` URL. Next.js normalizes a current-build data URL to
+  // its page before matching, so a matcher guarding a page also guards its
+  // data. A stale buildId stays raw, and the matcher is compiled with Next.js's
+  // optional `_next/data/<buildId>` prefix instead.
+  // https://github.com/vercel/next.js/blob/v16.2.7/packages/next/src/server/lib/router-utils/resolve-routes.ts
+  const isStaleDataRequest = options.isDataRequest === true && options.isStaleDataRequest === true;
+  const toPageMatcherPathname = (candidate: string | null): string | null =>
+    candidate !== null && options.isDataRequest && !isStaleDataRequest
+      ? (nextDataMiddlewareMatchPathname(candidate) ?? candidate)
+      : candidate;
+  const toMatchPathnames = (candidate: string) => {
+    const encoded = toPageMatcherPathname(prepareMatcherPathname(candidate));
+    let decoded = encoded;
+    try {
+      if (encoded !== null) {
+        decoded = decodeURIComponent(encoded);
+      } else if (!options.i18nConfig) {
+        // Without i18n, Next.js can discover an encoded basePath on the decoded
+        // matcher attempt. With i18n, default-locale insertion has already made
+        // that path ineligible for the compiled basePath-prefixed matcher.
+        decoded = toPageMatcherPathname(prepareMatcherPathname(decodeURIComponent(candidate)));
+      }
+    } catch {
+      // Match Next.js: malformed encoding is non-fatal for matcher eligibility.
+    }
+    return { decoded, encoded };
+  };
+  const { decoded: decodedMatchPathname, encoded: encodedMatchPathname } =
+    toMatchPathnames(encodedRequestPathname);
+
+  let localeContext: MiddlewareLocaleMatchContext | undefined;
+  if (isStaleDataRequest) {
+    localeContext = { kind: "next-data" };
+  } else if (options.i18nConfig && encodedMatchPathname !== null) {
+    const hostname = normalizeHost(options.request.headers.get("host"), requestUrl.hostname);
+    const firstSegment = encodedMatchPathname.split("/", 3)[1];
+    const hasLiteralLocale =
+      firstSegment !== undefined &&
+      options.i18nConfig.locales.some(
+        (locale) => locale.toLowerCase() === firstSegment.toLowerCase(),
+      );
+    if (hasLiteralLocale) {
+      localeContext = { kind: "literal" };
+    } else {
+      const localeDefaultedPathname = normalizeDefaultLocalePathname(
+        encodedMatchPathname,
+        options.i18nConfig,
+        { hostname },
+      );
+      localeContext =
+        localeDefaultedPathname === encodedMatchPathname
+          ? { kind: "internal" }
+          : {
+              defaultLocale: normalizeDefaultLocalePathname("/", options.i18nConfig, {
+                hostname,
+              }).slice(1),
+              kind: "defaulted",
+            };
+    }
+  }
+  // Test the pathname as requested, terminal slash included, so a source that
+  // keeps that slash ("/admin/", "/admin/(.*)") runs middleware for /admin/.
+  // Next.js tests this spelling first, then retests without the slash and
+  // ends a request only the first test accepts with an empty 200. vinext runs
+  // middleware there instead: the request reaches middleware as its matcher
+  // describes it.
+  // https://github.com/vercel/next.js/blob/v16.2.7/packages/next/src/server/lib/router-utils/resolve-routes.ts
+  // https://github.com/vercel/next.js/blob/v16.2.7/packages/next/src/server/next-server.ts
+  // Under i18n, the requested default-locale root is tested as `/en/` where
+  // Next.js restores the root's slash after inserting the default locale.
+  const slashedRequestPathname = normalizePath(requestPathname);
+  const requestedMatchPathnames =
+    slashedRequestPathname !== encodedRequestPathname
+      ? toMatchPathnames(slashedRequestPathname)
+      : { decoded: decodedMatchPathname, encoded: encodedMatchPathname };
+  const candidatePathnames: string[] = [];
+  if (requestedMatchPathnames.encoded !== null) {
+    candidatePathnames.push(requestedMatchPathnames.encoded);
+  }
+  if (
+    requestedMatchPathnames.decoded !== null &&
+    requestedMatchPathnames.decoded !== requestedMatchPathnames.encoded
+  ) {
+    candidatePathnames.push(requestedMatchPathnames.decoded);
+  }
+  const requestedLocaleContext: MiddlewareLocaleMatchContext | undefined =
+    options.restoreLocaleRootTrailingSlash && localeContext?.kind === "defaulted"
+      ? { ...localeContext, restoreRootTrailingSlash: true }
+      : localeContext;
+  if (
+    candidatePathnames.some((candidate) =>
+      matchesMiddlewarePathname(candidate, matcher, options.i18nConfig, requestedLocaleContext),
+    )
+  ) {
+    options.onPathMatch?.();
+  }
+  if (
+    !candidatePathnames.some((candidate) =>
+      matchesMiddleware(
+        candidate,
+        matcher,
+        options.request,
+        options.i18nConfig,
+        requestedLocaleContext,
+      ),
+    )
+  ) {
+    return { continue: true };
+  }
+
+  options.onMatch?.();
+
+  // Middleware sees, and its redirects and rewrites are resolved against, the
+  // server's own origin. Node servers supply it because their request URL
+  // carries the client's Host header, which must not decide whether a rewrite
+  // to another host is external (Next.js uses its configured hostname here).
+  const middlewareUrl = withOrigin(
+    requestUrl,
+    getRequestExecutionContext()?.middlewareOrigin ?? requestUrl.origin,
+  );
+  const nextRequest = createNextRequest(
+    options.request,
+    middlewareUrl,
+    options.i18nConfig,
+    options.basePath,
+    options.trailingSlash,
+    hadBasePath,
+    options.requestBodyAlreadyIsolated,
+    options.skipTrailingSlashRedirect,
+  );
+  if (options.isDataRequest) {
+    Object.defineProperty(nextRequest, "__isData", {
+      enumerable: false,
+      value: true,
+    });
+  }
+  const fetchEvent = new NextFetchEvent({ page: removeTrailingSlash(matchPathname) });
+
+  let response: Response | undefined | void;
+  try {
+    response = await frameworkTracer.runWithDetachedContext(() =>
+      frameworkTracer.withPropagatedContext(options.request.headers, () =>
+        frameworkTracer.trace(
+          {
+            attributes: {
+              "http.method": options.request.method,
+              "http.target": nextRequest.nextUrl.pathname,
+            },
+            name: `middleware ${options.request.method}`,
+            type: "Middleware.execute",
+          },
+          () => middlewareFn(nextRequest, fetchEvent),
+        ),
+      ),
+    );
+  } catch (e) {
+    const isDevelopmentNavigationSignal =
+      process.env.NODE_ENV !== "production" && isValidNavigationSignalError(e);
+    if (isDevelopmentNavigationSignal && e instanceof Error) {
+      e.message = `Next.js navigation API is not allowed to be used in ${options.isProxy ? "Proxy" : "Middleware"}.`;
+    }
+    if (isDevelopmentNavigationSignal) {
+      // Not reported, so VINEXT_QUIET doesn't silence it.
+      console.error("[vinext] Middleware error:", e);
+    } else {
+      logRequestError("[vinext] Middleware error:", e);
+      await reportProxyError(options, e);
+    }
+    const waitUntilPromises = drainFetchEvent(fetchEvent);
+    releaseMiddlewareRequestBody(nextRequest, waitUntilPromises);
+    const message = options.includeErrorDetails
+      ? "Middleware Error: " + (e instanceof Error ? e.message : String(e))
+      : "Internal Server Error";
+    return {
+      continue: false,
+      response: internalServerErrorResponse(message),
+      waitUntilPromises,
+    };
+  }
+
+  const waitUntilPromises = drainFetchEvent(fetchEvent);
+
+  if (!response) {
+    releaseMiddlewareRequestBody(nextRequest, waitUntilPromises);
+    return { continue: true, waitUntilPromises };
+  }
+
+  if (response.status >= 300 && response.status < 400) {
+    const location = response.headers.get("Location") ?? response.headers.get("location");
+    if (location) {
+      // Make same-host Location relative for parity with Next.js, which only
+      // emits absolute URLs for cross-origin redirects:
+      // https://github.com/vercel/next.js/blob/canary/packages/next/src/server/web/adapter.ts
+      const relativeLocation = relativizeLocation(location, middlewareUrl.href);
+
+      // Normalize trailing slash on middleware redirect Locations that came
+      // from a plain `new URL(...)` rather than `request.nextUrl`. NextURL
+      // already applies the policy at stringify time, but plain URLs bypass it.
+      // Next.js formats a redirect Location from its own slash; only the
+      // trailing-slash redirect would re-slash it on the next request, and
+      // `skipTrailingSlashRedirect` disables that redirect.
+      let normalizedLocation = relativeLocation;
+      if (options.trailingSlash !== undefined && !options.skipTrailingSlashRedirect) {
+        try {
+          const loc = new URL(relativeLocation, middlewareUrl);
+          if (loc.origin === middlewareUrl.origin) {
+            // Use the same plain add/strip rule as NextURL._applyTrailingSlash /
+            // Next.js's formatNextPathnameInfo — no exemptions for /api, file
+            // extensions, etc. Only root is exempt.
+            const p = loc.pathname;
+            let normalized: string | null = null;
+            if (p !== "" && p !== "/") {
+              if (options.trailingSlash) {
+                normalized = p.endsWith("/") ? null : p + "/";
+              } else {
+                normalized = p.endsWith("/") ? p.slice(0, -1) : null;
+              }
+            }
+            if (normalized !== null) {
+              loc.pathname = normalized;
+              normalizedLocation = relativizeLocation(loc.toString(), middlewareUrl.href);
+            }
+          }
+        } catch {
+          // malformed URL — leave as-is
+        }
+      }
+
+      // For `_next/data` requests, translate the HTTP redirect into the
+      // `x-nextjs-redirect` soft-redirect protocol so the client router can
+      // perform the navigation without tripping CORS on cross-origin targets.
+      // Internal data headers are stripped before middleware runs, so this
+      // protocol is gated on trusted classification threaded by the caller.
+      if (options.isDataRequest) {
+        releaseMiddlewareRequestBody(nextRequest, waitUntilPromises);
+        return {
+          continue: false,
+          response: dataRedirectResponse(normalizedLocation, response),
+          waitUntilPromises,
+        };
+      }
+
+      const responseHeaders = new Headers(response.headers);
+      responseHeaders.delete("location");
+      processMiddlewareResponseHeaders(responseHeaders);
+      // Rebuild the response with the relativized Location so consumers that
+      // forward `result.response` (rather than `result.redirectUrl`) also send
+      // the correct header.
+      const relativizedResponseHeaders = new Headers(response.headers);
+      relativizedResponseHeaders.set("Location", normalizedLocation);
+      const relativizedResponse = new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: relativizedResponseHeaders,
+      });
+      releaseMiddlewareRequestBody(
+        nextRequest,
+        waitUntilPromises,
+        response.body === nextRequest.body,
+      );
+      return {
+        continue: false,
+        redirectUrl: normalizedLocation,
+        redirectStatus: response.status,
+        response: stripMiddlewareHeadersFromResponse(relativizedResponse),
+        responseHeaders,
+        waitUntilPromises,
+      };
+    }
+  }
+
+  const rewriteUrl = response.headers.get(MIDDLEWARE_REWRITE_HEADER);
+  if (rewriteUrl) {
+    let rewritePath: string;
+    let rewriteHadBasePath: boolean | undefined;
+    try {
+      const rewriteParsed = new URL(rewriteUrl, middlewareUrl);
+      if (rewriteParsed.origin === middlewareUrl.origin) {
+        // Middleware constructs the rewrite-target URL itself (e.g. by
+        // modifying `request.nextUrl` or by passing a fresh path). Whatever
+        // search params that URL carries IS the final query — vinext must not
+        // silently re-merge the original request's query, or middleware that
+        // deletes keys (e.g. `searchParams.delete('foo')`) would see them
+        // resurrected on the rewrite target. Mirrors Next.js' middleware
+        // adapter: the `x-middleware-rewrite` URL is parsed directly with no
+        // original-side merging.
+        // See test/e2e/middleware-rewrites/test/index.test.ts
+        //   ("should clear query parameters")
+        // https://github.com/vercel/next.js/blob/canary/test/e2e/middleware-rewrites/test/index.test.ts
+        //
+        // Strip basePath from the rewrite pathname so downstream routing
+        // receives the basePath-free path. Middleware encodes basePath into the
+        // rewrite URL via NextURL.href (which adds _basePath in _formatPathname),
+        // but callers (pages pipeline, App Router handler) always operate on
+        // basePath-stripped paths. This mirrors the Next.js behavior where the
+        // rewrite target is normalized via getNextPathnameInfo before routing.
+        rewriteHadBasePath =
+          !options.basePath || hasBasePath(rewriteParsed.pathname, options.basePath);
+        const rewritePathname = options.basePath
+          ? stripBasePath(rewriteParsed.pathname, options.basePath)
+          : rewriteParsed.pathname;
+        rewritePath = rewritePathname + rewriteParsed.search;
+      } else {
+        // External rewrites are proxied as-is; don't smuggle local query params
+        // into the upstream URL.
+        rewritePath = rewriteParsed.href;
+      }
+    } catch {
+      rewritePath = rewriteUrl;
+    }
+    releaseMiddlewareRequestBody(nextRequest, waitUntilPromises);
+    return {
+      continue: true,
+      rewriteUrl: rewritePath,
+      rewriteHadBasePath,
+      rewriteStatus: response.status !== 200 ? response.status : undefined,
+      responseHeaders: collectMiddlewareHeaders(response),
+      status: response.status !== 200 ? response.status : undefined,
+      waitUntilPromises,
+    };
+  }
+
+  // Checked after redirects and rewrites: a response can carry both
+  // `x-middleware-next` and `x-middleware-rewrite`, e.g.
+  // `NextResponse.rewrite(url, {headers: NextResponse.next().headers})`, which
+  // next-intl's playground proxy does. Next.js drops `x-middleware-next` and
+  // applies the rewrite.
+  // https://github.com/vercel/next.js/blob/canary/packages/next/src/server/lib/router-utils/resolve-routes.ts
+  if (response.headers.get(MIDDLEWARE_NEXT_HEADER) === "1") {
+    releaseMiddlewareRequestBody(nextRequest, waitUntilPromises);
+    return {
+      continue: true,
+      responseHeaders: collectMiddlewareHeaders(response),
+      status: response.status !== 200 ? response.status : undefined,
+      waitUntilPromises,
+    };
+  }
+
+  releaseMiddlewareRequestBody(nextRequest, waitUntilPromises, response.body === nextRequest.body);
+  return {
+    continue: false,
+    response: stripMiddlewareHeadersFromResponse(response),
+    waitUntilPromises,
+  };
+}
+
+export async function runGeneratedMiddleware(
+  options: RunGeneratedMiddlewareOptions,
+): Promise<MiddlewareResult> {
+  let pathnameEligible = false;
+  const run = async () => {
+    const result = await executeMiddleware({
+      ...options,
+      onPathMatch() {
+        pathnameEligible = true;
+        options.onPathMatch?.();
+      },
+    });
+    if (pathnameEligible) result.pathnameEligible = true;
+    return result;
+  };
+  return options.ctx ? runWithExecutionContext(options.ctx, run) : run();
+}

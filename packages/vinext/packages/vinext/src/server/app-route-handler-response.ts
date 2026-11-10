@@ -1,0 +1,386 @@
+import {
+  recordRouteCacheability,
+  markRouteCacheabilityExplicitResponsePolicy,
+} from "vinext/shims/cacheability-classification";
+import type { CachedRouteValue, CacheControlMetadata } from "vinext/shims/cache-handler";
+import { applyCdnResponseHeaders } from "./cache-control.js";
+import { decideIsr, buildAppRouteMissIsrCacheControl } from "./isr-decision.js";
+import {
+  MIDDLEWARE_HEADER_PREFIX,
+  MIDDLEWARE_NEXT_HEADER,
+  MIDDLEWARE_REWRITE_HEADER,
+  NEXT_CACHE_TAGS_HEADER,
+  NEXTJS_CACHE_HEADER,
+  VINEXT_METADATA_ROUTE_CACHE_HEADER,
+  VINEXT_CACHE_HEADER,
+  VINEXT_PRERENDER_CACHE_LIFE_HEADER,
+  VINEXT_ROUTE_MISS_HEADER,
+} from "./headers.js";
+import { setCacheStateHeaders } from "./cache-headers.js";
+import {
+  mergeMiddlewareResponseHeadersOntoResponse,
+  type MiddlewareResponseMergeOptions,
+} from "./middleware-response-headers.js";
+import { processMiddlewareHeaders } from "./request-pipeline.js";
+import { getSetCookieName } from "./cookie-utils.js";
+import {
+  copyLinkHeaderProvenance,
+  markEdgeRouteHandlerLinkHeaders,
+} from "./app-response-header-provenance.js";
+import { preserveFullyBufferedBodyMetadata } from "./fully-buffered-response.js";
+
+export type RouteHandlerMiddlewareContext = {
+  headers: Headers | null;
+  status: number | null;
+};
+
+type BuildRouteHandlerCachedResponseOptions = {
+  cacheControl?: CacheControlMetadata;
+  cacheState: "HIT" | "STALE";
+  expireSeconds?: number;
+  isHead: boolean;
+  revalidateSeconds: number;
+};
+
+type FinalizeRouteHandlerResponseOptions = {
+  pendingCookies: string[];
+  draftCookie?: string | null;
+  isHead: boolean;
+};
+
+const APP_ROUTE_REWRITE_ERROR =
+  "NextResponse.rewrite() was used in a app route handler, this is not currently supported. Please remove the invocation to continue.";
+const APP_ROUTE_NEXT_ERROR =
+  "NextResponse.next() was used in a app route handler, this is not supported. See here for more info: https://nextjs.org/docs/messages/next-response-next-in-app-route-handler";
+
+// Like Next.js's sendResponse for a Node response, a route handler's Response
+// never frames the body that is sent. Its body may have been transparently
+// decoded: Node's fetch() decompresses a gzip body but keeps the upstream
+// Content-Length and Content-Encoding, so forwarding them would describe bytes
+// that are no longer there. The server frames (and may compress) the body
+// itself.
+// https://github.com/vercel/next.js/blob/canary/packages/next/src/server/send-response.ts
+//
+// workerd frames the body itself and keeps Content-Encoding accurate: it
+// ignores a set Content-Length, passes a returned fetch() body through still
+// encoded, and compresses any other body to match its Content-Encoding. So
+// Workers responses keep the headers. `WebSocketPair` identifies workerd under
+// any compatibility flags (`navigator` is absent with `no_global_navigator`),
+// and is absent when a Worker build runs on Node through `vinext start`.
+// https://developers.cloudflare.com/workers/runtime-apis/fetch/#passthrough-behavior
+// https://developers.cloudflare.com/workers/runtime-apis/response/
+const ROUTE_HANDLER_FRAMING_HEADERS = ["content-length", "content-encoding", "transfer-encoding"];
+
+function shouldDropRouteHandlerFramingHeaders(headers: Headers): boolean {
+  if ("WebSocketPair" in globalThis) return false;
+  return ROUTE_HANDLER_FRAMING_HEADERS.some((name) => headers.has(name));
+}
+
+function deleteRouteHandlerFramingHeaders(headers: Headers): void {
+  for (const name of ROUTE_HANDLER_FRAMING_HEADERS) headers.delete(name);
+}
+
+export function stripRouteHandlerFramingHeaders(response: Response): Response {
+  if (!shouldDropRouteHandlerFramingHeaders(response.headers)) return response;
+  const headers = new Headers(response.headers);
+  deleteRouteHandlerFramingHeaders(headers);
+  return preserveFullyBufferedBodyMetadata(
+    response,
+    new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    }),
+  );
+}
+
+function hasMiddlewareHeader(headers: Headers): boolean {
+  for (const key of headers.keys()) {
+    if (key.startsWith(MIDDLEWARE_HEADER_PREFIX)) return true;
+  }
+  return false;
+}
+
+export function applyRouteHandlerMiddlewareContext(
+  response: Response,
+  middlewareContext: RouteHandlerMiddlewareContext,
+  options: MiddlewareResponseMergeOptions & { appendResponseLink?: boolean } = {},
+): Response {
+  const responseLink = options.appendResponseLink ? response.headers.get("link") : null;
+  if (!middlewareContext.headers && middlewareContext.status == null) {
+    markEdgeRouteHandlerLinkHeaders(response.headers, responseLink);
+    return response;
+  }
+
+  const responseHeaders = new Headers(response.headers);
+  mergeMiddlewareResponseHeadersOntoResponse(responseHeaders, middlewareContext.headers, options);
+  if (responseLink && middlewareContext.headers?.get("link")) {
+    responseHeaders.append("link", responseLink);
+  }
+
+  const result = new Response(response.body, {
+    status: middlewareContext.status ?? response.status,
+    statusText: response.statusText,
+    headers: responseHeaders,
+  });
+  markEdgeRouteHandlerLinkHeaders(result.headers, responseLink);
+  return result;
+}
+
+export function assertSupportedAppRouteHandlerResponse(response: Response): void {
+  // NextResponse.next() and rewrite() are middleware control-flow signals.
+  // Once an App Route handler has returned, Next.js rejects those responses.
+  if (response.headers.has(MIDDLEWARE_REWRITE_HEADER)) {
+    throw new Error(APP_ROUTE_REWRITE_ERROR);
+  }
+
+  if (response.headers.get(MIDDLEWARE_NEXT_HEADER) === "1") {
+    throw new Error(APP_ROUTE_NEXT_ERROR);
+  }
+}
+
+/** Drop a route-miss marker the handler set, so only routing can mark a miss. */
+export function stripAppRouteHandlerRouteMissMarker(response: Response): Response {
+  if (!response.headers.has(VINEXT_ROUTE_MISS_HEADER)) return response;
+  try {
+    response.headers.delete(VINEXT_ROUTE_MISS_HEADER);
+    return response;
+  } catch {
+    // Fetch/service-binding responses may have immutable headers.
+  }
+  // Workerd copies cf, webSocket and encodeBody from a Response init.
+  const rebuilt = preserveFullyBufferedBodyMetadata(
+    response,
+    new Response(response.body, response as ResponseInit),
+  );
+  copyLinkHeaderProvenance(response.headers, rebuilt.headers);
+  rebuilt.headers.delete(VINEXT_ROUTE_MISS_HEADER);
+  return rebuilt;
+}
+
+export function buildRouteHandlerCachedResponse(
+  cachedValue: CachedRouteValue,
+  options: BuildRouteHandlerCachedResponseOptions,
+): Response {
+  const headers = new Headers();
+  for (const [key, value] of Object.entries(cachedValue.headers)) {
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        headers.append(key, entry);
+      }
+    } else {
+      headers.set(key, value);
+    }
+  }
+  headers.delete(NEXT_CACHE_TAGS_HEADER);
+  headers.delete(VINEXT_METADATA_ROUTE_CACHE_HEADER);
+  // Only a framework 404 carries the route-miss marker, and none is stored.
+  headers.delete(VINEXT_ROUTE_MISS_HEADER);
+  if (shouldDropRouteHandlerFramingHeaders(headers)) deleteRouteHandlerFramingHeaders(headers);
+  setCacheStateHeaders(headers, options.cacheState);
+  // HIT/STALE served from the origin store: route the cache header through the
+  // CDN adapter (default: identical single Cache-Control). Edge adapters never
+  // reach this path because their get() returns null.
+  const { cacheControl } = decideIsr({
+    cacheState: options.cacheState,
+    kind: "app-route",
+    revalidateSeconds: options.revalidateSeconds,
+    expireSeconds: options.expireSeconds,
+    cacheControlMeta: options.cacheControl,
+  });
+  recordRouteCacheability({ cacheable: true, cacheControl });
+  if (headers.has("Cache-Control")) markRouteCacheabilityExplicitResponsePolicy();
+  applyCdnResponseHeaders(headers, {
+    cacheControl,
+    browserCacheControl: headers.get("Cache-Control") ?? undefined,
+  });
+
+  const hasNoBody =
+    options.isHead ||
+    cachedValue.status === 204 ||
+    cachedValue.status === 205 ||
+    cachedValue.status === 304;
+  return new Response(hasNoBody ? null : cachedValue.body, {
+    status: cachedValue.status,
+    headers,
+  });
+}
+
+export function applyRouteHandlerRevalidateHeader(
+  response: Response,
+  revalidateSeconds: number,
+  expireSeconds?: number,
+  tags?: readonly string[],
+): void {
+  // Fresh (MISS) response: route through the CDN adapter so edge adapters emit
+  // their provider-specific policy while the default emits Cache-Control.
+  // Uses buildAppRouteMissIsrCacheControl so the revalidate=0→NEVER and
+  // Infinity→STATIC gates apply, and expireSeconds is used as the direct route
+  // config ceiling (not a per-entry metadata fallback).
+  applyCdnResponseHeaders(response.headers, {
+    cacheControl: buildAppRouteMissIsrCacheControl(revalidateSeconds, expireSeconds),
+    tags,
+  });
+}
+
+export function markRouteHandlerCacheMiss(response: Response): void {
+  setCacheStateHeaders(response.headers, "MISS");
+}
+
+/**
+ * Returns true when the given Set-Cookie string already declares any of the
+ * attributes that follow the first `;` (case-insensitively). Used to detect
+ * whether a user-emitted Set-Cookie line already carries an explicit `Path=`,
+ * matching Next.js's `appendMutableCookies` which re-runs every cookie through
+ * `ResponseCookies.set` (and therefore picks up the `Path=/` default for any
+ * cookie that didn't supply one).
+ */
+function hasCookieAttribute(cookie: string, attributeName: string): boolean {
+  const target = attributeName.toLowerCase();
+  // Skip past the first '=' (the cookie value separator) so we don't match
+  // `attributeName=` inside the cookie value itself.
+  let i = cookie.indexOf(";");
+  while (i !== -1) {
+    // Trim leading whitespace after the ';'
+    let start = i + 1;
+    while (start < cookie.length && cookie[start] === " ") start++;
+    const next = cookie.indexOf(";", start);
+    const end = next === -1 ? cookie.length : next;
+    const eq = cookie.indexOf("=", start);
+    const attrEnd = eq === -1 || eq > end ? end : eq;
+    const attr = cookie.slice(start, attrEnd).trim().toLowerCase();
+    if (attr === target) {
+      return true;
+    }
+    i = next;
+  }
+  return false;
+}
+
+/**
+ * Ensure each Set-Cookie line carries `Path=/` by default — Next.js's
+ * `appendMutableCookies` re-runs every returned cookie through
+ * `ResponseCookies.set`, which normalises a missing `path` to `/`. Without
+ * this, a raw `new Response(..., { headers: [['Set-Cookie', 'bar=bar2']] })`
+ * lands without `Path=/` and tests that assert on the full attribute set
+ * (e.g. Next.js's `app-action.test.ts` route-handler-overrides case, see
+ * issue #1484) break.
+ */
+function normalizeReturnedCookie(cookie: string): string {
+  if (hasCookieAttribute(cookie, "Path")) {
+    return cookie;
+  }
+  const trimmed = cookie.replace(/;\s*$/, "");
+  return `${trimmed}; Path=/`;
+}
+
+function applyMutableCookieFallbacks(headers: Headers, pendingCookies: string[]): void {
+  if (pendingCookies.length === 0) {
+    return;
+  }
+
+  const returnedCookies = headers.getSetCookie();
+  const returnedCookieNames = new Set<string>();
+  for (const cookie of returnedCookies) {
+    const name = getSetCookieName(cookie);
+    if (name) {
+      returnedCookieNames.add(name);
+    }
+  }
+
+  const fallbackCookies = new Map<string, string>();
+  const unkeyedFallbackCookies: string[] = [];
+  for (const cookie of pendingCookies) {
+    const name = getSetCookieName(cookie);
+    if (!name) {
+      unkeyedFallbackCookies.push(cookie);
+      continue;
+    }
+
+    if (!returnedCookieNames.has(name)) {
+      fallbackCookies.set(name, cookie);
+    }
+  }
+
+  headers.delete("Set-Cookie");
+  for (const cookie of unkeyedFallbackCookies) {
+    headers.append("Set-Cookie", cookie);
+  }
+  for (const cookie of fallbackCookies.values()) {
+    headers.append("Set-Cookie", cookie);
+  }
+  for (const cookie of returnedCookies) {
+    headers.append("Set-Cookie", normalizeReturnedCookie(cookie));
+  }
+}
+
+export async function buildAppRouteCacheValue(
+  response: Response,
+  browserCacheControl?: string,
+): Promise<CachedRouteValue> {
+  const body = await response.arrayBuffer();
+  const headers: CachedRouteValue["headers"] = {};
+
+  response.headers.forEach((value, key) => {
+    if (
+      key === "set-cookie" ||
+      key === "connection" ||
+      key === "content-length" ||
+      key === "date" ||
+      key === "keep-alive" ||
+      key === "transfer-encoding" ||
+      key === NEXT_CACHE_TAGS_HEADER ||
+      key === VINEXT_METADATA_ROUTE_CACHE_HEADER ||
+      key === VINEXT_PRERENDER_CACHE_LIFE_HEADER ||
+      key === VINEXT_CACHE_HEADER.toLowerCase() ||
+      key === NEXTJS_CACHE_HEADER.toLowerCase() ||
+      key === "cache-control" ||
+      key.startsWith(MIDDLEWARE_HEADER_PREFIX)
+    ) {
+      return;
+    }
+    headers[key] = value;
+  });
+  if (browserCacheControl !== undefined) headers["cache-control"] = browserCacheControl;
+  const setCookies = response.headers.getSetCookie?.() ?? [];
+  if (setCookies.length > 0) {
+    headers["set-cookie"] = setCookies;
+  }
+
+  return {
+    kind: "APP_ROUTE",
+    body,
+    status: response.status,
+    headers,
+  };
+}
+
+export function finalizeRouteHandlerResponse(
+  response: Response,
+  options: FinalizeRouteHandlerResponseOptions,
+): Response {
+  const { pendingCookies, draftCookie, isHead } = options;
+  if (
+    pendingCookies.length === 0 &&
+    !draftCookie &&
+    !isHead &&
+    !hasMiddlewareHeader(response.headers) &&
+    !shouldDropRouteHandlerFramingHeaders(response.headers)
+  ) {
+    return response;
+  }
+
+  const headers = new Headers(response.headers);
+  if (shouldDropRouteHandlerFramingHeaders(headers)) deleteRouteHandlerFramingHeaders(headers);
+  processMiddlewareHeaders(headers);
+  applyMutableCookieFallbacks(headers, pendingCookies);
+  if (draftCookie) {
+    headers.append("Set-Cookie", draftCookie);
+  }
+
+  return new Response(isHead ? null : response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
