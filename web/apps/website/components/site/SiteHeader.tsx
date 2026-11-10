@@ -8,10 +8,11 @@ import {
 	List,
 	X,
 } from "@phosphor-icons/react";
+import { ShieldWarning } from "@phosphor-icons/react/dist/ssr";
 import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 import { searchIndex } from "@/lib/content/search-index";
-import { cta, mainNav, utilityNav, type NavGroup } from "@/lib/content/site";
+import { cta, emergencyCta, mainNav, utilityNav, type NavGroup } from "@/lib/content/site";
 import { cn } from "@/lib/utils";
 import { Container } from "../Container";
 import { LanguageSelector } from "./LanguageSelector";
@@ -74,7 +75,7 @@ function HeaderPill({
 			variant="outline"
 			size="sm"
 			external={external}
-			className="h-8 rounded-full border-border bg-transparent px-3.5 text-sm font-medium text-foreground ring-0 hover:border-foreground/30 hover:bg-muted hover:text-foreground"
+			className="h-9 rounded-full border-border bg-transparent px-4 text-[15px] font-medium text-foreground ring-0 hover:border-foreground/30 hover:bg-muted hover:text-foreground"
 		>
 			{label}
 		</LinkButton>
@@ -138,10 +139,10 @@ function DesktopNavItem({
 				aria-current={active ? "page" : undefined}
 				onPointerEnter={onClose}
 				className={cn(
-					"inline-flex h-8 items-center text-sm font-medium no-underline! transition-colors",
+					"inline-flex h-8 items-center text-[15px] font-medium no-underline! transition-colors",
 					active
 						? "text-foreground"
-						: "text-foreground/75 hover:text-foreground",
+						: "text-foreground/90 hover:text-foreground",
 				)}
 			>
 				{group.title}
@@ -180,10 +181,10 @@ function DesktopNavItem({
 							variant="ghost"
 							size="sm"
 							className={cn(
-								"group h-8 gap-1.5 bg-transparent px-0 text-sm font-medium shadow-none hover:bg-transparent",
+								"group h-8 gap-1.5 bg-transparent px-0 text-[15px] font-medium shadow-none hover:bg-transparent",
 								active
 									? "text-foreground"
-									: "text-foreground/75 hover:text-foreground",
+									: "text-foreground/90 hover:text-foreground",
 							)}
 						>
 							{group.title}
@@ -390,6 +391,15 @@ function MobileMenu({
 				</nav>
 
 				<div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4">
+					<Link
+						href={emergencyCta.href}
+						variant="current"
+						onClick={onClose}
+						className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs text-red-600 no-underline hover:border-foreground/30 hover:text-red-700"
+					>
+						<ShieldWarning className="size-3.5" aria-hidden="true" />
+						{emergencyCta.label}
+					</Link>
 					{utilityNav.map((item) => (
 						<Link
 							key={item.href}
@@ -481,7 +491,7 @@ export function SiteHeader() {
 						aria-label="ZenthCloud home"
 						className="flex shrink-0 items-center justify-self-start no-underline!"
 					>
-						<span className="font-display text-sm font-semibold uppercase tracking-[0.24em] text-foreground">
+						<span className="font-display text-[15px] font-bold uppercase tracking-[0.18em] text-foreground">
 							ZenthCloud
 						</span>
 					</Link>
@@ -511,6 +521,15 @@ export function SiteHeader() {
 
 					<div className="flex items-center gap-4 justify-self-end">
 						<nav aria-label="Utility" className="hidden items-center gap-2.5 md:flex">
+							<Link
+								href={emergencyCta.href}
+								variant="plain"
+								aria-label="Signaler une attaque en cours"
+								className="hidden items-center gap-1.5 text-sm font-medium text-red-600 no-underline! transition-colors hover:text-red-700 md:flex"
+							>
+								<ShieldWarning className="size-4" aria-hidden="true" />
+								{emergencyCta.label}
+							</Link>
 							<HeaderPill
 								href={cta.signIn.href}
 								label={cta.signIn.label}
@@ -530,7 +549,7 @@ export function SiteHeader() {
 							onClick={() => setMobileOpen((value) => !value)}
 							aria-expanded={mobileOpen}
 							aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
-							className="text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden"
+							className="h-9 w-9 text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden"
 						>
 							{mobileOpen ? (
 								<X className="size-5" aria-hidden="true" />

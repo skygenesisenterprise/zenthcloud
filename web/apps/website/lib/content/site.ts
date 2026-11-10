@@ -288,6 +288,12 @@ export const utilityNav: NavLink[] = [
 	{ href: '/resources/support', label: 'Support' },
 ]
 
+export const emergencyCta = {
+	label: "Under attack?",
+	href: "/resources/support",
+	external: false,
+} as const;
+
 export const cta = {
 	primary: { href: '/contact-sales', label: 'Get started' },
 	secondary: { href: '/contact-sales', label: 'Contact sales' },

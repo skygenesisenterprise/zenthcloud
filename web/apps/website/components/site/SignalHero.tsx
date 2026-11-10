@@ -15,29 +15,29 @@ export function SignalHero() {
 			<Container className="pt-1.5 sm:pt-2">
 				<div className="relative overflow-hidden rounded-2xl bg-brand text-brand-foreground">
 					<div
-						className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_95%_85%_at_50%_45%,transparent_38%,rgba(0,0,0,0.32))]"
+						className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_95%_85%_at_50%_45%,transparent_38%,rgba(0,0,0,0.16))]"
 						aria-hidden="true"
 					/>
 					<div className="signal-dots absolute inset-0 opacity-80" aria-hidden="true" />
 					<div
-						className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-[radial-gradient(ellipse_55%_100%_at_50%_100%,rgba(255,255,255,0.4),transparent_72%)]"
+						className="pointer-events-none absolute inset-x-0 bottom-0 h-72 bg-[radial-gradient(ellipse_75%_100%_at_50%_100%,rgba(255,255,255,0.55),transparent_72%)]"
 						aria-hidden="true"
 					/>
 
-					<div className="relative mx-auto flex min-h-[calc(75svh_-_5.25rem)] max-w-4xl flex-col items-center justify-center px-6 py-24 text-center sm:min-h-[calc(75svh_-_5.625rem)] lg:min-h-[calc(75svh_-_6rem)]">
-						<h1 className="max-w-4xl font-display text-4xl font-medium leading-[1.04] tracking-tight text-brand-foreground sm:text-5xl lg:text-6xl">
+					<div className="relative mx-auto flex min-h-[calc(85svh_-_5.25rem)] max-w-4xl flex-col items-center justify-center px-6 py-24 text-center sm:min-h-[calc(85svh_-_5.625rem)] lg:min-h-[calc(85svh_-_6rem)]">
+						<h1 className="max-w-5xl font-display text-5xl font-medium leading-[1.04] tracking-tight text-brand-foreground sm:text-6xl lg:text-7xl">
 							{homeHero.title}
 							<br className="hidden sm:block" />{" "}
 							<span className="text-balance">{homeHero.highlight}</span>
 						</h1>
 
-						<p className="mt-6 max-w-lg text-sm leading-relaxed text-brand-foreground/85">
+						<p className="mt-6 max-w-xl text-base leading-relaxed text-brand-foreground/95 sm:text-lg">
 							{homeHero.description}
 						</p>
 
 						<Link
 							href={homeHero.primaryCta.href}
-							className="mt-9 inline-flex h-11 items-center gap-2 rounded-full bg-brand-foreground px-6 text-sm font-medium text-ink no-underline shadow-sm transition-colors hover:bg-brand-foreground/90"
+							className="mt-9 inline-flex h-12 items-center gap-2 rounded-full bg-brand-foreground px-7 text-base font-medium text-ink no-underline shadow-sm transition-colors hover:bg-brand-foreground/90"
 						>
 							{homeHero.primaryCta.label}
 							<ArrowRight className="size-4" aria-hidden="true" />
