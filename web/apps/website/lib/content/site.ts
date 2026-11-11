@@ -23,7 +23,7 @@ export const links = {
 	github: 'https://github.com/skygenesisenterprise/zenthcloud',
 	trust: '/company/trust',
 	skyGenesis: 'https://skygenesisenterprise.com/',
-	l0ck7: 'https://l0ck7.com/',
+	l0ck7: 'https://lk7cloud.com/',
 } as const
 
 export type NavLink = {
@@ -116,7 +116,7 @@ const productColumns: NavColumn[] = [
 		title: 'Cloud Management',
 		href: '/products/cloud-management',
 		links: [
-			{ href: links.console, label: 'Cloud Console', description: 'Manage resources and projects', external: true },
+			{ href: '/products/console', label: 'Cloud Console', description: 'Manage resources and projects', external: true },
 			{ href: '/products/cloud-management', label: 'Monitoring', description: 'Resource state and alerts' },
 			{ href: '/products/developer-platform', label: 'Observability', description: 'Metrics, logs and traces' },
 			{ href: '/products/cloud-management', label: 'Resource Management', description: 'Inventory and lifecycle visibility' },

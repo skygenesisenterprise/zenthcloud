@@ -88,7 +88,7 @@ export function SiteFooter() {
 							rel="noreferrer"
 							className="text-muted-foreground no-underline! transition-colors hover:text-foreground hover:underline"
 						>
-							L0CK7 Cloud Inc.
+							LK7Cloud LLC.
 						</Link>
 					</p>
 					<ul className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
