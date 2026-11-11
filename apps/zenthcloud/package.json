@@ -104,6 +104,7 @@
 		"@xterm/xterm": "^5.5.0",
 		"@zenthcloud/server": "workspace:*",
 		"@zenthcloud/status": "workspace:*",
+		"@zenthcloud/react": "workspace:*",
 		"@zenthcloud/trpc-openapi": "npm:@dokploy/trpc-openapi@0.0.18",
 		"adm-zip": "^0.6.1",
 		"ai": "^7.0.156",

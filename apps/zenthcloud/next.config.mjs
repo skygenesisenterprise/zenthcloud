@@ -42,11 +42,19 @@ const nextConfig = {
 		// Resolve monorepo packages for transpilation
 		config.resolve.alias["@zenthcloud/status"] = path.resolve(
 			__dirname,
-			"../../packages/status/src"
+			"../../packages/status/src",
+		);
+		// The linked design system carries its own React copy. Pin React to this
+		// app's instance so components and pages share one runtime (hooks fail
+		// across two React copies).
+		config.resolve.alias.react = path.resolve(__dirname, "node_modules/react");
+		config.resolve.alias["react-dom"] = path.resolve(
+			__dirname,
+			"node_modules/react-dom",
 		);
 		config.resolve.alias["@zenthcloud/server"] = path.resolve(
 			__dirname,
-			"../../packages/server/src"
+			"../../packages/server/src",
 		);
 		return config;
 	},

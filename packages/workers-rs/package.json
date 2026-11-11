@@ -4,7 +4,7 @@
     "@changesets/cli": "^3.0.3",
     "@zenthcloud/workers-types": "workspace:*"
   },
-  "name": "workers-rs",
+  "name": "@zenthcloud/workers-rs",
   "version": "0.0.12",
   "author": "workers-rs@zenthcloud.com",
   "description": "Monorepo for Worker Rust Bindings",
