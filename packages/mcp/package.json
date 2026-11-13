@@ -53,6 +53,6 @@
     "vitest": "^4.1.12",
     "workers-oauth-provider-0-10-2": "npm:@zenthcloud/workers-oauth-provider@^0.10.2",
     "workers-oauth-provider-1-1-0": "npm:@zenthcloud/workers-oauth-provider@^1.1.0",
-    "wrangler": "^4.154.0"
+    "wrangler": "^4.158.0"
   }
 }
