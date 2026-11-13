@@ -258,7 +258,7 @@ export const createDiscordNotification = async (
 		const newDestination = await tx
 			.insert(notifications)
 			.values({
-				discordId: newDiscord.discordId,
+				zenthcloudId: newDiscord.zenthcloudId,
 				name: input.name,
 				appDeploy: input.appDeploy,
 				appBuildError: input.appBuildError,
@@ -320,7 +320,7 @@ export const updateDiscordNotification = async (
 				webhookUrl: input.webhookUrl,
 				decoration: input.decoration,
 			})
-			.where(eq(zenthcloud.discordId, input.discordId))
+			.where(eq(zenthcloud.zenthcloudId, input.zenthcloudId))
 			.returning()
 			.then((value) => value[0]);
 

@@ -7,7 +7,6 @@
 # Two families of products, addressed the same way — by name, on the command line:
 #
 #   editions  self | cloud | console   the platform stack (postgres, redis, client, api)
-#   bots      main | protect | logger | automation | player | guild-center
 #
 # So `make docker-up self` starts the self-hosted platform, `make docker-up main`
 # starts the Discord bot, and `make docker-dev player` runs the same product with
@@ -204,7 +203,7 @@ IMAGE_TAGS = -t $(IMAGE_NAME):$(IMAGE_VERSION) -t $(IMAGE_NAME):latest -t $(IMAG
 IMAGE_PLATFORM_FLAG = $(if $(ZENTHCLOUD_PLATFORMS),--platform $(ZENTHCLOUD_PLATFORMS),)
 
 .PHONY: help install deps dev build test test-bots check-bots typecheck lint \
-        docker-build docker-up docker-down docker-restart docker-logs docker-ps docker-config docker-dev \
+        docker-build docker-up docker-down docker-restart docker-logs docker-ps docker-config docker-dev docker-env \
         image-build image-pull image-push image-inspect image-tags \
         migrate backup restore doctor update clean \
         $(PRODUCTS) $(addprefix --,$(PRODUCTS))
@@ -286,6 +285,16 @@ install: ## Create .env from the template (if missing) and start the selected pr
 	@test -f .env || { cp .env.example .env; echo "==> .env created from .env.example — set POSTGRES_PASSWORD, REDIS_PASSWORD and BETTER_AUTH_SECRET, then re-run"; exit 1; }
 	@$(MAKE) docker-up
 
+# Compose interpolates the whole file before starting a service, so an empty
+# POSTGRES_PASSWORD, REDIS_PASSWORD or BETTER_AUTH_SECRET stops `docker-dev` on
+# a fresh clone. Generate them once into the untracked `.env` instead of asking
+# for three manual edits; the template itself keeps its empty values.
+docker-env:
+	@if [ ! -f .env ]; then \
+		node -e 'const fs=require("node:fs"),crypto=require("node:crypto");const keys=["POSTGRES_PASSWORD","REDIS_PASSWORD","BETTER_AUTH_SECRET"];let text=fs.readFileSync(".env.example","utf8");for(const key of keys){text=text.replace(new RegExp("^"+key+"=.*$$","m"),key+"="+crypto.randomBytes(32).toString("hex"))}fs.writeFileSync(".env",text)'; \
+		echo "==> .env created from .env.example with generated secrets"; \
+	fi
+
 docker-build: ## Build the image of the selected product (add: self | cloud | console | a bot)
 	@echo "==> building product=$(PRODUCT_WORD) image=$(IMAGE_NAME)"
 	$(COMPOSE_BUILD)
@@ -316,10 +325,10 @@ docker-logs: ## Follow the logs (optionally: make docker-logs SERVICE=api)
 docker-ps: ## Show the status of the selected product
 	$(COMPOSE_PS)
 
-docker-config: ## Validate and print the resolved Compose configuration
+docker-config: docker-env ## Validate and print the resolved Compose configuration
 	$(COMPOSE_CONFIG)
 
-docker-dev: ## Run the selected product with hot reload (add: self | cloud | console | a bot)
+docker-dev: docker-env ## Run the selected product with hot reload (add: self | cloud | console | a bot)
 	@echo "==> starting product=$(PRODUCT_WORD) image=$(IMAGE_NAME) (development mode)"
 	$(COMPOSE_DEV)
 	@printf '%s\n' '$(PRODUCT_WORD)' > $(PRODUCT_STATE)

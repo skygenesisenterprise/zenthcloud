@@ -24,6 +24,12 @@
 @source "../components";
 @source "../lib";
 
+/* Test fixtures contain symlinks (e.g. a zip-slip payload pointing at
+ * /etc/passwd). Tailwind's automatic source detection follows them, and
+ * Turbopack then rejects the out-of-root path while processing this file.
+ * Tests never produce utility classes, so keep them out of the scan. */
+@source not "../__test__";
+
 /* ---------------------------------------------------------------------------
  * Tailwind theme mapping
  * ------------------------------------------------------------------------- */

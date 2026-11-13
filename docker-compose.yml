@@ -35,9 +35,14 @@
 # unset means "build this service's production target", `dev` means "build the
 # development stage", which ships the sources and dependencies the dev servers need.
 #
-# In development the sources are synchronised into the running container
-# (`develop.watch`, no bind mounts), so the image keeps its node_modules and a
-# plain `docker compose up` never accidentally mounts host files over a build.
+# In development the client bind-mounts `apps/zenthcloud` and `packages` over the
+# sources baked into the dev image, exactly like web/docker-compose.yml does for
+# the website: `next dev` sees an edit the moment it is saved, with no `compose
+# watch` process required and no copy delay. The image keeps its own node_modules
+# and `.next/dev` (the Next 16 development output), so host dependencies never
+# shadow the Linux ones it installed.
+# The API keeps `develop.watch` sync (`tsx watch` reloads it in place). Only a
+# lockfile change rebuilds the image.
 #
 # Both modes publish the same two ports, so they are mutually exclusive: stop one
 # before starting the other with `make docker-down`.
@@ -73,8 +78,10 @@ x-api-environment: &api-environment
   # placeholder copied from .env.example stops the stack instead of shipping a
   # forgeable session cookie.
   BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required — see .env.example}
-  BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
-  BETTER_AUTH_TRUSTED_ORIGINS: ${BETTER_AUTH_TRUSTED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+  # Auth callbacks and cookies must use the origin the browser actually visits.
+  # localhost:3000 stays trusted for direct access.
+  BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://dash.zenthcloud.localhost}
+  BETTER_AUTH_TRUSTED_ORIGINS: ${BETTER_AUTH_TRUSTED_ORIGINS:-http://dash.zenthcloud.localhost,http://localhost:3000,http://127.0.0.1:3000}
   # --- Environment (self | cloud | console) --------------------------------
   # `self` is the self-hosted platform, `cloud` is Zenthcloud Cloud and
   # `console` is Zenthcloud Console (the cloud-side fleet manager). All three
@@ -188,6 +195,10 @@ services:
     container_name: zenthcloud-client
     restart: unless-stopped
     environment:
+      # The dashboard renders pages server-side: getServerSideProps queries the
+      # database and better-auth validates sessions, so the client needs the same
+      # backend configuration as the API. It still runs no migrations/worker.
+      <<: *api-environment
       NODE_ENV: ${NODE_ENV:-production}
       # Selects the frontend role in the shared entrypoint.
       ZENTHCLOUD_ROLE: client
@@ -199,36 +210,60 @@ services:
       API_INTERNAL_URL: http://api:4000
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000}
       NEXT_TELEMETRY_DISABLED: "1"
-      # Inotify works through the synchronised sources on Linux. On Docker Desktop
-      # (macOS/Windows) set DEV_POLLING=true to use polling instead.
-      CHOKIDAR_USEPOLLING: ${DEV_POLLING:-false}
-      WATCHPACK_POLLING: ${DEV_POLLING:-false}
+      # Polling, not inotify: file events raised on the host do not reach the
+      # container's watcher through the bind mount, so `next dev` kept serving its
+      # first compilation after every edit. Polling is inert in production.
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
     ports:
       # Host port is configurable; the container always listens on 3000.
       - "${ZENTHCLOUD_PORT:-3000}:3000"
+      # Also served on port 80 so the dashboard is reachable at
+      # http://dash.zenthcloud.localhost: browsers resolve every *.localhost
+      # name to loopback (RFC 6761), so no /etc/hosts entry is needed.
+      - "${ZENTHCLOUD_DASH_PORT:-80}:3000"
     depends_on:
       api:
-        condition: service_healthy
+        # The client is an independent Next.js process: in development it must
+        # not wait for the API healthcheck, which stays pending while Next
+        # compiles its first route. It proxies /api/* once the API is up.
+        condition: service_started
     healthcheck:
       # Role-aware probe baked into the image (entrypoint.sh healthcheck): the
       # client checks `/`, the API checks `/api/health`.
       test: ["CMD", "/usr/local/bin/entrypoint.sh", "healthcheck"]
       interval: 30s
-      timeout: 10s
+      # Development roles compile Next.js routes on first request, which can
+      # exceed 10s on a cold container and kept the client from ever starting.
+      timeout: 30s
       retries: 10
-      start_period: 90s
+      start_period: 180s
+    volumes:
+      # Development hot reload — the same mechanism as web/docker-compose.yml: the
+      # sources are bind-mounted from the host, so `next dev` sees a saved edit
+      # immediately. `develop.watch` + `sync` copied files on its own schedule and
+      # only while `--watch` was running, which is why the preview lagged or stayed
+      # stale. A bind mount needs no extra process: a plain `up` is enough.
+      #
+      # These paths only exist in the `dev` build target; the production target
+      # runs from `/app` and never reads `/usr/src/app`, so the mounts are inert
+      # there.
+      - ./apps/zenthcloud:/usr/src/app/apps/zenthcloud
+      - ./packages:/usr/src/app/packages
+      # Dependencies and dev build state stay owned by the image: the host
+      # node_modules holds native modules built for another platform. Anonymous
+      # volumes are initialised from the image, so pnpm's symlinks keep
+      # resolving in it.
+      - /usr/src/app/apps/zenthcloud/node_modules
+      # Next 16 separates the outputs: `next dev` writes to `.next/dev` while
+      # `next build` keeps `.next`. Mount exactly the development subtree, so the
+      # dev server owns its compilation cache and never picks up a stale host
+      # `.next` (or another platform's production build) through the bind mount.
+      - /usr/src/app/apps/zenthcloud/.next/dev
     develop:
-      # Development only (`make docker-dev`, which runs `up --watch`): the sources
-      # are synchronised into the container instead of being bind-mounted, so the
-      # image keeps its node_modules and a plain `up` never mounts host files over a
-      # production build.
+      # Code changes are live through the bind mount above; only a lockfile change
+      # needs a rebuild of the dev image.
       watch:
-        - action: sync+restart
-          path: ./apps/zenthcloud
-          target: /usr/src/app/apps/zenthcloud
-        - action: sync+restart
-          path: ./packages
-          target: /usr/src/app/packages
         - action: rebuild
           path: pnpm-lock.yaml
     networks:
@@ -240,8 +275,9 @@ services:
   # Node server: tRPC and OpenAPI routes, better-auth, WebSockets, BullMQ workers
   # and cron jobs. It owns both dependency connections and closes them on SIGTERM.
   # Same image as `client` (`ZENTHCLOUD_IMAGE`), role `api`: `node
-  # dist/server.mjs` in production, `tsx server/server.ts` in development, chosen
-  # by ZENTHCLOUD_BUILD_TARGET.
+  # dist/server.mjs` in production, `tsx watch server/server.ts` in development
+  # (reloads in place on source changes, `packages/server` included), chosen by
+  # ZENTHCLOUD_BUILD_TARGET.
   #
   # It is the only service with PostgreSQL and Redis credentials, and the only one
   # that applies migrations: once at startup (ZENTHCLOUD_RUN_MIGRATIONS=1,
@@ -285,18 +321,37 @@ services:
       # Role-aware probe baked into the image (entrypoint.sh healthcheck).
       test: ["CMD", "/usr/local/bin/entrypoint.sh", "healthcheck"]
       interval: 30s
-      timeout: 10s
+      # Development roles compile Next.js routes on first request, which can
+      # exceed 10s on a cold container and kept the client from ever starting.
+      timeout: 30s
       retries: 10
-      start_period: 90s
+      start_period: 180s
     develop:
-      # Development only (see the client service above).
+      # Development only (see the client service above). The API runs under
+      # `tsx watch` in development (`pnpm dev:api`), so synchronised changes are
+      # reloaded in place — including `packages/server`, which is imported from
+      # source. Only a lockfile change requires a rebuild. Host artifacts are
+      # excluded here for the same reason as the client: the container owns its
+      # node_modules and its build output.
       watch:
-        - action: sync+restart
+        - action: sync
           path: ./apps/zenthcloud
           target: /usr/src/app/apps/zenthcloud
-        - action: sync+restart
+          ignore:
+            - .next/
+            - node_modules/
+            - dist/
+            - .turbo/
+            - electron/release/
+            - electron/out/
+        - action: sync
           path: ./packages
           target: /usr/src/app/packages
+          ignore:
+            - "**/node_modules/"
+            - "**/.next/"
+            - "**/.turbo/"
+            - "**/coverage/"
         - action: rebuild
           path: pnpm-lock.yaml
     networks:

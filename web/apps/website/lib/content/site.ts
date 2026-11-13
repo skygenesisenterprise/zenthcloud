@@ -16,6 +16,7 @@ export const links = {
 		api: 'https://docs.zenthcloud.com/api',
 		tutorials: 'https://docs.zenthcloud.com/tutorials',
 		support: 'https://docs.zenthcloud.com/support',
+		differences: 'https://docs.zenthcloud.com/docs/core/differences',
 	},
 	status: 'https://status.zenthcloud.com',
 	console: 'https://dash.zenthcloud.com',

@@ -7,6 +7,39 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
+// Turbopack (the default bundler for `next dev`) and webpack (used by
+// `next build --webpack`) need the same module resolution: the monorepo packages
+// are imported from source, and the linked design system carries its own React
+// copy that must be pinned to this app's instance.
+// Turbopack resolves aliases relative to the project root and rejects absolute
+// paths (it turns `/usr/src/app/...` into `./usr/src/app/...`), so the dev
+// bundler gets relative targets.
+// `react` is a peer dependency of the design system, but pnpm auto-installs
+// peers at the highest matching version (19.3.1) while this app pins 19.2.7.
+// Without the alias Turbopack bundles both copies, and hooks called through the
+// design system's React hit a null dispatcher (`Cannot read properties of null
+// (reading 'useId')`).
+const turbopackAliases = {
+	"@zenthcloud/status": "../../packages/status/src",
+	"@zenthcloud/server": "../../packages/server/src",
+	react: "./node_modules/react",
+	"react-dom": "./node_modules/react-dom",
+};
+
+// Webpack (production build) takes absolute paths and pins React explicitly.
+const webpackAliases = {
+	...turbopackAliases,
+	"@zenthcloud/status": path.resolve(__dirname, "../../packages/status/src"),
+	"@zenthcloud/server": path.resolve(__dirname, "../../packages/server/src"),
+	react: path.resolve(__dirname, "node_modules/react"),
+	"react-dom": path.resolve(__dirname, "node_modules/react-dom"),
+};
+
+// Next sets TURBOPACK when the dev server runs on Turbopack. A `webpack` key in
+// the config is refused by that bundler, so it is only exported for the webpack
+// build (`next build --webpack`, the production image).
+const useTurbopack = Boolean(process.env.TURBOPACK);
+
 /** @type {import("next").NextConfig} */
 const nextConfig = {
 	reactStrictMode: true,
@@ -38,26 +71,17 @@ const nextConfig = {
 			fallback: [],
 		};
 	},
-	webpack: (config) => {
-		// Resolve monorepo packages for transpilation
-		config.resolve.alias["@zenthcloud/status"] = path.resolve(
-			__dirname,
-			"../../packages/status/src",
-		);
-		// The linked design system carries its own React copy. Pin React to this
-		// app's instance so components and pages share one runtime (hooks fail
-		// across two React copies).
-		config.resolve.alias.react = path.resolve(__dirname, "node_modules/react");
-		config.resolve.alias["react-dom"] = path.resolve(
-			__dirname,
-			"node_modules/react-dom",
-		);
-		config.resolve.alias["@zenthcloud/server"] = path.resolve(
-			__dirname,
-			"../../packages/server/src",
-		);
-		return config;
+	turbopack: {
+		resolveAlias: turbopackAliases,
 	},
+	...(useTurbopack
+		? {}
+		: {
+				webpack: (config) => {
+					Object.assign(config.resolve.alias, webpackAliases);
+					return config;
+				},
+			}),
 	async headers() {
 		return [
 			{

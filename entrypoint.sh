@@ -57,7 +57,10 @@ if [ "$ROLE" = "healthcheck" ]; then
 	probe_role="${ZENTHCLOUD_ROLE:-api}"
 	case "$probe_role" in
 	client)
-		probe="http://127.0.0.1:${PORT:-3000}/"
+		# Probe the login page directly: `/` is a deliberate 307 to `/login`, so
+		# probing it produced a `/ 307` + `/login 200` pair in the logs on every
+		# healthcheck interval.
+		probe="http://127.0.0.1:${PORT:-3000}/login"
 		exec node -e "fetch(process.argv[1]).then((r) => process.exit(r.status < 500 ? 0 : 1)).catch(() => process.exit(1))" "$probe"
 		;;
 	status)
@@ -104,6 +107,9 @@ if [ "$ROLE" = "client" ]; then
 	if [ "$MODE" = "development" ]; then
 		log "role: client (development, port ${CLIENT_CONTAINER_PORT})"
 		[ -d ./apps/zenthcloud ] && cd apps/zenthcloud
+		# Turbopack is the dev bundler (Next 16 default): a route compiles in about a
+		# second instead of the ~7s webpack needs for the same page. The webpack
+		# configuration is only exported for `next build --webpack`.
 		exec pnpm exec next dev -p "${CLIENT_CONTAINER_PORT}" -H "${CLIENT_BIND_HOST}"
 	fi
 	log "role: client (production, port ${CLIENT_CONTAINER_PORT}, dir: $(pwd))"
@@ -123,7 +129,10 @@ if [ "$MODE" = "development" ]; then
 	RUNNER=(pnpm exec tsx -r dotenv/config)
 	SCRIPT_DIR="."
 	SCRIPT_EXT="ts"
-	SERVER_CMD=(pnpm dev)
+	# `tsx watch` reloads the API in place when a source file changes, including
+	# `packages/server`, which is imported from source in development. The Compose
+	# `sync` action therefore does not need to restart the container.
+	SERVER_CMD=(pnpm dev:api)
 else
 	log "role: ${ROLE} (production, app dir: $(pwd))"
 	RUNNER=(node -r dotenv/config)

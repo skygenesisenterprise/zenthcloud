@@ -81,7 +81,7 @@ import {
 	myQueue,
 } from "@/server/queues/queueSetup";
 import { cancelDeployment, deploy } from "@/server/utils/deploy";
-import { generatePassword } from "@/templates/utils";
+import { generatePassword } from "@zenthcloud/server/templates";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { audit } from "../utils/audit";
 

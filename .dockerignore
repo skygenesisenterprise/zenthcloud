@@ -2,7 +2,14 @@
 node_modules
 **/node_modules
 **/.next
-**/dist
+# Build artifacts are not needed by the runtime image. The design-system dist is
+# the exception: `packages/node` sits outside the pnpm workspace, so
+# `@zenthcloud/react` is consumed as a prebuilt package and must ship with the
+# image (the app imports both its JS and its styles.css).
+apps/zenthcloud/dist
+packages/server/dist
+packages/speedtest/dist
+packages/vinext/packages/types/next/upstream/dist
 **/*.tsbuildinfo
 .turbo
 coverage

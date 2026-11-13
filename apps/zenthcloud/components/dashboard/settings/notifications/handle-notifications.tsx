@@ -628,7 +628,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				name: data.name,
 				dockerCleanup: dockerCleanup,
 				notificationId: notificationId || "",
-				discordId: notification?.discordId || "",
+				zenthcloudId: notification?.zenthcloudId || "",
 				serverThreshold: serverThreshold,
 			});
 		} else if (data.type === "email") {
