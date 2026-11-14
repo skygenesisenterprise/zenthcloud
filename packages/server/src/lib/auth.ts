@@ -362,27 +362,10 @@ const createBetterAuth = () =>
 							return;
 						}
 
-						if (IS_CLOUD || !isAdminPresent) {
-							await db.transaction(async (tx) => {
-								const organization = await tx
-									.insert(schema.organization)
-									.values({
-										name: "My Organization",
-										ownerId: user.id,
-										createdAt: new Date(),
-									})
-									.returning()
-									.then((res) => res[0]);
-
-								await tx.insert(schema.member).values({
-									userId: user.id,
-									organizationId: organization?.id || "",
-									role: "owner",
-									createdAt: new Date(),
-									isDefault: true, // Mark first organization as default
-								});
-							});
-						} else if (isSSORequest) {
+						// No organization is created here: a new account names its first
+						// workspace in `/create-account`, which creates the organization and
+						// its owner membership transactionally.
+						if (isSSORequest) {
 							const providerId = context?.params?.providerId;
 							if (!providerId) {
 								throw new APIError("BAD_REQUEST", {
@@ -397,6 +380,10 @@ const createBetterAuth = () =>
 								throw new APIError("BAD_REQUEST", {
 									message: "Provider not found",
 								});
+							}
+							if (!provider.organizationId) {
+								// A provider without a workspace leaves the account to onboarding.
+								return;
 							}
 							const defaultRole = provider.organizationId
 								? await resolveOrganizationDefaultRole(provider.organizationId)

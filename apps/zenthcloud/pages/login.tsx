@@ -24,6 +24,7 @@ import {
 	isAdminPresent,
 } from "@zenthcloud/server";
 import { validateRequest } from "@zenthcloud/server/lib/auth";
+import { readOnboardingStatus } from "@zenthcloud/server/services/onboarding";
 import type { GetServerSidePropsContext } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -54,14 +55,6 @@ const LOGIN_PATH = "/login";
 const TWO_FACTOR_PATH = "/two-factor";
 /** Where a signed-in account that owns no workspace finishes onboarding. */
 const CREATE_ACCOUNT_PATH = "/create-account";
-
-/**
- * Workspace an authenticated user belongs to. The organization is resolved on
- * the server from the session, never from client state or a query parameter.
- */
-function workspaceDestination(organizationId: string | null | undefined) {
-	return organizationId ? `/${organizationId}/home` : "/dashboard/home";
-}
 
 /**
  * Opens the workspace of the account that just signed in. The active
@@ -688,10 +681,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 		try {
 			const { user, session } = await validateRequest(context.req);
 			if (user) {
+				// The workspace stored on the session may have been deleted since:
+				// only persisted memberships decide where the account belongs.
+				const status = await readOnboardingStatus(
+					user.id,
+					session?.activeOrganizationId,
+				);
 				return {
 					redirect: {
 						permanent: false,
-						destination: workspaceDestination(session?.activeOrganizationId),
+						destination: status.destination ?? CREATE_ACCOUNT_PATH,
 					},
 				};
 			}
@@ -720,10 +719,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 	const { user, session } = await validateRequest(context.req);
 
 	if (user) {
+		const status = await readOnboardingStatus(
+			user.id,
+			session?.activeOrganizationId,
+		);
 		return {
 			redirect: {
 				permanent: false,
-				destination: workspaceDestination(session?.activeOrganizationId),
+				destination: status.destination ?? CREATE_ACCOUNT_PATH,
 			},
 		};
 	}

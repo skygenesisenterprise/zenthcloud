@@ -2,8 +2,11 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { GlobeIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { Banner, Button, Field, Input, Text } from "@zenthcloud/react";
 import { validateRequest } from "@zenthcloud/server/lib/auth";
+import { readOnboardingStatus } from "@zenthcloud/server/services/onboarding";
+import { workspacePath } from "@zenthcloud/server/services/onboarding-paths";
 import type { GetServerSidePropsContext } from "next";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -22,7 +25,6 @@ const OrganizationSchema = z.object({
 type OrganizationForm = z.infer<typeof OrganizationSchema>;
 
 const LOGIN_PATH = "/login";
-const WORKSPACE_PATH = (organizationId: string) => `/${organizationId}/home`;
 
 interface Props {
 	/** The account the workspace will belong to. */
@@ -30,10 +32,11 @@ interface Props {
 }
 
 export default function CreateAccountPage({ email }: Props) {
+	const router = useRouter();
 	const [error, setError] = useState<string | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isSigningOut, setIsSigningOut] = useState(false);
-	const createOrganization = api.organization.create.useMutation();
+	const createOrganization = api.onboarding.createOrganization.useMutation();
 	const form = useForm<OrganizationForm>({
 		resolver: zodResolver(OrganizationSchema),
 		defaultValues: { name: "" },
@@ -43,29 +46,31 @@ export default function CreateAccountPage({ email }: Props) {
 		setIsSubmitting(true);
 		setError(null);
 		try {
-			// Creating the organization also enrolls this account as its owner;
-			// the plan limit and the audit entry are handled by the API.
-			const organization = await createOrganization.mutateAsync({
+			// Creation is idempotent and transactional: a duplicate submission, or a
+			// retry after a failed activation, returns the same persisted workspace
+			// instead of creating a second one.
+			const { organizationId } = await createOrganization.mutateAsync({
 				name: values.name.trim(),
 			});
 
-			// Point the session at the new workspace so the dashboard opens on it.
-			// The organization already exists, so a failure here must not strand
-			// the user on the onboarding form: the redirect below still runs.
+			// Point the session at the new workspace. On failure the workspace still
+			// exists, so submitting again only retries this activation.
 			const { error: activeError } = await authClient.organization.setActive({
-				organizationId: organization.id,
+				organizationId,
 			});
 			if (activeError) {
-				toast.error(
+				const message =
 					activeError.message ??
-						"The workspace could not be opened automatically.",
-				);
+					"The workspace could not be opened automatically.";
+				toast.error(message);
+				setError(`${message} Try again to finish opening it.`);
+				return;
 			}
 
-			toast.success(`${organization.name} is ready`);
-			// Document navigation: the workspace route owns the dashboard, so the
-			// next request carries the updated session instead of local state.
-			window.location.assign(WORKSPACE_PATH(organization.id));
+			toast.success("Workspace ready");
+			// Replace the onboarding history entry so Back does not return to the
+			// form once the workspace exists.
+			await router.replace(workspacePath(organizationId));
 		} catch (caught) {
 			const message =
 				caught instanceof Error
@@ -226,14 +231,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 		};
 	}
 
-	// An account that already opened a workspace has nothing left to create here.
-	const activeOrganizationId = session?.session?.activeOrganizationId;
-	if (activeOrganizationId) {
+	// An account that already owns a workspace has nothing left to create here.
+	// The destination is resolved from persisted memberships, not from the URL.
+	const status = await readOnboardingStatus(
+		user.id,
+		session?.session?.activeOrganizationId,
+	);
+	if (status.destination) {
 		return {
-			redirect: {
-				permanent: false,
-				destination: WORKSPACE_PATH(activeOrganizationId),
-			},
+			redirect: { permanent: false, destination: status.destination },
 		};
 	}
 

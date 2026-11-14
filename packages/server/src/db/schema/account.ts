@@ -9,6 +9,7 @@ import {
 	uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
+import { generateOrganizationId } from "../ids";
 import { network } from "./network";
 import { projects } from "./project";
 import { server } from "./server";
@@ -61,7 +62,9 @@ export const verification = pgTable("verification", {
 export const organization = pgTable("organization", {
 	id: text("id")
 		.primaryKey()
-		.$defaultFn(() => nanoid()),
+		// 32 lowercase hex characters, so workspace URLs look like
+		// `/dbc7a507e8a140194d193445ecfdb7cf/home`.
+		.$defaultFn(() => generateOrganizationId()),
 	name: text("name").notNull(),
 	slug: text("slug").unique(),
 	logo: text("logo"),
@@ -119,63 +122,75 @@ export const organizationRelations = relations(
 	}),
 );
 
-export const member = pgTable("member", {
-	id: text("id")
-		.primaryKey()
-		.$defaultFn(() => nanoid()),
-	organizationId: text("organization_id")
-		.notNull()
-		.references(() => organization.id, { onDelete: "cascade" }),
-	userId: text("user_id")
-		.notNull()
-		.references(() => user.id, { onDelete: "cascade" }),
-	role: text("role")
-		.notNull()
-		.$type<"owner" | "member" | "admin" | (string & {})>(),
-	createdAt: timestamp("created_at").notNull(),
-	teamId: text("team_id"),
-	isDefault: boolean("is_default").notNull().default(false),
-	// Permissions
-	canCreateProjects: boolean("canCreateProjects").notNull().default(false),
-	canAccessToSSHKeys: boolean("canAccessToSSHKeys").notNull().default(false),
-	canCreateServices: boolean("canCreateServices").notNull().default(false),
-	canDeleteProjects: boolean("canDeleteProjects").notNull().default(false),
-	canDeleteServices: boolean("canDeleteServices").notNull().default(false),
-	canAccessToDocker: boolean("canAccessToDocker").notNull().default(false),
-	canAccessToAPI: boolean("canAccessToAPI").notNull().default(false),
-	canAccessToGitProviders: boolean("canAccessToGitProviders")
-		.notNull()
-		.default(false),
-	canAccessToTraefikFiles: boolean("canAccessToTraefikFiles")
-		.notNull()
-		.default(false),
-	canDeleteEnvironments: boolean("canDeleteEnvironments")
-		.notNull()
-		.default(false),
-	canCreateEnvironments: boolean("canCreateEnvironments")
-		.notNull()
-		.default(false),
-	accessedProjects: text("accesedProjects")
-		.array()
-		.notNull()
-		.default(sql`ARRAY[]::text[]`),
-	accessedEnvironments: text("accessedEnvironments")
-		.array()
-		.notNull()
-		.default(sql`ARRAY[]::text[]`),
-	accessedServices: text("accesedServices")
-		.array()
-		.notNull()
-		.default(sql`ARRAY[]::text[]`),
-	accessedGitProviders: text("accessedGitProviders")
-		.array()
-		.notNull()
-		.default(sql`ARRAY[]::text[]`),
-	accessedServers: text("accessedServers")
-		.array()
-		.notNull()
-		.default(sql`ARRAY[]::text[]`),
-});
+export const member = pgTable(
+	"member",
+	{
+		id: text("id")
+			.primaryKey()
+			.$defaultFn(() => nanoid()),
+		organizationId: text("organization_id")
+			.notNull()
+			.references(() => organization.id, { onDelete: "cascade" }),
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		role: text("role")
+			.notNull()
+			.$type<"owner" | "member" | "admin" | (string & {})>(),
+		createdAt: timestamp("created_at").notNull(),
+		teamId: text("team_id"),
+		isDefault: boolean("is_default").notNull().default(false),
+		// Permissions
+		canCreateProjects: boolean("canCreateProjects").notNull().default(false),
+		canAccessToSSHKeys: boolean("canAccessToSSHKeys").notNull().default(false),
+		canCreateServices: boolean("canCreateServices").notNull().default(false),
+		canDeleteProjects: boolean("canDeleteProjects").notNull().default(false),
+		canDeleteServices: boolean("canDeleteServices").notNull().default(false),
+		canAccessToDocker: boolean("canAccessToDocker").notNull().default(false),
+		canAccessToAPI: boolean("canAccessToAPI").notNull().default(false),
+		canAccessToGitProviders: boolean("canAccessToGitProviders")
+			.notNull()
+			.default(false),
+		canAccessToTraefikFiles: boolean("canAccessToTraefikFiles")
+			.notNull()
+			.default(false),
+		canDeleteEnvironments: boolean("canDeleteEnvironments")
+			.notNull()
+			.default(false),
+		canCreateEnvironments: boolean("canCreateEnvironments")
+			.notNull()
+			.default(false),
+		accessedProjects: text("accesedProjects")
+			.array()
+			.notNull()
+			.default(sql`ARRAY[]::text[]`),
+		accessedEnvironments: text("accessedEnvironments")
+			.array()
+			.notNull()
+			.default(sql`ARRAY[]::text[]`),
+		accessedServices: text("accesedServices")
+			.array()
+			.notNull()
+			.default(sql`ARRAY[]::text[]`),
+		accessedGitProviders: text("accessedGitProviders")
+			.array()
+			.notNull()
+			.default(sql`ARRAY[]::text[]`),
+		accessedServers: text("accessedServers")
+			.array()
+			.notNull()
+			.default(sql`ARRAY[]::text[]`),
+	},
+	(table) => [
+		// One membership per account and workspace: onboarding is idempotent, and
+		// PostgreSQL enforces it even when two submissions race.
+		uniqueIndex("member_organizationId_userId_unique").on(
+			table.organizationId,
+			table.userId,
+		),
+		index("member_userId_idx").on(table.userId),
+	],
+);
 
 export const memberRelations = relations(member, ({ one }) => ({
 	organization: one(organization, {
@@ -281,9 +296,7 @@ export const securityKeyLoginRequest = pgTable(
 		expiresAt: timestamp("expires_at").notNull(),
 		approvedAt: timestamp("approved_at"),
 	},
-	(table) => [
-		index("security_key_login_request_user_id_idx").on(table.userId),
-	],
+	(table) => [index("security_key_login_request_user_id_idx").on(table.userId)],
 );
 
 /**

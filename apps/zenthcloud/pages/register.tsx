@@ -224,6 +224,30 @@ export default function RegisterPage({ IS_CLOUD }: Props) {
 				pushToDataLayer("sign_up", { method: "email" });
 			}
 
+			// Cloud installations disable `autoSignIn` on sign-up, so the account
+			// exists without a session yet. Open it explicitly before onboarding:
+			// without one, /create-account would send the new account to /login.
+			const { data: signedIn } = await authClient.getSession();
+			if (!signedIn?.session) {
+				const { error: signInError } = await authClient.signIn.email({
+					email: values.email,
+					password: values.password,
+				});
+				if (signInError) {
+					// Email verification blocks the session on production Cloud: the
+					// account is created, the workspace step waits for the sign-in.
+					const message =
+						signInError.code === "EMAIL_NOT_VERIFIED"
+							? "Your account was created. Verify your email address, then sign in to finish setting up your workspace."
+							: signInError.message ||
+								"Your account was created. Sign in to continue.";
+					toast.info(message);
+					setError(message);
+					window.location.assign(LOGIN_PATH);
+					return;
+				}
+			}
+
 			toast.success("Account created successfully");
 			// Document navigation so the next request carries the fresh session.
 			window.location.assign(CREATE_ACCOUNT_PATH);
