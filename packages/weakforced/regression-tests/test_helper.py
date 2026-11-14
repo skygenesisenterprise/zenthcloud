@@ -1,0 +1,843 @@
+from datetime import datetime
+from contextlib import contextmanager
+from functools import wraps
+import os
+import requests
+import socket
+import subprocess
+import time
+from urllib.parse import urlparse
+from urllib.parse import urljoin
+import unittest
+import json
+from subprocess import call, check_output
+
+DAEMON = os.environ.get('DAEMON', 'authoritative')
+
+
+def wait_for_port(port, timeout_secs=10, host='127.0.0.1'):
+    for _ in range(timeout_secs * 2):
+        try:
+            with socket.create_connection((host, port), timeout=1):
+                return True
+        except OSError:
+            time.sleep(0.5)
+    return False
+
+
+def terminate_process(proc):
+    if proc.poll() is None:
+        proc.terminate()
+    proc.wait()
+
+
+def start_process(cmd, **popen_kwargs):
+    return subprocess.Popen(cmd, **popen_kwargs)
+
+
+@contextmanager
+def running_process(cmd, **popen_kwargs):
+    proc = start_process(cmd, **popen_kwargs)
+    try:
+        yield proc
+    finally:
+        terminate_process(proc)
+
+
+@contextmanager
+def running_process_on_port(cmd, port, startup_timeout_secs=10, **popen_kwargs):
+    with running_process(cmd, **popen_kwargs) as proc:
+        if not wait_for_port(port, startup_timeout_secs):
+            raise RuntimeError("process did not start on port %d" % port)
+        yield proc
+
+
+def with_prefix_config_server(test_func):
+    @wraps(test_func)
+    def wrapper(self, *args, **kwargs):
+        with self.runningPrefixConfig():
+            return test_func(self, *args, **kwargs)
+    return wrapper
+
+
+class ApiTestCase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        """On inherited classes, run our `setUp` method"""
+        if cls is not ApiTestCase and cls.setUp is not ApiTestCase.setUp:
+            orig_setUp = cls.setUp
+
+            def setUpOverride(self, *args, **kwargs):
+                ApiTestCase.setUp(self)
+                return orig_setUp(self, *args, **kwargs)
+
+            cls.setUp = setUpOverride
+
+    def setUp(self):
+        # TODO: config
+        self.server_address = '127.0.0.1'
+        self.server1_port = int(os.environ.get('WEBPORT', '8184'))
+        self.server1_url = 'http://%s:%s/' % (self.server_address, self.server1_port)
+        self.server2_port = 8085
+        self.server2_url = 'http://%s:%s/' % (self.server_address, self.server2_port)
+        self.server3_port = 8086
+        self.server3_url = 'http://%s:%s/' % (self.server_address, self.server3_port)
+        self.server4_port = 8087
+        self.server4_url = 'http://%s:%s/' % (self.server_address, self.server4_port)
+        self.server5_port = 8088
+        self.server5_url = 'http://%s:%s/' % (self.server_address, self.server5_port)
+        self.server6_port = 8089
+        self.server6_url = 'http://%s:%s/' % (self.server_address, self.server6_port)
+        self.ta_server_port = 8090
+        self.ta_server_url = 'http://%s:%s/' % (self.server_address, self.ta_server_port)
+
+        self.docker_image_server_url = 'http://%s:%s/' % ("wforce_image", 18084)
+
+        self.report_server_port = 5000
+        self.report_server_url = 'http://%s:%s' % (self.server_address, self.report_server_port)
+
+        self.session = requests.Session()
+        self.session.auth = ('foo', os.environ.get('APIKEY', 'super'))
+        self.session.verify = 'certs/root.pem'
+        # self.session.keep_alive = False
+        #        self.session.headers = {'X-API-Key': os.environ.get('APIKEY', 'changeme-key'), 'Origin': 'http://%s:%s' % (self.server_address, self.server_port)}
+
+    def writeFileToConsole(self, file):
+        fp = open(file)
+        cmds_nl = fp.read()
+        # Lua doesn't need newlines and the console gets confused by them e.g.
+        # function definitions
+        cmds = cmds_nl.replace("\n", " ")
+        return call(["../wforce/wforce", "-c", "./wforce1.conf", "-R", "../wforce/regexes.yaml", "-e", cmds])
+
+    def writeCmdToConsole(self, cmd):
+        return check_output(["../wforce/wforce", "-c", "./wforce1.conf", "-R", "../wforce/regexes.yaml", "-e", cmd])
+
+    def writeCmdToConsole3(self, cmd):
+        return check_output(["../wforce/wforce", "-c", "./wforce3.conf", "-R", "../wforce/regexes.yaml", "-e", cmd])
+
+    def writeFileToConsoleReplica(self, file):
+        fp = open(file)
+        cmds_nl = fp.read()
+        # Lua doesn't need newlines and the console gets confused by them e.g.
+        # function definitions
+        cmds = cmds_nl.replace("\n", " ")
+        return call(["../wforce/wforce", "-c", "./wforce2.conf", "-R", "../wforce/regexes.yaml", "-e", cmds])
+
+    def writeCmdToConsoleReplica(self, cmd):
+        return check_output(["../wforce/wforce", "-c", "./wforce2.conf", "-R", "../wforce/regexes.yaml", "-e", cmd])
+
+    def allowFunc(self, login, remote, pwhash):
+        return self.allowFuncAttrsInternal(login, remote, pwhash, {}, "", "", False)
+
+    def allowFuncAttrs(self, login, remote, pwhash, attrs):
+        return self.allowFuncAttrsInternal(login, remote, pwhash, attrs, "", "", False)
+
+    def allowFuncReplica(self, login, remote, pwhash):
+        return self.allowFuncAttrsInternal(login, remote, pwhash, {}, "", "", True)
+
+    def allowFuncAttrsReplica(self, login, remote, pwhash, attrs):
+        return self.allowFuncAttrsInternal(login, remote, pwhash, attrs, "", "", True)
+
+    def allowFuncReplica2(self, login, remote, pwhash):
+        return self.allowFuncAttrsInternal(login, remote, pwhash, {}, "", "", True, True)
+
+    def allowFuncAttrsReplica2(self, login, remote, pwhash, attrs):
+        return self.allowFuncAttrsInternal(login, remote, pwhash, attrs, "", "", True, True)
+
+    def allowFuncPrefixConfig(self, login, remote, pwhash):
+        return self.allowFuncPrefixConfigAttrs(login, remote, pwhash, {})
+
+    def allowFuncPrefixConfigAttrs(self, login, remote, pwhash, attrs):
+        payload = dict()
+        payload['login'] = login
+        payload['remote'] = remote
+        payload['pwhash'] = pwhash
+        payload['attrs'] = attrs
+        payload['device_id'] = ""
+        payload['protocol'] = ""
+        payload['tls'] = False
+        return self.session.post(
+            self.url6("/?command=allow"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def runningPrefixConfig(self):
+        cmd6 = ("../wforce/wforce -D -C ./wforce6.conf -R ../wforce/regexes.yaml").split()
+        return running_process_on_port(cmd6, self.server6_port, close_fds=True)
+
+    def allowFuncDeviceProtocol(self, login, remote, pwhash, device_id, protocol):
+        return self.allowFuncAttrsInternal(login, remote, pwhash, {}, device_id, protocol, False)
+
+    def allowFuncAttrsInternal(self, login, remote, pwhash, attrs, device_id, protocol, replica, replica2=False):
+        payload = dict()
+        payload['login'] = login
+        payload['remote'] = remote
+        payload['pwhash'] = pwhash
+        payload['attrs'] = attrs
+        payload['device_id'] = device_id
+        payload['protocol'] = protocol
+        payload['tls'] = False
+        if not replica:
+            return self.session.post(
+                self.url("/?command=allow"),
+                data=json.dumps(payload),
+                headers={'Content-Type': 'application/json'})
+        elif replica and not replica2:
+            return self.session.post(
+                self.url2("/?command=allow"),
+                data=json.dumps(payload),
+                headers={'Content-Type': 'application/json'})
+        else:
+            return self.session.post(
+                self.url4("/?command=allow"),
+                data=json.dumps(payload),
+                headers={'Content-Type': 'application/json'})
+
+    def reportFunc(self, login, remote, pwhash, success):
+        return self.reportFuncAttrsInternal(login, remote, pwhash, success, {}, "", "", False)
+
+    def reportFuncReplica(self, login, remote, pwhash, success):
+        return self.reportFuncAttrsInternal(login, remote, pwhash, success, {}, "", "", True)
+
+    def reportFuncAttrs(self, login, remote, pwhash, success, attrs):
+        return self.reportFuncAttrsInternal(login, remote, pwhash, success, attrs, "", "", False)
+
+    def reportFuncDeviceProtocol(self, login, remote, pwhash, success, device_id, protocol):
+        return self.reportFuncAttrsInternal(login, remote, pwhash, success, {}, device_id, protocol, False)
+
+    def reportFuncAttrsReplica(self, login, remote, pwhash, success, attrs):
+        return self.reportFuncAttrsInternal(login, remote, pwhash, success, attrs, "", "", True)
+
+    def reportFuncAttrsInternal(self, login, remote, pwhash, success, attrs, device_id, protocol, replica):
+        payload = dict()
+        payload['login'] = login
+        payload['remote'] = remote
+        payload['pwhash'] = pwhash
+        payload['success'] = success
+        payload['attrs'] = attrs
+        payload['device_id'] = device_id
+        payload['protocol'] = protocol
+        if not success:
+            payload['fail_type'] = "credentials"
+        if not replica:
+            return self.session.post(
+                self.url("/?command=report"),
+                data=json.dumps(payload),
+                headers={'Content-Type': 'application/json'})
+        else:
+            return self.session.post(
+                self.url2("/?command=report"),
+                data=json.dumps(payload),
+                headers={'Content-Type': 'application/json'})
+
+    def taReportFuncAttrs(self, login, remote, pwhash, success, attrs):
+        payload = dict()
+        payload['login'] = login
+        payload['remote'] = remote
+        payload['pwhash'] = pwhash
+        payload['success'] = success
+        payload['attrs'] = attrs
+        return self.session.post(
+            self.ta_url("/?command=report"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def dockerImageReportFunc(self, login, remote, pwhash, success):
+        payload = dict()
+        payload['login'] = login
+        payload['remote'] = remote
+        payload['pwhash'] = pwhash
+        payload['success'] = success
+        return self.session.post(
+            self.docker_image_url("/?command=report"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addSibling(self, host, port, protocol, key):
+        payload = dict()
+        payload['sibling_host'] = host
+        payload['sibling_port'] = port
+        payload['sibling_proto'] = protocol
+        payload['encryption_key'] = key
+        return self.session.post(
+            self.url("/?command=addSibling"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def removeSibling(self, host, port):
+        payload = dict()
+        payload['sibling_host'] = host
+        payload['sibling_port'] = port
+        return self.session.post(
+            self.url("/?command=removeSibling"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def setSiblings(self, payload):
+        return self.session.post(
+            self.url("/?command=setSiblings"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def resetFunc(self, login, ip):
+        return self.resetFuncInternal(login, ip, None, False)
+
+    def resetJA3Func(self, ja3, ip):
+        return self.resetFuncInternal(None, ip, ja3,False)
+
+    def resetFuncReplica(self, login, ip):
+        return self.resetFuncInternal(login, ip, None,True)
+
+    def resetFuncInternal(self, login, ip, ja3, replica):
+        payload = dict()
+        if login is not None and login != "":
+            payload['login'] = login
+        if ja3 is not None and ja3 != "":
+            payload['ja3'] = ja3
+        if ip is not None and ip != "":
+            payload['ip'] = ip
+        if not replica:
+            return self.session.post(
+                self.url("/?command=reset"),
+                data=json.dumps(payload),
+                headers={'Content-Type': 'application/json'})
+        else:
+            return self.session.post(
+                self.url2("/?command=reset"),
+                data=json.dumps(payload),
+                headers={'Content-Type': 'application/json'})
+
+    def incLogins(self, login):
+        attrs = dict()
+        attrs['login'] = login
+        payload = dict()
+        payload['attrs'] = attrs
+        return self.session.post(
+            self.url("/?command=incLogins"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def countLogins(self, login):
+        return self.countLoginsInternal(login, False)
+
+    def countLoginsReplica(self, login):
+        return self.countLoginsInternal(login, True)
+
+    def countLoginsReplica2(self, login):
+        return self.countLoginsInternal(login, True, True)
+
+    def countLoginsInternal(self, login, replica, replica2=False):
+        attrs = dict()
+        attrs['login'] = login
+        payload = dict()
+        payload['attrs'] = attrs
+        if not replica:
+            return self.session.post(
+                self.url("/?command=countLogins"),
+                data=json.dumps(payload),
+                headers={'Content-Type': 'application/json'})
+        elif replica and not replica2:
+            return self.session.post(
+                self.url2("/?command=countLogins"),
+                data=json.dumps(payload),
+                headers={'Content-Type': 'application/json'})
+        else:
+            return self.session.post(
+                self.url4("/?command=countLogins"),
+                data=json.dumps(payload),
+                headers={'Content-Type': 'application/json'})
+
+    def resetLogins(self, login):
+        attrs = dict()
+        attrs['login'] = login
+        payload = dict()
+        payload['attrs'] = attrs
+        return self.session.post(
+            self.url("/?command=resetLogins"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def customFunc(self, login):
+        attrs = dict()
+        attrs['login'] = login
+        payload = dict()
+        payload['attrs'] = attrs
+        return self.session.post(
+            self.url("/?command=custom"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def customGetFunc(self, func):
+        return self.session.get(
+            self.url("/?command=" + func))
+
+    def customFuncWithName(self, custom_func_name, attrs):
+        payload = dict()
+        payload['attrs'] = attrs
+        return self.session.post(
+            self.url("/?command=" + custom_func_name),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def customFuncReplicaWithName(self, custom_func_name, attrs):
+        payload = dict()
+        payload['attrs'] = attrs
+        return self.session.post(
+            self.url2("/?command=" + custom_func_name),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def customFuncPrefixConfigWithName(self, custom_func_name, attrs):
+        payload = dict()
+        payload['attrs'] = attrs
+        return self.session.post(
+            self.url6("/?command=" + custom_func_name),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def trackalertCustomFunc(self, login):
+        attrs = dict()
+        attrs['login'] = login
+        payload = dict()
+        payload['attrs'] = attrs
+        return self.session.post(
+            self.ta_url("/?command=custom"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def pingFunc(self):
+        return self.session.get(self.url("/?command=ping"))
+
+    def getBLFunc(self):
+        return self.session.get(self.url("/?command=getBL"))
+
+    def getWLFunc(self):
+        return self.session.get(self.url("/?command=getWL"))
+
+    def getBLFuncReplica(self):
+        return self.session.get(self.url2("/?command=getBL"))
+
+    def getWLFuncReplica(self):
+        return self.session.get(self.url2("/?command=getWL"))
+
+    def getBLFuncPersist(self):
+        return self.session.get(self.url3("/?command=getBL"))
+
+    def getWLFuncPersist(self):
+        return self.session.get(self.url3("/?command=getWL"))
+
+    def getBLFuncPersistTLS(self):
+        return self.session.get(self.url5("/?command=getBL"))
+
+    def addBLEntryIPLogin(self, ip, login, expire_secs, reason):
+        payload = dict()
+        payload['login'] = login
+        payload['ip'] = ip
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url("/?command=addBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addBLEntryIPJA3(self, ip, ja3, expire_secs, reason):
+        payload = dict()
+        payload['ja3'] = ja3
+        payload['ip'] = ip
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url("/?command=addBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addBLEntryNetmaskLogin(self, netmask, login, expire_secs, reason):
+        payload = dict()
+        payload['login'] = login
+        payload['netmask'] = netmask
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url("/?command=addBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addBLEntryNetmaskJA3(self, netmask, ja3, expire_secs, reason):
+        payload = dict()
+        payload['ja3'] = ja3
+        payload['netmask'] = netmask
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url("/?command=addBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addBLEntryIP(self, ip, expire_secs, reason):
+        payload = dict()
+        payload['ip'] = ip
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url("/?command=addBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addBLEntryNetmask(self, netmask, expire_secs, reason):
+        payload = dict()
+        payload['netmask'] = netmask
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url("/?command=addBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addBLEntryIPPersist(self, ip, expire_secs, reason):
+        payload = dict()
+        payload['ip'] = ip
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url3("/?command=addBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addBLEntryJA3Persist(self, ja3, expire_secs, reason):
+        payload = dict()
+        payload['ja3'] = ja3
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url3("/?command=addBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addBLEntryIPJA3Persist(self, ip, ja3, expire_secs, reason):
+        payload = dict()
+        payload['ip'] = ip
+        payload['ja3'] = ja3
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url3("/?command=addBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addBLEntryIPPersistTLS(self, ip, expire_secs, reason):
+        payload = dict()
+        payload['ip'] = ip
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url5("/?command=addBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addBLEntryIPPrefixConfig(self, ip, expire_secs, reason):
+        payload = dict()
+        payload['ip'] = ip
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url6("/?command=addBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def delBLEntryIPPersistTLS(self, ip):
+        payload = dict()
+        payload['ip'] = ip
+        return self.session.post(
+            self.url5("/?command=delBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addBLEntryLogin(self, login, expire_secs, reason):
+        payload = dict()
+        payload['login'] = login
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url("/?command=addBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addBLEntryJA3(self, ja3, expire_secs, reason):
+        payload = dict()
+        payload['ja3'] = ja3
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url("/?command=addBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def delBLEntryIPLogin(self, ip, login):
+        payload = dict()
+        payload['login'] = login
+        payload['ip'] = ip
+        return self.session.post(
+            self.url("/?command=delBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def delBLEntryNetmaskLogin(self, netmask, login):
+        payload = dict()
+        payload['login'] = login
+        payload['netmask'] = netmask
+        return self.session.post(
+            self.url("/?command=delBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def delBLEntryNetmaskJA3(self, netmask, ja3):
+        payload = dict()
+        payload['ja3'] = ja3
+        payload['netmask'] = netmask
+        return self.session.post(
+            self.url("/?command=delBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def delBLEntryIP(self, ip):
+        payload = dict()
+        payload['ip'] = ip
+        return self.session.post(
+            self.url("/?command=delBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def delBLEntryLogin(self, login):
+        payload = dict()
+        payload['login'] = login
+        return self.session.post(
+            self.url("/?command=delBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def delBLEntryJA3(self, ja3):
+        payload = dict()
+        payload['ja3'] = ja3
+        return self.session.post(
+            self.url("/?command=delBLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addWLEntryIPLogin(self, ip, login, expire_secs, reason):
+        payload = dict()
+        payload['login'] = login
+        payload['ip'] = ip
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url("/?command=addWLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addWLEntryIPJA3(self, ip, ja3, expire_secs, reason):
+        payload = dict()
+        payload['ja3'] = ja3
+        payload['ip'] = ip
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url("/?command=addWLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addWLEntryNetmaskLogin(self, netmask, login, expire_secs, reason):
+        payload = dict()
+        payload['login'] = login
+        payload['netmask'] = netmask
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url("/?command=addWLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addWLEntryNetmaskJA3(self, netmask, ja3, expire_secs, reason):
+        payload = dict()
+        payload['ja3'] = ja3
+        payload['netmask'] = netmask
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url("/?command=addWLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addWLEntryIP(self, ip, expire_secs, reason):
+        payload = dict()
+        payload['ip'] = ip
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url("/?command=addWLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addWLEntryNetmask(self, netmask, expire_secs, reason):
+        payload = dict()
+        payload['netmask'] = netmask
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url("/?command=addWLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addWLEntryIPPersist(self, ip, expire_secs, reason):
+        payload = dict()
+        payload['ip'] = ip
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url3("/?command=addWLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addWLEntryIPPrefixConfig(self, ip, expire_secs, reason):
+        payload = dict()
+        payload['ip'] = ip
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url6("/?command=addWLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def addWLEntryLogin(self, login, expire_secs, reason):
+        payload = dict()
+        payload['login'] = login
+        payload['expire_secs'] = expire_secs
+        payload['reason'] = reason
+        return self.session.post(
+            self.url("/?command=addWLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def delWLEntryIPLogin(self, ip, login):
+        payload = dict()
+        payload['login'] = login
+        payload['ip'] = ip
+        return self.session.post(
+            self.url("/?command=delWLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def delWLEntryNetmaskLogin(self, netmask, login):
+        payload = dict()
+        payload['login'] = login
+        payload['netmask'] = netmask
+        return self.session.post(
+            self.url("/?command=delWLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def delWLEntryNetmaskJA3(self, netmask, ja3):
+        payload = dict()
+        payload['ja3'] = ja3
+        payload['netmask'] = netmask
+        return self.session.post(
+            self.url("/?command=delWLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def delWLEntryIP(self, ip):
+        payload = dict()
+        payload['ip'] = ip
+        return self.session.post(
+            self.url("/?command=delWLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def delWLEntryLogin(self, login):
+        payload = dict()
+        payload['login'] = login
+        return self.session.post(
+            self.url("/?command=delWLEntry"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def getDBStatsIPLogin(self, ip, login):
+        payload = dict()
+        payload['login'] = login
+        payload['ip'] = ip
+        return self.session.post(
+            self.url("/?command=getDBStats"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def getDBStatsIP(self, ip):
+        payload = dict()
+        payload['ip'] = ip
+        return self.session.post(
+            self.url("/?command=getDBStats"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def getDBStatsLogin(self, login):
+        payload = dict()
+        payload['login'] = login
+        return self.session.post(
+            self.url("/?command=getDBStats"),
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'})
+
+    def kafkaProducer(self):
+        payload = {"records": [{"value": {"foo": "bar"}}]}
+        return self.session.post(
+            "http://kafka-rest:8082/topics/wforce",
+            data=json.dumps(payload),
+            headers={'Content-Type': 'application/vnd.kafka.json.v2+json'})
+
+    def getWforceMetrics(self):
+        return self.session.get(
+            self.url("/metrics"))
+
+    def getTrackalertMetrics(self):
+        return self.session.get(
+            self.ta_url("/metrics"))
+
+    def reportAPI(self, path, attrs):
+        return self.session.post(
+            self.report_url(path),
+            data=json.dumps(attrs),
+            headers={'Content-Type': 'application/json'}, auth=('foo', 'secret'))
+
+    def url(self, relative_url):
+        return urljoin(self.server1_url, relative_url)
+
+    def url2(self, relative_url):
+        return urljoin(self.server2_url, relative_url)
+
+    def url3(self, relative_url):
+        return urljoin(self.server3_url, relative_url)
+
+    def url4(self, relative_url):
+        return urljoin(self.server4_url, relative_url)
+
+    def url5(self, relative_url):
+        return urljoin(self.server5_url, relative_url)
+
+    def url6(self, relative_url):
+        return urljoin(self.server6_url, relative_url)
+
+    def ta_url(self, relative_url):
+        return urljoin(self.ta_server_url, relative_url)
+
+    def docker_image_url(self, relative_url):
+        return urljoin(self.docker_image_server_url, relative_url)
+
+    def report_url(self, relative_url):
+        return urljoin(self.report_server_url, relative_url)
+
+    def assert_success_json(self, result):
+        try:
+            result.raise_for_status()
+        except:
+            print(result.content)
+            raise
+        self.assertEqual(result.headers['Content-Type'], 'application/json')

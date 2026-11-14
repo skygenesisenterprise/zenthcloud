@@ -1,0 +1,92 @@
+{
+    "size" : 0,
+    "query": {
+	"constant_score": {
+	    "filter": {
+		"term": {
+		    "success": false
+		}
+	    }
+	}
+    },
+    "aggs": {
+	"most_sig_ips": {
+	    "significant_terms": { 
+		"field": "remote",
+		"size": 6
+	    }
+	},
+	"most_sig_logins": {
+	    "significant_terms": { 
+		"field": "login",
+		"size": 6
+	    }
+	},     
+	"most_sig_cc": {
+	    "significant_terms": { 
+		"field": "geoip.country_code2",
+		"size": 6
+	    }
+	},
+	"most_sig_browser": {
+	    "significant_terms": { 
+		"field": "device_attrs.browser.family",
+		"size": 6
+	    },
+	    "aggs": {
+		"os": {
+		    "terms": {
+			"field": "device_attrs.os.family"
+		    },
+		    "aggs": {
+			"device": {
+			    "terms": {
+				"field": "device_attrs.device.family"
+			    }
+			}
+		    }
+		}
+	    }
+	},
+	"most_sig_imapc": {
+	    "significant_terms": { 
+		"field": "device_attrs.imapc.family",
+		"size": 6
+	    },
+	    "aggs": {
+		"os": {
+		    "terms": {
+			"field": "device_attrs.os.family"
+		    }
+		}
+	    }
+	},
+	"most_sig_mobileapp": {
+            "significant_terms": {
+                "field": "device_attrs.app.name",
+                "size": 6
+            },
+	    "aggs": {
+		"brand": {
+		    "terms": {
+			"field": "device_attrs.app.brand"
+		    },
+		    "aggs": {
+			"os": {
+			    "terms": {
+				"field": "device_attrs.os.family"
+			    },
+			    "aggs": {
+				"device": {
+				    "terms": {
+					"field": "device_attrs.device.family"
+				    }
+				}
+			    }
+			}
+		    }
+		}	
+            }
+        }
+    }
+}

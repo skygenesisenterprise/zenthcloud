@@ -1,0 +1,234 @@
+/*
+ * This file is part of PowerDNS or weakforced.
+ * Copyright -- PowerDNS.COM B.V. and its contributors
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of version 3 of the GNU General Public License as
+ * published by the Free Software Foundation.
+ *
+ * In addition, for the avoidance of any doubt, permission is granted to
+ * link this program with OpenSSL and to (re)distribute the binaries
+ * produced as the result of such linking.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+#pragma once
+
+#include <functional>
+#include "prometheus.hh"
+#include "wforce_exception.hh"
+
+class WforcePrometheus : public PrometheusMetrics
+{
+public:
+  WforcePrometheus(const std::string& prefix) : PrometheusMetrics(prefix)
+  {
+    if (d_registry != nullptr) {
+      allow_status_family = &(BuildCounter()
+                              .Name(d_prefix+"_allow_status_total")
+                              .Help("Count of different allow status responses")
+                              .Register(*d_registry));
+      repl_sent_family = &(BuildCounter()
+                           .Name(d_prefix+"_replication_sent_total")
+                           .Help("How many replication messages were sent?")
+                           .Register(*d_registry));
+      repl_send_queue_err_family = &(BuildCounter()
+                           .Name(d_prefix+"_replication_send_queue_error_total")
+                           .Help("How many errors trying to add replication messages to the send queue?")
+                           .Register(*d_registry));
+      repl_rcvd_family = &(BuildCounter()
+                           .Name(d_prefix+"_replication_rcvd_total")
+                           .Help("How many replication messages were rcvd?")
+                           .Register(*d_registry));
+      repl_rcvd_queue_err_family = &(BuildCounter()
+                           .Name(d_prefix+"_replication_rcvd_queue_error_total")
+                           .Help("How many errors trying to add replication msgs to the receive queue?")
+                           .Register(*d_registry));
+      repl_connfail_family = &(BuildCounter()
+                           .Name(d_prefix+"_replication_tcp_connfailed_total")
+                           .Help("How many TCP connections failed?")
+                           .Register(*d_registry));
+      auto& redis_wlbl_family = BuildCounter()
+        .Name(d_prefix+"_redis_wlbl_updates_total")
+        .Help("How many redis wl/bl updates succeeded?")
+        .Register(*d_registry);
+      redis_bl_updates = &(redis_wlbl_family.Add({{"type", "bl"}}));
+      redis_wl_updates = &(redis_wlbl_family.Add({{"type", "wl"}}));
+      auto& redis_wlbl_connfail_family = BuildCounter()
+        .Name(d_prefix+"_redis_wlbl_connfailed_total")
+        .Help("How many redis wl/bl connection attempts failed?")
+        .Register(*d_registry);
+      redis_bl_connfail = &(redis_wlbl_connfail_family.Add({{"type", "bl"}}));
+      redis_wl_connfail = &(redis_wlbl_connfail_family.Add({{"type", "wl"}}));
+      auto& bl_entries_family = BuildGauge()
+        .Name(d_prefix+"_bl_entries")
+        .Help("How many entries are in the blacklist?")
+        .Register(*d_registry);
+      bl_entries_ip = &(bl_entries_family.Add({{"type", "ip"}}));
+      bl_entries_login = &(bl_entries_family.Add({{"type", "login"}}));
+      bl_entries_iplogin = &(bl_entries_family.Add({{"type", "iplogin"}}));
+      bl_entries_ja3 = &(bl_entries_family.Add({{"type", "ja3"}}));
+      bl_entries_ipja3 = &(bl_entries_family.Add({{"type", "ipja3"}}));
+      auto& wl_entries_family = BuildGauge()
+        .Name(d_prefix+"_wl_entries")
+        .Help("How many entries are in the whitelist?")
+        .Register(*d_registry);
+      wl_entries_ip = &(wl_entries_family.Add({{"type", "ip"}}));
+      wl_entries_login = &(wl_entries_family.Add({{"type", "login"}}));
+      wl_entries_iplogin = &(wl_entries_family.Add({{"type", "iplogin"}}));
+      wl_entries_ja3 = &(wl_entries_family.Add({{"type", "ja3"}}));
+      wl_entries_ipja3 = &(wl_entries_family.Add({{"type", "ipja3"}}));
+      auto& repl_recv_queue_family = BuildGauge()
+        .Name(d_prefix+"_repl_recv_queue_size")
+        .Help("How full is the replication recv worker thread queue?")
+        .Register(*d_registry);
+      repl_recv_queue_size = &(repl_recv_queue_family.Add({}));
+      repl_send_queue_size_family = &(BuildGauge()
+        .Name(d_prefix+"_repl_send_queue_size")
+        .Help("How full is the replication per-sibling send queue?")
+        .Register(*d_registry));
+    }
+    else {
+      throw WforceException("Could not allocate memory for Prometheus Registry");
+    }
+    repl_queue_func = [](){ return 0; };
+  }
+
+  void addAllowStatusMetric(const std::string& name);
+  void incAllowStatusMetric(const std::string& name);
+
+  void addReplicationSibling(const std::string& name, const std::function<int()>& func);
+  void removeReplicationSibling(const std::string& name);
+  void removeAllReplicationSiblings();
+  void incReplicationSent(const std::string& name, bool success);
+  void incReplicationSendQueueErr(const std::string& name);
+  void incReplicationRcvd(const std::string& name, bool success);
+  void incReplicationRcvdQueueErr(const std::string& name);
+  void incReplicationConnFail(const std::string& name);
+
+  void incRedisBLUpdates();
+  void incRedisBLConnFailed();
+  void incRedisWLUpdates();
+  void incRedisWLConnFailed();
+  void setBLIPEntries(int);
+  void setWLIPEntries(int);
+  void setBLLoginEntries(int);
+  void setWLLoginEntries(int);
+  void setBLIPLoginEntries(int);
+  void setWLIPLoginEntries(int);
+  void setBLJA3Entries(int);
+  void setWLJA3Entries(int);
+  void setBLIPJA3Entries(int);
+  void setWLIPJA3Entries(int);
+
+  void setReplRecvQueueSize(int value)
+  {
+    repl_recv_queue_size->Set(value);
+  }
+
+  void setReplicationSendQueueSize(const std::string& name, int size);
+
+  void setReplRecvQueueRetrieveFunc(const std::function<int()>& func)
+  {
+    repl_queue_func = func;
+  }
+
+  void setReplicationSendQueueRetrieveFunc(const std::string& name, const std::function<int()>& func);
+
+  std::string serialize() override
+  {
+    // We want to retrieve the value of the worker thread queue only when metrics
+    // are asked for. The promethus-cpp library doesn't allow this itself
+    setReplRecvQueueSize(repl_queue_func());
+    for (auto& i : repl_send_queue_func_map) {
+      if (i.second != nullptr) {
+        setReplicationSendQueueSize(i.first, i.second());
+      }
+    }
+    // We need to lock the mutex to prevent any of the dynamic replication-related
+    // prometheus metrics changing while we serialize
+    std::lock_guard<std::mutex> lock(repl_mutx);
+    return PrometheusMetrics::serialize();
+  }
+protected:
+  void removeReplicationSiblingNoLock(const std::string& name);
+private:
+  Family<Counter>* allow_status_family;
+  std::map<std::string, Counter*> allow_status_metrics;
+  // This mutex is because replication siblings are allowed to change dynamically
+  // unlike the other metrics
+  std::mutex repl_mutx;
+  Family<Counter>* repl_sent_family;
+  Family<Counter>* repl_send_queue_err_family;
+  std::map<std::string, Counter*> repl_sent_ok_metrics;
+  std::map<std::string, Counter*> repl_sent_err_metrics;
+  std::map<std::string, Counter*> repl_send_queue_err_metrics;
+  Family<Counter>* repl_rcvd_family;
+  Family<Counter>* repl_rcvd_queue_err_family;
+  std::map<std::string, Counter*> repl_rcvd_ok_metrics;
+  std::map<std::string, Counter*> repl_rcvd_err_metrics;
+  std::map<std::string, Counter*> repl_rcvd_queue_err_metrics;
+  Family<Counter>* repl_connfail_family;
+  std::map<std::string, Counter*> repl_connfail_metrics;
+  Counter* redis_bl_updates;
+  Counter* redis_bl_connfail;
+  Counter* redis_wl_updates;
+  Counter* redis_wl_connfail;
+  Gauge* bl_entries_ip;
+  Gauge* bl_entries_login;
+  Gauge* bl_entries_iplogin;
+  Gauge* bl_entries_ja3;
+  Gauge* bl_entries_ipja3;
+  Gauge* wl_entries_ip;
+  Gauge* wl_entries_login;
+  Gauge* wl_entries_iplogin;
+  Gauge* wl_entries_ja3;
+  Gauge* wl_entries_ipja3;
+  Gauge* repl_recv_queue_size;
+  Family<Gauge>* repl_send_queue_size_family;
+  std::map<std::string, Gauge*> repl_send_queue_size_metrics;
+  std::function<int()> repl_queue_func;
+  std::map<std::string, std::function<int()>> repl_send_queue_func_map;
+};
+
+void initWforcePrometheusMetrics(std::shared_ptr<WforcePrometheus> wpmp);
+void addPrometheusAllowStatusMetric(const std::string& name);
+void incPrometheusAllowStatusMetric(const std::string& name);
+
+void addPrometheusReplicationSibling(const std::string& name, const std::function<int()>& func);
+void removePrometheusReplicationSibling(const std::string& name);
+void removeAllPrometheusReplicationSiblings();
+void incPrometheusReplicationSent(const std::string& name, bool success);
+void incPrometheusReplicationSendQueueErr(const std::string& name);
+void incPrometheusReplicationRcvd(const std::string& name, bool success);
+void incPrometheusReplicationRcvdQueueErr(const std::string& name);
+void incPrometheusReplicationConnFail(const std::string& name);
+
+void incPrometheusRedisBLUpdates();
+void incPrometheusRedisBLConnFailed();
+void incPrometheusRedisWLUpdates();
+void incPrometheusRedisWLConnFailed();
+void setPrometheusBLIPEntries(int);
+void setPrometheusWLIPEntries(int);
+void setPrometheusBLLoginEntries(int);
+void setPrometheusWLLoginEntries(int);
+void setPrometheusBLIPLoginEntries(int);
+void setPrometheusWLIPLoginEntries(int);
+void setPrometheusBLIPJA3Entries(int);
+void setPrometheusWLIPJA3Entries(int);
+void setPrometheusBLJA3Entries(int);
+void setPrometheusWLJA3Entries(int);
+
+void setPrometheusReplRecvQueueSize(int value);
+void setPrometheusReplRecvQueueRetrieveFunc(std::function<int()> func);
+
+void setPrometheusReplSendQueueSize(const std::string& name, int value);
+void setPrometheusReplSendQueueRetrieveFunc(const std::string& name, const std::function<int()>& func);

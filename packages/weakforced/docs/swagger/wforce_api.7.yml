@@ -1,0 +1,1085 @@
+openapi: 3.0.1
+
+info:
+  title: OX Abuse Shield (Wforce)
+  description: An API to the wforce daemon to prevent brute-force and abuse of mail
+    systems
+  contact:
+    name: Open-Xchange
+  license:
+    name: GPL3
+    url: https://github.com/PowerDNS/weakforced/blob/master/LICENSE
+  version: "3.2.0"
+
+servers:
+  - url: http://doesnotexist.open-xchange.com/
+  - url: https://doesnotexist.open-xchange.com/
+
+paths:
+  /command/report:
+    post:
+      description: Creates a new report about a login (successful or unsuccessful)
+      operationId: report
+      requestBody:
+        description: Login Tuple for report command
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginTupleReport'
+        required: true
+      responses:
+        "200":
+          description: report response
+          content:
+            application/json:
+              schema:
+                required:
+                  - status
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: ok
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-codegen-request-body-name: LoginTupleReport
+  /command/allow:
+    post:
+      description: Query whether a login should be allowed
+      operationId: allow
+      requestBody:
+        description: Login Tuple for allow command
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginTupleAllow'
+        required: true
+      responses:
+        "200":
+          description: allow response
+          content:
+            application/json:
+              schema:
+                required:
+                  - msg
+                  - r_attrs
+                  - status
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  msg:
+                    type: string
+                  r_attrs:
+                    type: object
+                    properties:
+                      attr_name:
+                        type: string
+                    example:
+                      two_factor_required: true
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-codegen-request-body-name: LoginTupleAllow
+  /command/reset:
+    post:
+      description: Reset the stats and any blacklist entry for an IP and/or login
+      operationId: reset
+      requestBody:
+        description: Provide IP and/or login
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetStatsParams'
+        required: true
+      responses:
+        "200":
+          description: reset response
+          content:
+            application/json:
+              schema:
+                required:
+                  - status
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: ok
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-codegen-request-body-name: Reset
+  /command/delBLEntry:
+    post:
+      description: Delete a blacklist entry for an IP and/or login and/or JA3 hash. Note that netmask
+        and other parameters are mutually exclusive.
+      operationId: delBLEntry
+      requestBody:
+        description: Provide IP and/or login
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DelBLWLEntryParams'
+        required: true
+      responses:
+        "200":
+          description: delBLEntry response
+          content:
+            application/json:
+              schema:
+                required:
+                  - status
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: ok
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-codegen-request-body-name: delBLEntry
+  /command/addBLEntry:
+    post:
+      description: Add a blacklist entry for an IP and/or login and/or JA3 hash. Note that netmask
+        and other parameters are mutually exclusive.
+      operationId: addBLEntry
+      requestBody:
+        description: Provide IP and/or login and/or JA3 hash
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddBLWLEntryParams'
+        required: true
+      responses:
+        "200":
+          description: addBLEntry response
+          content:
+            application/json:
+              schema:
+                required:
+                  - status
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: ok
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-codegen-request-body-name: addBLEntry
+  /command/delWLEntry:
+    post:
+      description: Delete a whitelist entry for an IP and/or login and/or JA3 hash. Note that netmask
+        and other parameters are mutually exclusive.
+      operationId: delWLEntry
+      requestBody:
+        description: Provide IP and/or login and/or JA3 hash
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DelBLWLEntryParams'
+        required: true
+      responses:
+        "200":
+          description: delWLEntry response
+          content:
+            application/json:
+              schema:
+                required:
+                  - status
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: ok
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-codegen-request-body-name: delWLEntry
+  /command/addWLEntry:
+    post:
+      description: Add a whitelist entry for an IP and/or login and/or JA3 hash. Note that netmask
+        and other parameters are mutually exclusive.
+      operationId: addWLEntry
+      requestBody:
+        description: Provide IP and/or login and/or JA3 hash
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddBLWLEntryParams'
+        required: true
+      responses:
+        "200":
+          description: addWLEntry response
+          content:
+            application/json:
+              schema:
+                required:
+                  - status
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: ok
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-codegen-request-body-name: addWLEntry
+  /command/ping:
+    get:
+      description: Ping the server to ensure it is operational
+      operationId: ping
+      responses:
+        "200":
+          description: ping response
+          content:
+            application/json:
+              schema:
+                required:
+                  - status
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: ok
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /command/syncDone:
+    get:
+      description: Tell the server that DB syncing is done
+      operationId: syncDone
+      responses:
+        "200":
+          description: syncDone response
+          content:
+            application/json:
+              schema:
+                required:
+                  - status
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: ok
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /command/stats:
+    get:
+      description: Get server stats (deprecated - will be removed in future version)
+      operationId: stats
+      responses:
+        "200":
+          description: stats response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/statsResponse'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /command/getBL:
+    get:
+      description: Get the list of all blacklisted IPs and/or Logins and/or JA3 hashes
+      operationId: getBL
+      responses:
+        "200":
+          description: getBL response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BLWLResponse'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /command/getWL:
+    get:
+      description: Get the list of all whitelisted IPs and/or Logins and/or JA3 hashes
+      operationId: getWL
+      responses:
+        "200":
+          description: getWL response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BLWLResponse'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /command/getDBStats:
+    post:
+      description: Get the db stats for an IP and/or login
+      operationId: getDBStats
+      requestBody:
+        description: Provide IP and/or login
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetStatsParams'
+        required: true
+      responses:
+        "200":
+          description: getDBStats response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DBStatsResponse'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-codegen-request-body-name: GetDBStats
+  /command/syncDBs:
+    post:
+      description: This is a request to synchronize StatsDBs.
+      operationId: syncDBs
+      requestBody:
+        description: The ip and address to sync to
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/syncDBsParams'
+        required: true
+      responses:
+        "200":
+          description: syncDBs response
+          content:
+            application/json:
+              schema:
+                required:
+                  - status
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: ok
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-codegen-request-body-name: syncDBs
+  /command/dumpEntries:
+    post:
+      description: This is a request to dump StatsDB entries (consisting of the values
+        of each of the time windows for each field) to a specified IP address and
+        port over TCP.
+      operationId: dumpEntries
+      requestBody:
+        description: The ip and port to dump to
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/dumpEntriesParams'
+        required: true
+      responses:
+        "200":
+          description: dumpEntries response
+          content:
+            application/json:
+              schema:
+                required:
+                  - status
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: ok
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-codegen-request-body-name: dumpEntries
+  /command/customEndpoint:
+    post:
+      description: Extensible mechanism allows custom REST endpoints to be defined
+        - this is an example
+      operationId: customEndpoint
+      requestBody:
+        description: Arguments to custom REST endpoint
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomFuncArgs'
+        required: true
+      responses:
+        "200":
+          description: custom endpoint response
+          content:
+            application/json:
+              schema:
+                required:
+                  - r_attrs
+                  - success
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  r_attrs:
+                    type: object
+                    properties:
+                      attr_name:
+                        type: string
+                    example:
+                      two_factor_required: true
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomError'
+      x-codegen-request-body-name: CustomFuncArgs
+  /command/addSibling:
+    post:
+      description: This is a request to add a new Sibling for replication purposes.
+      operationId: addSibling
+      requestBody:
+        description: Details about the Sibling to add
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/addSiblingParams'
+        required: true
+      responses:
+        "200":
+          description: addSibling response
+          content:
+            application/json:
+              schema:
+                required:
+                  - status
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: ok
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-codegen-request-body-name: addSibling
+  /command/removeSibling:
+    post:
+      description: This is a request to add remove a Sibling for replication purposes.
+      operationId: removeSibling
+      requestBody:
+        description: Details about the Sibling to remove
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/removeSiblingParams'
+        required: true
+      responses:
+        "200":
+          description: removeSibling response
+          content:
+            application/json:
+              schema:
+                required:
+                  - status
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: ok
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-codegen-request-body-name: removeSibling
+  /command/setSiblings:
+    post:
+      description: This is a request to set the Siblings for replication purposes.
+      operationId: setSiblings
+      requestBody:
+        description: Details about the Sibling to add
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/setSiblingsParams'
+        required: true
+      responses:
+        "200":
+          description: setSiblings response
+          content:
+            application/json:
+              schema:
+                required:
+                  - status
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: ok
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-codegen-request-body-name: setSiblings
+  /metrics:
+    get:
+      description: Retrieve prometheus metrics
+      operationId: metrics
+      responses:
+        "200":
+          description: Prometheus metrics in the format described at https://prometheus.io/docs/instrumenting/exposition_formats/
+          content:
+            text/plain:
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /readyz:
+    get:
+      security: [] # No auth needed
+      description: Determine if wforce is ready to accept queries
+      operationId: readyz
+      responses:
+        "200":
+          description: wforce is ready to accept queries
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /livez:
+    get:
+      security: [] # No auth needed
+      description: Determine if wforce is up
+      operationId: livez
+      responses:
+        "200":
+          description: wforce is up
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+  schemas:
+    CustomFuncArgs:
+      required:
+        - attrs
+      type: object
+      properties:
+        attrs:
+          $ref: '#/components/schemas/LTAttrs'
+      example:
+        attrs:
+          key: value
+    LoginTupleReport:
+      required:
+        - login
+        - pwhash
+        - remote
+        - success
+      type: object
+      properties:
+        login:
+          type: string
+        remote:
+          type: string
+        pwhash:
+          type: string
+        success:
+          type: boolean
+        policy_reject:
+          type: boolean
+        fail_type:
+          type: string
+          enum:
+            - internal
+            - credentials
+            - account
+            - expired
+            - disabled
+            - policy
+        protocol:
+          type: string
+          enum:
+            - http
+            - imap
+            - pop3
+            - smtp
+            - mobileapi
+        tls:
+          type: boolean
+        device_id:
+          type: string
+        attrs:
+          $ref: '#/components/schemas/LTAttrs'
+      example:
+        login: joe.bloggs
+        remote: 192.168.1.2
+        pwhash: cc04
+        success: true
+        fail_type: credentials
+    LTAttrs:
+      type: object
+      properties:
+        attr_name_single_value:
+          type: string
+        attr_name multi_value:
+          type: array
+          items:
+            type: string
+      example:
+        attr1: value1
+        attr2: value2
+        attr3:
+          - value3
+          - value4
+    LoginTupleAllow:
+      required:
+        - login
+        - pwhash
+        - remote
+      type: object
+      properties:
+        login:
+          type: string
+        remote:
+          type: string
+        pwhash:
+          type: string
+        protocol:
+          type: string
+          enum:
+            - http
+            - imap
+            - pop
+            - smtp
+            - mobileapi
+        tls:
+          type: boolean
+        device_id:
+          type: string
+        attrs:
+          $ref: '#/components/schemas/LTAttrs'
+      example:
+        login: joe.bloggs
+        remote: 192.168.1.2
+        pwhash: cc04
+        success: true
+        protocol: http
+        tls: true
+        attrs:
+          foo: bar
+    ResetStatsParams:
+      type: object
+      properties:
+        ip:
+          type: string
+        login:
+          type: string
+        ja3:
+          type: string
+      example:
+        ip: 127.0.0.1
+    DelBLWLEntryParams:
+      type: object
+      properties:
+        ip:
+          type: string
+        netmask:
+          type: string
+        login:
+          type: string
+        ja3:
+          type: string
+      example:
+        netmask: 2001:503:ba3e/64
+    AddBLWLEntryParams:
+      type: object
+      properties:
+        ip:
+          type: string
+        netmask:
+          type: string
+        login:
+          type: string
+        ja3:
+          type: string
+        expire_secs:
+          type: integer
+        reason:
+          type: string
+      example:
+        netmask: 2001:503:ba3e::/64
+        expire_secs: 3600
+        reason: Is there ever a good reason
+    CustomError:
+      required:
+        - reason
+        - success
+      type: object
+      properties:
+        success:
+          type: boolean
+        reason:
+          type: string
+      example:
+        success: false
+        reason: Unauthorized
+    Error:
+      required:
+        - reason
+        - status
+      type: object
+      properties:
+        status:
+          type: string
+        reason:
+          type: string
+      example:
+        status: failure
+        reason: Unauthorized
+    BLWLResponse:
+      type: object
+      properties:
+        bl_entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/BLWLArray'
+    BLWLArray:
+      type: object
+      properties:
+        ip:
+          $ref: '#/components/schemas/BLWLEntry'
+        login:
+          $ref: '#/components/schemas/BLWLEntry'
+        iplogin:
+          $ref: '#/components/schemas/BLWLEntry'
+        ja3:
+          $ref: '#/components/schemas/BLWLEntry'
+        ipja3:
+          $ref: '#/components/schemas/BLWLEntry'
+    BLWLEntry:
+      type: array
+      items:
+        type: object
+        properties:
+          key_name:
+            type: string
+          expiration:
+            type: string
+          reason:
+            type: string
+        example:
+          login: joe.bloggs
+          expiration: 2002-Jan-01 10:00:01
+          reason: Too many invalid login attempts from greylisted countries
+    DBStatsResponse:
+      required:
+        - blacklisted
+        - key_name
+        - stats
+      type: object
+      properties:
+        key_name:
+          type: string
+        blacklisted:
+          type: boolean
+        bl_expire:
+          type: string
+        bl_reason:
+          type: string
+        whitelisted:
+          type: boolean
+        wl_expire:
+          type: string
+        wl_reason:
+          type: string
+        stats:
+          $ref: '#/components/schemas/DBStatsEntry'
+    DBStatsEntry:
+      type: object
+      properties:
+        db_name:
+          $ref: '#/components/schemas/DBStatsFields'
+    DBStatsFields:
+      type: object
+      properties:
+        field_name:
+          type: integer
+      example:
+        countLogins: 239
+        diffPassword: 10
+    statsResponse:
+      type: object
+      properties:
+        reports:
+          type: integer
+        allows:
+          type: integer
+        denieds:
+          type: integer
+        sys-msec:
+          type: integer
+        user-msec:
+          type: integer
+        perfstats:
+          type: object
+          properties:
+            WTW_0_1:
+              type: integer
+            WTW_1_10:
+              type: integer
+            WTW_10_100:
+              type: integer
+            WTW_100_1000:
+              type: integer
+            WTW_Slow:
+              type: integer
+            WTR_0_1:
+              type: integer
+            WTR_1_10:
+              type: integer
+            WTR_10_100:
+              type: integer
+            WTR_100_1000:
+              type: integer
+            WTR_Slow:
+              type: integer
+          description: Latency buckets for worker thread wait (WTW) and run (WTR)for
+            last 5 minutes
+        commandstats:
+          type: object
+          properties:
+            addBLEntry:
+              type: integer
+            delBLEntry:
+              type: integer
+            getBL:
+              type: integer
+            addWLEntry:
+              type: integer
+            delWLEntry:
+              type: integer
+            getWL:
+              type: integer
+            getDBStats:
+              type: integer
+            stats:
+              type: integer
+            allow:
+              type: integer
+            allow_allowed:
+              type: integer
+            allow_blacklisted:
+              type: integer
+            allow_whitelisted:
+              type: integer
+            allow_denied:
+              type: integer
+            allow_tarpitted:
+              type: integer
+            report:
+              type: integer
+            reset:
+              type: integer
+            ping:
+              type: integer
+            syncDBs:
+              type: integer
+            syncDone:
+              type: integer
+          description: Count of REST API commands run in last 5 minutes
+        customstats:
+          type: object
+          properties:
+            custom_stat:
+              type: integer
+          description: Count of custom statistics in last 5 minutes
+      example:
+        reports: 28291
+        allows: 120321
+        denieds: 20201
+        sys-msec: 97211221
+        user-msec: 292910108
+        perfstats:
+          WTR_0_1: 0
+          WTR_100_1000: 0
+          WTR_10_100: 0
+          WTR_1_10: 0
+          WTR_Slow: 0
+          WTW_0_1: 1
+          WTW_100_1000: 0
+          WTW_10_100: 0
+          WTW_1_10: 0
+          WTW_Slow: 0
+        commandstats:
+          addBLEntry: 0
+          addWLEntry: 1
+          allow: 8
+          allow_allowed: 4
+          allow_blacklisted: 0
+          allow_denied: 0
+          allow_tarpitted: 0
+          allow_whitelisted: 4
+          delBLEntry: 0
+          delWLEntry: 0
+          getBL: 0
+          getDBStats: 0
+          getWL: 0
+          ping: 0
+          report: 0
+          reset: 0
+          stats: 3
+          syncDBs: 0
+          syncDone: 0
+        customstats:
+          custom1: 0
+          custom2: 0
+    syncDBsParams:
+      required:
+        - callback_url
+        - replication_host
+        - replication_port
+      type: object
+      properties:
+        replication_host:
+          type: string
+        replication_port:
+          type: integer
+        callback_url:
+          type: string
+        callback_auth_pw:
+          type: string
+        encryption_key:
+          type: string
+    dumpEntriesParams:
+      required:
+        - dump_host
+        - dump_port
+      type: object
+      properties:
+        dump_host:
+          type: string
+        dump_port:
+          type: integer
+    addSiblingParams:
+      required:
+        - sibling_host
+        - sibling_port
+      type: object
+      properties:
+        sibling_host:
+          type: string
+        sibling_port:
+          type: integer
+        sibling_protocol:
+          type: string
+          enum:
+            - tcp
+            - udp
+        encryption_key:
+          type: string
+    removeSiblingParams:
+      required:
+        - sibling_host
+        - sibling_port
+      type: object
+      properties:
+        sibling_host:
+          type: string
+        sibling_port:
+          type: integer
+    setSiblingsParams:
+      type: object
+      properties:
+        siblings:
+          type: array
+          items:
+            required:
+              - sibling_host
+              - sibling_port
+            type: object
+            properties:
+              sibling_host:
+                type: string
+              sibling_port:
+                type: integer
+              sibling_protocol:
+                type: string
+                enum:
+                  - tcp
+                  - udp
+              encryption_key:
+                type: string
+
+security:
+  - BasicAuth: []
