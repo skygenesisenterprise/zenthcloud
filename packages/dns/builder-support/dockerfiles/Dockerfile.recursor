@@ -1,0 +1,20 @@
+FROM alpine:3.23 AS pdns-recursor
+ARG BUILDER_CACHE_BUSTER=
+
+RUN apk add --no-cache gcc g++ make tar autoconf automake protobuf-dev lua-dev \
+                       libtool file boost-dev curl openssl-dev ragel python3 \
+                       flex bison git bash jq meson cargo
+
+COPY . /pdns-recursor
+WORKDIR /pdns-recursor
+
+
+RUN mkdir /sdist
+
+ARG BUILDER_VERSION
+
+RUN cd /pdns-recursor/pdns/recursordist && \
+    meson setup /tmp/rec-meson-dist-build && \
+    meson dist -C /tmp/rec-meson-dist-build --no-tests
+
+RUN cp /tmp/rec-meson-dist-build/meson-dist/pdns-recursor-${BUILDER_VERSION}.tar.xz /sdist/

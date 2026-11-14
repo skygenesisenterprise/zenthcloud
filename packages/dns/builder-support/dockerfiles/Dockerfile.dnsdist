@@ -1,0 +1,18 @@
+FROM alpine:3.23 AS dnsdist
+ARG BUILDER_CACHE_BUSTER=
+
+RUN apk add --no-cache gcc g++ make tar autoconf automake protobuf-dev lua-dev \
+                       libtool file boost-dev ragel python3 py3-yaml git libedit-dev \
+                       bash meson cargo
+
+COPY . /dnsdist/
+WORKDIR /dnsdist/
+
+RUN mkdir /sdist
+
+ARG BUILDER_VERSION
+
+RUN cd /dnsdist/pdns/dnsdistdist && \
+    meson setup /tmp/dnsdist-meson-dist-build && \
+    meson dist -C /tmp/dnsdist-meson-dist-build --no-tests
+RUN cp /tmp/dnsdist-meson-dist-build/meson-dist/dnsdist-${BUILDER_VERSION}.tar.xz /sdist/

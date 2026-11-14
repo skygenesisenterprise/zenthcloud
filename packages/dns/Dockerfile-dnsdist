@@ -1,0 +1,158 @@
+FROM debian:trixie-slim AS builder
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Reusable layer for base update
+RUN apt-get update && \
+    apt-get dist-upgrade -y && \
+    apt-get clean
+
+# devscripts provides mk-build-deps and more
+RUN apt-get install -y --no-install-recommends \
+        devscripts \
+        equivs \
+        git \
+        cmake \
+        curl \
+        jq \
+        libclang-dev \
+        meson \
+        ninja-build
+
+# TODO: make sure /source looks roughly the same from git or tar
+WORKDIR /source
+
+# import everything (could be pdns.git or a tarball)
+COPY builder-support/ builder-support/
+
+# TODO: control file is not in tarballs at all right now
+RUN mk-build-deps -i -t 'apt-get -o Debug::pkgProblemResolver=yes -y --no-install-recommends' builder-support/debian/dnsdist/debian-bookworm/control && \
+    apt-get clean
+
+WORKDIR /source/builder-support/helpers/
+RUN ./install_rust.sh && ./install_quiche.sh
+
+WORKDIR /source
+COPY meson/ meson/
+COPY pdns/ pdns/
+COPY ext/ ext/
+COPY .git/ .git/
+
+# build and install (TODO: before we hit this line, rearrange /source structure if we are coming from a tarball)
+WORKDIR /source/pdns/dnsdistdist
+
+# avoid installing pandoc and venv
+RUN touch dnsdist.1
+
+# Install Lua
+ARG NO_LUA_JIT="s390x arm64"
+RUN LUAVER=$([ -z "${NO_LUA_JIT##*$(dpkg --print-architecture)*}" ] && echo 'lua5.3' || echo 'luajit') && \
+    apt-get install -y --no-install-recommends lib${LUAVER}-*dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+ARG DOCKER_FAKE_RELEASE="NO"
+ARG MAKEFLAGS="-j2"
+RUN mkdir /build && \
+    BUILDDIR=$(mktemp -d) && \
+    IS_RELEASE="${DOCKER_FAKE_RELEASE}" \
+    LDFLAGS="-latomic -fuse-ld=lld -Wl,--build-id=sha1 -ldl" \
+    CC=clang \
+    CXX=clang++ \
+    PKG_CONFIG_PATH=/opt/lib/pkgconfig meson setup ${BUILDDIR} \
+      --sysconfdir=/etc/dnsdist \
+      -Dlua=auto \
+      -Db_lto=true \
+      -Db_lto_mode=thin \
+      -Db_pie=true \
+      -Ddns-over-https=enabled \
+      -Ddns-over-quic=enabled \
+      -Ddns-over-http3=enabled \
+      -Ddns-over-tls=enabled \
+      -Ddnscrypt=enabled \
+      -Ddnstap=enabled \
+      -Dyaml=enabled \
+      -Debpf=enabled \
+      -Dyaml=enabled \
+      -Dtls-gnutls=enabled \
+      -Dsnmp=enabled \
+      -Dlibcap=enabled \
+      -Dlibcurl=enabled \
+      -Dlibsodium=enabled \
+      -Dotlp=enabled \
+      -Dquiche=enabled \
+      -Dre2=enabled \
+      -Dsystemd-service=disabled \
+      -Dxsk=enabled && \
+    meson compile -C ${BUILDDIR} && \
+    meson install -C ${BUILDDIR} --destdir /build && \
+    strip /build/usr/local/bin/* && \
+    # remove systemd unit files, we do not need them and copying /lib to the run-time image breaks it
+    rm -rf /build/lib
+
+RUN for tentative in "lib/x86_64-linux-gnu" "lib/aarch64-linux-gnu" "lib64" "lib"; do \
+      if [ -f "/usr/${tentative}/libdnsdist-quiche.so" ]; then \
+        mkdir -p "/build/usr/${tentative}/"; \
+        cp "/usr/${tentative}/libdnsdist-quiche.so" "/build/usr/${tentative}/"; \
+        break; \
+      fi; \
+    done
+
+WORKDIR /tmp
+RUN mkdir debian && \
+    echo 'Source: docker-deps-for-pdns' > debian/control && \
+    dpkg-shlibdeps /build/usr/local/bin/dnsdist && \
+    sed 's/^shlibs:Depends=/Depends: /' debian/substvars >> debian/control && \
+    equivs-build debian/control && \
+    mkdir /build/tmp/ && \
+    dpkg-deb -I equivs-dummy_1.0_all.deb && cp equivs-dummy_1.0_all.deb /build/tmp/
+
+
+# Runtime
+FROM debian:trixie-slim
+
+# Reusable layer for base update
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y && \
+    apt-get clean
+
+# Output from builder
+COPY --from=builder /build /
+
+# FIXME: better not use /build/tmp for equivs at all
+RUN chmod 1777 /tmp
+
+# Install dependencies
+# - python3 + jinja2 (for startup script)
+# - tini (for signal management),
+# - ca-certificates (for verifying downstream DoH/DoT certificates)
+# - adduser (for adding an unprivileged user)
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        ca-certificates \
+        python3 \
+        python3-jinja2 \
+        tini \
+        ca-certificates \
+        adduser libcap2-bin \
+        /tmp/equivs-dummy_1.0_all.deb && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Create unprivileged pdns user and directories
+RUN adduser --system --disabled-password --disabled-login --no-create-home --group pdns --uid 953 && \
+    install -d --owner pdns --group pdns /etc/dnsdist/conf.d /etc/dnsdist/templates.d
+
+COPY dockerdata/startup.py /usr/local/bin/dnsdist-startup
+
+WORKDIR /etc/dnsdist
+COPY dockerdata/dnsdist.conf dockerdata/dnsdist-resolver.lua .
+
+# Default DNS ports
+EXPOSE 53/udp
+EXPOSE 53/tcp
+
+# Default console port
+EXPOSE 5199/tcp
+
+# Default webserver port
+EXPOSE 8083/tcp
+
+USER pdns
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/dnsdist-startup"]

@@ -1,0 +1,130 @@
+FROM debian:trixie-slim AS builder
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Reusable layer for base update
+RUN apt-get update && \
+    apt-get dist-upgrade -y && \
+    apt-get clean
+
+# devscripts provides mk-build-deps and more
+RUN apt-get install -y --no-install-recommends \
+        devscripts \
+        dpkg-dev \
+        equivs \
+        git \
+        python3-venv
+
+# TODO: make sure /source looks roughly the same from git or tar
+WORKDIR /source
+
+# import everything (could be pdns.git or a tarball)
+COPY builder-support/ builder-support/
+
+# TODO: control file is not in tarballs at all right now
+RUN mk-build-deps -i -t 'apt-get -o Debug::pkgProblemResolver=yes -y --no-install-recommends' builder-support/debian/authoritative/debian-buster/control && \
+    apt-get clean
+
+# build and install
+
+COPY pdns/ pdns/
+COPY modules/ modules/
+COPY codedocs/ codedocs/
+COPY docs/ docs/
+COPY build-aux/ build-aux/
+COPY m4/ m4/
+COPY ext/ ext/
+COPY .git/ .git/
+COPY configure.ac Makefile.am .
+COPY builder/helpers/set-configure-ac-version.sh /usr/local/bin
+
+ARG DOCKER_FAKE_RELEASE="NO"
+RUN if [ "${DOCKER_FAKE_RELEASE}" = "YES" ]; then \
+      BUILDER_VERSION="$(IS_RELEASE=YES BUILDER_MODULES=authoritative ./builder-support/gen-version | sed 's/\([0-9]\+\.[0-9]\+\.[0-9]\+\(\(alpha|beta|rc\)\d\+\)\)?.*/\1/')" set-configure-ac-version.sh;\
+    fi && \
+    BUILDER_MODULES=authoritative autoreconf -vfi
+
+# Lua install merged with build because Make seems to need the Lua installation name
+# TODO: simplify repeated -C calls with SUBDIRS?
+ARG NO_LUA_JIT="s390x arm64"
+ARG MAKEFLAGS="-j2"
+RUN LUAVER=$([ -z "${NO_LUA_JIT##*$(dpkg --print-architecture)*}" ] && echo 'lua5.3' || echo 'luajit') && \
+    apt-get install -y --no-install-recommends lib${LUAVER}-*dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    mkdir /build && \
+    ./configure \
+      --with-lua=${LUAVER} \
+      --sysconfdir=/etc/powerdns \
+      --enable-option-checking=fatal \
+      --with-dynmodules='bind geoip gmysql godbc gpgsql gsqlite3 ldap lmdb lua2 pipe remote tinydns' \
+      --with-modules='' \
+      --enable-tools \
+      --enable-ixfrdist \
+      --with-unixodbc-lib=/usr/lib/$(dpkg-architecture -q DEB_BUILD_GNU_TYPE) && \
+    make clean && \
+    make $MAKEFLAGS -C ext && make $MAKEFLAGS -C modules && make $MAKEFLAGS -C pdns && \
+    make -C pdns install DESTDIR=/build && make -C modules install DESTDIR=/build && make clean && \
+    strip /build/usr/local/bin/* /build/usr/local/sbin/* /build/usr/local/lib/pdns/*.so
+
+WORKDIR /tmp
+RUN mkdir debian && \
+    echo 'Source: docker-deps-for-pdns' > debian/control && \
+    dpkg-shlibdeps /build/usr/local/bin/* /build/usr/local/sbin/* /build/usr/local/lib/pdns/*.so && \
+    sed 's/^shlibs:Depends=/Depends: /' debian/substvars >> debian/control && \
+    equivs-build debian/control && \
+    mkdir /build/tmp/ && \
+    dpkg-deb -I equivs-dummy_1.0_all.deb && cp equivs-dummy_1.0_all.deb /build/tmp/
+
+
+# Runtime
+FROM debian:trixie-slim
+
+# Reusable layer for base update
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y && \
+    apt-get clean
+
+# Copy build output
+COPY --from=builder /build /
+
+# FIXME: better not use /build/tmp for equivs at all
+RUN chmod 1777 /tmp
+
+# Install dependencies
+# - python3 + jinja2 (for startup script)
+# - sqlite3 (for db schema)
+# - tini (for signal management),
+# - vim-tiny (for pdnsutil edit-zone)
+# - supervisor (for special use cases requiring advanced process management)
+# - adduser (for adding an unprivileged user)
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        ca-certificates \
+        python3 python3-jinja2 \
+        sqlite3 \
+        tini \
+        vim-tiny \
+        supervisor \
+        adduser libcap2-bin \
+        /tmp/equivs-dummy_1.0_all.deb && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Create unprivileged pdns user and directories
+RUN adduser --system --disabled-password --disabled-login --no-create-home --group pdns --uid 953 && \
+    install -d --owner pdns --group pdns /var/run/pdns /var/lib/powerdns /etc/powerdns/pdns.d /etc/powerdns/templates.d
+
+COPY dockerdata/startup.py /usr/local/sbin/pdns_server-startup
+COPY dockerdata/pdns.conf /etc/powerdns/
+
+USER pdns
+# Set up database
+# TODO: this needs to be done smarter
+RUN sqlite3 /var/lib/powerdns/pdns.sqlite3 < /usr/local/share/doc/pdns/schema.sqlite3.sql
+
+# Default DNS ports
+EXPOSE 53/udp
+EXPOSE 53/tcp
+
+# Default webserver port
+EXPOSE 8081/tcp
+
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/sbin/pdns_server-startup"]
+HEALTHCHECK --interval=10s --timeout=5s --start-period=1s --start-interval=1s --retries=3 CMD ["pdns_control", "rping"]
