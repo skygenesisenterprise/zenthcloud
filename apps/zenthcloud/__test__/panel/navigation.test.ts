@@ -1,15 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
+	ACCOUNT_DESTINATIONS,
 	CLOUD_DESTINATION_MIN_LICENSE,
 	createNavigation,
 	findActiveNavigation,
+	isNavigationChildActive,
 	isNavigationItemActive,
 	organizationPath,
+	resolveRecentNavigationPage,
 	resolveContextualNavigation,
 	resolveWorkspaceNavigation,
 	type PanelNavigation,
 	type PanelNavigationItem,
 } from "@/components/panel/navigation";
+import { updateRecentPages } from "@/components/panel/recent-pages";
 
 const ORG = "a6369a86743b73f5e58185a5e3b43a1b";
 const OTHER_ORG = "f3dd4410d9bcf95499d55f6d569b87e5";
@@ -45,13 +49,13 @@ describe("panel navigation structure", () => {
 
 		expect(navigation.sections.map((section) => section.id)).toEqual([
 			"main",
-			"build",
+			"infrastructure",
 			"protect",
 		]);
 		expect(navigation.sections.map((section) => section.label)).toEqual([
 			undefined,
-			"Build",
-			"Protéger & connecter",
+			"Infrastructure",
+			"Protect & Connect",
 		]);
 	});
 
@@ -66,19 +70,33 @@ describe("panel navigation structure", () => {
 			"domains",
 			"observability",
 		]);
+		expect(main?.items.map((item) => item.label)).toEqual([
+			"Overview",
+			"Activity",
+			"Domains",
+			"Observability",
+		]);
 	});
 
 	it("keeps Gérer le compte out of the section tree as a utility entry", () => {
 		const navigation = create();
 
 		expect(navigation.footer.map((item) => item.id)).toEqual(["account"]);
-		expect(navigation.footer[0]?.label).toBe("Gérer le compte");
+		expect(navigation.footer[0]?.label).toBe("Account Settings");
 		expect(navigation.footer[0]?.expandable).toBe(true);
 		expect(
 			navigation.sections
 				.flatMap((section) => section.items)
 				.map((item) => item.id),
 		).not.toContain("account");
+	});
+
+	it("keeps available account pages active under the persistent entry", () => {
+		expect(ACCOUNT_DESTINATIONS.length).toBeGreaterThan(0);
+		expect(ACCOUNT_DESTINATIONS.every((entry) => entry.implemented)).toBe(true);
+		expect(ACCOUNT_DESTINATIONS.map((entry) => entry.path)).toContain(
+			"account/members",
+		);
 	});
 
 	it("declares every destination of the panel", () => {
@@ -89,6 +107,7 @@ describe("panel navigation structure", () => {
 			"observability",
 			"compute",
 			"infrastructure",
+			"telecom",
 			"ai",
 			"storage",
 			"media",
@@ -101,6 +120,99 @@ describe("panel navigation structure", () => {
 			"monetize",
 			"delivery",
 		]);
+	});
+
+	it("keeps the prescribed global hierarchy and order", () => {
+		const navigation = create();
+
+		expect(
+			navigation.sections.map((section) => ({
+				label: section.label,
+				items: section.items.map((item) => item.label),
+			})),
+		).toEqual([
+			{
+				label: undefined,
+				items: ["Overview", "Activity", "Domains", "Observability"],
+			},
+			{
+				label: "Infrastructure",
+				items: [
+					"Compute",
+					"Cloud",
+					"Telecom",
+					"AI",
+					"Data & Storage",
+					"Media",
+					"Realtime",
+					"Development & Runtime",
+				],
+			},
+			{
+				label: "Protect & Connect",
+				items: [
+					"Application Security",
+					"Identity & Access",
+					"Networks",
+					"Threat Detection & Response",
+					"Commerce",
+					"Delivery & Performance",
+				],
+			},
+		]);
+		expect(navigation.footer.map((item) => item.label)).toEqual([
+			"Account Settings",
+		]);
+	});
+
+	it("labels the infrastructure destination as Cloud", () => {
+		const cloud = items(create()).find((item) => item.id === "infrastructure");
+		expect(cloud).toMatchObject({
+			label: "Cloud",
+			href: `/${ORG}/cloud/overview`,
+			implemented: true,
+		});
+	});
+
+	it("exposes active product routes under their global destinations", () => {
+		const navigationItems = items(create());
+		const childItems = (id: string) =>
+			navigationItems.find((item) => item.id === id)?.children ?? [];
+
+		expect(childItems("ai").every((child) => child.implemented)).toBe(true);
+		expect(childItems("applicationSecurity").every((child) => child.implemented))
+			.toBe(true);
+		expect(childItems("networks").every((child) => child.implemented)).toBe(true);
+		expect(childItems("media").every((child) => child.implemented)).toBe(true);
+		expect(
+			childItems("storage").find((child) =>
+				child.href.endsWith("/r2/secrets-store"),
+			)?.implemented,
+		).toBe(false);
+		expect(childItems("telecom")).toEqual([]);
+	});
+
+	it("keeps Cloud and Telecom as active simple workspace links", () => {
+		const navigationItems = items(create());
+		const cloud = navigationItems.find((item) => item.id === "infrastructure");
+		const telecom = navigationItems.find((item) => item.id === "telecom");
+
+		expect(cloud).toMatchObject({
+			id: "infrastructure",
+			label: "Cloud",
+			href: `/${ORG}/cloud/overview`,
+			implemented: true,
+			expandable: false,
+		});
+		expect(cloud?.children).toBeUndefined();
+		expect(telecom).toMatchObject({
+			id: "telecom",
+			label: "Telecom",
+			href: `/${ORG}/telecom/overview`,
+			implemented: true,
+			expandable: false,
+		});
+		expect(telecom?.children).toBeUndefined();
 	});
 
 	it("uses stable ids without duplicates", () => {
@@ -136,11 +248,138 @@ describe("panel navigation organization scope", () => {
 		);
 	});
 
-	it("only links to destinations whose page exists", () => {
+	it("activates global simple destinations", () => {
 		const implemented = items(create()).filter((item) => item.implemented);
 
-		expect(implemented.map((item) => item.id)).toEqual(["home"]);
+		expect(implemented.map((item) => item.id)).toEqual([
+			"home",
+			"observability",
+			"infrastructure",
+			"telecom",
+		]);
 		expect(implemented[0]?.href).toBe(`/${ORG}/home`);
+	});
+
+	it("shows recent visits in the Activity dropdown", () => {
+		const navigation = create({
+			recentPages: [
+				{ path: "ai/agents", section: "AI", item: "Agents" },
+				{ path: "domains/overview", section: "Domains", item: "Overview" },
+				{
+					path: "domains/example.com",
+					section: "Domains",
+					item: "example.com",
+				},
+			],
+		});
+		const activity = items(navigation).find((item) => item.id === "history");
+
+		expect(activity?.children).toMatchObject([
+			{
+				id: "history.recent.ai.agents",
+				label: "AI / Agents",
+				href: `/${ORG}/ai/agents`,
+				implemented: true,
+			},
+			{
+				id: "history.recent.domains.overview",
+				label: "Domains / Overview",
+				href: `/${ORG}/domains/overview`,
+				implemented: true,
+			},
+			{
+				id: "history.recent.domains.example.com",
+				label: "Domains / example.com",
+				href: `/${ORG}/domains/example.com`,
+				implemented: true,
+			},
+		]);
+	});
+
+	it("does not show recent links hidden by the current permission or license", () => {
+		const navigation = create({
+			license: "free",
+			recentPages: [
+				{ path: "ai/agents", section: "AI", item: "Agents" },
+				{ path: "r2/overview", section: "Data & Storage", item: "Overview" },
+			],
+		});
+		const activity = items(navigation).find((item) => item.id === "history");
+
+		expect(activity?.children?.map((child) => child.href)).toEqual([
+			`/${ORG}/ai/agents`,
+		]);
+	});
+
+	it("resolves visited pages from the global navigation without query strings", () => {
+		const navigation = create();
+
+		expect(
+			resolveRecentNavigationPage(
+				navigation,
+				`/${ORG}/ai/agents?tab=deployments`,
+			),
+		).toEqual({ path: "ai/agents", section: "AI", item: "Agents" });
+		expect(
+			resolveRecentNavigationPage(navigation, `/${OTHER_ORG}/ai/agents`),
+		).toBeUndefined();
+		expect(
+			resolveRecentNavigationPage(navigation, `/${ORG}/domains/example.com`),
+		).toEqual({
+			path: "domains/example.com",
+			section: "Domains",
+			item: "example.com",
+		});
+	});
+
+	it("moves a repeated visit to the front and keeps five recent pages", () => {
+		const previous = Array.from({ length: 5 }, (_, index) => ({
+			path: `ai/page-${index}`,
+			section: "AI",
+			item: `Page ${index}`,
+		}));
+
+		expect(
+			updateRecentPages(previous, {
+				path: "ai/page-3",
+				section: "AI",
+				item: "Page 3",
+			}).map((page) => page.path),
+		).toEqual([
+			"ai/page-3",
+			"ai/page-0",
+			"ai/page-1",
+			"ai/page-2",
+			"ai/page-4",
+		]);
+		expect(
+			updateRecentPages(previous, {
+				path: "ai/page-5",
+				section: "AI",
+				item: "Page 5",
+			}).map((page) => page.path),
+		).toEqual([
+			"ai/page-5",
+			"ai/page-0",
+			"ai/page-1",
+			"ai/page-2",
+			"ai/page-3",
+		]);
+	});
+
+	it("activates present Domains pages in the submenu", () => {
+		const domains = items(create()).find((item) => item.id === "domains");
+
+		expect(domains).toMatchObject({
+			implemented: false,
+			expandable: true,
+		});
+		expect(domains?.children?.map((child) => child.href)).toEqual([
+			`/${ORG}/domains/overview`,
+			`/${ORG}/domains/registrations`,
+			`/${ORG}/domains/transfers`,
+		]);
+		expect(domains?.children?.every((child) => child.implemented)).toBe(true);
 	});
 
 	it("keeps the whole tree without dead links", () => {
@@ -151,7 +390,7 @@ describe("panel navigation organization scope", () => {
 		}
 	});
 
-	it("marks every destination except the home as expandable", () => {
+	it("keeps Cloud and Telecom simple while other destinations can expand", () => {
 		const navigation = create();
 		// `account` is pinned to the footer, outside the scrollable tree.
 		const expandable = [...items(navigation), ...navigation.footer]
@@ -160,23 +399,44 @@ describe("panel navigation organization scope", () => {
 
 		expect(expandable).not.toContain("home");
 		expect(expandable).toEqual(
-			expect.arrayContaining(["history", "domains", "observability", "account"]),
+			expect.arrayContaining([
+				"history",
+				"domains",
+				"observability",
+				"compute",
+				"account",
+			]),
 		);
+		expect(expandable).not.toContain("infrastructure");
+		expect(expandable).not.toContain("telecom");
 	});
 
-	it("carries the novelty badges of the panel", () => {
-		const badged = items(create())
-			.filter((item) => item.badge)
-			.map((item) => item.id);
-
-		expect(badged).toEqual(["observability", "monetize"]);
-		expect(items(create()).find((item) => item.id === "observability")?.badge).toBe(
-			"Nouveau",
-		);
+	it("omits the new-product badges", () => {
+		expect(items(create()).some((item) => item.badge)).toBe(false);
 	});
 });
 
 describe("panel navigation active entry", () => {
+	it("does not mark Activity active in the global workspace", () => {
+		const activity = items(
+			create({
+				recentPages: [{ path: "ai/agents", section: "AI", item: "Agents" }],
+			}),
+		).find((item) => item.id === "history");
+		if (!activity) throw new Error("Activity navigation item is missing");
+
+		expect(
+			isNavigationItemActive(activity, { pathname: `/${ORG}/ai/agents` }),
+		).toBe(false);
+		const recentChild = activity.children?.[0];
+		if (!recentChild) throw new Error("Recent Activity link is missing");
+		expect(
+			isNavigationChildActive(activity, recentChild, {
+				pathname: `/${ORG}/ai/agents`,
+			}),
+		).toBe(false);
+	});
+
 	it("selects Accueil on the workspace home", () => {
 		const navigation = create();
 		const active = findActiveNavigation(navigation, {
@@ -309,7 +569,7 @@ describe("workspace navigation", () => {
 		expect(resolved.contextual).toEqual([]);
 		expect(resolved.sections.map((section) => section.id)).toEqual([
 			"main",
-			"build",
+			"infrastructure",
 			"protect",
 		]);
 	});
@@ -324,16 +584,16 @@ describe("workspace navigation", () => {
 		});
 		expect(resolved.sections.map((section) => section.id)).toEqual([
 			"main",
-			"build",
+			"infrastructure",
 			"protect",
 		]);
 		expect(resolved.contextual.map((section) => section.label)).toEqual([
-			"Vue d'ensemble",
-			"Calcul",
-			"Stockage et bases de données",
-			"Réseau",
-			"Sécurité",
-			"Opérations",
+			"Overview",
+			"Compute",
+			"Storage Infrastructure",
+			"Infrastructure Networking",
+			"Infrastructure Security",
+			"Operations",
 		]);
 	});
 
@@ -351,12 +611,49 @@ describe("workspace navigation", () => {
 		).toContain(`/${ORG}/ai/agents`);
 	});
 
-	it("never links a workspace entry whose page is missing", () => {
+	it("opens a Telecom workspace with its current route active", () => {
+		const resolved = resolve(`/${ORG}/telecom/overview`);
+
+		expect(resolved.workspace).toMatchObject({
+			kind: "domain",
+			id: "domain:telecom",
+			label: "Telecom",
+			basePath: "telecom",
+		});
+		expect(resolved.contextual[0]?.items.map((item) => item.label)).toEqual([
+			"Overview",
+			"Connectivity",
+			"IP & Numbering",
+			"Internet & Routing",
+			"Private Networks",
+			"Voice & Telephony",
+			"Operator Services",
+			"Monitoring & Quality",
+			"Operations",
+		]);
+		expect(resolved.contextual[0]?.items[0]).toMatchObject({
+			href: `/${ORG}/telecom/overview`,
+			implemented: true,
+		});
+		expect(
+			resolved.contextual
+				.flatMap((section) => section.items)
+				.slice(1)
+				.every((item) => !item.implemented),
+		).toBe(true);
+		expect(resolved.footer.map((item) => item.label)).toEqual([
+			"Account Settings",
+		]);
+	});
+
+	it("activates AI workspace entries that have route files", () => {
 		const resolved = resolve(`/${ORG}/ai/agents`);
 
-		for (const item of resolved.contextual.flatMap((section) => section.items)) {
-			expect(item.implemented).toBe(false);
-		}
+		expect(
+			resolved.contextual
+				.flatMap((section) => section.items)
+				.every((item) => item.implemented),
+		).toBe(true);
 	});
 
 	it("prefers the resource workspace inside a product domain", () => {
@@ -366,9 +663,17 @@ describe("workspace navigation", () => {
 		expect(resolved.workspace.id).toBe("resource:domain:dom_123");
 		expect(resolved.workspace.parent).toMatchObject({
 			id: "domain:domains",
-			label: "Domaines",
+			label: "Domains",
 			href: `/${ORG}/domains`,
 		});
+		expect(resolved.contextual[0]?.items[0]).toMatchObject({
+			label: "Overview",
+			href: `/${ORG}/domains/dom_123`,
+			implemented: true,
+		});
+		expect(
+			resolved.contextual[0]?.items.slice(1).every((item) => !item.implemented),
+		).toBe(true);
 		expect(resolved.contextual[0]?.items.map((item) => item.label)).toContain(
 			"DNS",
 		);
@@ -402,26 +707,26 @@ describe("panel contextual navigation", () => {
 		});
 
 		expect(section.id).toBe("contextual-domain");
-		expect(section.label).toBe("Domaine");
+		expect(section.label).toBe("Domain");
 		expect(section.items.map((item) => item.label)).toEqual([
-			"Vue d'ensemble",
-			"Historique",
-			"AI Crawl Control",
-			"Préparation pour agents",
+			"Overview",
+			"Activity",
+			"AI Crawler Management",
+			"Agent Readiness",
 			"Analytics",
-			"Observabilité",
+			"Observability",
 			"DNS",
-			"E-mail",
+			"Email",
 			"SSL/TLS",
-			"Sécurité",
+			"Security",
 			"Access",
-			"Speed",
+			"Performance",
 			"Caching",
-			"Routes Workers",
-			"Règles",
-			"Pages d'erreur",
-			"Réseau",
-			"Trafic",
+			"Runtime Routes",
+			"Rules",
+			"Error Pages",
+			"Network",
+			"Traffic",
 			"Web3",
 		]);
 		expect(section.items.map((item) => item.href)).toEqual([
@@ -458,17 +763,17 @@ describe("panel contextual navigation", () => {
 		});
 
 		expect(instance.items.map((item) => item.label)).toEqual([
-			"Vue d'ensemble",
+			"Overview",
 			"Monitoring",
 			"Configuration",
-			"Réseau",
-			"Stockage",
-			"Activité",
+			"Network",
+			"Storage",
+			"Activity",
 		]);
 		expect(bucket.items.map((item) => item.label)).toEqual([
-			"Vue d'ensemble",
-			"Objets",
-			"Accès",
+			"Overview",
+			"Objects",
+			"Access",
 			"Lifecycle",
 			"Monitoring",
 		]);
@@ -501,29 +806,45 @@ describe("panel workspace navigation", () => {
 		expect(resolved.contextual).toEqual([]);
 		expect(resolved.sections.map((section) => section.id)).toEqual([
 			"main",
-			"build",
+			"infrastructure",
 			"protect",
 		]);
 	});
 
-	it("opens the infrastructure workspace", () => {
+	it("opens the infrastructure workspace and links its existing routes", () => {
 		const resolved = resolve(`/${ORG}/infrastructure/network`);
 
 		expect(resolved.workspace.kind).toBe("infrastructure");
 		expect(resolved.workspace.id).toBe("infrastructure");
 		expect(resolved.contextual.map((section) => section.label)).toEqual([
-			"Vue d'ensemble",
-			"Calcul",
-			"Stockage et bases de données",
-			"Réseau",
-			"Sécurité",
-			"Opérations",
+			"Overview",
+			"Compute",
+			"Storage Infrastructure",
+			"Infrastructure Networking",
+			"Infrastructure Security",
+			"Operations",
 		]);
 		const hrefs = resolved.contextual.flatMap((section) =>
 			section.items.map((item) => item.href),
 		);
-		expect(hrefs).toContain(`/${ORG}/network`);
+		expect(hrefs).toContain(`/${ORG}/network/overview`);
 		expect(hrefs).toContain(`/${ORG}/workers/containers`);
+		expect(
+			resolved.contextual
+				.flatMap((section) => section.items)
+				.filter((item) => item.implemented)
+				.map((item) => item.href),
+		).toEqual(
+			expect.arrayContaining([
+				`/${ORG}/workers/containers`,
+				`/${ORG}/r2/overview`,
+				`/${ORG}/network/overview`,
+				`/${ORG}/network/tunnels`,
+				`/${ORG}/network/ip-addresses/custom-ips`,
+				`/${ORG}/network/ip-addresses/proxy-ips`,
+				`/${ORG}/observability`,
+			]),
+		);
 		for (const href of hrefs) {
 			expect(href.startsWith(`/${ORG}/`)).toBe(true);
 		}

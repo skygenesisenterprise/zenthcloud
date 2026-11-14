@@ -11,9 +11,12 @@ import {
 } from "@phosphor-icons/react";
 import type { GetServerSideProps } from "next";
 import Head from "next/head";
+import NextLink from "next/link";
 import { useState } from "react";
+import { organizationPath } from "@/components/panel/navigation";
 import { OrganizationProvider } from "@/components/panel/organization-context";
 import { PanelShell } from "@/components/panel/panel-shell";
+import { useRecentPages } from "@/components/panel/recent-pages";
 import {
 	getOrganizationPageProps,
 	type OrganizationPageProps,
@@ -27,15 +30,6 @@ const DOMAINS = [
 	"guilderia.com",
 	"liamvonastoria.eu",
 	"notploy.app",
-] as const;
-
-/** Last visited destinations, newest first. */
-const RECENTS = [
-	{ section: "DNS", item: "Paramètres" },
-	{ section: "E-mail", item: "Gestion DMARC" },
-	{ section: "DNS", item: "Enregistrements" },
-	{ section: "Domaines", item: "skygenesisenterprise.com" },
-	{ section: "Domaines", item: "Vue d'ensemble" },
 ] as const;
 
 type Metric = {
@@ -187,16 +181,17 @@ export default function OrganizationHomePage({
 	user,
 }: OrganizationPageProps) {
 	const [query, setQuery] = useState("");
+	const [recentPages] = useRecentPages(organization.id, user.email);
 	const needle = query.trim().toLowerCase();
 
 	const domains = needle
 		? DOMAINS.filter((domain) => domain.toLowerCase().includes(needle))
 		: DOMAINS;
 	const recents = needle
-		? RECENTS.filter((entry) =>
+		? recentPages.filter((entry) =>
 				`${entry.section} ${entry.item}`.toLowerCase().includes(needle),
 			)
-		: RECENTS;
+		: recentPages;
 
 	return (
 		<>
@@ -333,29 +328,33 @@ export default function OrganizationHomePage({
 
 								<ul>
 									{recents.map((entry) => (
-										<li
-											key={`${entry.section}-${entry.item}`}
-											className="flex items-center gap-3 border-b py-3.5 text-sm"
-										>
-											<ClockIcon
-												aria-hidden
-												className="size-4 shrink-0 text-muted-foreground"
-											/>
-											<span className="min-w-0 flex-1 truncate">
-												<span className="text-muted-foreground">
-													{entry.section}
-												</span>{" "}
-												/ {entry.item}
-											</span>
-											<CaretRightIcon
-												aria-hidden
-												className="size-3.5 shrink-0 text-muted-foreground"
-											/>
+										<li key={entry.path} className="border-b">
+											<NextLink
+												href={organizationPath(organization.id, entry.path)}
+												className="flex items-center gap-3 py-3.5 text-sm hover:text-foreground"
+											>
+												<ClockIcon
+													aria-hidden
+													className="size-4 shrink-0 text-muted-foreground"
+												/>
+												<span className="min-w-0 flex-1 truncate">
+													<span className="text-muted-foreground">
+														{entry.section}
+													</span>{" "}
+													/ {entry.item}
+												</span>
+												<CaretRightIcon
+													aria-hidden
+													className="size-3.5 shrink-0 text-muted-foreground"
+												/>
+											</NextLink>
 										</li>
 									))}
 									{recents.length === 0 && (
 										<li className="border-b py-3.5 text-xs text-muted-foreground">
-											Aucun résultat récent pour « {query.trim()} ».
+											{needle
+												? `No recent result for “${query.trim()}”.`
+												: "No recent pages yet."}
 										</li>
 									)}
 								</ul>

@@ -14,6 +14,7 @@ import {
 	type Icon,
 	ImagesIcon,
 	NetworkIcon,
+	PhoneIcon,
 	PulseIcon,
 	ShieldCheckIcon,
 	ShieldWarningIcon,
@@ -23,7 +24,7 @@ import {
 /**
  * Navigation model of the ZenthCloud panel.
  *
- * This is the Cloud-style product surface served under `/{organizationId}` —
+ * This is the organization-wide product surface served under `/{organizationId}` —
  * not the infrastructure dashboard under `/dashboard`. The two surfaces share
  * the same navigation *concepts* (destinations, placements, environment and
  * licence gating) but not the same tree, because they expose different
@@ -60,13 +61,12 @@ export type NavigationDestination = {
 	activePaths?: readonly string[];
 	/** Permission required to see the destination, as `resource.action`. */
 	requires?: string;
-	/**
-	 * A destination is only rendered as a link once its page exists. This keeps
-	 * the navigation tree complete without pointing at routes that 404.
-	 */
+	/** Whether the destination is exposed as an active navigation link. */
 	implemented?: boolean;
-	/** Optional pill rendered next to the label, e.g. `Nouveau`. */
+	/** Optional pill rendered next to the label. */
 	badge?: string;
+	/** Optional heading shown above the destination's submenu. */
+	subMenuLabel?: string;
 };
 
 /**
@@ -75,42 +75,48 @@ export type NavigationDestination = {
  */
 const NAVIGATION_DESTINATIONS = {
 	home: {
-		label: "Accueil du compte",
+		label: "Overview",
 		path: "home",
 		icon: HouseIcon,
 		implemented: true,
 	},
 	history: {
-		label: "Historique",
+		label: "Activity",
 		path: "history",
 		icon: ClockCounterClockwiseIcon,
 	},
 	domains: {
-		label: "Domaines",
+		label: "Domains",
 		path: "domains",
 		icon: GlobeIcon,
 		requires: "dnsProvider.read",
 	},
 	observability: {
-		label: "Observabilité",
+		label: "Observability",
 		path: "observability",
 		icon: PulseIcon,
+		implemented: true,
 		requires: "traffic.read",
-		badge: "Nouveau",
 	},
-	// The infrastructure workspace has no page of its own yet: it is the
-	// umbrella the operational products will be grouped under, so the entry is
-	// declared now and rendered as a disabled row until its route exists.
+	// Keep the stable destination ID separate from the operational
+	// Infrastructure Workspace.
 	infrastructure: {
-		label: "Infrastructure",
-		path: "infrastructure",
+		label: "Cloud",
+		path: "cloud/overview",
 		icon: HardDrivesIcon,
-		implemented: false,
+		implemented: true,
+	},
+	telecom: {
+		label: "Telecom",
+		path: "telecom/overview",
+		icon: PhoneIcon,
+		implemented: true,
 	},
 	compute: {
-		label: "Calcul",
+		label: "Compute",
 		path: "compute",
 		icon: CpuIcon,
+		subMenuLabel: "Service",
 	},
 	ai: {
 		label: "AI",
@@ -118,12 +124,12 @@ const NAVIGATION_DESTINATIONS = {
 		icon: SparkleIcon,
 	},
 	storage: {
-		label: "Stockage et bases de données",
+		label: "Data & Storage",
 		path: "storage",
 		icon: DatabaseIcon,
 	},
 	media: {
-		label: "Images & Stream",
+		label: "Media",
 		path: "media",
 		icon: ImagesIcon,
 	},
@@ -133,43 +139,42 @@ const NAVIGATION_DESTINATIONS = {
 		icon: BroadcastIcon,
 	},
 	development: {
-		label: "Développement et déploiement",
+		label: "Development & Runtime",
 		path: "development",
 		icon: CodeIcon,
 	},
 	applicationSecurity: {
-		label: "Sécurité des applications",
+		label: "Application Security",
 		path: "security/applications",
 		icon: ShieldCheckIcon,
 	},
 	zeroTrust: {
-		label: "Zero Trust",
+		label: "Identity & Access",
 		path: "security/zero-trust",
 		icon: ShieldWarningIcon,
 	},
 	networks: {
-		label: "Réseaux",
+		label: "Networks",
 		path: "networks",
 		icon: NetworkIcon,
 	},
 	threats: {
-		label: "Menaces & défense",
+		label: "Threat Detection & Response",
 		path: "security/threats",
 		icon: BugIcon,
 	},
 	monetize: {
-		label: "Monétiser",
+		label: "Commerce",
 		path: "monetize",
 		icon: CurrencyCircleDollarIcon,
-		badge: "Nouveau",
 	},
 	delivery: {
-		label: "Livraison et performance",
+		label: "Delivery & Performance",
 		path: "delivery",
 		icon: GaugeIcon,
 	},
 	account: {
-		label: "Gérer le compte",
+		label: "Account Settings",
 		path: "account",
 		icon: GearIcon,
 	},
@@ -191,6 +196,7 @@ export const CLOUD_DESTINATION_MIN_LICENSE = {
 	domains: "free",
 	observability: "free",
 	infrastructure: "free",
+	telecom: "free",
 	compute: "free",
 	ai: "free",
 	storage: "pro",
@@ -223,9 +229,9 @@ export type NavigationSectionDefinition = {
 };
 
 /**
- * The Cloud-style tree: four sections, in the requested order. Entries are
- * declared even when their page does not exist yet; the renderer decides
- * between a link and a disabled item from `implemented`.
+ * The Global Workspace tree: product sections in the requested order. A
+ * destination with children can expose its available pages even when it has no
+ * landing page of its own.
  */
 export const NAVIGATION_SECTIONS: readonly NavigationSectionDefinition[] = [
 	{
@@ -238,11 +244,12 @@ export const NAVIGATION_SECTIONS: readonly NavigationSectionDefinition[] = [
 		],
 	},
 	{
-		id: "build",
-		label: "Build",
+		id: "infrastructure",
+		label: "Infrastructure",
 		items: [
 			{ destination: "compute" },
 			{ destination: "infrastructure" },
+			{ destination: "telecom" },
 			{ destination: "ai" },
 			{ destination: "storage" },
 			{ destination: "media" },
@@ -252,7 +259,7 @@ export const NAVIGATION_SECTIONS: readonly NavigationSectionDefinition[] = [
 	},
 	{
 		id: "protect",
-		label: "Protéger & connecter",
+		label: "Protect & Connect",
 		items: [
 			{ destination: "applicationSecurity" },
 			{ destination: "zeroTrust" },
@@ -273,38 +280,57 @@ export const FOOTER_NAVIGATION: readonly NavigationPlacement[] = [
 ];
 
 /**
- * Entries of the "Gérer le compte" sub-menu, in the order the reference panel
- * lists them. Their pages are not written yet, so the shell renders them as
- * disabled rows: the menu shows the real structure without linking to a route
- * that would open blank.
+ * Entries of the Account Settings sub-menu, in the order the panel lists them.
  */
 export const ACCOUNT_DESTINATIONS: readonly {
 	label: string;
 	path: string;
+	implemented: boolean;
 }[] = [
-	{ label: "Membres", path: "account/members" },
-	{ label: "Facturation", path: "account/billing" },
-	{ label: "Jetons d'API du compte", path: "account/api-tokens" },
-	{ label: "Clients OAuth", path: "account/oauth-clients" },
-	{ label: "Journaux d'audit", path: "account/audit-log" },
-	{ label: "Notifications", path: "account/notifications" },
-	{ label: "Contenu bloqué", path: "account/blocked-content" },
+	{ label: "Members", path: "account/members", implemented: true },
+	{ label: "Billing", path: "account/billing", implemented: true },
 	{
-		label: "Rapports de mauvaise utilisation",
-		path: "account/abuse-reports",
+		label: "Account API Tokens",
+		path: "account/api-tokens",
+		implemented: true,
 	},
-	{ label: "Rapport sur l'impact carbone", path: "account/carbon" },
-	{ label: "Configurations", path: "account/configurations" },
-	{ label: "Étiquettes de ressources", path: "account/tags" },
+	{ label: "OAuth Clients", path: "account/oauth-clients", implemented: true },
+	{ label: "Audit Logs", path: "account/audit-log", implemented: true },
+	{ label: "Notifications", path: "account/notifications", implemented: true },
+	{
+		label: "Blocked Content",
+		path: "account/blocked-content",
+		implemented: true,
+	},
+	{
+		label: "Abuse Reports",
+		path: "account/abuse-reports",
+		implemented: true,
+	},
+	{ label: "Carbon Impact Report", path: "account/carbon", implemented: true },
+	{
+		label: "Configurations",
+		path: "account/configurations",
+		implemented: true,
+	},
+	{ label: "Resource Tags", path: "account/tags", implemented: true },
 ];
 
 export type PanelNavigationChild = {
 	id: string;
 	label: string;
+	group?: string;
+	description?: string;
 	/** Absolute, workspace-scoped href. */
 	href: string;
-	/** Whether the page behind `href` exists today. */
+	/** Whether this route is exposed as an active navigation link. */
 	implemented: boolean;
+};
+
+export type RecentNavigationPage = {
+	path: string;
+	section: string;
+	item: string;
 };
 
 export type PanelNavigationItem = {
@@ -313,18 +339,15 @@ export type PanelNavigationItem = {
 	/** Absolute, workspace-scoped href. Always built from the URL organization. */
 	href: string;
 	icon: Icon;
-	/** Whether the page behind `href` exists today. */
+	/** Whether this route is exposed as an active navigation link. */
 	implemented: boolean;
 	/** Whether the destination will expose a contextual sub-navigation. */
 	expandable: boolean;
-	/** Optional pill rendered next to the label, e.g. `Nouveau`. */
+	/** Optional pill rendered next to the label. */
 	badge?: string;
 	minLicense?: LicenseTier;
-	/**
-	 * Entries of the destination's own sub-menu. They are rendered in place
-	 * when the row is expanded, so a product surface stays reachable even when
-	 * its landing page is not written yet.
-	 */
+	subMenuLabel?: string;
+	/** Entries of the destination's own sub-menu, rendered when expanded. */
 	children?: PanelNavigationChild[];
 };
 
@@ -384,21 +407,127 @@ function resolveDomainChildren(organizationId: string): PanelNavigationChild[] {
 	return [
 		{
 			id: "overview",
-			label: "Vue d'ensemble",
+			label: "Overview",
 			path: "domains/overview",
 			implemented: true,
 		},
 		{
 			id: "registrations",
-			label: "Enregistrements",
+			label: "Records",
 			path: "domains/registrations",
+			implemented: true,
 		},
-		{ id: "transfers", label: "Transferts", path: "domains/transfers" },
+		{
+			id: "transfers",
+			label: "Transfers",
+			path: "domains/transfers",
+			implemented: true,
+		},
 	].map((entry) => ({
 		id: `domains.${entry.id}`,
 		label: entry.label,
 		href: organizationPath(organizationId, entry.path),
 		implemented: entry.implemented === true,
+	}));
+}
+
+const COMPUTE_SERVICE_DESTINATIONS = [
+	{
+		label: "Workers & Pages",
+		group: "Development & Runtime",
+		description: "Application execution and hosting",
+		path: "workers",
+		implemented: true,
+	},
+	{
+		label: "Observability",
+		group: "Observability",
+		description: "Monitoring and diagnostics",
+		path: "observability",
+		implemented: true,
+	},
+	{
+		label: "Workers for Platforms",
+		group: "Development & Runtime",
+		description: "Multi-tenant execution platform",
+		path: "workers/platforms",
+		implemented: true,
+	},
+	{
+		label: "Containers",
+		group: "Compute",
+		description: "Container execution",
+		path: "workers/containers",
+		implemented: true,
+	},
+	{
+		label: "Durable Objects",
+		group: "Realtime / Compute",
+		description: "Distributed state and coordination",
+		path: "workers/durable-objects",
+		implemented: true,
+	},
+	{
+		label: "Queues",
+		group: "Messaging & Events",
+		description: "Message queues",
+		path: "workers/queues",
+		implemented: true,
+	},
+	{
+		label: "Workflows",
+		group: "Automation & Orchestration",
+		description: "Durable process execution",
+		path: "workers/workflows",
+		implemented: true,
+	},
+	{
+		label: "Browser Rendering",
+		group: "Media / Automation",
+		description: "Browser execution",
+		path: "workers/browser-run",
+		implemented: true,
+	},
+	{
+		label: "VPC",
+		group: "Networking",
+		description: "Virtual private network",
+		path: "workers/vpc",
+		implemented: true,
+	},
+	{
+		label: "Email Routing",
+		group: "Telecom / Messaging",
+		description: "Email routing",
+		path: "telecom/email-routing",
+		implemented: false,
+	},
+	{
+		label: "Workers Plans",
+		group: "Account & Billing",
+		description: "Plans and pricing",
+		path: "workers/plans",
+		implemented: true,
+	},
+	{
+		label: "Flagship",
+		group: "To Identify",
+		description: "Product or offer to clarify",
+		path: "workers/flagship",
+		implemented: true,
+	},
+] as const;
+
+function resolveComputeChildren(
+	organizationId: string,
+): PanelNavigationChild[] {
+	return COMPUTE_SERVICE_DESTINATIONS.map((entry) => ({
+		id: `compute.${entry.path.replaceAll("/", ".")}`,
+		label: entry.label,
+		group: entry.group,
+		description: entry.description,
+		href: organizationPath(organizationId, entry.path),
+		implemented: entry.implemented,
 	}));
 }
 
@@ -409,6 +538,7 @@ function resolvePlacement(
 		environment: NavigationEnvironment;
 		permissions?: unknown;
 		license: LicenseTier | null;
+		recentPages?: readonly RecentNavigationPage[];
 	},
 ): PanelNavigationItem | undefined {
 	if (!isInEnvironment(placement.environments, opts.environment)) {
@@ -440,13 +570,18 @@ function resolvePlacement(
 		implemented: destination.implemented === true,
 		// Every destination except the workspace home leads to a deeper level
 		// (a list, then a resource) and is rendered with a disclosure chevron.
-		expandable: placement.destination !== "home",
+		expandable:
+			placement.destination !== "home" &&
+			placement.destination !== "infrastructure" &&
+			placement.destination !== "telecom",
 		badge: destination.badge,
 		minLicense,
-		children:
-			placement.destination === "domains"
-				? resolveDomainChildren(opts.organizationId)
-				: undefined,
+		subMenuLabel: destination.subMenuLabel,
+		children: resolveDestinationChildren(
+			opts.organizationId,
+			placement.destination,
+			opts.recentPages,
+		),
 	};
 }
 
@@ -455,12 +590,14 @@ export function createNavigation(opts: {
 	environment: NavigationEnvironment;
 	permissions?: unknown;
 	license?: LicenseTier | null;
+	recentPages?: readonly RecentNavigationPage[];
 }): PanelNavigation {
 	const context = {
 		organizationId: opts.organizationId,
 		environment: opts.environment,
 		permissions: opts.permissions,
 		license: opts.license ?? null,
+		recentPages: opts.recentPages,
 	};
 
 	const sections: PanelNavigationSection[] = [];
@@ -475,6 +612,49 @@ export function createNavigation(opts: {
 
 		if (items.length > 0) {
 			sections.push({ id: section.id, label: section.label, items });
+		}
+	}
+
+	const availableHrefs = new Set(
+		sections.flatMap((section) =>
+			section.items.flatMap((item) =>
+				item.id === "history"
+					? []
+					: [
+							...(item.implemented ? [item.href] : []),
+							...(item.children
+								?.filter((child) => child.implemented)
+								.map((child) => child.href) ?? []),
+						],
+			),
+		),
+	);
+	const domainsDestination = sections
+		.flatMap((section) => section.items)
+		.find((item) => item.id === "domains");
+	if (domainsDestination) {
+		const domainPrefix = `${domainsDestination.href}/`;
+		for (const item of sections.flatMap((section) => section.items)) {
+			if (item.id !== "history") continue;
+			for (const child of item.children ?? []) {
+				if (!child.href.startsWith(domainPrefix)) continue;
+				const domainName = child.href.slice(domainPrefix.length);
+				if (
+					domainName &&
+					!domainName.includes("/") &&
+					decodeSegment(domainName) !== "add-site" &&
+					!DOMAIN_STATIC_PAGES.has(decodeSegment(domainName))
+				) {
+					availableHrefs.add(child.href);
+				}
+			}
+		}
+	}
+	for (const item of sections.flatMap((section) => section.items)) {
+		if (item.id === "history") {
+			item.children = item.children?.filter((child) =>
+				availableHrefs.has(child.href),
+			);
 		}
 	}
 
@@ -508,7 +688,86 @@ export function isNavigationItemActive(
 	item: PanelNavigationItem,
 	location: { pathname: string },
 ): boolean {
+	if (item.id === "history") return false;
 	return isNavigationHrefActive(item.href, location);
+}
+
+export function isNavigationChildActive(
+	parent: PanelNavigationItem,
+	child: PanelNavigationChild,
+	location: { pathname: string },
+): boolean {
+	return (
+		parent.id !== "history" &&
+		child.implemented &&
+		isNavigationHrefActive(child.href, location)
+	);
+}
+
+/**
+ * Resolves the visited route to a named global navigation entry. Only routes
+ * exposed by the global navigation are recorded as recent destinations.
+ */
+export function resolveRecentNavigationPage(
+	navigation: PanelNavigation,
+	pathname: string,
+): RecentNavigationPage | undefined {
+	const currentPath = normalizePath(pathname.split(/[?#]/)[0] ?? pathname);
+	const organizationPrefix = `${organizationPath(navigation.organizationId, "")}/`;
+	if (!currentPath.startsWith(organizationPrefix)) return undefined;
+
+	const entries = navigation.sections.flatMap((section) =>
+		section.items.flatMap((item) => {
+			if (item.id === "history") return [];
+			const children =
+				item.children
+					?.filter((child) => child.implemented)
+					.map((child) => ({
+						href: child.href,
+						section: item.label,
+						item: child.label,
+					})) ?? [];
+			const destination = item.implemented
+				? [
+						{
+							href: item.href,
+							section: section.label ?? "Workspace",
+							item: item.label,
+						},
+					]
+				: [];
+			return [...children, ...destination];
+		}),
+	);
+	const entry = entries.find(
+		(candidate) => normalizePath(candidate.href) === currentPath,
+	);
+
+	const encodedPath = currentPath.slice(organizationPrefix.length);
+	const path = encodedPath
+		.split("/")
+		.map((segment) => decodeSegment(segment))
+		.join("/");
+	if (!entry) {
+		const domainPrefix = `${organizationPath(
+			navigation.organizationId,
+			"domains",
+		)}/`;
+		if (!currentPath.startsWith(domainPrefix)) return undefined;
+		const domainPath = currentPath.slice(domainPrefix.length);
+		const [domainName, ...nestedSegments] = domainPath.split("/");
+		if (
+			!domainName ||
+			DOMAIN_STATIC_PAGES.has(decodeSegment(domainName)) ||
+			decodeSegment(domainName) === "add-site" ||
+			nestedSegments.length > 0
+		) {
+			return undefined;
+		}
+		return { path, section: "Domains", item: decodeSegment(domainName) };
+	}
+
+	return { path, section: entry.section, item: entry.item };
 }
 
 export function findActiveNavigation(
@@ -567,31 +826,30 @@ const RESOURCE_WORKSPACES: Record<
 	}
 > = {
 	domain: {
-		label: "Domaine",
+		label: "Domain",
 		basePath: "domains",
 		match: ["domains"],
-		// The domain workspace nav follows the reference dashboard: every product
-		// surface of a zone is listed, in the order it appears there. Only the
-		// overview page exists today, so the others stay disabled.
+		// Keep the domain capabilities in a stable order. Only the overview route
+		// is implemented today; the remaining entries stay disabled.
 		items: [
-			{ label: "Vue d'ensemble", path: "", implemented: true },
-			{ label: "Historique", path: "history" },
-			{ label: "AI Crawl Control", path: "ai-crawl-control" },
-			{ label: "Préparation pour agents", path: "agent-readiness" },
+			{ label: "Overview", path: "", implemented: true },
+			{ label: "Activity", path: "history" },
+			{ label: "AI Crawler Management", path: "ai-crawl-control" },
+			{ label: "Agent Readiness", path: "agent-readiness" },
 			{ label: "Analytics", path: "analytics" },
-			{ label: "Observabilité", path: "observability" },
+			{ label: "Observability", path: "observability" },
 			{ label: "DNS", path: "dns" },
-			{ label: "E-mail", path: "email" },
+			{ label: "Email", path: "email" },
 			{ label: "SSL/TLS", path: "ssl" },
-			{ label: "Sécurité", path: "security" },
+			{ label: "Security", path: "security" },
 			{ label: "Access", path: "access" },
-			{ label: "Speed", path: "speed" },
+			{ label: "Performance", path: "speed" },
 			{ label: "Caching", path: "caching" },
-			{ label: "Routes Workers", path: "workers-routes" },
-			{ label: "Règles", path: "rules" },
-			{ label: "Pages d'erreur", path: "error-pages" },
-			{ label: "Réseau", path: "network" },
-			{ label: "Trafic", path: "traffic" },
+			{ label: "Runtime Routes", path: "workers-routes" },
+			{ label: "Rules", path: "rules" },
+			{ label: "Error Pages", path: "error-pages" },
+			{ label: "Network", path: "network" },
+			{ label: "Traffic", path: "traffic" },
 			{ label: "Web3", path: "web3" },
 		],
 	},
@@ -600,12 +858,12 @@ const RESOURCE_WORKSPACES: Record<
 		basePath: "compute",
 		match: ["compute"],
 		items: [
-			{ label: "Vue d'ensemble", path: "overview" },
+			{ label: "Overview", path: "overview" },
 			{ label: "Monitoring", path: "monitoring" },
 			{ label: "Configuration", path: "configuration" },
-			{ label: "Réseau", path: "network" },
-			{ label: "Stockage", path: "storage" },
-			{ label: "Activité", path: "activity" },
+			{ label: "Network", path: "network" },
+			{ label: "Storage", path: "storage" },
+			{ label: "Activity", path: "activity" },
 		],
 	},
 	bucket: {
@@ -613,50 +871,50 @@ const RESOURCE_WORKSPACES: Record<
 		basePath: "storage",
 		match: ["r2"],
 		items: [
-			{ label: "Vue d'ensemble", path: "overview" },
-			{ label: "Objets", path: "objects" },
-			{ label: "Accès", path: "access" },
+			{ label: "Overview", path: "overview" },
+			{ label: "Objects", path: "objects" },
+			{ label: "Access", path: "access" },
 			{ label: "Lifecycle", path: "lifecycle" },
 			{ label: "Monitoring", path: "monitoring" },
 		],
 	},
 	database: {
-		label: "Base de données",
+		label: "Database",
 		basePath: "infrastructure/databases",
 		match: ["infrastructure", "databases"],
 		items: [
-			{ label: "Vue d'ensemble", path: "overview" },
+			{ label: "Overview", path: "overview" },
 			{ label: "Tables", path: "tables" },
-			{ label: "Requêtes", path: "queries" },
-			{ label: "Sauvegardes", path: "backups" },
-			{ label: "Accès", path: "access" },
+			{ label: "Queries", path: "queries" },
+			{ label: "Backups", path: "backups" },
+			{ label: "Access", path: "access" },
 			{ label: "Monitoring", path: "monitoring" },
 		],
 	},
 	vm: {
-		label: "Machine virtuelle",
+		label: "Virtual Machine",
 		basePath: "infrastructure/vm",
 		match: ["infrastructure", "vm"],
 		items: [
-			{ label: "Vue d'ensemble", path: "overview" },
+			{ label: "Overview", path: "overview" },
 			{ label: "Monitoring", path: "monitoring" },
 			{ label: "Configuration", path: "configuration" },
-			{ label: "Réseau", path: "network" },
-			{ label: "Stockage", path: "storage" },
-			{ label: "Activité", path: "activity" },
+			{ label: "Network", path: "network" },
+			{ label: "Storage", path: "storage" },
+			{ label: "Activity", path: "activity" },
 		],
 	},
 	server: {
-		label: "Serveur physique",
+		label: "Physical Server",
 		basePath: "infrastructure/servers",
 		match: ["infrastructure", "servers"],
 		items: [
-			{ label: "Vue d'ensemble", path: "overview" },
+			{ label: "Overview", path: "overview" },
 			{ label: "Monitoring", path: "monitoring" },
 			{ label: "Configuration", path: "configuration" },
-			{ label: "Réseau", path: "network" },
-			{ label: "Stockage", path: "storage" },
-			{ label: "Activité", path: "activity" },
+			{ label: "Network", path: "network" },
+			{ label: "Storage", path: "storage" },
+			{ label: "Activity", path: "activity" },
 		],
 	},
 	tunnel: {
@@ -664,9 +922,9 @@ const RESOURCE_WORKSPACES: Record<
 		basePath: "network/tunnels",
 		match: ["network", "tunnels"],
 		items: [
-			{ label: "Vue d'ensemble", path: "overview" },
+			{ label: "Overview", path: "overview" },
 			{ label: "Routes", path: "routes" },
-			{ label: "Connecteurs", path: "connectors" },
+			{ label: "Connectors", path: "connectors" },
 			{ label: "Analytics", path: "analytics" },
 		],
 	},
@@ -784,7 +1042,7 @@ export type WorkspaceNavigation = PanelNavigation & {
 const GLOBAL_WORKSPACE: NavigationWorkspace = {
 	kind: "global",
 	id: "global",
-	label: "Espace global",
+	label: "Global Workspace",
 };
 
 type WorkspaceEntryDefinition = {
@@ -837,54 +1095,83 @@ const INFRASTRUCTURE_WORKSPACE: {
 	sections: [
 		{
 			id: "infrastructure-overview",
-			label: "Vue d'ensemble",
-			items: [{ label: "Vue d'ensemble", path: "infrastructure" }],
+			label: "Overview",
+			items: [{ label: "Overview", path: "infrastructure" }],
 		},
 		{
 			id: "infrastructure-compute",
-			label: "Calcul",
+			label: "Compute",
 			items: [
-				{ label: "Serveurs physiques", path: "infrastructure/servers" },
-				{ label: "Machines virtuelles", path: "infrastructure/vm" },
+				{ label: "Physical Servers", path: "infrastructure/servers" },
+				{ label: "Virtual Machines", path: "infrastructure/vm" },
 				{ label: "Instances", path: "infrastructure/instances" },
-				{ label: "Conteneurs", path: "workers/containers" },
+				{
+					label: "Containers",
+					path: "workers/containers",
+					implemented: true,
+				},
 			],
 		},
 		{
 			id: "infrastructure-storage",
-			label: "Stockage et bases de données",
+			label: "Storage Infrastructure",
 			items: [
-				{ label: "Stockage objet", path: "r2" },
-				{ label: "Bases de données", path: "infrastructure/databases" },
+				{
+					label: "Object Storage",
+					path: "r2/overview",
+					implemented: true,
+				},
+				{ label: "Databases", path: "infrastructure/databases" },
 			],
 		},
 		{
 			id: "infrastructure-network",
-			label: "Réseau",
+			label: "Infrastructure Networking",
 			items: [
-				{ label: "Réseaux", path: "network" },
-				{ label: "Tunnels", path: "network/tunnels" },
-				{ label: "Adresses IP", path: "network/ip-addresses" },
+				{
+					label: "Networks",
+					path: "network/overview",
+					implemented: true,
+				},
+				{
+					label: "Tunnels",
+					path: "network/tunnels",
+					implemented: true,
+				},
+				{
+					label: "Custom IP Addresses",
+					path: "network/ip-addresses/custom-ips",
+					implemented: true,
+				},
+				{
+					label: "Proxy IP Addresses",
+					path: "network/ip-addresses/proxy-ips",
+					implemented: true,
+				},
 			],
 		},
 		{
 			id: "infrastructure-security",
-			label: "Sécurité",
-			items: [{ label: "Sécurité de l'infrastructure", path: "security" }],
+			label: "Infrastructure Security",
+			items: [{ label: "Infrastructure Security", path: "security" }],
 		},
 		{
 			id: "infrastructure-operations",
-			label: "Opérations",
+			label: "Operations",
 			items: [
-				{ label: "Monitoring", path: "observability" },
-				{ label: "Opérations", path: "infrastructure/operations" },
-				{ label: "Terminal", path: "infrastructure/terminal" },
+				{
+					label: "Monitoring",
+					path: "observability",
+					implemented: true,
+				},
+				{ label: "Operations", path: "infrastructure/operations" },
+				{ label: "Terminal Access", path: "infrastructure/terminal" },
 			],
 		},
 	],
 };
 
-/** Product surfaces that open a domain workspace of their own. */
+/** Product surfaces that open a workspace of their own. */
 /**
  * Standalone pages of the Domains sub-menu. They are reachable from the global
  * navigation only, so they must not be detected as a domain resource.
@@ -894,12 +1181,47 @@ const DOMAIN_STATIC_PAGES = new Set(["overview", "registrations", "transfers"]);
 const DOMAIN_WORKSPACES: readonly DomainWorkspaceDefinition[] = [
 	{
 		id: "domains",
-		label: "Domaines",
+		label: "Domains",
 		basePath: "domains",
-		// The Domains pages live in the global tree, under the "Domaines"
+		// The Domains pages live in the global tree, under the Domains
 		// sub-menu: the workspace keeps the URL context but repeats none of
 		// them in a contextual section.
 		sections: [],
+	},
+	{
+		id: "telecom",
+		label: "Telecom",
+		basePath: "telecom",
+		sections: [
+			{
+				id: "domain-telecom",
+				label: "Telecom",
+				items: [
+					{
+						label: "Overview",
+						path: "telecom/overview",
+						implemented: true,
+					},
+					{ label: "Connectivity", path: "telecom/connectivity" },
+					{ label: "IP & Numbering", path: "telecom/ip-numbering" },
+					{
+						label: "Internet & Routing",
+						path: "telecom/internet-routing",
+					},
+					{
+						label: "Private Networks",
+						path: "telecom/private-networks",
+					},
+					{ label: "Voice & Telephony", path: "telecom/voice" },
+					{ label: "Operator Services", path: "telecom/operators" },
+					{
+						label: "Monitoring & Quality",
+						path: "telecom/monitoring",
+					},
+					{ label: "Operations", path: "telecom/operations" },
+				],
+			},
+		],
 	},
 	{
 		id: "ai",
@@ -910,55 +1232,95 @@ const DOMAIN_WORKSPACES: readonly DomainWorkspaceDefinition[] = [
 				id: "domain-ai",
 				label: "AI",
 				items: [
-					{ label: "Agents", path: "ai/agents" },
-					{ label: "AI Gateway", path: "ai/ai-gateway" },
-					{ label: "Recherche IA", path: "ai/ai-search" },
-					{ label: "Serveurs MCP", path: "ai/mcp-servers" },
-					{ label: "Modèles", path: "ai/models" },
-					{ label: "Vectorize", path: "ai/vectorize" },
-					{ label: "Workers AI", path: "ai/workers-ai" },
+					{ label: "Agents", path: "ai/agents", implemented: true },
+					{
+						label: "AI Gateway",
+						path: "ai/ai-gateway",
+						implemented: true,
+					},
+					{
+						label: "AI Search",
+						path: "ai/ai-search",
+						implemented: true,
+					},
+					{
+						label: "MCP Servers",
+						path: "ai/mcp-servers",
+						implemented: true,
+					},
+					{ label: "Models", path: "ai/models", implemented: true },
+					{ label: "Vectorize", path: "ai/vectorize", implemented: true },
+					{
+						label: "AI Services",
+						path: "ai/workers-ai",
+						implemented: true,
+					},
 				],
 			},
 		],
 	},
 	{
 		id: "storage",
-		label: "Stockage et bases de données",
+		label: "Data & Storage",
 		basePath: "r2",
 		sections: [
 			{
 				id: "domain-storage",
-				label: "Stockage et bases de données",
+				label: "Data & Storage",
 				items: [
-					{ label: "Vue d'ensemble", path: "r2/overview" },
-					{ label: "R2", path: "r2" },
-					{ label: "KV", path: "r2/kv" },
-					{ label: "D1", path: "r2/d1" },
-					{ label: "Hyperdrive", path: "r2/hyperdrives" },
-					{ label: "Artifacts", path: "r2/artifacts" },
-					{ label: "K2", path: "r2/k2" },
-					{ label: "Catalogue de données", path: "r2/data-catalog" },
-					{ label: "Analytics Engine", path: "r2/analytics-engine" },
-					{ label: "Secrets Store", path: "r2/secrets-store" },
+					{ label: "Overview", path: "r2/overview", implemented: true },
+					{ label: "Object Storage", path: "r2" },
+					{
+						label: "Key-Value Storage",
+						path: "r2/kv",
+						implemented: true,
+					},
+					{ label: "SQL Databases", path: "r2/d1", implemented: true },
+					{
+						label: "Database Connectivity",
+						path: "r2/hyperdrives",
+						implemented: true,
+					},
+					{
+						label: "Build Artifacts",
+						path: "r2/artifacts",
+						implemented: true,
+					},
+					{ label: "K2", path: "r2/k2", implemented: true },
+					{
+						label: "Data Catalog",
+						path: "r2/data-catalog",
+						implemented: true,
+					},
+					{
+						label: "Analytics",
+						path: "r2/analytics-engine",
+						implemented: true,
+					},
+					{ label: "Secrets Management", path: "r2/secrets-store" },
 				],
 			},
 		],
 	},
 	{
 		id: "media",
-		label: "Images & Stream",
+		label: "Media",
 		basePath: "media",
 		sections: [
 			{
 				id: "domain-media",
-				label: "Images & Stream",
+				label: "Media",
 				items: [
-					{ label: "Vidéos", path: "media/videos" },
-					{ label: "Hébergement", path: "media/hosted" },
-					{ label: "Stream", path: "media/stream" },
-					{ label: "Transformations", path: "media/transformations" },
-					{ label: "Analytics", path: "media/analytics" },
-					{ label: "Forfaits", path: "media/plans" },
+					{ label: "Videos", path: "media/videos", implemented: true },
+					{ label: "Hosting", path: "media/hosted", implemented: true },
+					{ label: "Streaming", path: "media/stream", implemented: true },
+					{
+						label: "Transformations",
+						path: "media/transformations",
+						implemented: true,
+					},
+					{ label: "Analytics", path: "media/analytics", implemented: true },
+					{ label: "Plans", path: "media/plans", implemented: true },
 				],
 			},
 		],
@@ -972,130 +1334,266 @@ const DOMAIN_WORKSPACES: readonly DomainWorkspaceDefinition[] = [
 				id: "domain-realtime",
 				label: "Realtime",
 				items: [
-					{ label: "Kit", path: "realtime/kit" },
-					{ label: "SFU", path: "realtime/sfu" },
-					{ label: "TURN", path: "realtime/turn" },
-					{ label: "MoQ", path: "realtime/moq" },
-					{ label: "Analytics", path: "realtime/analytics" },
+					{ label: "Kit", path: "realtime/kit", implemented: true },
+					{ label: "SFU", path: "realtime/sfu", implemented: true },
+					{ label: "TURN", path: "realtime/turn", implemented: true },
+					{ label: "MoQ", path: "realtime/moq", implemented: true },
+					{
+						label: "Analytics",
+						path: "realtime/analytics",
+						implemented: true,
+					},
 				],
 			},
 		],
 	},
 	{
 		id: "development",
-		label: "Développement et déploiement",
+		label: "Development & Runtime",
 		basePath: "workers",
 		sections: [
 			{
 				id: "domain-development",
-				label: "Développement et déploiement",
+				label: "Development & Runtime",
 				items: [
-					{ label: "Vue d'ensemble", path: "workers" },
-					{ label: "Durable Objects", path: "workers/durable-objects" },
-					{ label: "Containers", path: "workers/containers" },
-					{ label: "Queues", path: "workers/queues" },
-					{ label: "Workflows", path: "workers/workflows" },
-					{ label: "Browser Rendering", path: "workers/browser-run" },
-					{ label: "Observabilité", path: "workers/observability" },
-					{ label: "Plateformes", path: "workers/platforms" },
-					{ label: "VPC", path: "workers/vpc" },
-					{ label: "Flagship", path: "workers/flagship" },
-					{ label: "Forfaits", path: "workers/plans" },
+					{ label: "Overview", path: "workers", implemented: true },
+					{
+						label: "Persistent Objects",
+						path: "workers/durable-objects",
+						implemented: true,
+					},
+					{
+						label: "Containers",
+						path: "workers/containers",
+						implemented: true,
+					},
+					{
+						label: "Message Queues",
+						path: "workers/queues",
+						implemented: true,
+					},
+					{
+						label: "Workflows",
+						path: "workers/workflows",
+						implemented: true,
+					},
+					{
+						label: "Browser Rendering",
+						path: "workers/browser-run",
+						implemented: true,
+					},
+					{
+						label: "Observability",
+						path: "workers/observability",
+						implemented: true,
+					},
+					{
+						label: "Platforms",
+						path: "workers/platforms",
+						implemented: true,
+					},
+					{ label: "VPC", path: "workers/vpc", implemented: true },
+					{
+						label: "Feature Flags",
+						path: "workers/flagship",
+						implemented: true,
+					},
+					{ label: "Plans", path: "workers/plans", implemented: true },
 				],
 			},
 		],
 	},
 	{
 		id: "applicationSecurity",
-		label: "Sécurité des applications",
+		label: "Application Security",
 		basePath: "security",
 		sections: [
 			{
 				id: "domain-application-security",
-				label: "Sécurité des applications",
+				label: "Application Security",
 				items: [
-					{ label: "Vue d'ensemble", path: "security/overview" },
-					{ label: "WAF", path: "security/waf" },
-					{ label: "Turnstile", path: "security/turnstile" },
-					{ label: "DLS", path: "security/dls" },
-					{ label: "Botbase", path: "security/botbase" },
-					{ label: "Inventaire", path: "security/inventory" },
+					{
+						label: "Overview",
+						path: "security/overview",
+						implemented: true,
+					},
+					{
+						label: "Web Application Firewall",
+						path: "security/waf",
+						implemented: true,
+					},
+					{
+						label: "Human Verification",
+						path: "security/turnstile",
+						implemented: true,
+					},
+					{
+						label: "Domain Access Restrictions",
+						path: "security/dls",
+						implemented: true,
+					},
+					{
+						label: "Bot Management",
+						path: "security/botbase",
+						implemented: true,
+					},
+					{
+						label: "Asset Inventory",
+						path: "security/inventory",
+						implemented: true,
+					},
 				],
 			},
 		],
 	},
 	{
 		id: "zeroTrust",
-		label: "Zero Trust",
+		label: "Identity & Access",
 		basePath: "one",
 		sections: [
 			{
 				id: "domain-zero-trust",
-				label: "Zero Trust",
+				label: "Identity & Access",
 				items: [
-					{ label: "Vue d'ensemble", path: "one/overview" },
-					{ label: "Contrôles d'accès", path: "one/access-controls" },
-					{ label: "Isolation navigateur", path: "one/browser-isolation" },
-					{ label: "DLP", path: "one/dlp" },
-					{ label: "Sécurité des e-mails", path: "one/email-security" },
-					{ label: "Insights", path: "one/insights" },
-					{ label: "Intégrations", path: "one/integrations" },
+					{ label: "Overview", path: "one/overview", implemented: true },
 					{
-						label: "Composants réutilisables",
-						path: "one/reusable-components",
-					},
-					{ label: "Contrôles de trafic", path: "one/traffic-controls" },
-					{ label: "Ressources d'équipe", path: "one/team-resources" },
-					{
-						label: "Découvertes Cloud & SaaS",
-						path: "one/cloud-saas-findings",
+						label: "Access Controls",
+						path: "one/access-controls/overview",
+						implemented: true,
 					},
 					{
-						label: "Sécurité des workloads",
-						path: "one/cloud-workload-security",
+						label: "Browser Isolation",
+						path: "one/browser-isolation/overview",
+						implemented: true,
 					},
-					{ label: "Paramètres", path: "one/settings" },
+					{
+						label: "Data Loss Prevention",
+						path: "one/dlp/overview",
+						implemented: true,
+					},
+					{
+						label: "Email Security",
+						path: "one/email-security/overview",
+						implemented: true,
+					},
+					{
+						label: "Insights",
+						path: "one/insights/overview",
+						implemented: true,
+					},
+					{
+						label: "Cloud & SaaS Integrations",
+						path: "one/integrations/cloud-and-saas",
+						implemented: true,
+					},
+					{
+						label: "Identity Provider Integrations",
+						path: "one/integrations/idp",
+						implemented: true,
+					},
+					{
+						label: "Service Integrations",
+						path: "one/integrations/services",
+						implemented: true,
+					},
+					{
+						label: "Webhooks",
+						path: "one/integrations/webhooks",
+						implemented: true,
+					},
+					{
+						label: "Reusable Components",
+						path: "one/reusable-components/lists",
+						implemented: true,
+					},
+					{
+						label: "Traffic Controls",
+						path: "one/traffic-controls/overview",
+						implemented: true,
+					},
+					{
+						label: "Team Resources",
+						path: "one/team-resources/overview",
+						implemented: true,
+					},
+					{
+						label: "Cloud & SaaS Findings",
+						path: "one/cloud-saas-findings/overview",
+						implemented: true,
+					},
+					{
+						label: "Workload Security",
+						path: "one/cloud-workload-security/deployments",
+						implemented: true,
+					},
+					{ label: "Settings", path: "one/settings", implemented: true },
 				],
 			},
 		],
 	},
 	{
 		id: "networks",
-		label: "Réseaux",
+		label: "Networks",
 		basePath: "network",
 		sections: [
 			{
 				id: "domain-networks",
-				label: "Réseaux",
+				label: "Networks",
 				items: [
-					{ label: "Vue d'ensemble", path: "network/overview" },
-					{ label: "Tunnels", path: "network/tunnels" },
-					{ label: "Mesh", path: "network/mesh" },
-					{ label: "Routes", path: "network/routes-config" },
-					{ label: "Insights réseau", path: "network/networking-insights" },
 					{
-						label: "IP personnalisées",
-						path: "network/ip-addresses/custom-ips",
+						label: "Overview",
+						path: "network/overview",
+						implemented: true,
 					},
-					{ label: "IP proxy", path: "network/ip-addresses/proxy-ips" },
+					{ label: "Tunnels", path: "network/tunnels", implemented: true },
+					{ label: "Mesh", path: "network/mesh", implemented: true },
+					{
+						label: "Routes",
+						path: "network/routes-config",
+						implemented: true,
+					},
+					{
+						label: "Network Insights",
+						path: "network/networking-insights",
+						implemented: true,
+					},
+					{
+						label: "Custom IP Addresses",
+						path: "network/ip-addresses/custom-ips",
+						implemented: true,
+					},
+					{
+						label: "Proxy IP Addresses",
+						path: "network/ip-addresses/proxy-ips",
+						implemented: true,
+					},
 				],
 			},
 		],
 	},
 	{
 		id: "threats",
-		label: "Menaces & défense",
+		label: "Threat Detection & Response",
 		basePath: "threats-defense",
 		sections: [
 			{
 				id: "domain-threats",
-				label: "Menaces & défense",
+				label: "Threat Detection & Response",
 				items: [
-					{ label: "Vue d'ensemble", path: "threats-defense" },
-					{ label: "Investiguer", path: "threats-defense/investigate" },
 					{
-						label: "Renseignement sur les menaces",
+						label: "Overview",
+						path: "threats-defense",
+						implemented: true,
+					},
+					{
+						label: "Investigate",
+						path: "threats-defense/investigate",
+						implemented: true,
+					},
+					{
+						label: "Threat Intelligence",
 						path: "threats-defense/threat-intelligence",
+						implemented: true,
 					},
 				],
 			},
@@ -1103,32 +1601,41 @@ const DOMAIN_WORKSPACES: readonly DomainWorkspaceDefinition[] = [
 	},
 	{
 		id: "delivery",
-		label: "Livraison et performance",
+		label: "Delivery & Performance",
 		basePath: "bulk",
 		sections: [
 			{
 				id: "domain-delivery",
-				label: "Livraison et performance",
+				label: "Delivery & Performance",
 				items: [
-					{ label: "Load Balancing", path: "bulk/load-balancing" },
-					{ label: "Redirections", path: "bulk/redirects" },
-					{ label: "Gestion des tags", path: "bulk/tag-management" },
+					{
+						label: "Load Balancing",
+						path: "bulk/load-balancing",
+						implemented: true,
+					},
+					{ label: "Redirects", path: "bulk/redirects", implemented: true },
+					{
+						label: "Tag Management",
+						path: "bulk/tag-management",
+						implemented: true,
+					},
 				],
 			},
 		],
 	},
 	{
 		id: "monetize",
-		label: "Monétiser",
+		label: "Commerce",
 		basePath: "monetize",
 		sections: [
 			{
 				id: "domain-monetize",
-				label: "Monétiser",
+				label: "Commerce",
 				items: [
 					{
-						label: "Monetization Gateway",
+						label: "Commerce Gateway",
 						path: "monetize/monetization-gateway",
+						implemented: true,
 					},
 				],
 			},
@@ -1136,25 +1643,108 @@ const DOMAIN_WORKSPACES: readonly DomainWorkspaceDefinition[] = [
 	},
 	{
 		id: "observability",
-		label: "Observabilité",
+		label: "Observability",
 		basePath: "observability",
 		sections: [
 			{
 				id: "domain-observability",
-				label: "Observabilité",
+				label: "Observability",
 				items: [
-					{ label: "Vue d'ensemble", path: "observability" },
-					{ label: "Logs", path: "observability/logs" },
-					{ label: "Traces", path: "observability/traces" },
-					{ label: "Analytics", path: "observability/analytics" },
-					{ label: "Exports", path: "observability/exporter" },
-					{ label: "Notifications", path: "observability/notifications" },
-					{ label: "Utilisation", path: "observability/usage" },
+					{
+						label: "Overview",
+						path: "observability",
+						implemented: true,
+					},
+					{ label: "Logs", path: "observability/logs", implemented: true },
+					{ label: "Traces", path: "observability/traces", implemented: true },
+					{
+						label: "Analytics",
+						path: "observability/analytics",
+						implemented: true,
+					},
+					{
+						label: "Export Destinations",
+						path: "observability/exporter/destinations",
+						implemented: true,
+					},
+					{
+						label: "Export Logs",
+						path: "observability/exporter/logs",
+						implemented: true,
+					},
+					{
+						label: "Custom Notifications",
+						path: "observability/notifications/custom",
+						implemented: true,
+					},
+					{
+						label: "Notification Destinations",
+						path: "observability/notifications/destinations",
+						implemented: true,
+					},
+					{
+						label: "Notification Silences",
+						path: "observability/notifications/silences",
+						implemented: true,
+					},
+					{
+						label: "ZenthCloud Notifications",
+						path: "observability/notifications/zenthcloud",
+						implemented: true,
+					},
+					{ label: "Usage", path: "observability/usage", implemented: true },
 				],
 			},
 		],
 	},
 ];
+
+function resolveDestinationChildren(
+	organizationId: string,
+	destination: NavigationDestinationId,
+	recentPages: readonly RecentNavigationPage[] = [],
+): PanelNavigationChild[] | undefined {
+	if (destination === "compute") {
+		return resolveComputeChildren(organizationId);
+	}
+
+	if (destination === "history") {
+		return recentPages.map((page) => ({
+			id: `history.recent.${page.path.replaceAll("/", ".")}`,
+			label: `${page.section} / ${page.item}`,
+			href: organizationPath(organizationId, page.path),
+			implemented: true,
+		}));
+	}
+
+	if (destination === "telecom") return undefined;
+
+	if (destination === "domains") {
+		return resolveDomainChildren(organizationId);
+	}
+
+	const workspace = DOMAIN_WORKSPACES.find(
+		(candidate) => candidate.id === destination,
+	);
+	if (!workspace) return undefined;
+
+	return workspace.sections.flatMap((section) =>
+		section.items.map((entry) => {
+			const relativePath =
+				entry.path === workspace.basePath
+					? "index"
+					: entry.path.startsWith(`${workspace.basePath}/`)
+						? entry.path.slice(workspace.basePath.length + 1)
+						: entry.path;
+			return {
+				id: `${workspace.id}.${relativePath.replaceAll("/", ".")}`,
+				label: entry.label,
+				href: organizationPath(organizationId, entry.path),
+				implemented: entry.implemented === true,
+			};
+		}),
+	);
+}
 
 function decodeSegment(segment: string): string {
 	try {
@@ -1192,6 +1782,7 @@ export function resolveWorkspaceNavigation(opts: {
 	permissions?: unknown;
 	license?: LicenseTier | null;
 	pathname: string;
+	recentPages?: readonly RecentNavigationPage[];
 }): WorkspaceNavigation {
 	const navigation = createNavigation(opts);
 	const segments = workspaceSegments(opts.pathname, opts.organizationId);

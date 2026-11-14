@@ -31,15 +31,17 @@ import { api } from "@/utils/api";
 import { useWorkspaceLicense } from "@/utils/hooks/use-workspace-license";
 import {
 	ACCOUNT_DESTINATIONS,
+	isNavigationChildActive,
 	isNavigationHrefActive,
 	isNavigationItemActive,
 	organizationPath,
 	type PanelNavigationItem,
+	resolveRecentNavigationPage,
 	resolveWorkspaceNavigation,
 } from "./navigation";
-
 import { useOrganization } from "./organization-context";
 import { PanelHeader, type PanelHeaderUser, SUPPORT_URL } from "./panel-header";
+import { useRecentPages } from "./recent-pages";
 
 /** Bridges the design system's links to the Next.js router. */
 const PanelLink = forwardRef<
@@ -118,9 +120,8 @@ function NavigationRow({
 	// The row opens itself on the page it contains, and reopens whenever the
 	// current page moves into its sub-menu, so the active entry stays visible.
 	const hasActiveChild =
-		item.children?.some(
-			(child) =>
-				child.implemented && isNavigationHrefActive(child.href, { pathname }),
+		item.children?.some((child) =>
+			isNavigationChildActive(item, child, { pathname }),
 		) ?? false;
 	const [open, setOpen] = useState(
 		item.children?.length ? hasActiveChild : false,
@@ -163,9 +164,9 @@ function NavigationRow({
 						    the entries, so the bar never crosses the labels. */}
 						<Sidebar.MenuSub className={SUBMENU_CLASS}>
 							{item.children.map((child) => {
-								const childActive =
-									child.implemented &&
-									isNavigationHrefActive(child.href, { pathname });
+								const childActive = isNavigationChildActive(item, child, {
+									pathname,
+								});
 								return child.implemented ? (
 									<Sidebar.MenuSubItem key={child.id}>
 										<Sidebar.MenuSubButton
@@ -180,7 +181,7 @@ function NavigationRow({
 									<Sidebar.MenuSubItem key={child.id}>
 										<Sidebar.MenuSubButton
 											disabled
-											title="Bientôt disponible"
+											title="Coming soon"
 											className="cursor-default"
 										>
 											{child.label}
@@ -201,8 +202,8 @@ function NavigationRow({
 				<Sidebar.MenuButton
 					icon={item.icon}
 					disabled
-					tooltip={`${item.label} — bientôt disponible`}
-					aria-label={`${item.label} (bientôt disponible)`}
+					tooltip={`${item.label} — coming soon`}
+					aria-label={`${item.label} (coming soon)`}
 					className="cursor-not-allowed opacity-55"
 				>
 					{content}
@@ -281,7 +282,20 @@ export function PanelShell({
 
 	// `asPath` is the URL the user is on; `pathname` is only the route pattern
 	// (`/[organizationId]/home`), which never matches an absolute item href.
-	const pathname = router.asPath.split("?")[0] ?? router.asPath;
+	const pathname = router.asPath.split(/[?#]/)[0] ?? router.asPath;
+	const hasActiveAccountDestination = ACCOUNT_DESTINATIONS.some((entry) =>
+		isNavigationHrefActive(organizationPath(organization.id, entry.path), {
+			pathname,
+		}),
+	);
+	const [accountOpen, setAccountOpen] = useState(hasActiveAccountDestination);
+	useEffect(() => {
+		if (hasActiveAccountDestination) setAccountOpen(true);
+	}, [hasActiveAccountDestination]);
+	const [recentPages, addRecentPage] = useRecentPages(
+		organization.id,
+		user.email,
+	);
 
 	// The resolver keeps the global tree and adds the sections of the
 	// workspace the URL belongs to (infrastructure, product domain, resource).
@@ -291,7 +305,17 @@ export function PanelShell({
 		permissions,
 		license,
 		pathname,
+		recentPages,
 	});
+	const currentRecentPage = resolveRecentNavigationPage(navigation, pathname);
+	useEffect(() => {
+		if (currentRecentPage) addRecentPage(currentRecentPage);
+	}, [
+		addRecentPage,
+		currentRecentPage?.item,
+		currentRecentPage?.path,
+		currentRecentPage?.section,
+	]);
 
 	const sections = useMemo(() => {
 		// An exclusive workspace owns the sidebar: its own destinations replace
@@ -340,7 +364,7 @@ export function PanelShell({
 				{/* `h-svh` keeps the rail at viewport height while the page scrolls, so
 				    the footer is always anchored to the bottom of the sidebar. */}
 				<Sidebar
-					aria-label={`Navigation de ${title}`}
+					aria-label={`Navigation for ${title}`}
 					className="sticky top-0 h-svh! self-start"
 				>
 					<Sidebar.Header className="group-data-[state=collapsed]/sidebar:justify-center group-data-[state=collapsed]/sidebar:px-0">
@@ -351,7 +375,7 @@ export function PanelShell({
 							<DropdownMenu.Trigger>
 								<Button
 									variant="ghost"
-									aria-label={`Changer de compte (${organization.name})`}
+									aria-label={`Switch account (${organization.name})`}
 									className="min-h-9 w-full min-w-0 justify-start gap-2 px-1.5 py-1.5 text-sm font-medium group-data-[state=collapsed]/sidebar:justify-center group-data-[state=collapsed]/sidebar:px-0"
 								>
 									<ZenthcloudLogo
@@ -381,7 +405,7 @@ export function PanelShell({
 							>
 								<DropdownMenu.Group>
 									<DropdownMenu.Label className="text-[11px] font-semibold tracking-wider text-zenth-subtle uppercase">
-										Comptes
+										Accounts
 									</DropdownMenu.Label>
 									{organizations ? (
 										organizations.map((account) => (
@@ -397,7 +421,7 @@ export function PanelShell({
 										))
 									) : (
 										<DropdownMenu.Item disabled>
-											Chargement des comptes…
+											Loading accounts…
 										</DropdownMenu.Item>
 									)}
 								</DropdownMenu.Group>
@@ -405,7 +429,7 @@ export function PanelShell({
 								<DropdownMenu.Item
 									onClick={() => void router.push("/create-account")}
 								>
-									Créer un compte
+									Create Account
 								</DropdownMenu.Item>
 							</DropdownMenu.Content>
 						</DropdownMenu>
@@ -423,8 +447,8 @@ export function PanelShell({
 									type="search"
 									value={query}
 									onChange={(event) => setQuery(event.target.value)}
-									placeholder="Recherche rapide"
-									aria-label="Recherche rapide dans la navigation"
+									placeholder="Quick Search"
+									aria-label="Search Navigation"
 									className="min-w-0 flex-1 bg-transparent text-sm text-zenth-default outline-none placeholder:text-zenth-subtle"
 								/>
 								<kbd className="shrink-0 rounded border border-zenth-line px-1 text-[10px] text-zenth-subtle group-data-[state=collapsed]/sidebar:hidden">
@@ -457,11 +481,11 @@ export function PanelShell({
 										<Sidebar.MenuButton
 											href={navigation.workspace.parent.href}
 											icon={CaretLeftIcon}
-											tooltip={`Retour à ${navigation.workspace.parent.label}`}
+											tooltip={`Back to ${navigation.workspace.parent.label}`}
 											className="cursor-pointer"
 										>
 											<span className="min-w-0 flex-1 truncate">
-												Retour à {navigation.workspace.parent.label}
+												Back to {navigation.workspace.parent.label}
 											</span>
 										</Sidebar.MenuButton>
 									</Sidebar.MenuItem>
@@ -477,7 +501,7 @@ export function PanelShell({
 								{!navigation.exclusive && (
 									<div className="mt-3 border-t border-zenth-line px-2 pt-3 pb-1 group-data-[state=collapsed]/sidebar:hidden">
 										<p className="text-[11px] font-semibold tracking-wider text-zenth-subtle uppercase">
-											Espace de travail
+											Workspace
 										</p>
 										<p className="min-w-0 truncate text-sm font-medium text-zenth-default">
 											{navigation.workspace.label}
@@ -512,7 +536,10 @@ export function PanelShell({
 								{navigation.footer.map((item) =>
 									item.id === "account" ? (
 										<Sidebar.MenuItem key={item.id}>
-											<Sidebar.Collapsible>
+											<Sidebar.Collapsible
+												open={accountOpen}
+												onOpenChange={setAccountOpen}
+											>
 												<Sidebar.CollapsibleTrigger
 													render={
 														<Sidebar.MenuButton
@@ -533,16 +560,36 @@ export function PanelShell({
 													{/* The sub-menu's indent guide is a drawn vertical rule; the
 													    panel already has enough rail lines, so drop it. */}
 													<Sidebar.MenuSub className={SUBMENU_CLASS}>
-														{ACCOUNT_DESTINATIONS.map((entry) => (
-															<Sidebar.MenuSubButton
-																key={entry.path}
-																disabled
-																title="Bientôt disponible"
-																className="cursor-not-allowed opacity-55"
-															>
-																{entry.label}
-															</Sidebar.MenuSubButton>
-														))}
+														{ACCOUNT_DESTINATIONS.map((entry) => {
+															const href = organizationPath(
+																organization.id,
+																entry.path,
+															);
+															const active =
+																entry.implemented &&
+																isNavigationHrefActive(href, { pathname });
+															return (
+																<Sidebar.MenuSubItem key={entry.path}>
+																	{entry.implemented ? (
+																		<Sidebar.MenuSubButton
+																			href={href}
+																			active={active}
+																			aria-current={active ? "page" : undefined}
+																		>
+																			{entry.label}
+																		</Sidebar.MenuSubButton>
+																	) : (
+																		<Sidebar.MenuSubButton
+																			disabled
+																			title="Coming soon"
+																			className="cursor-not-allowed opacity-55"
+																		>
+																			{entry.label}
+																		</Sidebar.MenuSubButton>
+																	)}
+																</Sidebar.MenuSubItem>
+															);
+														})}
 													</Sidebar.MenuSub>
 												</Sidebar.CollapsibleContent>
 											</Sidebar.Collapsible>
@@ -562,7 +609,7 @@ export function PanelShell({
 							sections.length === 0 &&
 							contextual.length === 0 && (
 								<p className="px-3 py-4 text-xs text-zenth-subtle">
-									Aucune destination ne correspond à « {query.trim()} ».
+									No navigation items match "{query.trim()}".
 								</p>
 							)}
 					</Sidebar.Content>
@@ -616,8 +663,8 @@ export function PanelShell({
 									type="search"
 									value={query}
 									onChange={(event) => setQuery(event.target.value)}
-									placeholder="Recherche rapide…"
-									aria-label="Recherche rapide dans la navigation"
+									placeholder="Quick Search…"
+									aria-label="Search Navigation"
 									className="min-w-0 flex-1 bg-transparent text-sm text-zenth-default outline-none placeholder:text-zenth-subtle"
 								/>
 								<kbd className="shrink-0 rounded border border-zenth-line px-1 text-[10px] text-zenth-subtle">
@@ -664,7 +711,7 @@ export function PanelShell({
 											variant="ghost"
 											shape="square"
 											icon={<UserIcon className="size-4.5" aria-hidden />}
-											aria-label="Compte et paramètres de session"
+											aria-label="Account and Session Settings"
 											className="ml-1"
 										/>
 									</DropdownMenu.Trigger>
@@ -680,20 +727,18 @@ export function PanelShell({
 										</DropdownMenu.Group>
 										<DropdownMenu.Separator />
 										<DropdownMenu.Item
-											onClick={() => toast.info("Le profil arrive bientôt")}
+											onClick={() => toast.info("Profile is coming soon")}
 										>
-											Profil
+											Profile
 										</DropdownMenu.Item>
 										<DropdownMenu.Item
-											onClick={() =>
-												toast.info("La facturation arrive bientôt")
-											}
+											onClick={() => toast.info("Billing is coming soon")}
 										>
-											Facturation
+											Billing
 										</DropdownMenu.Item>
 										<DropdownMenu.Separator />
 										<DropdownMenu.Item variant="danger" onClick={signOut}>
-											Se déconnecter
+											Sign Out
 										</DropdownMenu.Item>
 									</DropdownMenu.Content>
 								</DropdownMenu>
