@@ -150,7 +150,9 @@ describe("panel navigation organization scope", () => {
 	});
 
 	it("marks every destination except the home as expandable", () => {
-		const expandable = items(create())
+		const navigation = create();
+		// `account` is pinned to the footer, outside the scrollable tree.
+		const expandable = [...items(navigation), ...navigation.footer]
 			.filter((item) => item.expandable)
 			.map((item) => item.id);
 

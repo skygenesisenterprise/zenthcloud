@@ -1509,7 +1509,7 @@ const SidebarMenuButton = forwardRef<HTMLButtonElement, SidebarMenuButtonProps>(
         <Comp
           className={cn(
             "shrink-0 opacity-40",
-            size === "base" ? "size-4" : "size-3.5",
+            size === "base" ? "size-4.5" : "size-3.5",
           )}
         />
       );
@@ -1518,7 +1518,7 @@ const SidebarMenuButton = forwardRef<HTMLButtonElement, SidebarMenuButtonProps>(
     const content = (
       <div
         className={cn(
-          "flex min-w-0 flex-1 items-center gap-3",
+          "flex min-w-0 flex-1 items-center gap-2",
           "translate-x-[-3px] group-not-data-[state=collapsed]/sidebar:translate-x-0",
           "transition-transform duration-(--sidebar-animation-duration)",
         )}
@@ -1526,7 +1526,7 @@ const SidebarMenuButton = forwardRef<HTMLButtonElement, SidebarMenuButtonProps>(
         {iconNode}
         <span
           className={cn(
-            "flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-left",
+            "flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-left",
           )}
         >
           {React.Children.map(children, (child) =>
@@ -1542,10 +1542,13 @@ const SidebarMenuButton = forwardRef<HTMLButtonElement, SidebarMenuButtonProps>(
 
     const buttonClasses = cn(
       // Layout
-      "group/menu-button relative flex w-full min-w-0 cursor-pointer items-center gap-2.5 rounded-lg outline-none",
+      "group/menu-button relative flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg outline-none",
       "before:absolute before:inset-x-0 before:-inset-y-px",
       // Sizing
-      size === "base" && "min-h-8.5 px-3 py-0 text-sm font-medium",
+      // Tighter horizontal padding when expanded: the rail keeps its width,
+      // but labels get the space the paddings used to take, like the reference.
+      size === "base" &&
+        "min-h-8.5 px-3 py-0 text-sm font-medium group-not-data-[state=collapsed]/sidebar:px-2",
       size === "sm" && "min-h-7 px-2 py-0 text-sm",
       "text-zenth-default",
       "transition-[color,box-shadow,outline] duration-(--sidebar-animation-duration)",

@@ -74,7 +74,7 @@ export type NavigationDestination = {
  */
 const NAVIGATION_DESTINATIONS = {
 	home: {
-		label: "Accueil",
+		label: "Accueil du compte",
 		path: "home",
 		icon: House,
 		implemented: true,
@@ -103,7 +103,7 @@ const NAVIGATION_DESTINATIONS = {
 		icon: Cpu,
 	},
 	ai: {
-		label: "IA",
+		label: "AI",
 		path: "ai",
 		icon: Sparkles,
 	},
@@ -118,7 +118,7 @@ const NAVIGATION_DESTINATIONS = {
 		icon: Images,
 	},
 	realtime: {
-		label: "Temps réel",
+		label: "Realtime",
 		path: "realtime",
 		icon: Radio,
 	},
@@ -143,7 +143,7 @@ const NAVIGATION_DESTINATIONS = {
 		icon: Network,
 	},
 	threats: {
-		label: "Menaces & défenses",
+		label: "Menaces & défense",
 		path: "security/threats",
 		icon: Bug,
 	},
@@ -154,7 +154,7 @@ const NAVIGATION_DESTINATIONS = {
 		badge: "Nouveau",
 	},
 	delivery: {
-		label: "Livraison & performances",
+		label: "Livraison et performance",
 		path: "delivery",
 		icon: Gauge,
 	},
@@ -260,6 +260,32 @@ export const FOOTER_NAVIGATION: readonly NavigationPlacement[] = [
 	{ destination: "account" },
 ];
 
+/**
+ * Entries of the "Gérer le compte" sub-menu, in the order the reference panel
+ * lists them. Their pages are not written yet, so the shell renders them as
+ * disabled rows: the menu shows the real structure without linking to a route
+ * that would open blank.
+ */
+export const ACCOUNT_DESTINATIONS: readonly {
+	label: string;
+	path: string;
+}[] = [
+	{ label: "Membres", path: "account/members" },
+	{ label: "Facturation", path: "account/billing" },
+	{ label: "Jetons d'API du compte", path: "account/api-tokens" },
+	{ label: "Clients OAuth", path: "account/oauth-clients" },
+	{ label: "Journaux d'audit", path: "account/audit-log" },
+	{ label: "Notifications", path: "account/notifications" },
+	{ label: "Contenu bloqué", path: "account/blocked-content" },
+	{
+		label: "Rapports de mauvaise utilisation",
+		path: "account/abuse-reports",
+	},
+	{ label: "Rapport sur l'impact carbone", path: "account/carbon" },
+	{ label: "Configurations", path: "account/configurations" },
+	{ label: "Étiquettes de ressources", path: "account/tags" },
+];
+
 export type PanelNavigationItem = {
 	id: string;
 	label: string;
@@ -314,8 +340,10 @@ function passesLicense(
 	license: LicenseTier | null,
 ): boolean {
 	if (!minimum) return true;
-	if (license === null) return false;
-	return LICENSE_RANK[license] >= LICENSE_RANK[minimum];
+	// An unresolved licence counts as Free: the navigation is presentation
+	// only, and hiding every gated destination would turn a slow entitlement
+	// load into an empty menu.
+	return LICENSE_RANK[license ?? "free"] >= LICENSE_RANK[minimum];
 }
 
 function isInEnvironment(
@@ -519,6 +547,9 @@ export function resolveContextualNavigation(opts: {
 			),
 			icon: buildContextualIcon(destination.path),
 			implemented: destination.implemented === true,
+			// Contextual entries open a leaf page; they have no sub-tree of
+			// their own, so they carry no disclosure chevron.
+			expandable: false,
 			minLicense: undefined,
 		})),
 	};

@@ -7,6 +7,7 @@ import {
 } from "@phosphor-icons/react";
 import {
 	Button,
+	DropdownMenu,
 	LinkProvider,
 	Sidebar,
 	ZenthcloudLogo,
@@ -14,11 +15,13 @@ import {
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
+import { authClient } from "@/lib/auth-client";
 import { resolveAppEnvironment } from "@/lib/product";
 import { cn } from "@/lib/utils";
 import { api } from "@/utils/api";
 import { useWorkspaceLicense } from "@/utils/hooks/use-workspace-license";
 import {
+	ACCOUNT_DESTINATIONS,
 	createNavigation,
 	findActiveNavigation,
 	isNavigationItemActive,
@@ -26,13 +29,14 @@ import {
 	type PanelNavigationItem,
 } from "./navigation";
 import { useOrganization } from "./organization-context";
+import { PanelHeader, type PanelHeaderUser } from "./panel-header";
 
 /** Bridges the design system's links to the Next.js router. */
 const PanelLink = forwardRef<
 	HTMLAnchorElement,
-	React.AnchorHTMLAttributes<HTMLAnchorElement>
->(({ href, ...rest }, ref) => (
-	<NextLink ref={ref} href={href ?? "#"} {...rest} />
+	React.AnchorHTMLAttributes<HTMLAnchorElement> & { to?: string }
+>(({ href, to, ...rest }, ref) => (
+	<NextLink ref={ref} href={href ?? to ?? "#"} {...rest} />
 ));
 PanelLink.displayName = "PanelLink";
 
@@ -50,7 +54,7 @@ function NavigationRow({
 }) {
 	const content = (
 		<>
-			<span className="truncate">{item.label}</span>
+			<span className="min-w-0 flex-1 truncate">{item.label}</span>
 			{item.badge && <Sidebar.MenuBadge>{item.badge}</Sidebar.MenuBadge>}
 			{item.expandable && (
 				<CaretRightIcon
@@ -105,9 +109,11 @@ function NavigationRow({
  */
 export function PanelShell({
 	title,
+	user,
 	children,
 }: {
 	title: string;
+	user: PanelHeaderUser;
 	children: React.ReactNode;
 }) {
 	const router = useRouter();
@@ -116,8 +122,18 @@ export function PanelShell({
 	const { data: product } = api.settings.getProduct.useQuery();
 	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const license = useWorkspaceLicense();
+	const { data: organizations } = api.organization.all.useQuery();
 	const [query, setQuery] = useState("");
 	const searchRef = useRef<HTMLInputElement>(null);
+
+	// Switching account moves the session too: panel APIs read
+	// `activeOrganizationId`, and the target page's provider would only sync it
+	// after loading. Doing it here keeps the session and the URL aligned.
+	const switchOrganization = async (organizationId: string) => {
+		if (organizationId === organization.id) return;
+		await authClient.organization.setActive({ organizationId });
+		await router.push(organizationPath(organizationId, "home"));
+	};
 
 	const environment =
 		resolveAppEnvironment({ product, isCloud }) === "cloud" ? "cloud" : "self";
@@ -161,27 +177,76 @@ export function PanelShell({
 
 	return (
 		<LinkProvider component={PanelLink}>
-			<Sidebar.Provider defaultOpen>
+			<Sidebar.Provider defaultOpen collapsible="icon">
 				{/* `h-svh` keeps the rail at viewport height while the page scrolls, so
 				    the footer is always anchored to the bottom of the sidebar. */}
 				<Sidebar
-					collapsible="icon"
 					aria-label={`Navigation de ${title}`}
 					className="sticky top-0 h-svh! self-start"
 				>
-					<Sidebar.Header>
-						<ZenthcloudLogo
-							variant="glyph"
-							className="h-5 w-auto shrink-0"
-							aria-hidden
-						/>
-						<span className="min-w-0 flex-1 truncate px-1 text-sm font-medium">
-							{organization.name}
-						</span>
-						<CaretUpDownIcon
-							aria-hidden
-							className="size-3.5 shrink-0 text-zenth-subtle group-data-[state=collapsed]/sidebar:hidden"
-						/>
+					<Sidebar.Header className="group-data-[state=collapsed]/sidebar:justify-center group-data-[state=collapsed]/sidebar:px-0">
+						{/* The workspace name opens the account switcher, as in the
+						    reference: one row, one affordance. It ellipsizes when the rail
+						    is narrow and disappears once the rail is collapsed to icons. */}
+						<DropdownMenu>
+							<DropdownMenu.Trigger>
+								<Button
+									variant="ghost"
+									aria-label={`Changer de compte (${organization.name})`}
+									className="min-h-9 w-full min-w-0 justify-start gap-2 px-1.5 py-1.5 text-sm font-medium group-data-[state=collapsed]/sidebar:justify-center group-data-[state=collapsed]/sidebar:px-0"
+								>
+									<ZenthcloudLogo
+										variant="glyph"
+										className="h-5 w-auto shrink-0"
+										aria-hidden
+									/>
+									{/* The name wraps onto a second line instead of being cut: an
+									    account is identified by its full name, and the header is
+									    tall enough for two lines of `text-sm`. */}
+									<span className="min-w-0 flex-1 text-left text-sm leading-tight break-words group-data-[state=collapsed]/sidebar:hidden">
+										{organization.name}
+									</span>
+									<CaretUpDownIcon
+										aria-hidden
+										className="size-3.5 shrink-0 text-zenth-subtle group-data-[state=collapsed]/sidebar:hidden"
+									/>
+								</Button>
+							</DropdownMenu.Trigger>
+							<DropdownMenu.Content
+								align="start"
+								sideOffset={6}
+								className="w-64 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+							>
+								<DropdownMenu.Group>
+									<DropdownMenu.Label className="text-[11px] font-semibold tracking-wider text-zenth-subtle uppercase">
+										Comptes
+									</DropdownMenu.Label>
+									{organizations ? (
+										organizations.map((account) => (
+											<DropdownMenu.Item
+												key={account.id}
+												selected={account.id === organization.id}
+												onClick={() => void switchOrganization(account.id)}
+											>
+												<span className="min-w-0 flex-1 truncate">
+													{account.name}
+												</span>
+											</DropdownMenu.Item>
+										))
+									) : (
+										<DropdownMenu.Item disabled>
+											Chargement des comptes…
+										</DropdownMenu.Item>
+									)}
+								</DropdownMenu.Group>
+								<DropdownMenu.Separator />
+								<DropdownMenu.Item
+									onClick={() => void router.push("/create-account")}
+								>
+									Créer un compte
+								</DropdownMenu.Item>
+							</DropdownMenu.Content>
+						</DropdownMenu>
 					</Sidebar.Header>
 
 					<Sidebar.Content>
@@ -229,13 +294,52 @@ export function PanelShell({
 						    bottom of the rail. */}
 						<Sidebar.Group className="mt-3 border-t border-zenth-line pt-2">
 							<Sidebar.Menu>
-								{navigation.footer.map((item) => (
-									<NavigationRow
-										key={item.id}
-										item={item}
-										pathname={pathname}
-									/>
-								))}
+								{navigation.footer.map((item) =>
+									item.id === "account" ? (
+										<Sidebar.MenuItem key={item.id}>
+											<Sidebar.Collapsible>
+												<Sidebar.CollapsibleTrigger
+													render={
+														<Sidebar.MenuButton
+															icon={item.icon}
+															tooltip={item.label}
+														>
+															<span className="min-w-0 flex-1 truncate">
+																{item.label}
+															</span>
+															<CaretRightIcon
+																aria-hidden
+																className="ml-auto size-3 shrink-0 text-zenth-subtle group-data-[state=collapsed]/sidebar:hidden"
+															/>
+														</Sidebar.MenuButton>
+													}
+												/>
+												<Sidebar.CollapsibleContent>
+													{/* The sub-menu's indent guide is a drawn vertical rule; the
+													    panel already has enough rail lines, so drop it. */}
+													<Sidebar.MenuSub className="[&>li[aria-hidden]]:hidden">
+														{ACCOUNT_DESTINATIONS.map((entry) => (
+															<Sidebar.MenuSubButton
+																key={entry.path}
+																disabled
+																title="Bientôt disponible"
+																className="cursor-not-allowed opacity-55"
+															>
+																{entry.label}
+															</Sidebar.MenuSubButton>
+														))}
+													</Sidebar.MenuSub>
+												</Sidebar.CollapsibleContent>
+											</Sidebar.Collapsible>
+										</Sidebar.MenuItem>
+									) : (
+										<NavigationRow
+											key={item.id}
+											item={item}
+											pathname={pathname}
+										/>
+									),
+								)}
 							</Sidebar.Menu>
 						</Sidebar.Group>
 
@@ -254,7 +358,9 @@ export function PanelShell({
 						className="mt-auto flex-col items-stretch gap-0 p-0!"
 					>
 						<div className="border-t border-zenth-line px-[11px] pt-1.5 pb-2.5 group-not-data-[state=collapsed]/sidebar:px-3.5">
-							<Sidebar.Trigger className="rounded-md border border-zenth-line bg-zenth-base" />
+							{/* The design system's own collapse glyph, unframed: no border and
+							    no background, only the row the trigger already styles. */}
+							<Sidebar.Trigger />
 						</div>
 					</Sidebar.Footer>
 					<Sidebar.Rail />
@@ -266,6 +372,10 @@ export function PanelShell({
 						"bg-zenth-base text-zenth-default",
 					)}
 				>
+					{/* The header sits outside the scrolling area, so it stays put while
+					    the workspace page scrolls underneath it. */}
+					<PanelHeader user={user} />
+
 					{activation === "error" && (
 						<div className="flex items-center gap-3 border-b border-zenth-line px-4 py-2 text-xs text-zenth-subtle">
 							<span>

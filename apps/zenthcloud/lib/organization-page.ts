@@ -18,7 +18,9 @@ export interface OrganizationPageProps {
 		role: string;
 	};
 	user: {
+		name: string | null;
 		email: string;
+		image: string | null;
 	};
 }
 
@@ -92,7 +94,11 @@ export async function getOrganizationPageProps(
 				name: membership.organization.name,
 				role: membership.role,
 			},
-			user: { email: user.email },
+			user: {
+				name: user.name,
+				email: user.email,
+				image: user.image ?? null,
+			},
 		},
 	};
 }

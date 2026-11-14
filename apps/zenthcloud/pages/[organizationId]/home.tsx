@@ -44,7 +44,7 @@ export default function OrganizationHomePage({
 				<title>{`${organization.name} | ZenthCloud`}</title>
 			</Head>
 			<OrganizationProvider organization={organization}>
-				<PanelShell title="Accueil">
+				<PanelShell title="Accueil" user={user}>
 					<div className="space-y-10">
 						<header className="space-y-2">
 							<p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
