@@ -247,9 +247,9 @@ export const NAVIGATION_SECTIONS: readonly NavigationSectionDefinition[] = [
 		id: "infrastructure",
 		label: "Infrastructure",
 		items: [
-			{ destination: "compute" },
 			{ destination: "infrastructure" },
 			{ destination: "telecom" },
+			{ destination: "compute" },
 			{ destination: "ai" },
 			{ destination: "storage" },
 			{ destination: "media" },
