@@ -1,5 +1,6 @@
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import {
+	DiscordLogoIcon,
 	EyeIcon,
 	EyeSlashIcon,
 	GithubLogoIcon,
@@ -125,6 +126,17 @@ function GoogleMark({ className = "size-4" }: { className?: string }) {
 	);
 }
 
+function MicrosoftMark({ className = "size-4" }: { className?: string }) {
+	return (
+		<svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+			<path fill="#F25022" d="M2 2h9.5v9.5H2z" />
+			<path fill="#7FBA00" d="M12.5 2H22v9.5h-9.5z" />
+			<path fill="#00A4EF" d="M2 12.5h9.5V22H2z" />
+			<path fill="#FFB900" d="M12.5 12.5H22V22h-9.5z" />
+		</svg>
+	);
+}
+
 function OrDivider() {
 	return (
 		<div className="my-6 flex items-center gap-4" aria-hidden="true">
@@ -171,12 +183,14 @@ interface Props {
 	enforceSSO: boolean;
 }
 
+type SocialProvider = "google" | "github" | "discord" | "microsoft";
+
 export default function LoginPage({ IS_CLOUD, enforceSSO }: Props) {
 	const router = useRouter();
 	const [isLoginLoading, setIsLoginLoading] = useState(false);
-	const [socialLoading, setSocialLoading] = useState<
-		"google" | "github" | null
-	>(null);
+	const [socialLoading, setSocialLoading] = useState<SocialProvider | null>(
+		null,
+	);
 	const [error, setError] = useState<string | null>(null);
 	const [rememberDevice, setRememberDevice] = useState(true);
 	const [savedLogin, setSavedLogin] = useState<SavedLogin | null>(null);
@@ -232,7 +246,7 @@ export default function LoginPage({ IS_CLOUD, enforceSSO }: Props) {
 		setSavedLogin(value);
 	};
 
-	const onSocialSignIn = async (provider: "google" | "github") => {
+	const onSocialSignIn = async (provider: SocialProvider) => {
 		setSocialLoading(provider);
 		try {
 			const { error } = await authClient.signIn.social({
@@ -330,6 +344,28 @@ export default function LoginPage({ IS_CLOUD, enforceSSO }: Props) {
 						onClick={() => onSocialSignIn("github")}
 					>
 						GitHub
+					</Button>
+					<Button
+						variant="outline"
+						size="lg"
+						className="w-full justify-center"
+						icon={DiscordLogoIcon}
+						loading={socialLoading === "discord"}
+						disabled={socialLoading !== null}
+						onClick={() => onSocialSignIn("discord")}
+					>
+						Discord
+					</Button>
+					<Button
+						variant="outline"
+						size="lg"
+						className="w-full justify-center"
+						loading={socialLoading === "microsoft"}
+						disabled={socialLoading !== null}
+						onClick={() => onSocialSignIn("microsoft")}
+					>
+						<MicrosoftMark />
+						Microsoft
 					</Button>
 				</div>
 			)}
