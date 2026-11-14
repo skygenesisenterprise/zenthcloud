@@ -1,164 +1,152 @@
-import { Button, Text } from "@zenthcloud/react";
-import { validateRequest } from "@zenthcloud/server/lib/auth";
-import {
-	findOnboardingOrganizationById,
-	findUserOrganizationMembership,
-	readOnboardingStatus,
-} from "@zenthcloud/server/services/onboarding";
-import {
-	CREATE_ACCOUNT_PATH,
-	resolveWorkspaceAccess,
-} from "@zenthcloud/server/services/onboarding-paths";
-import type { GetServerSidePropsContext } from "next";
+import type { GetServerSideProps } from "next";
 import Head from "next/head";
-import { useState } from "react";
-import { toast } from "sonner";
-import { authClient } from "@/lib/auth-client";
+import { OrganizationProvider } from "@/components/panel/organization-context";
+import { PanelShell } from "@/components/panel/panel-shell";
+import { Badge } from "@/components/ui/badge";
+import {
+	getOrganizationPageProps,
+	type OrganizationPageProps,
+} from "@/lib/organization-page";
 
-const LOGIN_PATH = "/login";
+const ROLE_LABELS: Record<string, string> = {
+	owner: "propriétaire",
+	admin: "administrateur",
+	member: "membre",
+};
 
-interface Props {
-	organizationName: string;
-	role: string;
-	email: string;
-}
+const NEXT_STEPS = [
+	{
+		title: "Relier votre premier domaine",
+		description:
+			"Pointez un domaine vers ZenthCloud pour gérer son DNS, ses certificats et son trafic depuis cet espace.",
+	},
+	{
+		title: "Déployer une ressource de calcul",
+		description:
+			"Instances et services s'exécutent dans cet espace de travail et partagent ses accès.",
+	},
+	{
+		title: "Configurer l'observabilité",
+		description:
+			"Les métriques et l'historique d'activité restent rattachés à l'organisation affichée ici.",
+	},
+];
 
 export default function OrganizationHomePage({
-	organizationName,
-	role,
-	email,
-}: Props) {
-	const [isSigningOut, setIsSigningOut] = useState(false);
-
-	const signOut = async () => {
-		setIsSigningOut(true);
-		try {
-			await authClient.signOut();
-			window.location.assign(LOGIN_PATH);
-		} catch {
-			toast.error("Could not sign out. Try again.");
-			setIsSigningOut(false);
-		}
-	};
+	organization,
+	user,
+}: OrganizationPageProps) {
+	const roleLabel = ROLE_LABELS[organization.role] ?? organization.role;
 
 	return (
-		<main
-			data-zenth-mode="light"
-			className="flex min-h-svh flex-col bg-zenth-base text-zenth-default"
-		>
+		<>
 			<Head>
-				<title>{`${organizationName} | ZenthCloud`}</title>
+				<title>{`${organization.name} | ZenthCloud`}</title>
 			</Head>
-			<header className="flex h-20 items-center justify-between gap-4 px-6">
-				<Text as="span" size="sm" bold>
-					{organizationName}
-				</Text>
-				<div className="flex items-center gap-3">
-					<Text variant="secondary" size="sm" as="span">
-						{email}
-					</Text>
-					<Button
-						variant="outline"
-						loading={isSigningOut}
-						onClick={() => void signOut()}
-					>
-						Sign out
-					</Button>
-				</div>
-			</header>
+			<OrganizationProvider organization={organization}>
+				<PanelShell title="Accueil">
+					<div className="space-y-10">
+						<header className="space-y-2">
+							<p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+								Espace de travail
+							</p>
+							<h1 className="text-2xl font-semibold tracking-tight">
+								Bonjour, {organization.name}
+							</h1>
+							<p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+								Vous êtes connecté en tant que {roleLabel} de cet espace de
+								travail. Tout ce que vous déployez ici reste rattaché à cet
+								identifiant d&apos;organisation.
+							</p>
+						</header>
 
-			<section
-				aria-labelledby="workspace-heading"
-				className="flex flex-1 justify-center px-6 pt-12 pb-12 sm:px-4"
-			>
-				<div className="w-full max-w-[36rem]">
-					<Text
-						id="workspace-heading"
-						variant="heading1"
-						as="h1"
-						DANGEROUS_className="text-[1.75rem] leading-9 tracking-[-0.02em]"
-					>
-						Your workspace is ready
-					</Text>
-					<Text
-						variant="secondary"
-						size="sm"
-						as="p"
-						DANGEROUS_className="mt-4 leading-relaxed"
-					>
-						{organizationName} is set up, and your account joined it as its{" "}
-						{role}. Everything you deploy from now on lives inside this
-						workspace.
-					</Text>
-				</div>
-			</section>
-		</main>
+						<section
+							aria-labelledby="workspace-details-heading"
+							className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+						>
+							<h2 id="workspace-details-heading" className="sr-only">
+								Informations de l&apos;espace de travail
+							</h2>
+
+							<div className="rounded-lg border bg-card p-5">
+								<p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+									Organisation
+								</p>
+								<p className="mt-2 text-sm font-semibold">
+									{organization.name}
+								</p>
+								<p className="mt-1 truncate font-mono text-xs text-muted-foreground">
+									{organization.id}
+								</p>
+							</div>
+
+							<div className="rounded-lg border bg-card p-5">
+								<p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+									Votre rôle
+								</p>
+								<div className="mt-2 flex items-center gap-2">
+									<Badge variant="outline" className="capitalize">
+										{roleLabel}
+									</Badge>
+								</div>
+								<p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+									Les destinations affichées dans la navigation dépendent de vos
+									permissions sur cette organisation.
+								</p>
+							</div>
+
+							<div className="rounded-lg border bg-card p-5">
+								<p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+									Compte
+								</p>
+								<p className="mt-2 truncate text-sm font-medium">
+									{user.email}
+								</p>
+								<p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+									La session est rattachée à cet espace de travail dès
+									l&apos;ouverture du panel.
+								</p>
+							</div>
+						</section>
+
+						<section aria-labelledby="next-steps-heading" className="space-y-4">
+							<div className="flex items-baseline justify-between gap-4">
+								<h2
+									id="next-steps-heading"
+									className="text-lg font-semibold tracking-tight"
+								>
+									Pour commencer
+								</h2>
+								<span className="text-xs text-muted-foreground">
+									Les pages arrivent progressivement
+								</span>
+							</div>
+
+							<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+								{NEXT_STEPS.map((step) => (
+									<div
+										key={step.title}
+										className="rounded-lg border bg-card p-5"
+									>
+										<div className="flex items-center gap-2">
+											<p className="text-sm font-medium">{step.title}</p>
+											<Badge variant="outline" className="uppercase">
+												Bientôt
+											</Badge>
+										</div>
+										<p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+											{step.description}
+										</p>
+									</div>
+								))}
+							</div>
+						</section>
+					</div>
+				</PanelShell>
+			</OrganizationProvider>
+		</>
 	);
 }
 
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-	const raw = context.params?.organizationId;
-	const organizationId = Array.isArray(raw) ? raw[0] : raw;
-	if (!organizationId) {
-		return { notFound: true };
-	}
-
-	let session: Awaited<ReturnType<typeof validateRequest>> | null = null;
-	try {
-		session = await validateRequest(context.req);
-	} catch {
-		session = null;
-	}
-
-	const user = session?.user;
-	if (!user) {
-		return {
-			redirect: { permanent: false, destination: LOGIN_PATH },
-		};
-	}
-
-	// A workspace whose organization row is gone cannot be opened: its
-	// memberships were cascaded away, and the session may still point at it.
-	const organizationExists =
-		await findOnboardingOrganizationById(organizationId);
-
-	// The organization id comes from the browser, so it is only ever an input to
-	// these lookups: membership is what grants access to the workspace.
-	const membership = await findUserOrganizationMembership(
-		user.id,
-		organizationId,
-	);
-	const status = await readOnboardingStatus(
-		user.id,
-		session?.session?.activeOrganizationId,
-	);
-
-	// The access rules live in `onboarding-paths`, not in this page.
-	const access = resolveWorkspaceAccess({
-		hasSession: true,
-		organizationExists: Boolean(organizationExists),
-		isMember: Boolean(membership?.organization),
-		destination: status.destination,
-	});
-
-	if (!access.allowed) {
-		return {
-			redirect: { permanent: false, destination: access.redirect },
-		};
-	}
-
-	if (!membership?.organization) {
-		// `allowed` already implies a membership row; keep the page type-safe.
-		return {
-			redirect: { permanent: false, destination: CREATE_ACCOUNT_PATH },
-		};
-	}
-
-	return {
-		props: {
-			organizationName: membership.organization.name,
-			role: membership.role,
-			email: user.email,
-		},
-	};
-}
+export const getServerSideProps: GetServerSideProps<OrganizationPageProps> =
+	getOrganizationPageProps;
