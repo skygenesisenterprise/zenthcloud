@@ -4,9 +4,12 @@ import {
 	CREATE_ACCOUNT_PATH,
 	createFirstOrganization,
 	isMemberOf,
+	LOGIN_PATH,
 	type OnboardingMembership,
 	type OnboardingStore,
+	OrganizationLimitReachedError,
 	resolveOnboardingStatus,
+	resolveWorkspaceAccess,
 	workspacePath,
 } from "@zenthcloud/server/services/onboarding";
 
@@ -22,15 +25,23 @@ interface StoredOrganization {
 	ownerId: string;
 }
 
+interface StoredAudit {
+	organizationId: string;
+	resourceId?: string;
+}
+
 /**
  * In-memory implementation of the onboarding store. It models the transaction
  * by snapshotting its state so a failed insert can be asserted to leave no
- * organization and no membership behind.
+ * organization, membership or audit entry behind.
  */
 function createMemoryStore(seed: StoredMembership[] = []) {
 	const memberships = [...seed];
 	const organizations: StoredOrganization[] = [];
+	const audits: StoredAudit[] = [];
+	const lockedUsers: string[] = [];
 	let insertMemberError: Error | null = null;
+	let insertAuditError: Error | null = null;
 
 	const store: OnboardingStore = {
 		listMemberships: async (userId) =>
@@ -46,8 +57,12 @@ function createMemoryStore(seed: StoredMembership[] = []) {
 			const organizationSnapshot = organizations.map((entry) => ({
 				...entry,
 			}));
+			const auditSnapshot = audits.map((entry) => ({ ...entry }));
 			try {
 				return await run({
+					lockUser: async (userId) => {
+						lockedUsers.push(userId);
+					},
 					findMembership: async (userId) => {
 						const found = memberships.find((entry) => entry.userId === userId);
 						return found
@@ -58,6 +73,8 @@ function createMemoryStore(seed: StoredMembership[] = []) {
 								}
 							: null;
 					},
+					countOwnedOrganizations: async (userId) =>
+						organizations.filter((entry) => entry.ownerId === userId).length,
 					insertOrganization: async (input) => {
 						const created = {
 							id: `org_${organizations.length + 1}`,
@@ -76,12 +93,21 @@ function createMemoryStore(seed: StoredMembership[] = []) {
 							isDefault: input.isDefault,
 						});
 					},
+					insertAuditLog: async (entry) => {
+						if (insertAuditError) throw insertAuditError;
+						audits.push({
+							organizationId: entry.organizationId,
+							resourceId: entry.resourceId,
+						});
+					},
 				});
 			} catch (error) {
 				memberships.length = 0;
 				memberships.push(...membershipSnapshot);
 				organizations.length = 0;
 				organizations.push(...organizationSnapshot);
+				audits.length = 0;
+				audits.push(...auditSnapshot);
 				throw error;
 			}
 		},
@@ -91,11 +117,21 @@ function createMemoryStore(seed: StoredMembership[] = []) {
 		store,
 		memberships,
 		organizations,
+		audits,
+		lockedUsers,
 		failMemberInsert: (error: Error) => {
 			insertMemberError = error;
 		},
+		failAuditInsert: (error: Error) => {
+			insertAuditError = error;
+		},
 	};
 }
+
+const auditIdentity = {
+	userEmail: "owner@example.com",
+	userRole: "owner",
+};
 
 describe("organization ids", () => {
 	it("renders as 32 lowercase hex characters, ready for the workspace route", () => {
@@ -138,16 +174,43 @@ describe("createFirstOrganization", () => {
 		]);
 	});
 
+	it("locks the account before checking for an existing workspace", async () => {
+		const memory = createMemoryStore();
+
+		await createFirstOrganization(memory.store, {
+			userId: "user_1",
+			name: "Acme Inc.",
+		});
+
+		expect(memory.lockedUsers).toEqual(["user_1"]);
+	});
+
+	it("writes the audit entry inside the creation transaction", async () => {
+		const memory = createMemoryStore();
+
+		const result = await createFirstOrganization(memory.store, {
+			userId: "user_1",
+			name: "Acme Inc.",
+			audit: auditIdentity,
+		});
+
+		expect(memory.audits).toEqual([
+			{ organizationId: result.organizationId, resourceId: result.organizationId },
+		]);
+	});
+
 	it("returns the existing workspace on a duplicate submission", async () => {
 		const memory = createMemoryStore();
 
 		const first = await createFirstOrganization(memory.store, {
 			userId: "user_1",
 			name: "Acme Inc.",
+			audit: auditIdentity,
 		});
 		const second = await createFirstOrganization(memory.store, {
 			userId: "user_1",
 			name: "Acme Inc.",
+			audit: auditIdentity,
 		});
 
 		expect(second).toEqual({
@@ -156,6 +219,8 @@ describe("createFirstOrganization", () => {
 		});
 		expect(memory.organizations).toHaveLength(1);
 		expect(memory.memberships).toHaveLength(1);
+		// The retry must not duplicate the audit event.
+		expect(memory.audits).toHaveLength(1);
 	});
 
 	it("does not create a second workspace when another submission wins the race", async () => {
@@ -168,16 +233,23 @@ describe("createFirstOrganization", () => {
 			// The pre-transaction lookup sees nothing: the competing submission has
 			// not committed yet.
 			listMemberships: async () => [],
-			transaction: async (run) =>
-				run({
+			transaction: async (run) => {
+				// The account row is locked, and the re-read now sees the winner.
+				return run({
+					lockUser: async () => {},
 					findMembership: async () => raced,
+					countOwnedOrganizations: async () => 0,
 					insertOrganization: async () => {
 						throw new Error("must not insert a second organization");
 					},
 					insertOwnerMember: async () => {
 						throw new Error("must not insert a second membership");
 					},
-				}),
+					insertAuditLog: async () => {
+						throw new Error("must not write an audit entry");
+					},
+				});
+			},
 		};
 
 		await expect(
@@ -193,11 +265,31 @@ describe("createFirstOrganization", () => {
 			createFirstOrganization(memory.store, {
 				userId: "user_1",
 				name: "Acme Inc.",
+				audit: auditIdentity,
 			}),
 		).rejects.toThrow("member insert failed");
 
 		expect(memory.organizations).toHaveLength(0);
 		expect(memory.memberships).toHaveLength(0);
+		expect(memory.audits).toHaveLength(0);
+	});
+
+	it("rolls the organization back when the audit write fails", async () => {
+		const memory = createMemoryStore();
+		memory.failAuditInsert(new Error("audit insert failed"));
+
+		await expect(
+			createFirstOrganization(memory.store, {
+				userId: "user_1",
+				name: "Acme Inc.",
+				audit: auditIdentity,
+			}),
+		).rejects.toThrow("audit insert failed");
+
+		// Nothing is committed: not the workspace, not the audit event.
+		expect(memory.organizations).toHaveLength(0);
+		expect(memory.memberships).toHaveLength(0);
+		expect(memory.audits).toHaveLength(0);
 	});
 
 	it("retries activation on the same workspace after a failure", async () => {
@@ -215,6 +307,73 @@ describe("createFirstOrganization", () => {
 
 		expect(retried.organizationId).toBe(first.organizationId);
 		expect(memory.organizations).toHaveLength(1);
+	});
+});
+
+describe("organization quota", () => {
+	it("allows the first workspace when the plan permits one", async () => {
+		const memory = createMemoryStore();
+
+		const result = await createFirstOrganization(memory.store, {
+			userId: "user_1",
+			name: "Acme Inc.",
+			organizationLimit: 1,
+			audit: auditIdentity,
+		});
+
+		expect(result.created).toBe(true);
+		expect(memory.organizations).toHaveLength(1);
+	});
+
+	it("refuses the creation when the owned organization already fills the quota", async () => {
+		const memory = createMemoryStore();
+		// Owned workspace without a membership, e.g. provisioned elsewhere.
+		memory.organizations.push({ id: "org_seeded", name: "Seeded", ownerId: "user_1" });
+
+		await expect(
+			createFirstOrganization(memory.store, {
+				userId: "user_1",
+				name: "Acme Inc.",
+				organizationLimit: 1,
+				audit: auditIdentity,
+			}),
+		).rejects.toBeInstanceOf(OrganizationLimitReachedError);
+
+		expect(memory.organizations).toHaveLength(1);
+		expect(memory.memberships).toHaveLength(0);
+		expect(memory.audits).toHaveLength(0);
+	});
+
+	it("does not consume quota when the workspace already exists", async () => {
+		const memory = createMemoryStore([
+			{ userId: "user_1", organizationId: "org_existing", role: "owner", isDefault: true },
+		]);
+		memory.organizations.push({ id: "org_existing", name: "Existing", ownerId: "user_1" });
+
+		const result = await createFirstOrganization(memory.store, {
+			userId: "user_1",
+			name: "Acme Inc.",
+			organizationLimit: 1,
+			audit: auditIdentity,
+		});
+
+		expect(result).toEqual({ organizationId: "org_existing", created: false });
+		expect(memory.organizations).toHaveLength(1);
+		expect(memory.audits).toHaveLength(0);
+	});
+
+	it("treats a null limit as unlimited (self-hosted)", async () => {
+		const memory = createMemoryStore();
+		memory.organizations.push({ id: "org_seeded", name: "Seeded", ownerId: "user_1" });
+
+		const result = await createFirstOrganization(memory.store, {
+			userId: "user_1",
+			name: "Acme Inc.",
+			organizationLimit: null,
+		});
+
+		expect(result.created).toBe(true);
+		expect(memory.organizations).toHaveLength(2);
 	});
 });
 
@@ -269,5 +428,62 @@ describe("resolveOnboardingStatus", () => {
 		expect(isMemberOf([membership("org_own")], "org_own")).toBe(true);
 		expect(isMemberOf([membership("org_own")], "org_other")).toBe(false);
 		expect(isMemberOf([], "org_other")).toBe(false);
+	});
+});
+
+describe("resolveWorkspaceAccess", () => {
+	it("sends a signed-out request to sign-in", () => {
+		expect(
+			resolveWorkspaceAccess({
+				hasSession: false,
+				organizationExists: true,
+				isMember: true,
+				destination: "/org_own/home",
+			}),
+		).toEqual({ allowed: false, redirect: LOGIN_PATH });
+	});
+
+	it("never opens a workspace whose organization was deleted", () => {
+		expect(
+			resolveWorkspaceAccess({
+				hasSession: true,
+				organizationExists: false,
+				isMember: false,
+				destination: null,
+			}),
+		).toEqual({ allowed: false, redirect: "/login" });
+	});
+
+	it("allows a member of the workspace", () => {
+		expect(
+			resolveWorkspaceAccess({
+				hasSession: true,
+				organizationExists: true,
+				isMember: true,
+				destination: "/org_own/home",
+			}),
+		).toEqual({ allowed: true });
+	});
+
+	it("redirects a non-member to a workspace it belongs to", () => {
+		expect(
+			resolveWorkspaceAccess({
+				hasSession: true,
+				organizationExists: true,
+				isMember: false,
+				destination: "/org_own/home",
+			}),
+		).toEqual({ allowed: false, redirect: "/org_own/home" });
+	});
+
+	it("sends a non-member without any workspace to onboarding", () => {
+		expect(
+			resolveWorkspaceAccess({
+				hasSession: true,
+				organizationExists: true,
+				isMember: false,
+				destination: null,
+			}),
+		).toEqual({ allowed: false, redirect: CREATE_ACCOUNT_PATH });
 	});
 });

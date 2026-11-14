@@ -388,13 +388,18 @@ const createBetterAuth = () =>
 							const defaultRole = provider.organizationId
 								? await resolveOrganizationDefaultRole(provider.organizationId)
 								: "member";
-							await db.insert(schema.member).values({
-								userId: user.id,
-								organizationId: provider?.organizationId || "",
-								role: defaultRole,
-								createdAt: new Date(),
-								isDefault: true,
-							});
+							// The unique index on (organization_id, user_id) makes a repeat
+							// SSO sign-in a no-op instead of a failed login.
+							await db
+								.insert(schema.member)
+								.values({
+									userId: user.id,
+									organizationId: provider.organizationId,
+									role: defaultRole,
+									createdAt: new Date(),
+									isDefault: true,
+								})
+								.onConflictDoNothing();
 						}
 					},
 				},

@@ -17,6 +17,7 @@ import {
 } from "@zenthcloud/react";
 import { IS_CLOUD, isAdminPresent } from "@zenthcloud/server";
 import { validateRequest } from "@zenthcloud/server/lib/auth";
+import { readOnboardingStatus } from "@zenthcloud/server/services/onboarding";
 import type { GetServerSidePropsContext } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -512,12 +513,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 		try {
 			const { user, session } = await validateRequest(context.req);
 			if (user) {
+				// The active organization stored on the session may have been
+				// deleted since: persisted memberships decide the destination.
+				const status = await readOnboardingStatus(
+					user.id,
+					session?.activeOrganizationId,
+				);
 				return {
 					redirect: {
 						permanent: false,
-						destination: session?.activeOrganizationId
-							? `/${session.activeOrganizationId}/home`
-							: CREATE_ACCOUNT_PATH,
+						destination: status.destination ?? CREATE_ACCOUNT_PATH,
 					},
 				};
 			}

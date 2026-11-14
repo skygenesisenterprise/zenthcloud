@@ -3,11 +3,11 @@ import { validateRequest } from "@zenthcloud/server/lib/auth";
 import {
 	findOnboardingOrganizationById,
 	findUserOrganizationMembership,
-	listUserMemberships,
+	readOnboardingStatus,
 } from "@zenthcloud/server/services/onboarding";
 import {
 	CREATE_ACCOUNT_PATH,
-	workspacePath,
+	resolveWorkspaceAccess,
 } from "@zenthcloud/server/services/onboarding-paths";
 import type { GetServerSidePropsContext } from "next";
 import Head from "next/head";
@@ -119,33 +119,38 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 	// A workspace whose organization row is gone cannot be opened: its
 	// memberships were cascaded away, and the session may still point at it.
-	// Start again from sign-in instead of guessing another workspace.
 	const organizationExists =
 		await findOnboardingOrganizationById(organizationId);
-	if (!organizationExists) {
-		return {
-			redirect: { permanent: false, destination: LOGIN_PATH },
-		};
-	}
 
 	// The organization id comes from the browser, so it is only ever an input to
-	// this lookup: membership is what grants access to the workspace.
+	// these lookups: membership is what grants access to the workspace.
 	const membership = await findUserOrganizationMembership(
 		user.id,
 		organizationId,
 	);
+	const status = await readOnboardingStatus(
+		user.id,
+		session?.session?.activeOrganizationId,
+	);
+
+	// The access rules live in `onboarding-paths`, not in this page.
+	const access = resolveWorkspaceAccess({
+		hasSession: true,
+		organizationExists: Boolean(organizationExists),
+		isMember: Boolean(membership?.organization),
+		destination: status.destination,
+	});
+
+	if (!access.allowed) {
+		return {
+			redirect: { permanent: false, destination: access.redirect },
+		};
+	}
 
 	if (!membership?.organization) {
-		// The workspace exists but this account is not a member: send it to a
-		// workspace it does belong to, or back to onboarding.
-		const [ownMembership] = await listUserMemberships(user.id);
+		// `allowed` already implies a membership row; keep the page type-safe.
 		return {
-			redirect: {
-				permanent: false,
-				destination: ownMembership
-					? workspacePath(ownMembership.organizationId)
-					: CREATE_ACCOUNT_PATH,
-			},
+			redirect: { permanent: false, destination: CREATE_ACCOUNT_PATH },
 		};
 	}
 

@@ -29,6 +29,18 @@ export interface OnboardingStatus {
 /** The onboarding step a signed-in account without a workspace belongs to. */
 export const CREATE_ACCOUNT_PATH = "/create-account";
 
+/** Sign-in page: the only way back when the account or its workspace is gone. */
+export const LOGIN_PATH = "/login";
+
+/**
+ * Message shown when an account reached its plan's organization quota.
+ *
+ * Kept next to the decisions so the API and the creation transaction report the
+ * same thing.
+ */
+export const organizationLimitMessage = (limit: number) =>
+	`You've reached your plan's limit of ${limit} organizations. Upgrade your plan to add more.`;
+
 /** Workspace route, always built from the id persisted in the database. */
 export const workspacePath = (organizationId: string) =>
 	`/${organizationId}/home`;
@@ -45,6 +57,47 @@ export const isMemberOf = (
  * account is still a member of it, otherwise the default (or first) membership
  * wins. Without any membership the account still has to onboard.
  */
+export interface WorkspaceAccessInput {
+	/** Whether the request carries a valid session. */
+	hasSession: boolean;
+	/** Whether the organization row named in the URL still exists. */
+	organizationExists: boolean;
+	/** Whether the signed-in account is a member of that organization. */
+	isMember: boolean;
+	/** Destination resolved from persisted memberships, if any. */
+	destination: string | null;
+}
+
+export type WorkspaceAccess =
+	| { allowed: true }
+	| { allowed: false; redirect: string };
+
+/**
+ * Decides whether an organization route may render.
+ *
+ * The id in the URL is only an input: access is granted by the membership. A
+ * workspace whose organization row was deleted sends the browser back to
+ * sign-in; an account that is not a member lands on a workspace it does belong
+ * to, or on onboarding when it has none.
+ */
+export function resolveWorkspaceAccess(
+	input: WorkspaceAccessInput,
+): WorkspaceAccess {
+	if (!input.hasSession) {
+		return { allowed: false, redirect: LOGIN_PATH };
+	}
+	if (!input.organizationExists) {
+		return { allowed: false, redirect: LOGIN_PATH };
+	}
+	if (input.isMember) {
+		return { allowed: true };
+	}
+	return {
+		allowed: false,
+		redirect: input.destination ?? CREATE_ACCOUNT_PATH,
+	};
+}
+
 export function resolveOnboardingStatus(input: {
 	activeOrganizationId?: string | null;
 	memberships: readonly OnboardingMembership[];

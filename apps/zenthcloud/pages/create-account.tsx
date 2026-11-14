@@ -12,6 +12,10 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { authClient } from "@/lib/auth-client";
+import {
+	isSessionExpired,
+	readActiveOrganizationId,
+} from "@/lib/onboarding-activation";
 import { api } from "@/utils/api";
 
 const OrganizationSchema = z.object({
@@ -53,17 +57,44 @@ export default function CreateAccountPage({ email }: Props) {
 				name: values.name.trim(),
 			});
 
-			// Point the session at the new workspace. On failure the workspace still
-			// exists, so submitting again only retries this activation.
+			// Point the session at the new workspace. Activation is a separate
+			// operation from creation: on failure the workspace still exists, so
+			// submitting again only retries this step.
 			const { error: activeError } = await authClient.organization.setActive({
 				organizationId,
 			});
 			if (activeError) {
+				// The account behind this page may have expired while it was open.
+				if (isSessionExpired(activeError)) {
+					toast.error("Your session expired. Sign in again.");
+					window.location.assign(LOGIN_PATH);
+					return;
+				}
+
 				const message =
 					activeError.message ??
 					"The workspace could not be opened automatically.";
 				toast.error(message);
-				setError(`${message} Try again to finish opening it.`);
+				setError(`${message} The workspace exists, so try again to open it.`);
+				return;
+			}
+
+			// Never leave for the workspace before the session really points at the
+			// organization the server created.
+			let activeOrganizationId: string | null = null;
+			try {
+				const { data } = await authClient.getSession();
+				activeOrganizationId = readActiveOrganizationId(data?.session);
+			} catch {
+				// A failed read is treated as "not confirmed": the page stays here.
+				activeOrganizationId = null;
+			}
+
+			if (activeOrganizationId !== organizationId) {
+				const message =
+					"The workspace was created, but this session is not pointing at it yet.";
+				toast.error(message);
+				setError(`${message} Try again to open it.`);
 				return;
 			}
 

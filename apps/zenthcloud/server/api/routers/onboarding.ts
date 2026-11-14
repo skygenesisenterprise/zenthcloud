@@ -1,12 +1,12 @@
+import { TRPCError } from "@trpc/server";
 import { IS_CLOUD } from "@zenthcloud/server";
 import {
 	createOwnedOrganization,
-	listUserMemberships,
+	OrganizationLimitReachedError,
 	readOnboardingStatus,
 } from "@zenthcloud/server/services/onboarding";
-import { createAuditLog } from "@zenthcloud/server/services/proprietary/audit-log";
 import { z } from "zod";
-import { assertOrganizationLimit } from "@/server/api/utils/plan-limits";
+import { getOrganizationLimitForUser } from "@/server/api/utils/plan-limits";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 const OrganizationNameSchema = z
@@ -43,30 +43,31 @@ export const onboardingRouter = createTRPCRouter({
 			// idempotent), so no role check is needed here: the self-hosted owner
 			// role is assigned after this step, and additional organizations stay
 			// restricted to owners and admins in the organization router.
-			const memberships = await listUserMemberships(ctx.user.id);
-			if (memberships.length === 0 && IS_CLOUD) {
-				await assertOrganizationLimit(ctx.user.id);
-			}
+			//
+			// The plan comes from the server, never from the client. The service
+			// enforces it under the account's row lock, so concurrent submissions
+			// cannot both pass it.
+			const organizationLimit = IS_CLOUD
+				? await getOrganizationLimitForUser(ctx.user.id)
+				: null;
 
-			// Idempotent: a retry or a double click returns the existing workspace.
-			const result = await createOwnedOrganization({
-				userId: ctx.user.id,
-				name: input.name,
-			});
-
-			if (result.created) {
-				await createAuditLog({
-					organizationId: result.organizationId,
+			try {
+				// Idempotent: a retry or a double click returns the existing workspace,
+				// and the audit event commits with the creation.
+				return await createOwnedOrganization({
 					userId: ctx.user.id,
-					userEmail: ctx.user.email,
-					userRole: ctx.user.role,
-					action: "create",
-					resourceType: "organization",
-					resourceId: result.organizationId,
-					resourceName: input.name,
+					name: input.name,
+					organizationLimit,
+					audit: {
+						userEmail: ctx.user.email,
+						userRole: ctx.user.role,
+					},
 				});
+			} catch (error) {
+				if (error instanceof OrganizationLimitReachedError) {
+					throw new TRPCError({ code: "FORBIDDEN", message: error.message });
+				}
+				throw error;
 			}
-
-			return result;
 		}),
 });

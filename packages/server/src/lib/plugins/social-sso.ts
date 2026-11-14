@@ -166,14 +166,19 @@ export const socialSso = (): BetterAuthPlugin => ({
 						const role = await resolveOrganizationDefaultRole(
 							provider.organizationId,
 						);
-						await db.insert(member).values({
-							id: nanoid(),
-							organizationId: provider.organizationId,
-							userId: user.id,
-							role,
-							createdAt: new Date(),
-							isDefault: true,
-						});
+						// A concurrent sign-in may have provisioned the same membership:
+						// the unique index turns that race into a no-op.
+						await db
+							.insert(member)
+							.values({
+								id: nanoid(),
+								organizationId: provider.organizationId,
+								userId: user.id,
+								role,
+								createdAt: new Date(),
+								isDefault: true,
+							})
+							.onConflictDoNothing();
 					}
 				}
 
