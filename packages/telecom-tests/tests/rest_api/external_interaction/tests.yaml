@@ -1,0 +1,6 @@
+tests:
+    - dir: 'blind_transfer'
+    - dir: 'attended_transfer'
+    - dir: 'ami_bridge'
+    - dir: 'ami_redirect'
+    - dir: 'bridge_app'

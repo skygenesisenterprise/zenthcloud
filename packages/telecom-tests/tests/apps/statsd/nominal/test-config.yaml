@@ -1,0 +1,56 @@
+testinfo:
+    summary:  |
+        Test sending statistics to a StatsD server for the StatsD Dialplan
+        Application
+    description: |
+        This test verifies that a user will be able to send statistics properly
+        to StatsD through the StatsD Dialplan Application.
+
+test-modules:
+    test-object:
+        config-section: 'test-object-config'
+        typename: 'test_case.TestCaseModule'
+    modules:
+        -
+            config-section: event-action-config
+            typename: 'pluggable_modules.EventActionModule'
+        -
+            typename: 'pluggable_modules.Originator'
+            config-section: 'originator-config'
+
+test-object-config:
+    asterisk-instances: 1
+    connect-ami: True
+    reactor-timeout: 15
+
+event-action-config:
+    event:
+        type: 'matcher_listener.Udp'
+        conditions:
+            -
+                'nominal.foo:1|g'
+            -
+                'nominal.bar:2|s'
+            -
+                'nominal.baz:3|ms'
+            -
+                'nominal.last:4|c'
+
+originator-config:
+    channel: 'Local/start@default'
+    context: default
+    exten: start
+    priority: 1
+    trigger: 'ami_connect'
+    async: True
+
+properties:
+    dependencies:
+        - python: 'autobahn.websocket'
+        - python: 'starpy'
+        - python: 'twisted'
+        - asterisk: 'app_statsd'
+        - asterisk: 'res_statsd'
+    tags:
+        - statsd
+        - apps

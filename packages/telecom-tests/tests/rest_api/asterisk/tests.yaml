@@ -1,0 +1,4 @@
+tests:
+    - dir: 'logging'
+    - dir: 'modules'
+    - dir: 'config'

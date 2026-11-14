@@ -1,0 +1,99 @@
+testinfo:
+    summary: 'Test PJSIPShowSubscriptions AMI command'
+    description: |
+        Tests the AMI command PJSIPShowSubscriptions in order to make sure the
+        events are appropriately raised.
+
+properties:
+    dependencies:
+        - sipp :
+            version : 'v3.0'
+        - asterisk : 'res_pjsip'
+
+    tags:
+        - pjsip
+
+test-modules:
+    test-object:
+        config-section: sipp-config
+        typename: 'sipp.SIPpTestCase'
+    modules:
+        -
+            config-section: 'ami-config'
+            typename: 'pluggable_modules.EventActionModule'
+
+sipp-config:
+    memcheck-delay-stop: 90
+    connect-ami: True
+    reactor-timeout: 15
+    fail-on-any: True
+    test-iterations:
+        -
+            scenarios:
+                - { 'key-args': { 'scenario':'subscribe.xml', '-p':'5061' } }
+
+ami-config:
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'TestEvent'
+                    State: 'SUBSCRIPTION_STATE_SET'
+                    Endpoint: 'user1'
+                    StateText: 'ACTIVE'
+            count: 1
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'TestEvent'
+                    State: 'SUBSCRIPTION_STATE_SET'
+                    Endpoint: 'user2'
+                    StateText: 'ACTIVE'
+            count: 1
+        ami-actions:
+            action:
+                Action: 'PJSIPShowSubscriptionsInbound'
+                ActionID: '12345'
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'InboundSubscriptionDetail'
+                    Endpoint: 'user1'
+            requirements:
+                match:
+                    ActionID: '12345'
+                    Role: Notifier
+                    Callid: '.*'
+                    State: 'ACTIVE'
+                    Callerid: 'Unknown'
+                    SubscriptionType: mwi
+            count: 1
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'InboundSubscriptionDetail'
+                    Endpoint: 'user2'
+            requirements:
+                match:
+                    ActionID: '12345'
+                    Role: Notifier
+                    Callid: '.*'
+                    State: 'ACTIVE'
+                    Callerid: 'Unknown'
+                    SubscriptionType: extension_state
+            count: 1
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'InboundSubscriptionDetailComplete'
+            requirements:
+                match:
+                    ActionID: '12345'
+                    EventList: 'Complete'
+                    ListItems: '2'
+            count: 1
+        stop_test:

@@ -1,0 +1,41 @@
+testinfo:
+    summary: 'Test configured channel variables are set.'
+    description: |
+        'Checks to make sure variables configured with set_var on an endpoint
+         are properly set.'
+
+properties:
+    dependencies:
+        - app : 'sipp'
+        - asterisk : 'res_pjsip'
+    tags:
+        - pjsip
+
+test-modules:
+    test-object:
+        config-section: test-object-config
+        typename: 'sipp.SIPpTestCase'
+    modules:
+        -
+            config-section: 'ami-config'
+            typename: 'ami.AMIEventModule'
+
+test-object-config:
+    memcheck-delay-stop: 7
+    test-iterations:
+        -
+             scenarios:
+                - { 'key-args': { 'scenario':'invite_recv.xml', '-p':'5062' } }
+                - { 'key-args': { 'scenario':'invite.xml', '-p':'5061' } }
+
+ami-config:
+        -
+            type: 'headermatch'
+            conditions:
+                match:
+                    Event: 'VarSet'
+                    Variable: 'bar'
+            requirements:
+                match:
+                    Value: 'foo'
+            count: 1

@@ -1,0 +1,19 @@
+testinfo:
+    summary: 'Test dialing out from app_voicemails VoiceMailMain'
+    description: |
+        This test verifies that a person can choose to dialout to an
+        external number from the VoiceMailMain application.
+
+properties:
+    buildoption: 'TEST_FRAMEWORK'
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk: 'app_senddtmf'
+        - asterisk: 'app_userevent'
+        - asterisk: 'app_voicemail'
+        - asterisk: 'chan_pjsip'
+        - asterisk: 'res_pjsip'
+    tags:
+        - voicemail
+        - apps

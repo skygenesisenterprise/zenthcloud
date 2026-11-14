@@ -1,0 +1,180 @@
+testinfo:
+    skip: 'requires further rework for pjsip, see ASTERISK-30292'
+    summary: 'Test call parking timeouts for comebacktoorigin off'
+    description: |
+        'This test builds on the more generic parkcall test. With comebacktoorigin enabled,
+         we are checking to make sure that the call is placed into the correct extension in
+         park-dial as well as where the call ends up after the call is over whether it ends
+         in hangup after being answered or if it is ignored or given a busy signal'
+
+test-modules:
+    add-test-to-search-path: 'True'
+    test-object:
+        config-section: bridge-config
+        typename: 'bridge_test_case.BridgeTestCase'
+    modules:
+        -
+            config-section: 'cdr-config-12'
+            typename: 'cdr.CDRModule'
+        -
+            typename: 'Executioner.Executioner'
+
+bridge-config:
+  test-runs:
+    -
+        originate_channel: 'PJSIP/test@uut'
+        features:
+            -
+                who: 'alice'
+                what: 'parkcall'
+                success: 'true'
+    -
+        originate_channel: 'PJSIP/test@uut'
+        features:
+            -
+                who: 'alice'
+                what: 'parkcall'
+                success: 'true'
+    -
+        originate_channel: 'PJSIP/test@uut'
+        features:
+            -
+                who: 'alice'
+                what: 'parkcall'
+                success: 'true'
+
+cdr-config-12:
+    -
+        file: 'Master'
+        lines:
+            -
+                source: '1234'
+                destination: 'test'
+                dcontext: 'default'
+                callerid: '"Alice" <1234>'
+                channel: '.*/alice-.*'
+                dchannel: '.*/bob-.*'
+                lastapp: 'Dial'
+                disposition: 'ANSWERED'
+                amaflags: 'DOCUMENTATION'
+            -
+                # new in 12
+                source: '4321'
+                destination: ''
+                dcontext: 'default'
+                callerid: '"Bob" <4321>'
+                channel: '.*/bob-.*'
+                lastapp: 'Park'
+                lastarg: 'parkinglot_test1:401'
+                disposition: 'ANSWERED'
+                amaflags: 'DOCUMENTATION'
+            -
+                source: '4321'
+                destination: 'SIP_alice'
+                dcontext: 'park-dial'
+                callerid: '"Bob" <4321>'
+                channel: '.*/bob-.*'
+                dchannel: '.*/alice-.*'
+                lastapp: 'Dial'
+                disposition: 'ANSWERED'
+                amaflags: 'DOCUMENTATION'
+            -
+                source: '1234'
+                destination: 'test'
+                dcontext: 'default'
+                callerid: '"Alice" <1234>'
+                channel: '.*/alice-.*'
+                dchannel: '.*/bob-.*'
+                lastapp: 'Dial'
+                disposition: 'ANSWERED'
+                amaflags: 'DOCUMENTATION'
+            -
+                # new in 12
+                source: '4321'
+                destination: ''
+                dcontext: 'default'
+                callerid: '"Bob" <4321>'
+                channel: '.*/bob-.*'
+                lastapp: 'Park'
+                lastarg: 'parkinglot_test1:402'
+                disposition: 'ANSWERED'
+                amaflags: 'DOCUMENTATION'
+            -
+                source: '4321'
+                destination: 'SIP_alice'
+                dcontext: 'park-dial'
+                callerid: '"Bob" <4321>'
+                channel: '.*/bob-.*'
+                dchannel: '.*/alice-.*'
+                lastapp: 'Dial'
+                disposition: 'NO ANSWER'
+                amaflags: 'DOCUMENTATION'
+            -
+                # new in 12
+                source: '4321'
+                destination: 'SIP_alice'
+                dcontext: 'park-dial'
+                callerid: '"Bob" <4321>'
+                channel: '.*/bob-.*'
+                lastapp: 'UserEvent'
+                disposition: 'ANSWERED'
+                amaflags: 'DOCUMENTATION'
+            -
+                source: '1234'
+                destination: 'test'
+                dcontext: 'default'
+                callerid: '"Alice" <1234>'
+                channel: '.*/alice-.*'
+                dchannel: '.*/bob-.*'
+                lastapp: 'Dial'
+                disposition: 'ANSWERED'
+                amaflags: 'DOCUMENTATION'
+            -
+                # new in 12
+                source: '4321'
+                destination: ''
+                dcontext: 'default'
+                callerid: '"Bob" <4321>'
+                channel: '.*/bob-.*'
+                lastapp: 'Park'
+                lastarg: 'parkinglot_test1:403'
+                disposition: 'ANSWERED'
+                amaflags: 'DOCUMENTATION'
+            -
+                source: '4321'
+                destination: 'SIP_alice'
+                dcontext: 'park-dial'
+                callerid: '"Bob" <4321>'
+                channel: '.*/bob-.*'
+                dchannel: '.*/alice-.*'
+                lastapp: 'Dial'
+                disposition: 'BUSY'
+                amaflags: 'DOCUMENTATION'
+            -
+                # new in 12
+                source: '4321'
+                destination: 'SIP_alice'
+                dcontext: 'park-dial'
+                callerid: '"Bob" <4321>'
+                channel: '.*/bob-.*'
+                lastapp: 'UserEvent'
+                disposition: 'ANSWERED'
+                amaflags: 'DOCUMENTATION'
+
+
+properties:
+    dependencies:
+        - buildoption: 'TEST_FRAMEWORK'
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk: 'app_dial'
+        - asterisk: 'app_playback'
+        - asterisk: 'app_record'
+        - asterisk: 'app_senddtmf'
+        - asterisk: 'app_talkdetect'
+        - asterisk: 'app_userevent'
+        - asterisk: 'chan_pjsip'
+        - asterisk: 'func_channel'
+    tags:
+        - bridge
+        - parking

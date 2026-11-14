@@ -1,0 +1,113 @@
+testinfo:
+    skip: 'Unstable - ASTERISK-30199'
+    summary: "Callee initiated attended transfer w/Replaces, direct media, hold"
+    description: |
+        "This verifies a callee initiated local attended transfer with
+         REFER/Replaces, hold, and direct media. This uses a specialized packet
+         sniffer module that generates AMI UserEvents that are then checked to
+         determine the result of this test.
+
+         Alice calls bob via extension '101' and bob answers. Upon alice and
+         bob being remotely bridged, bob places alice on hold. Upon alices's
+         remote bridge being torn down, bob places a second call to charlie.
+         Charlie answers and once bob's second call and charlie are remotely
+         bridged, bob transfers alice to charlie via an attended transfer.
+
+         This then checks some data from the REFER and NOTIFY sipfrag. It
+         also ensures MOH is stopped on alice and that alice and charlie are
+         remotely bridged.
+
+test-modules:
+    test-object:
+        config-section: sipp-config
+        typename: 'sipp.SIPpTestCase'
+    modules:
+        -
+            config-section: ami-config
+            typename: 'pluggable_modules.EventActionModule'
+
+sipp-config:
+    memcheck-delay-stop: 7
+    fail-on-any: True
+    test-iterations:
+        -
+            scenarios:
+                # Pre-register alice and bob and charlie
+                - { 'key-args': {'scenario': 'alice-registers.xml', '-i': '127.0.0.1', '-p': '5061'} }
+                - { 'key-args': {'scenario': 'bob-registers.xml', '-i': '127.0.0.1', '-p': '5062'} }
+                - { 'key-args': {'scenario': 'charlie-registers.xml', '-i': '127.0.0.1', '-p': '5063'} }
+        -
+            scenarios:
+                - { 'key-args': {'scenario':'alice-calls-101.xml', '-i': '127.0.0.1', '-p':'5061', '-mi': '127.0.0.3', '-sleep': '1'} }
+                - { 'coordinated-sender': {'key-args': {'scenario':'bob-does-a-transfer.xml', '-i': '127.0.0.1', '-p':'5062', '-mi': '127.0.0.3'} },
+                    'coordinated-receiver': { 'key-args': {'scenario':'bob-calls-102.xml', '-i': '127.0.0.1', '-p':'5162', '-mi': '127.0.0.3'} } }
+                - { 'key-args': {'scenario': 'wait-for-a-call-then-send-bye.xml', '-i': '127.0.0.1', '-p': '5063', '-mi': '127.0.0.3'} }
+
+
+ami-config:
+    # Ensure MOH starts on alice.
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'MusicOnHoldStart'
+                    Channel: 'PJSIP/alice-.*'
+            count: 1
+    # Ensure MOH stops on alice's channel.
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'MusicOnHoldStop'
+                    Channel: 'PJSIP/alice-.*'
+            count: 1
+    # Ensure the transfer is successful.
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'AttendedTransfer'
+                    OrigTransfererChannel: 'PJSIP/bob-.*'
+                    SecondTransfererChannel: 'PJSIP/bob-.*'
+                    TransfereeChannel: 'PJSIP/alice-.*'
+                    TransferTargetChannel: 'PJSIP/charlie-.*'
+                    Result: 'Success'
+            count: 1
+    # Ensure each bob channel leaves the bridge it was in.
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'BridgeLeave'
+                    Channel: 'PJSIP/bob-.*'
+            count: 2
+    # Ensure bob's second call to charlie is hung up.
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'Hangup'
+                    Channel: 'PJSIP/bob-.*'
+                    Exten: '102'
+            count: 1
+    # Ensure bob's first call to alice is hung up.
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'Hangup'
+                    Channel: 'PJSIP/bob-.*'
+                nomatch:
+                    Exten: '102'
+            count: 1
+
+properties:
+    dependencies:
+        - python : twisted
+        - python : starpy
+        - asterisk : res_pjsip
+        - app : sipp
+    tags:
+        - pjsip
+        - refleaks
+

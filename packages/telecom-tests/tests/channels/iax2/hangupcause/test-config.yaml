@@ -1,0 +1,12 @@
+testinfo:
+    skip: 'Unstable - issue #102'
+    summary: 'Test IAX2 support for HANGUPCAUSE.'
+    description: 'Test generation of informational frames for usage by the HANGUPCAUSE hash feature.'
+
+properties:
+    dependencies:
+        - python : 'starpy'
+        - asterisk : 'chan_iax2'
+    tags:
+        - iax2
+        - hangupcause

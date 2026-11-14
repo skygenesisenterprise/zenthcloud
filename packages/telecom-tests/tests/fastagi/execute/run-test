@@ -1,0 +1,204 @@
+#!/usr/bin/env python
+"""Test AGI EXEC command
+
+Copyright (C) 2010-2014, Digium, Inc.
+Erin Spiceland <espiceland@digium.com>
+
+This program is free software, distributed under the terms of
+the GNU General Public License Version 2.
+"""
+
+import sys
+import logging
+
+from twisted.internet import reactor
+
+sys.path.append("lib/python")
+from asterisk.test_case import TestCase
+
+TESTDIR = "tests/fastagi"
+
+LOGGER = logging.getLogger(__name__)
+
+class FastAGIExecuteTest(TestCase):
+    """Class that manages the test"""
+
+    def __init__(self):
+        """Constructor"""
+        super(FastAGIExecuteTest, self).__init__()
+
+        self.passed = {
+            'SendDTMF': False,
+            'System': False,
+            'Set [Global]': False,
+            'Set [Channel]': False
+        }
+        self.timeout = 30
+        self.key = "fastagitest"
+        self.overall_result = True
+        self.agi = ""
+
+        # Listen for results from dialplan
+        self.create_fastagi_factory()
+        self.agi = None
+
+        self.create_asterisk(base_configs_path="%s/configs" % TESTDIR)
+
+    def on_get_variable2_failure(self, reason):
+        """Failure handler for second variable retrieval"""
+        self.passed['Set [Channel]'] = False
+        LOGGER.error('Could not test value of channel variable.')
+        LOGGER.error(reason.getTraceback())
+        self.read_result()
+
+    def on_get_variable2(self, result):
+        """Handler for retrieving second variable"""
+        if result == "sure to go":
+            self.passed['Set [Channel]'] = True
+            LOGGER.info("Yay. LAMB was %s" % result)
+        else:
+            self.passed['Set [Channel]'] = False
+            LOGGER.error("Channel variable LAMB is %s"
+                         " but we expected 'sure to go.'" % result)
+
+        self.read_result()
+
+    def on_set2_failure(self, reason):
+        """Failure handler for second variable setting"""
+        self.passed['Set [Channel]'] = False
+        LOGGER.error('Could not set channel variable:')
+        LOGGER.error(reason.getTraceback())
+
+    def on_set2_success(self, result):
+        """Handler for setting second variable"""
+        self.agi.getVariable('LAMB').addCallback(
+            self.on_get_variable2).addErrback(self.on_get_variable2_failure)
+        self.passed['Set [Channel]'] = True
+
+    def do_set2(self):
+        """Set the second variable (LAMB is sure to go)"""
+        self.agi.execute("Set", "LAMB=sure to go").addCallback(
+            self.on_set2_success).addErrback(self.on_set2_failure)
+
+    def on_get_variable_failure(self, reason):
+        """Failure handler for retrieving variable"""
+        self.passed['Set [Global]'] = False
+        LOGGER.error('Could not test value of global variable:')
+        LOGGER.error(reason.getTraceback())
+        self.do_set2()
+
+    def on_get_variable(self, result):
+        """Handler for retrieving variable"""
+        if result == "white as snow":
+            self.passed['Set [Global]'] = True
+            LOGGER.info("Yay. FLEECE is %s" % result)
+        else:
+            self.passed['Set [Global]'] = False
+            LOGGER.error("Global variable FLEECE is %s"
+                         " but we expected 'white as snow.'" % result)
+
+        self.do_set2()
+
+    def on_set_failure(self, reason):
+        """Failure handler for setting variable"""
+        self.passed['Set [Global]'] = False
+        LOGGER.error('Could not set global variable:')
+        LOGGER.error(reason.getTraceback())
+
+    def on_set_success(self, result):
+        """Handler for setting variable"""
+        self.agi.getVariable('FLEECE').addCallback(
+            self.on_get_variable).addErrback(self.on_get_variable_failure)
+        self.passed['Set [Global]'] = True
+
+    def do_set(self):
+        """Set global variable (FLEECE is white as snow)"""
+        self.agi.execute("Set", "GLOBAL(FLEECE)=white as snow").addCallback(
+            self.on_set_success).addErrback(self.on_set_failure)
+
+    def on_system_failure(self, reason):
+        """Failure handler for running System command"""
+        self.passed['System'] = False
+        LOGGER.error('Could not execute system command:')
+        LOGGER.error(reason.getTraceback())
+        self.do_set()
+
+    def on_system_success(self, result):
+        """Handler for running System command"""
+        self.passed['System'] = True
+        self.do_set()
+
+    def do_system(self):
+        """Run a command using System"""
+        self.agi.execute("System", "echo little lamb").addCallback(
+            self.on_system_success).addErrback(self.on_system_failure)
+
+    def on_send_dtmf_failure(self, reason):
+        """Failure handler for SendDTMF"""
+        self.passed['SendDTMF'] = False
+        LOGGER.error('Could not send DTMF:')
+        LOGGER.error(reason.getTraceback())
+        self.do_system()
+
+    def on_send_dtmf_success(self, result):
+        """Handler for SendDTMF"""
+        self.passed['SendDTMF'] = True
+        self.do_system()
+
+    def fastagi_connect(self, agi):
+        """Handle a FastAGI connection
+
+        Keyword Arguments:
+        agi The AGI object that just connected
+        """
+        # This gets invoked by the dialplan when the call is answered
+        # We're going to use fastagi.execute() to send some commands that
+        # FastAGI doesn't inherently support.
+        # 1. SendDTMF(digits[,timeout_ms])
+        # 2. System(command arg1 arg2 etc)
+        # 3. Set(GLOBAL(DEBUG)=${VAR})
+        # 4. Set(DEBUG=${VAR})
+
+        # 1. SendDTMF(digits[,timeout_ms])
+        # Play "Mary had a Little Lamb."  We don't really need a timeout here,
+        # but let's send one anyway just so one of our tests actually sends
+        # an argument.
+
+        self.agi = agi
+        return agi.execute(
+            "SendDTMF", "3212333", 300, comma_delimiter=True
+        ).addCallback(self.on_send_dtmf_success
+        ).addErrback(self.on_send_dtmf_failure)
+
+    def read_result(self):
+        """Determine if we passed or failed and kill the AGI"""
+        self.agi.finish()
+        self.stop_reactor()
+        for test in self.passed:
+            if self.passed[test] is False:
+                self.overall_result = False
+
+        if self.overall_result is True:
+            LOGGER.info("Test succeeded")
+        else:
+            LOGGER.error("Test failed")
+
+    def launch_test(self):
+        """Start the test"""
+        LOGGER.info("Originating call to begin test.")
+        self.ast[0].cli_originate("Local/507@agitest extension echo@agitest")
+
+    def run(self):
+        super(FastAGIExecuteTest, self).run()
+        self.launch_test()
+
+def main():
+    test = FastAGIExecuteTest()
+    reactor.run()
+    if test.overall_result is not True:
+        return 1
+
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main() or 0)

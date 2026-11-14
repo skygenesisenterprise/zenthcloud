@@ -1,0 +1,171 @@
+testinfo:
+    summary:     'Dial Parallel, Single No Answer'
+    description: |
+        'Dial two endpoints. One replies back with a No Answer, the other Answers.'
+
+properties:
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - app : 'sipp'
+        - asterisk : 'app_cdr'
+        - asterisk : 'app_dial'
+        - asterisk : 'app_echo'
+        - asterisk : 'app_stack'
+        - asterisk : 'app_userevent'
+        - asterisk : 'cdr_csv'
+        - asterisk : 'chan_pjsip'
+        - asterisk : 'func_channel'
+        - asterisk : 'func_hangupcause'
+        - asterisk : 'func_strings'
+        - asterisk : 'pbx_config'
+    tags:
+        - pjsip
+        - dial
+        - CDR
+
+test-modules:
+    test-object:
+        config-section: sipp-config
+        typename: 'sipp.SIPpTestCase'
+    modules:
+        -
+            config-section: cdr-config-12
+            typename: 'cdr.CDRModule'
+        -
+            config-section: ami-config-12
+            typename: 'ami.AMIEventModule'
+        -
+            config-section: originator-config
+            typename: 'pluggable_modules.Originator'
+
+cdr-config-12:
+    -
+        file: 'Master'
+        lines:
+            -
+                accountcode: ''
+                destination: 's'
+                dcontext: 'default'
+                callerid: '"" <>'
+                channel: 'Local/s@default-.{8};2'
+                dchannel: 'PJSIP/bob-.{8}'
+                lastapp: 'Dial'
+                disposition: 'NO ANSWER'
+                amaflags: 'DOCUMENTATION'
+            -
+                accountcode: ''
+                destination: 's'
+                dcontext: 'default'
+                callerid: '"" <>'
+                channel: 'Local/s@default-.{8};2'
+                dchannel: 'PJSIP/charlie-.{8}'
+                lastapp: 'Dial'
+                disposition: 'ANSWERED'
+                amaflags: 'DOCUMENTATION'
+
+ami-config-12:
+    -
+        type: 'headermatch'
+        conditions:
+            match:
+                Event: 'UserEvent'
+                UserEvent: 'HangupCause'
+                HangupChannel: 'PJSIP/bob-.*'
+        requirements:
+            match:
+                TechCause: 'SIP 480 Temporarily Unavailable'
+                AsteriskCause: 'User alerting'
+        count: '1'
+    -
+        type: 'headermatch'
+        conditions:
+            match:
+                Event: 'UserEvent'
+                UserEvent: 'HangupCause'
+                HangupChannel: 'PJSIP/charlie-.*'
+        requirements:
+            match:
+                TechCause: 'SIP 200 OK'
+                AsteriskCause: 'Normal Clearing'
+        count: '1'
+    -
+        type: 'headermatch'
+        conditions:
+            match:
+                Event: 'DialBegin'
+                DestChannel: 'PJSIP/bob-.*'
+        requirements:
+            match:
+                Channel: 'Local/s@default-.*'
+                CallerIDNum: '<unknown>'
+                CallerIDName: '<unknown>'
+                ConnectedLineNum: '<unknown>'
+                ConnectedLineName: '<unknown>'
+                Dialstring: 'bob'
+        count: '1'
+    -
+        type: 'headermatch'
+        conditions:
+            match:
+                Event: 'DialBegin'
+                DestChannel: 'PJSIP/charlie-.*'
+        requirements:
+            match:
+                Channel: 'Local/s@default-.*'
+                CallerIDNum: '<unknown>'
+                CallerIDName: '<unknown>'
+                ConnectedLineNum: '<unknown>'
+                ConnectedLineName: '<unknown>'
+                Dialstring: 'charlie'
+        count: '1'
+    -
+        type: 'headermatch'
+        conditions:
+            match:
+                Event: 'DialEnd'
+                DestChannel: 'PJSIP/bob-.*'
+        requirements:
+            match:
+                Channel: 'Local/s@default-.*'
+                CallerIDNum: '<unknown>'
+                CallerIDName: '<unknown>'
+                ConnectedLineNum: '<unknown>'
+                ConnectedLineName: '<unknown>'
+                DialStatus: 'NOANSWER'
+        count: '1'
+    -
+        type: 'headermatch'
+        conditions:
+            match:
+                Event: 'DialEnd'
+                DestChannel: 'PJSIP/charlie-.*'
+        requirements:
+            match:
+                Channel: 'Local/s@default-.*'
+                CallerIDNum: '<unknown>'
+                CallerIDName: '<unknown>'
+                ConnectedLineNum: 's'
+                ConnectedLineName: '<unknown>'
+                DialStatus: 'ANSWER'
+        count: '1'
+
+originator-config:
+    trigger: 'scenario_start'
+    scenario-trigger-after: '2'
+    ignore-originate-failure: 'yes'
+    id: '0'
+    channel: 'Local/s@default'
+    context: 'default'
+    exten: 'echo'
+    priority: 1
+    async: True
+
+sipp-config:
+    memcheck-delay-stop: 7
+    fail-on-any: True
+    test-iterations:
+        -
+            scenarios:
+                - { 'key-args': {'scenario': 'bob.xml', '-p': '5066'} }
+                - { 'key-args': {'scenario': 'charlie.xml', '-p': '5067'} }

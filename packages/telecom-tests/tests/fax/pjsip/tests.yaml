@@ -1,0 +1,17 @@
+# Enter tests here in the order they should be considered for execution:
+tests:
+    - test: 'ast-2016-003'
+    - test: 'directmedia_reinvite_t38'
+    - test: 'gateway_g711_t38'
+    - test: 'gateway_native_t38'
+    - test: 'gateway_t38_g711_rx'
+    - test: 'gateway_t38_g711_tx'
+    - dir: 'maxdatagram'
+    - test: 't38'
+    - test: 't38_1xx_response'
+    - test: 't38_fast_reject'
+    - test: 't38_with_auth'
+    - test: 't38_initial_offer'
+    - test: 't38_enabled_two_reinvite_on_a_leg'
+    - test: 't38_enabled_two_reinvite_on_b_leg'
+    - test: 't38_zero_port'

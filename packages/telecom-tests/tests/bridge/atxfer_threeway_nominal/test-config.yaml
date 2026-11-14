@@ -1,0 +1,117 @@
+testinfo:
+    summary: 'Test the attended transfer three-way call feature'
+    description: |
+        'Set up a bridge between two endpoints and initiate an attended
+        transfer without completing it. Then execute the attended transfer
+        three-way call feature and ensure it is detected and executed properly.
+        Two transfers are performed; one initiated by Alice, and the other by
+        Bob. In both cases, the destination is Charlie.'
+
+test-modules:
+    test-object:
+        config-section: bridge-config
+        typename: 'bridge_test_case.BridgeTestCase'
+    modules:
+        -
+            config-section: 'ami-config'
+            typename: 'ami.AMIEventModule'
+        -
+            config-section: 'hangup-config'
+            typename: 'pluggable_modules.AMIChannelHangupAll'
+
+bridge-config:
+    asterisk-instances: 4
+    test-runs:
+      -
+          originate_channel: 'PJSIP/alice_atxfer@uut'
+          features:
+              -
+                  who: 'alice'
+                  what: 'atxfer'
+                  success: 'true'
+                  exten: '123'
+              -
+                  who: 'alice'
+                  what: 'atxferthreeway'
+                  success: 'true'
+      -
+          originate_channel: 'PJSIP/bob_atxfer@uut'
+          features:
+              -
+                  who: 'bob'
+                  what: 'atxfer'
+                  success: 'true'
+                  exten: '123'
+              -
+                  who: 'bob'
+                  what: 'atxferthreeway'
+                  success: 'true'
+
+ami-config:
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'BridgeMerge'
+        requirements:
+            match:
+                ToBridgeNumChannels: '1'
+                FromBridgeNumChannels: '2'
+        count: '2'
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'AttendedTransfer'
+                OrigTransfererChannel: 'PJSIP/alice-*'
+                OrigTransfererConnectedLineNum: '5678'
+                OrigTransfererConnectedLineName: 'Charlie'
+                SecondTransfererChannel: 'PJSIP/alice-*'
+                SecondTransfererConnectedLineNum: '5678'
+                SecondTransfererConnectedLineName: 'Charlie'
+                DestType: 'Threeway'
+        requirements:
+            match:
+                Result: 'Success'
+        count: '1'
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'AttendedTransfer'
+                OrigTransfererChannel: 'PJSIP/bob-*'
+                OrigTransfererConnectedLineNum: '5678'
+                OrigTransfererConnectedLineName: 'Charlie'
+                SecondTransfererChannel: 'PJSIP/bob-*'
+                SecondTransfererConnectedLineNum: '5678'
+                SecondTransfererConnectedLineName: 'Charlie'
+                DestType: 'Threeway'
+        requirements:
+            match:
+                Result: 'Success'
+        count: '1'
+
+hangup-config:
+    type: 'headermatch'
+    id: '0'
+    conditions:
+        match:
+            Event: 'VarSet'
+            Channel: 'PJSIP/charlie-*'
+            ChannelState: '6'
+            Variable: 'BRIDGEPEER'
+            Value: '(PJSIP/bob-.{8},PJSIP/alice-.{8}|PJSIP/alice-.{8},PJSIP/bob-.{8})'
+
+properties:
+    dependencies:
+        - buildoption: 'TEST_FRAMEWORK'
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk: 'app_dial'
+        - asterisk: 'app_echo'
+        - asterisk: 'chan_pjsip'
+    tags:
+        - bridge

@@ -1,0 +1,189 @@
+testinfo:
+    summary: "Nominal caller initiated remote attended transfer."
+    description: |
+        "This test uses two Asterisk and a sipp instance to perform a remote
+        attended transfer. For sipp to properly perform the transfer, it does
+        not register to either Asterisk instance.
+
+        Alice (sipp) first calls Asterisk 1 which goes into the dialplan and
+        dials a Local channel that executes Echo(). Once it is confirmed that
+        Alice and Asterisk 1 are bridged, Alice places the call on hold. Alice
+        then calls Asterisk 2 which goes into the dialplan and dials a Local
+        channel that executes Echo(). Once it is confirmed that Alice and
+        Asterisk 2 are bridged, Alice performs an attended transfer.
+
+        The attended transfer results in Alice sending a REFER request to
+        Asterisk 1. Since the referenced dialog in the Refer-To header of the
+        REFER is not known by Asterisk 1, Asterisk 1 must perform a remote
+        attended transfer. The end result should be that Asterisk 1 and
+        Asterisk 2 are connected via SIP, and both of Alice's calls are hung
+        up.
+
+        From the perspective of the Asterisk server performing the transfer, a
+        remote attended transfer appears to be a blind transfer. Therefore a
+        BlindTransfer AMI event is emitted.
+
+        This test ensures that Asterisk 1 properly handles a REFER that refers
+        to a remote dialog and that Asterisk 2 properly handles receiving an
+        INVITE with Replaces."
+
+test-modules:
+    add-test-to-search-path: True
+    test-object:
+            config-section: sipp-config
+            typename: sipp.SIPpTestCase
+    modules:
+        -
+            config-section: ami-config
+            typename: 'pluggable_modules.EventActionModule'
+        -
+            config-section: hangup-config
+            typename: 'pluggable_modules.HangupMonitor'
+
+sipp-config:
+    asterisk-instances: 2
+    memcheck-delay-stop: 7
+    connect-ami: True
+    fail-on-any: True
+    test-iterations:
+        -
+            scenarios:
+                - { 'coordinated-sender': {'key-args': {'scenario':'referer.xml', '-i': '127.0.0.3', '-p':'5060', '-sleep': '2', '-timeout': '30000'}, 'target':'127.0.0.1'},
+                    'coordinated-receiver': {'key-args': {'scenario':'referee.xml', '-i': '127.0.0.3', '-p':'5062', '-timeout': '30000'}, 'target':'127.0.0.2' } }
+
+hangup-config:
+    ids: [ '0', '1' ]
+
+ami-config:
+    # Ensure first alice channel and the Local echo channel are bridged. Then
+    # alice places the call on hold.
+    -
+        ami-events:
+            id: '0'
+            conditions:
+                match:
+                    Event: 'BridgeEnter'
+                    Channel: '(PJSIP/alice-.*|Local/echo@default-.*)'
+                    BridgeNumChannels: '2'
+                nomatch:
+                    ConnectedLineNum: 'external_replaces'
+            count: 1
+    # Ensure MOH starts on Local/echo@default. Then alice places another call,
+    # this time to Asterisk instance 2.
+    -
+        ami-events:
+            id: '0'
+            conditions:
+                match:
+                    Event: 'MusicOnHoldStart'
+                    Channel: 'Local/echo@default-.*'
+            count: 1
+    # Ensure second alice channel and the Local echo2 channel are bridged on
+    # Asterisk instance 2. Then alice transfers the first call (bridged
+    # to Local/echo@default on Asterisk instance 1) to the second call (bridged
+    # to Local/echo2@default on Asterisk instance 2).
+    -
+        ami-events:
+            id: '1'
+            conditions:
+                match:
+                    Event: 'BridgeEnter'
+                    Channel: '(PJSIP/alice-.*|Local/echo2@default-.*)'
+                    BridgeNumChannels: '2'
+            count: 1
+    # Ensure MOH stops on Local/echo@default.
+    -
+        ami-events:
+            id: '0'
+            conditions:
+                match:
+                    Event: 'MusicOnHoldStop'
+                    Channel: 'Local/echo@default-.*'
+            count: 1
+    # Ensure channel variable is properly set.
+    -
+        ami-events:
+            id: '0'
+            conditions:
+                match:
+                    Event: 'VarSet'
+                    Channel: 'Local/echo@default-.*'
+                    Variable: '__SIPREFERREDBYHDR'
+                    Value: '.*sip:alice@127.0.0.3.*'
+            count: 1
+    # Ensure channel variable is properly set.
+    -
+        ami-events:
+            id: '0'
+            conditions:
+                match:
+                    Event: 'VarSet'
+                    Channel: 'Local/echo@default-.*'
+                    Variable: 'SIPREFERTOHDR'
+                    Value: 'sip:102@127.0.0.2'
+            count: 1
+    # Ensure blind transfer occurs properly.
+    -
+        ami-events:
+            id: '0'
+            conditions:
+                match:
+                    Event: 'BlindTransfer'
+            requirements:
+                match:
+                    TransfererChannel: 'PJSIP/alice-.*'
+                    TransfereeChannel: 'Local/echo@default-00000000;1'
+                    Context: 'default'
+                    Extension: 'external_replaces'
+                    Result: 'Success'
+    # Ensure asterisk1 channel and the Local echo channel are bridged on
+    # Asterisk instance 2 (due to PJSIP/asterisk1 being swapped with
+    # PJSIP/alice).
+    -
+        ami-events:
+            id: '1'
+            conditions:
+                match:
+                    Event: 'BridgeEnter'
+                    Channel: 'PJSIP/asterisk1-.*'
+                    BridgeNumChannels: '2'
+            count: 1
+    # Ensure asterisk2 channel and the Local echo channel are bridged on
+    # Asterisk instance 1.
+    -
+        ami-events:
+            id: '0'
+            conditions:
+                match:
+                    Event: 'BridgeEnter'
+                    Channel: '(PJSIP/asterisk2-.*|Local/echo@default-.*)'
+                    BridgeNumChannels: '2'
+                nomatch:
+                    Exten: '101'
+                    ConnectedLineNum: 'alice'
+            count: 1
+    # Hang up the PJSIP channel to tear down all channels and end the test.
+    -
+        ami-events:
+            id: '0'
+            conditions:
+                match:
+                    Event: 'VarSet'
+                    Channel: 'PJSIP/asterisk2-.*'
+                    Variable: 'BRIDGEPEER'
+                    Value: 'Local/echo@default-.*'
+            count: '>0'
+        ami-actions:
+            action:
+                Action: 'Hangup'
+                Channel: '/^PJSIP/asterisk2-.*/'
+
+properties:
+    dependencies:
+        - python: 'twisted'
+        - python: 'starpy'
+        - app: 'sipp'
+        - asterisk: 'res_pjsip'
+        - asterisk: 'res_pjsip_session'
+        - asterisk: 'res_pjsip_refer'
+

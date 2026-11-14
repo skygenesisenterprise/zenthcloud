@@ -1,0 +1,357 @@
+testinfo:
+    summary: 'Test for getting the list of modules using ARI'
+    description: |
+        Test that returns a list of all modules that are to be
+        loaded based on the modules.conf configuration. The test
+        checks the response body of the modules, so that it matches
+        that of the expected response body specified within the yaml
+        configuration. It also checks to make sure that a '200 OK' was
+        received back as a response from the request.
+
+test-modules:
+    test-object:
+        typename: ari.AriTestObject
+    modules:
+        -   config-section: ari-config
+            typename: ari.WebSocketEventModule
+
+ari-config:
+    apps: testsuite
+    events:
+        -   conditions:
+                match:
+                    type: StasisStart
+                    application: testsuite
+                    args: []
+            count: 1
+            requests:
+                -
+                    method: 'get'
+                    uri: 'asterisk/modules'
+                    response_body:
+                        match:
+                            -
+                                {
+                                  "name": "acl",
+                                  "description": "Named ACL system",
+                                  "status": "Running",
+                                  "support_level": "core",
+                                }
+                            -
+                                {
+                                  "name": "app_echo.so",
+                                  "description": "Simple Echo Application",
+                                  "status": "Running",
+                                  "support_level": "core",
+                                }
+                            -
+                                {
+                                  "name": "app_stasis.so",
+                                  "description": "Stasis dialplan application",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "ccss",
+                                  "description": "Call Completion Supplementary Services",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "cdr",
+                                  "description": "CDR Engine",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "cel",
+                                  "description": "CEL Engine",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "dnsmgr",
+                                  "description": "DNS Manager",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "dsp",
+                                  "description": "DSP",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "enum",
+                                  "description": "ENUM Support",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "extconfig",
+                                  "description": "Configuration",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "features",
+                                  "description": "Call Features",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "http",
+                                  "description": "Built-in HTTP Server",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "indications",
+                                  "description": "Indication Tone Handling",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "logger",
+                                  "description": "Logger",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "manager",
+                                  "description": "Asterisk Manager Interface",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "pbx_config.so",
+                                  "description": "Text Extension Configuration",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "plc",
+                                  "description": "PLC",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_ari.so",
+                                  "description": "Asterisk RESTful Interface",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_ari_applications.so",
+                                  "description": "RESTful API module - Stasis application resources",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_ari_asterisk.so",
+                                  "description": "RESTful API module - Asterisk resources",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_ari_bridges.so",
+                                  "description": "RESTful API module - Bridge resources",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_ari_channels.so",
+                                  "description": "RESTful API module - Channel resources",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_ari_device_states.so",
+                                  "description": "RESTful API module - Device state resources",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_ari_endpoints.so",
+                                  "description": "RESTful API module - Endpoint resources",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_ari_events.so",
+                                  "description": "RESTful API module - WebSocket resource",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_ari_model.so",
+                                  "description": "ARI Model validators",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_ari_playbacks.so",
+                                  "description": "RESTful API module - Playback control resources",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_ari_recordings.so",
+                                  "description": "RESTful API module - Recording resources",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_ari_sounds.so",
+                                  "description": "RESTful API module - Sound resources",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_curl.so",
+                                  "description": "cURL Resource Module",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_http_websocket.so",
+                                  "description": "HTTP WebSocket Support",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_sorcery_config.so",
+                                  "description": "Sorcery Configuration File Object Wizard",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_stasis.so",
+                                  "description": "Stasis application support",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_stasis_answer.so",
+                                  "description": "Stasis application answer support",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_stasis_device_state.so",
+                                  "description": "Stasis application device state support",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_stasis_playback.so",
+                                  "description": "Stasis application playback support",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_stasis_recording.so",
+                                  "description": "Stasis application recording support",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_stasis_snoop.so",
+                                  "description": "Stasis application snoop support",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "res_websocket_client.so",
+                                  "description": "WebSocket Client Support",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "sounds",
+                                  "description": "Sounds Index",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                            -
+                                {
+                                  "name": "udptl",
+                                  "description": "UDPTL",
+                                  "status": "Running",
+                                  "support_level": "core"
+                                }
+                    expect: 200
+                -
+                    method: 'delete'
+                    uri: 'channels/{channel.id}'
+
+
+properties:
+    dependencies:
+        - python : autobahn.websocket
+        - python : requests
+        - python : twisted
+        - python : starpy
+        - asterisk: app_echo
+        - asterisk: app_stasis
+        - asterisk: pbx_config
+        - asterisk: res_ari
+        - asterisk: res_ari_applications
+        - asterisk: res_ari_asterisk
+        - asterisk: res_ari_bridges
+        - asterisk: res_ari_channels
+        - asterisk: res_ari_device_states
+        - asterisk: res_ari_endpoints
+        - asterisk: res_ari_events
+        - asterisk: res_ari_model
+        - asterisk: res_ari_playbacks
+        - asterisk: res_ari_recordings
+        - asterisk: res_ari_sounds
+        - asterisk: res_http_websocket
+        - asterisk: res_sorcery_config
+        - asterisk: res_stasis
+        - asterisk: res_stasis_answer
+        - asterisk: res_stasis_device_state
+        - asterisk: res_stasis_playback
+        - asterisk: res_stasis_recording
+        - asterisk: res_stasis_snoop
+        - asterisk: res_websocket_client
+    tags:
+        - ARI

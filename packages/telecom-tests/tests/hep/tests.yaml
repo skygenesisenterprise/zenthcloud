@@ -1,0 +1,6 @@
+tests:
+    - test: 'pjsip'
+    - test: 'pjsip-auth'
+    - test: 'pjsip-ipv6'
+    - test: 'rtcp-receiver'
+    - test: 'rtcp-sender'

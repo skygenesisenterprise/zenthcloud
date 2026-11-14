@@ -1,0 +1,6 @@
+# Enter tests here in the order they should be considered for execution:
+tests:
+    - dir: 'iax2'
+    - dir: 'local'
+    - dir: 'websocket'
+    - dir: 'pjsip'

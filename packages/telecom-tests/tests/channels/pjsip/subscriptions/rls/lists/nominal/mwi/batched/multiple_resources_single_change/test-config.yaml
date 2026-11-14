@@ -1,0 +1,67 @@
+testinfo:
+    summary: 'Ensure that a single state change to multiple resources results in a single NOTIFY'
+    description: |
+        'This runs a similar test to the basic scenario, except that where we had sent a state
+        change for one resource before, now we send a state change for two resources at a time.
+        Here, we are ensuring that the two state changes result in only a single NOTIFY being
+        sent, since the batching process should combine the state changes into one NOTIFY.'
+
+
+properties:
+    dependencies:
+        - buildoption: 'TEST_FRAMEWORK'
+        - python: 'twisted'
+        - python: 'starpy'
+        - python: 'lxml'
+        - asterisk: 'res_pjsip'
+        - asterisk: 'res_pjsip_pubsub'
+        - asterisk: 'res_pjsip_mwi'
+        - asterisk: 'res_mwi_external'
+        - asterisk: 'res_mwi_external_ami'
+    tags:
+        - rls
+        - pjsip
+        - mwi_external
+        - refleaks
+
+test-modules:
+    add-test-to-search-path: 'True'
+    add-to-search-path:
+        -
+            'tests/channels/pjsip/subscriptions/rls'
+    test-object:
+        config-section: 'test-case-config'
+        typename: 'sipp.SIPpTestCase'
+    modules:
+        -
+            config-section: 'test-config'
+            typename: 'rls_test.RLSTest'
+        -
+            typename: 'driver.TestDriver'
+
+test-case-config:
+    stop-after-scenarios: True
+    test-iterations:
+        -
+            scenarios:
+                - { 'target': '127.0.0.1:5061', 'key-args': {'scenario': 'subscribe.xml', '-i': '127.0.0.1', '-p': '5062', '-s': 'mail_list'} }
+
+test-config:
+    stop-test-after-notifys: False
+    list-name: 'mail_list'
+    packets:
+        -
+            full-state: True
+            resources: { 'alice': {'type': 'MWI', 'state': 'active', 'voice_message': '0/0 (0/0)', 'messages_waiting': 'no'}, 'bob': {'type': 'MWI', 'state': 'active', 'voice_message': '0/0 (0/0)', 'messages_waiting': 'no'} }
+        -
+            full-state: False
+            resources: { 'alice': {'type': 'MWI', 'state': 'active', 'voice_message': '1/0 (0/0)', 'messages_waiting': 'yes'}, 'bob': {'type': 'MWI', 'state': 'active', 'voice_message': '1/0 (0/0)', 'messages_waiting': 'yes'} }
+        -
+            full-state: True
+            resources: { 'alice': {'type': 'MWI', 'state': 'active', 'voice_message': '1/0 (0/0)', 'messages_waiting': 'yes'}, 'bob': {'type': 'MWI', 'state': 'active', 'voice_message': '1/0 (0/0)', 'messages_waiting': 'yes'} }
+        -
+            full-state: False
+            resources: { 'alice': {'type': 'MWI', 'state': 'active', 'voice_message': '2/0 (0/0)', 'messages_waiting': 'yes'}, 'bob': {'type': 'MWI', 'state': 'active', 'voice_message': '2/0 (0/0)', 'messages_waiting': 'yes'} }
+        -
+            full-state: True
+            resources: { 'alice': {'type': 'MWI', 'state': 'terminated', 'voice_message': '2/0 (0/0)', 'messages_waiting': 'yes'}, 'bob': {'type': 'MWI', 'state': 'terminated', 'voice_message': '2/0 (0/0)', 'messages_waiting': 'yes'} }

@@ -1,0 +1,17 @@
+testinfo:
+    summary:     'Test Semi-Attended Transfer'
+    description: |
+        'This test verifies the Semi-Attended Transfer routine used in the feature code.
+        A Semi-Attended Transfer (blond transfer) is a attended transfer in which the
+        transferee does not wait for the new channel to pickup before hanging up.'
+
+properties:
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk : 'app_talkdetect'
+    tags:
+        - features
+        - transfer
+        - iax2
+        - refleaks

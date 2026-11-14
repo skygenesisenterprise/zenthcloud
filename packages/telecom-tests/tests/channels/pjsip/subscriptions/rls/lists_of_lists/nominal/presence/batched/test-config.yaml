@@ -1,0 +1,134 @@
+testinfo:
+    summary: 'Ensure that notification batching only occurs at topmost list level.'
+    description: |
+        'Two lists are configured. pres_list_a contains pres_list_b within it. pres_list_a
+         is configured not to have notification batching. pres_list_b is configured to have
+         notification batching. Since pres_list_a is the topmost list, notification batching
+         should not occur. The way that this will be tested is to do the following.
+         * A SIPp scenario subscribes to pres_list_a.
+         * We perform two rapid state changes.
+         * We ensure that both state changes result in individual NOTIFY requests from Asterisk.'
+
+properties:
+    dependencies:
+        - buildoption: 'TEST_FRAMEWORK'
+        - python: 'twisted'
+        - python: 'starpy'
+        - python: 'lxml'
+        - python: 'construct'
+        - asterisk: 'res_pjsip'
+        - asterisk: 'res_pjsip_pubsub'
+    tags:
+        - rls
+        - pjsip
+        - refleaks
+
+test-modules:
+    add-test-to-search-path: 'True'
+    add-to-search-path:
+        -
+            'tests/channels/pjsip/subscriptions/rls'
+    test-object:
+        config-section: 'test-case-config'
+        typename: 'sipp.SIPpTestCase'
+    modules:
+        -
+            config-section: 'test-config'
+            typename: 'rls_test.RLSTest'
+        -
+            config-section: 'ami-config'
+            typename: 'pluggable_modules.EventActionModule'
+
+test-case-config:
+    stop-after-scenarios: False
+    test-iterations:
+        -
+            scenarios:
+                - { 'target': '127.0.0.1:5061', 'key-args': {'scenario': 'subscribe.xml', '-i': '127.0.0.1', '-p': '5062', '-s': 'pres_list_a'} }
+
+test-config:
+    stop-test-after-notifys: False
+    list-name: 'pres_list_a'
+    packets:
+        -
+            full-state: True
+            resources: {
+                'pres_list_b': {
+                    'type': 'Multipart', 'state': 'active', 'sublist': {
+                        'alice': {'type': 'PIDF', 'state': 'active'},
+                        'bob': {'type': 'PIDF', 'state': 'active'}
+                    }
+                }
+            }
+        -
+            full-state: False
+            resources: {
+                'pres_list_b': {
+                    'type': 'Multipart', 'state': 'active', 'sublist': {
+                        'alice': {'type': 'PIDF', 'state': 'active'},
+                    }
+                }
+            }
+        -
+            full-state: False
+            resources: {
+                'pres_list_b': {
+                    'type': 'Multipart', 'state': 'active', 'sublist': {
+                        'bob': {'type': 'PIDF', 'state': 'active'}
+                    }
+                }
+            }
+
+ami-config:
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'TestEvent'
+                    State: 'SUBSCRIPTION_ESTABLISHED'
+            count: 1
+        ami-actions:
+          -
+            action:
+                Action: 'SetVar'
+                Variable: 'DEVICE_STATE(Custom:alice)'
+                Value: 'InUse'
+          -
+            action:
+                Action: 'SetVar'
+                Variable: 'DEVICE_STATE(Custom:bob)'
+                Value: 'InUse'
+    -
+        ami-events:
+          -
+            conditions:
+                match:
+                    Event: 'TestEvent'
+                    State: 'SUBSCRIPTION_STATE_CHANGED'
+            count: 2 # one for alice, one for bob
+            trigger-on-count: True
+          -
+            conditions:
+                match:
+                    Event: 'TestEvent'
+                    State: 'SUBSCRIPTION_REFRESHED'
+            count: 0 # shouldn't receive any of these
+        ami-actions:
+          -
+            action:
+                Action: 'UserEvent'
+                UserEvent: 'RLSResult'
+                Result: 'pass'
+    -
+        ami-events:
+          -
+            conditions:
+                match:
+                    Event: 'UserEvent'
+                    UserEvent: 'RLSResult'
+            requirements:
+                match:
+                    Result: 'pass'
+            count: 2 # one after expected test events have been received, one after validation
+            trigger-on-count: True
+        stop_test:

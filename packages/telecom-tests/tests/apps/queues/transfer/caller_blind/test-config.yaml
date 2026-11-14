@@ -1,0 +1,96 @@
+testinfo:
+    summary: "Caller initiated blind queue transfer"
+    description: |
+        "This verifies a caller initiated blind transfer using queues works
+         as expected and that the app_queue's blind transfer stasis callback
+         handler is executed appropriately.
+
+         Alice dials into a queue and connects with member bob. Once alice and
+         bob are bridged, alice puts bob on hold, and then dials charlie. After
+         alice and charlie are bridged alice transfers bob to charlie using an
+         attended transfer."
+
+test-modules:
+    test-object:
+        -
+            config-section: sipp-config
+            typename: 'sipp.SIPpTestCase'
+    modules:
+        -
+            config-section: ami-config
+            typename: 'pluggable_modules.EventActionModule'
+
+sipp-config:
+    memcheck-delay-stop: 7
+    fail-on-any: True
+    test-iterations:
+        -
+            scenarios:
+                - { 'key-args': {'scenario':'alice-calls-101.xml', '-i': '127.0.0.1', '-p':'5061', '-sleep': '1'} }
+                - { 'key-args': {'scenario': 'bob-registers.xml', '-i': '127.0.0.1', '-p': '5062', '-oocsf': 'wait-for-a-call.xml'} }
+                - { 'key-args': {'scenario': 'charlie-registers.xml', '-i': '127.0.0.1', '-p': '5063', '-oocsf': 'wait-for-a-call-then-send-bye.xml'} }
+
+ami-config:
+    # Ensure alice and bob are connected. Alice places bob on hold.
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'AgentConnect'
+                    Channel: 'PJSIP/alice-.*'
+                    MemberName: 'PJSIP/bob'
+            count: '1'
+    # Look for bob to be on hold.
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'MusicOnHoldStart'
+                    Channel: 'PJSIP/bob-.*'
+            count: 1
+    # Ensure the transfer is successful.
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'BlindTransfer'
+                    TransfererChannel: 'PJSIP/alice-.*'
+                    TransfereeChannel: 'PJSIP/bob-.*'
+                    Extension: '102'
+                    Result: 'Success'
+            count: 1
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'AgentComplete'
+                    Channel: 'PJSIP/alice-.*'
+                    MemberName: 'PJSIP/bob'
+                    Reason: 'transfer'
+            count: 1
+    # Ensure alice channel leaves the bridge it was in.
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'BridgeLeave'
+                    Channel: 'PJSIP/alice-.*'
+            count: 1
+    # Ensure alice hangs up with bob, then stop
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'Hangup'
+                    Channel: 'PJSIP/alice-.*'
+            count: 1
+        stop_test:
+
+properties:
+    dependencies:
+        - python : twisted
+        - python : starpy
+        - asterisk : res_pjsip
+    tags:
+        - pjsip
+        - refleaks

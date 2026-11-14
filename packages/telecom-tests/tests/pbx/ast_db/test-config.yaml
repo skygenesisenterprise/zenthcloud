@@ -1,0 +1,162 @@
+testinfo:
+    summary: 'Tests multiple AstDB functions.'
+    description:
+        This test verifies that the following AstDB functions and variables work
+        as intended - DB, DB_RESULT, DB_EXISTS, DB_KEYS, DB_DELETE.
+        The first iteration tests input and output using DB(family/key) as well
+        as the DB_RESULT variable.
+        The second iteration tests DB_EXISTS(family/key) with a non-existant and
+        existant database, and also tests DB_KEYS(family) with a non-existant
+        database, a family with one key, and a family with multiple keys.
+        The last iteration tests DB_DELETE(family/key) on a non-existant database and
+        an existant database. If it is called when there is nothing to delete, it will
+        return an empty string.
+
+test-modules:
+    test-object:
+        config-section: test-object-config
+        typename: 'apptest.AppTest'
+
+test-object-config:
+  app: 'DB'
+  scenarios:
+    -
+      # Scenario 1
+      # Runs through the tests in the description. Once a channel hangs up,
+      # the next channel will be called.
+      channels:
+        -
+          channel-id: 'S1'
+          channel-name: 'Local/s1@test'
+          context: 'default'
+          exten: 'wait'
+          start-on-create: 'True'
+          events:
+            -
+              type: 'headermatch'
+              conditions:
+                match:
+                  Event: 'UserEvent'
+                  UserEvent: 'Test1'
+              requirements:
+                match:
+                  Result: 'pass'
+              actions:
+                -
+                  action-type: 'set-expected-result'
+                  expected-result: 'UserEvent Test1 passed'
+            -
+              type: 'headermatch'
+              conditions:
+                match:
+                  Event: 'UserEvent'
+                  UserEvent: 'Test1'
+                  Result: 'fail'
+              actions:
+                -
+                  action-type: 'fail-test'
+                  message: 'UserEvent Test1 came up with result fail'
+            -
+              type: 'headermatch'
+              conditions:
+                match:
+                  Event: 'Hangup'
+                  Channel: 'Local/s1@test-.*'
+              actions:
+                -
+                  action-type: 'set-expected-result'
+                  expected-result: 'S1 is hanging up'
+                -
+                  action-type: 'start-call'
+                  channel-id: 'S2'
+        -
+          channel-id: 'S2'
+          channel-name: 'Local/s2@test'
+          context: 'default'
+          exten: 'wait'
+          events:
+            -
+              type: 'headermatch'
+              conditions:
+                match:
+                  Event: 'UserEvent'
+                  UserEvent: 'Test2'
+              requirements:
+                match:
+                  Result: 'pass'
+              actions:
+                -
+                  action-type: 'set-expected-result'
+                  expected-result: 'UserEvent Test2 passed'
+            -
+              type: 'headermatch'
+              conditions:
+                match:
+                  Event: 'UserEvent'
+                  UserEvent: 'Test2'
+                  Result: 'fail'
+              actions:
+                -
+                  action-type: 'fail-test'
+                  message: 'UserEvent Test2 came up with result fail'
+            -
+              type: 'headermatch'
+              conditions:
+                match:
+                  Event: 'Hangup'
+                  Channel: 'Local/s2@test-.*'
+              actions:
+                -
+                  action-type: 'set-expected-result'
+                  expected-result: 'S2 is hanging up'
+                -
+                  action-type: 'start-call'
+                  channel-id: 'S3'
+        -
+          channel-id: 'S3'
+          channel-name: 'Local/s3@test'
+          context: 'default'
+          exten: 'wait'
+          events:
+            -
+              type: 'headermatch'
+              conditions:
+                match:
+                  Event: 'UserEvent'
+                  UserEvent: 'Test3'
+              requirements:
+                match:
+                  Result: 'pass'
+              actions:
+                -
+                  action-type: 'set-expected-result'
+                  expected-result: 'UserEvent Test3 passed'
+            -
+              type: 'headermatch'
+              conditions:
+                match:
+                  Event: 'UserEvent'
+                  UserEvent: 'Test3'
+                  Result: 'fail'
+              actions:
+                -
+                  action-type: 'fail-test'
+                  message: 'UserEvent Test3 came up with result fail'
+            -
+              type: 'headermatch'
+              conditions:
+                match:
+                  Event: 'Hangup'
+                  Channel: 'Local/s3@test-.*'
+              actions:
+                -
+                  action-type: 'set-expected-result'
+                  expected-result: 'S3 is hanging up'
+
+properties:
+    dependencies:
+        - buildoption: 'TEST_FRAMEWORK'
+        - python : 'twisted'
+        - python : 'starpy'
+    tags:
+        - pbx

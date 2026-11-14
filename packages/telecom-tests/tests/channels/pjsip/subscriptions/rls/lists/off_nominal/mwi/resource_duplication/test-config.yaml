@@ -1,0 +1,45 @@
+testinfo:
+    summary: 'Off Nominal: Subscription to a list with duplicate resources'
+    description: |
+        'This test uses a SIPp scenario to subscribe to an MWI list. However,
+         the list includes duplicate resources. We expect Asterisk to include
+         duplicated resources in outgoing notifies only once.'
+
+properties:
+    dependencies:
+        - python: 'twisted'
+        - python: 'starpy'
+        - python: 'lxml'
+        - asterisk: 'res_pjsip'
+        - asterisk: 'res_pjsip_pubsub'
+        - asterisk: 'res_mwi_external'
+    tags:
+        - mwi_external
+        - rls
+        - pjsip
+        - refleaks
+
+test-modules:
+    add-to-search-path:
+        -
+            'tests/channels/pjsip/subscriptions/rls/'
+    test-object:
+        config-section: 'test-case-config'
+        typename: 'sipp.SIPpTestCase'
+    modules:
+        -
+            config-section: 'test-config'
+            typename: 'rls_test.RLSTest'
+
+test-case-config:
+    test-iterations:
+        -
+            scenarios:
+                - { 'target': '127.0.0.1:5061', 'key-args': {'scenario': 'list_subscribe.xml', '-i': '127.0.0.1', '-p': '5062', '-s': 'mail_list'} }
+
+test-config:
+    list-name: 'mail_list'
+    packets:
+        -
+            full-state: True
+            resources: { 'alice': {'type': 'MWI', 'state': 'active', 'voice_message': '0/0 (0/0)', 'messages_waiting': 'no' } }

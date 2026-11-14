@@ -1,0 +1,6 @@
+# Enter tests here in the order they should be considered for execution:
+tests:
+    - dir: 'agent_login'
+    - dir: 'agent_request'
+    - dir: 'agent_acknowledge'
+

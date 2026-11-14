@@ -1,0 +1,16 @@
+testinfo:
+    summary:     'Test Dial and FollowMe predial subroutines'
+    description: |
+        'Before Dial and FollowMe initiate outgoing calls, the user has the option
+        of running a dialplan subroutine.  This test verifies that the expected
+        predial routines are called.'
+
+properties:
+    dependencies:
+        - asterisk: 'app_dial'
+        - asterisk: 'app_followme'
+        - asterisk: 'app_senddtmf'
+        - asterisk: 'app_stack'
+        - asterisk: 'app_userevent'
+    tags:
+        - predial

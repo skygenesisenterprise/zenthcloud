@@ -1,0 +1,71 @@
+testinfo:
+    summary: CLI exec console dial which dials via PJSIP which transfers the call
+    description: |
+        'One Asterisk instance with console dial calls another instance via PJSIP.
+        the other instance transfers to another extension and the CDRs are
+        tested for expected behavior.'
+
+test-modules:
+    test-object:
+        config-section: test-object-config
+        typename: 'test_case.SimpleTestCase'
+    modules:
+        -
+            config-section: 'cdr-config-12'
+            typename: 'cdr.CDRModule'
+
+test-object-config:
+    config-path: 'tests/cdr/configs/basic'
+    spawn-after-hangup: True
+    ignore-originate-failures: True
+    end-test-delay: 2
+    test-iterations:
+        -
+            channel: 'Local/1@default'
+            application: 'Echo'
+            async: True
+
+cdr-config-12:
+    -
+        file: 'cdrtest_local'
+        lines:
+            -
+                accountcode: 'cdrtest_local'
+                destination: '1'
+                dcontext: 'default'
+                channel: 'Local/1@default-.*'
+                dchannel: 'PJSIP/test-.*'
+                disposition: 'NO ANSWER'
+                amaflags: 'DOCUMENTATION'
+            -
+                accountcode: 'cdrtest_local'
+                destination: '1'
+                dcontext: 'default'
+                channel: 'Local/1@default-.*'
+                dchannel: 'Local/3@default-.*'
+                disposition: 'ANSWERED'
+                amaflags: 'DOCUMENTATION'
+    -
+        file: 'cdrtest_local3'
+        lines:
+            -
+                accountcode: 'cdrtest_local3'
+                destination: '3'
+                dcontext: 'default'
+                channel: 'Local/3@default-.*'
+                disposition: 'ANSWERED'
+                amaflags: 'DOCUMENTATION'
+
+properties:
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk : 'cdr_csv'
+        - asterisk : 'chan_pjsip'
+    tags:
+        - accountcode
+        - dial
+        - PJSIP
+        - CDR
+        - chan_local
+        - transfer

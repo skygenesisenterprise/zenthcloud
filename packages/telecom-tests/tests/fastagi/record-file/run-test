@@ -1,0 +1,125 @@
+#!/usr/bin/env python
+'''
+Copyright (C) 2010, Digium, Inc.
+Erin Spiceland <espiceland@digium.com>
+
+This program is free software, distributed under the terms of
+the GNU General Public License Version 2.
+'''
+
+import sys
+import os
+from twisted.internet import reactor
+
+sys.path.append("lib/python")
+from asterisk.test_case import TestCase
+
+testdir = "tests/fastagi"
+
+
+class FastAGIRecordFileTest(TestCase):
+    def __init__(self):
+        super(FastAGIRecordFileTest, self).__init__()
+
+        self.passed = False
+        self.results = {
+            "DTMF": False,
+            "HANGUP": False
+        }
+        self.test = "DTMF"
+        self.timeout = 30
+
+        # Listen for results from dialplan
+        self.create_fastagi_factory()
+        self.agi = None
+
+        self.create_asterisk(base_configs_path="%s/configs" % testdir)
+        self.audio_name = self.ast[0].get_path('astspooldir', 'tmp', 'talking')
+        self.audio_file = "%s.ulaw" % (self.audio_name)
+
+    def on_record_failure(self, reason):
+        if os.path.exists(self.audio_file):
+            print("file exists")
+            print("file size is", os.path.getsize(self.audio_file))
+
+        self.results[self.test] = False
+        print('Could not record file:', reason.getTraceback())
+        if self.test is "DTMF":
+            self.test = "HANGUP"
+            reactor.callLater(0, self.launch_test)
+        else:
+            reactor.callLater(0, self.stop_reactor)
+
+    def on_record_success(self, result):
+        try:
+            digit = chr(int(result[0]))
+        except:
+            digit = None
+
+        print("Recording terminated by %s (%s) after %s bytes." \
+            % (result[1], digit, result[2]))
+        if os.path.exists(self.audio_file):
+            file_size = os.path.getsize(self.audio_file)
+            if file_size == 0:
+                print("The file was created, but it is empty.")
+                self.results[self.test] = False
+            elif result[2] == file_size:
+                print("Data was recorded, and data length matches what was", \
+                    "reported during the %s test." % self.test)
+                self.results[self.test] = True
+            else:
+                print("Some data was recorded, but the data length does not", \
+                    "match what was reported during the %s test." % self.test)
+                self.results[self.test] = False
+        else:
+            print("The file doesn't exist.")
+            self.results[self.test] = False
+
+        self.agi.finish()
+
+        if self.test is "DTMF":
+            self.test = "HANGUP"
+            reactor.callLater(0, self.launch_test)
+        else:
+            reactor.callLater(0, self.stop_reactor)
+
+    # This gets invoked by the dialplan when the call is answered
+    def fastagi_connect(self, agi):
+        self.agi = agi
+        return agi.recordFile(self.audio_name, "ulaw", "#", "3"
+            ).addCallback(self.on_record_success).addErrback(self.on_record_failure)
+
+    def stop_reactor(self):
+        if self.results['HANGUP'] and self.results['DTMF']:
+            self.passed = True
+
+        super(FastAGIRecordFileTest, self).stop_reactor()
+
+    def launch_test(self):
+        if os.path.exists(self.audio_file):
+            os.unlink(self.audio_file)
+
+        print("Originating call to begin test which terminates recording",\
+            "with", self.test)
+        if self.test is "DTMF":
+            self.ast[0].cli_originate("Local/508@agitest extension 1@record-file")
+        elif self.test is "HANGUP":
+            self.ast[0].cli_originate("Local/509@agitest extension 2@record-file")
+        else:
+            reactor.callLater(0, self.stop_reactor)
+
+    def run(self):
+        super(FastAGIRecordFileTest, self).run()
+        self.launch_test()
+
+
+def main():
+    test = FastAGIRecordFileTest()
+    reactor.run()
+    if test.passed is not True:
+        return 1
+
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main() or 0)

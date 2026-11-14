@@ -1,0 +1,45 @@
+# Configuration sample for the pluggable channel origination module
+
+originator-config:
+    # The ID of the AMI instance on which to originate the call. (default: 0)
+    id: '0'
+
+    # The channel to originate. (default: 'Local/s@default')
+    channel: 'Local/s@default'
+
+    # The application to start once the channel is answered. (default: 'Echo')
+    application: 'Echo'
+
+    # The data to provide to the application.
+    data: ''
+
+    # Alternatively, a context/exten/priority set can be provided which overrides the application setting.
+    context: 'default'
+    exten: '1234'
+    priority: '1'
+
+    # Whether to ignore failure of the origination. (default: 'no')
+    ignore-originate-failure: 'no'
+
+    # This determines what triggers the origination.  The available options are 'scenario_start' (default), 'ami_connect', and 'event'.
+    trigger: 'scenario_start'
+
+    # If 'scenario_start' is specified as the trigger, one of these optional
+    # parameters may be specified. These help control when the origination
+    # occurs, prevents multiple originations from occurring, and corresponds a
+    # scenario start to a specific scenario. This is useful for tests that load
+    # the Origination module multiple times and use multiple SIPp scenarios.
+    # Only one of the parameters may be specified per config section.
+    #
+    # Optional. Originate only after this number of scenario start triggers have occurred.
+    scenario-trigger-after: '4'
+    # Optional. Originate only when this scenario is started.
+    scenario-name: 'ipv4-tcp.xml'
+
+    # If 'event' is specified as the trigger, an event definition needs to be specified.
+    # This is similar to the event definition used for the callback variant of the AMIEventModule.
+    event:
+        id: '0'
+        conditions:
+            match:
+                Event: TestEvent

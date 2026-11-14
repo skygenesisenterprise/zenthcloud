@@ -1,0 +1,187 @@
+#!/usr/bin/env python
+# vim: sw=3 et:
+'''
+Copyright (C) 2011, Digium, Inc.
+Matt Jordan <mjordan@digium.com>
+
+This program is free software, distributed under the terms of
+the GNU General Public License Version 2.
+'''
+
+import sys
+import logging
+
+from twisted.internet import reactor
+
+sys.path.append("lib/python")
+
+from asterisk.voicemail import VoiceMailState, VoiceMailTest
+
+logger = logging.getLogger(__name__)
+
+
+class LoginWithMailbox(VoiceMailState):
+    """
+    TestState that attempts a login with a mailbox / incorrect password
+    """
+
+    def __init__(self, controller, voiceMailTest):
+        VoiceMailState.__init__(self, controller, voiceMailTest)
+
+    def handle_state_change(self, ami, event):
+        state = event['state']
+        if state == 'PLAYBACK':
+            message = event.get('message')
+            if message == 'vm-login':
+                self.voice_mail_test.send_dtmf("1234#")
+                self.voice_mail_test.reset_timeout()
+            elif message == 'vm-password':
+                """
+                Instead of sending a password, ask to be transferred to the
+                attendant extension
+                """
+                self.voice_mail_test.send_dtmf("*#")
+            elif message == 'vm-incorrect-mailbox':
+                logger.warn("We failed to pass a valid mailbox - failing the test")
+                self.voice_mail_test.passed = False
+                self.voice_mail_test.stop_reactor()
+            else:
+                self.handle_default_state(event)
+        elif state == 'AUTHENTICATED':
+            logger.warn("We authenticated with an invalid mailbox - failing the test")
+            self.voice_mail_test.passed = False
+            self.voice_mail_test.stop_reactor()
+        else:
+            self.handle_default_state(event)
+
+    def get_state_name(self):
+        return "LOGIN WITH MAILBOX"
+
+
+class LoginWithoutMailbox(VoiceMailState):
+    """
+    TestState that attempts a login with an incorrect password only
+    """
+
+    def __init__(self, controller, voiceMailTest):
+        VoiceMailState.__init__(self, controller, voiceMailTest)
+
+    def handle_state_change(self, ami, event):
+        state = event['state']
+        if state == 'PLAYBACK':
+            message = event.get('message')
+            if message == 'vm-login':
+                """ Don't login - just ask to be transferred """
+                self.voice_mail_test.send_dtmf("*#")
+                self.voice_mail_test.reset_timeout()
+            elif message == 'vm-password':
+                logger.warn("We were asked a password instead of being transferred - failing the test")
+                self.voice_mail_test.passed = False
+                self.voice_mail_test.stop_reactor()
+            elif message == 'vm-incorrect-mailbox':
+                logger.warn("We failed to pass a valid mailbox - failing the test")
+                self.voice_mail_test.passed = False
+                self.voice_mail_test.stop_reactor()
+            else:
+                self.handle_default_state(event)
+        elif state == 'AUTHENTICATED':
+            logger.warn("We authenticated with an invalid mailbox - failing the test")
+            self.voice_mail_test.passed = False
+            self.voice_mail_test.stop_reactor()
+        else:
+            self.handle_default_state(event)
+
+    def get_state_name(self):
+        return "LOGIN WITHOUT MAILBOX"
+
+
+class AuthenticateExtensions(VoiceMailTest):
+
+    def __init__(self):
+        super(AuthenticateExtensions, self).__init__()
+
+        self.test_counter = 0
+        self.create_asterisk(2, test_config={'memcheck-delay-stop': 7})
+        self.pass_results = 0
+
+    def ami_connect(self, ami):
+        super(AuthenticateExtensions, self).ami_connect(ami)
+
+        """
+        Record which AMI instance we've received and attempt to set up
+        the test controller
+        """
+        if (ami.id == 0):
+            self.ami_receiver = ami
+            ami.registerEvent('UserEvent', self.user_event)
+        elif (ami.id == 1):
+            self.ami_sender = ami
+            self.ast_sender = self.ast[self.ami_sender.id]
+            ami.registerEvent('Hangup', self.hangup_event_handler)
+        self.create_test_controller()
+        if (self.test_state_controller != None):
+            startObject = LoginWithMailbox(self.test_state_controller, self)
+            self.test_state_controller.change_state(startObject)
+
+        if not (ami.id == 0):
+            self.executeTest(ami)
+
+    def hangup_event_handler(self, ami, event):
+        if self.test_counter == 0:
+            self.test_counter += 1
+            logger.debug("Hangup event received; starting next test")
+            self.executeTest(ami)
+
+    def executeTest(self, ami):
+        if self.test_counter == 0:
+            logger.debug("Originating call to PJSIP/9000@ast1")
+            df = ami.originate("PJSIP/9000@ast1", "voicemailCaller", "wait", 1)
+            df.addErrback(self.handle_originate_failure)
+        else:
+            self.sender_channel = "PJSIP/ast1-00000001"
+            startObject = LoginWithoutMailbox(self.test_state_controller, self)
+            self.test_state_controller.change_state(startObject)
+            logger.debug("Originating call to PJSIP/9000@ast1")
+            df = ami.originate("PJSIP/9000@ast1", "voicemailCaller", "wait", 1)
+            df.addErrback(self.handle_originate_failure)
+
+    def user_event(self, ami, event):
+        if event['userevent'] != 'TestResult':
+            return
+
+        if event['result'] == 'pass':
+            self.pass_results += 1
+            if self.pass_results == 2:
+                self.passed = True
+                self.stop_reactor()
+            logger.info("Received pass result from VMAuthenticate test")
+        else:
+            logger.warn("VMAuthenticate Failure:")
+            logger.warn("result: %s" % (event['result'],))
+            logger.warn("error: %s" % (event['status'],))
+            self.passed = False
+            self.stop_reactor()
+
+    def run(self):
+        super(AuthenticateExtensions, self).run()
+        self.passed = True
+        self.create_ami_factory(2)
+
+
+def main():
+
+    test = AuthenticateExtensions()
+
+    test.start_asterisk()
+
+    reactor.run()
+
+    test.stop_asterisk()
+
+    if not test.passed:
+        return 1
+
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main() or 0)

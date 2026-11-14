@@ -1,0 +1,19 @@
+testinfo:
+    skip: 'requires further rework for pjsip, see ASTERISK-30292'
+    summary:     'Test T.38 FAX transmission over PJSIP'
+    description: |
+        'One Asterisk instance sends a FAX to another Asterisk instance.
+         This test uses IPv6 addressing.'
+    issues:
+        - mantis : '18299'
+
+properties:
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - custom : 'fax'
+        - custom : 'ipv6'
+        - asterisk : 'chan_pjsip'
+    tags:
+        - PJSIP
+        - fax

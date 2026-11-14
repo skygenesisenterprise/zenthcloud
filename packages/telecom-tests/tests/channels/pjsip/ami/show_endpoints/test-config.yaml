@@ -1,0 +1,83 @@
+testinfo:
+    summary: 'Test PJSIPShowEndpoints AMI command'
+    description: |
+        Tests the AMI command PJSIPShowEndpoints in order to make sure the
+        event is appropriately raised.
+
+properties:
+    dependencies:
+        - sipp :
+            version : 'v3.0'
+        - asterisk : 'res_pjsip'
+
+    tags:
+        - pjsip
+
+test-modules:
+    test-object:
+        config-section: object-config
+        typename: 'test_case.TestCaseModule'
+    modules:
+        -
+            config-section: 'ami-config'
+            typename: 'pluggable_modules.EventActionModule'
+
+object-config:
+    reactor-timeout: 15
+    connect-ami: True
+
+ami-config:
+    -
+        ami-start:
+        ami-actions:
+            action:
+                Action: 'PJSIPShowEndpoints'
+                ActionID: '12345'
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'EndpointList'
+                    Contacts: user1/sip:user1@127.0.0.1:5062
+            requirements:
+                match:
+                    ActionID: '12345'
+                    ObjectType: 'endpoint'
+                    ObjectName: 'user.*'
+                    Transport: 'local'
+                    Aor: 'user.*'
+                    Auths: 'user.*'
+                    OutboundAuths: ''
+                    DeviceState: 'Invalid|Not in use|Unavailable'
+                    ActiveChannels: ''
+            count: 1
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'EndpointList'
+                    Contacts: user2/sip:user2@127.0.0.1:5063
+            requirements:
+                match:
+                    ActionID: '12345'
+                    ObjectType: 'endpoint'
+                    ObjectName: 'user.*'
+                    Transport: 'local'
+                    Aor: 'user.*'
+                    Auths: 'user.*'
+                    OutboundAuths: ''
+                    DeviceState: 'Invalid|Not in use|Unavailable'
+                    ActiveChannels: ''
+            count: 1
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'EndpointListComplete'
+            requirements:
+                match:
+                    ActionID: '12345'
+                    EventList: 'Complete'
+                    ListItems: '2'
+            count: 1
+        stop_test:

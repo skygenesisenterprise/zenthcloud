@@ -1,0 +1,25 @@
+testinfo:
+    skip: 'Leave voicemail has timing problems.  This needs to be fixed to be consistently reliable.'
+    summary: 'Test concurrent access of a mailbox from app_voicemails VoiceMail and VoiceMailMain applications'
+    description: |
+        This test verifies that a person can listen to their voicemails at the same time
+        as another person leaves voicemail messages for them.  The test begins with two
+        voicemails in the mailbox, and during test execution, a further five voicemails are left.
+        The person listening to the voicemails deletes the messages as they listen to them;
+        at the end of the test, the five voicemails left should remain in the INBOX.  The
+        voicemails should be numbered contiguously.
+
+properties:
+    buildoption: 'TEST_FRAMEWORK'
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk: 'app_playback'
+        - asterisk: 'app_senddtmf'
+        - asterisk: 'app_userevent'
+        - asterisk: 'app_voicemail'
+        - asterisk: 'chan_pjsip'
+        - asterisk: 'res_pjsip'
+    tags:
+        - voicemail
+        - apps

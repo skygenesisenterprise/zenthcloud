@@ -1,0 +1,55 @@
+testinfo:
+    summary: Test expected events and responses for recording with and without file name conflicts.
+    description: |
+        Put a channel in stasis then record a file from it. Stop the recording and then start a new
+        one with the same name without allowing overwrites. Start a new recording with the same name
+        while allowing overwrites.
+
+test-modules:
+    add-test-to-search-path: True
+    test-object:
+        typename: ari.AriTestObject
+    modules:
+        -   config-section: ari-config
+            typename: ari.WebSocketEventModule
+
+ari-config:
+    apps: testsuite
+    events:
+        -   conditions:
+                match:
+                    type: StasisStart
+                    application: testsuite
+                    args: []
+            count: 1
+            callback:
+                module: recording
+                method: on_start
+        -   conditions:
+                match:
+                    type: RecordingStarted
+                    application: testsuite
+            count: 2
+            callback:
+                module: recording
+                method: on_recording_started
+        -   conditions:
+                match:
+                    type: RecordingFinished
+                    application: testsuite
+            count: 2
+            callback:
+                module: recording
+                method: on_recording_finished
+
+properties:
+    dependencies:
+        - python : autobahn.websocket
+        - python : requests
+        - python : twisted
+        - python : starpy
+        - asterisk : res_ari_channels
+        - asterisk : res_ari_recordings
+        - asterisk : app_echo
+    tags:
+        - ARI

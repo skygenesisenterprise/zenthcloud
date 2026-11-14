@@ -1,0 +1,190 @@
+#!/usr/bin/env python
+"""
+Copyright (C) 2014, Digium, Inc.
+Benjamin Ford <bford@digium.com>
+
+This progream is free software, distributed under the terms of
+the GNU General Public License Version 2.
+"""
+
+import os
+import sys
+import logging
+
+from twisted.internet import reactor
+from shutil import copy
+
+sys.path.append("lib/python")
+from asterisk.test_case import TestCase
+
+LOGGER = logging.getLogger(__name__)
+PATH = os.path.dirname(os.path.realpath(__file__))
+EXPECTED_SUCCESSES = 7
+
+class AGIExitStatusTest(TestCase):
+    """
+    This is the class that contains all the methods needed to run the test.
+    """
+    def __init__(self):
+        """
+        Initialization for class.
+        success_count keeps track of all successful tests.
+        can_call will only be set to true if an AGI script was called with AGI()
+        interrupt_agi is a temporary variable to deal with ASTERISK-23390
+        """
+        TestCase.__init__(self)
+        self.success_count = 0
+        self.can_call = False
+        self.interrupt_agi = False
+        self.create_asterisk()
+
+    def run(self):
+        """
+        Creates the AMI connection with Asterisk.
+        """
+        TestCase.run(self)
+        self.copy_files()
+        self.create_ami_factory()
+
+    def copy_files(self):
+        """Copy testsuite files to the path of the current test"""
+        copy("%s/badinterpreter.agi" % PATH,
+            "%s/var/lib/asterisk/agi-bin/badinterpreter.agi" % self.ast[0].base)
+        copy("%s/badinterpreter2.agi" % PATH,
+            "%s/var/lib/asterisk/agi-bin/badinterpreter2.agi"
+            % self.ast[0].base)
+        copy("%s/badinterpreter3.agi" % PATH,
+            "%s/var/lib/asterisk/agi-bin/badinterpreter3.agi"
+            % self.ast[0].base)
+        copy("%s/donothing.agi" % PATH,
+            "%s/var/lib/asterisk/agi-bin/donothing.agi" % self.ast[0].base)
+        copy("%s/waiting.agi" % PATH,
+            "%s/var/lib/asterisk/agi-bin/waiting.agi" % self.ast[0].base)
+        copy("%s/executing.agi" % PATH,
+            "%s/var/lib/asterisk/agi-bin/executing.agi" % self.ast[0].base)
+
+    def ami_connect(self, ami):
+        """
+        Sets up the AMI for Asterisk.
+        """
+        ami.registerEvent('UserEvent', self.user_event_handler)
+        ami.registerEvent('Newexten', self.new_exten_event_handler)
+        ami.registerEvent('Hangup', self.hangup_event_handler)
+        LOGGER.info("---Starting AGI exit_status test---")
+        deferred = ami.originate(channel="Local/doesnotexist@default",
+            application="Echo")
+        deferred.addErrback(self.handle_originate_failure)
+
+    def user_event_handler(self, result, event):
+        """
+        Checks to see if the behavior of the AGI script was as expected.
+        """
+        if event['userevent'] != 'TestResult':
+            return
+        result = event['result']
+        if result == "pass":
+            if event['exten'] != 'h':
+                LOGGER.info("%s.agi behaved as expected." % event['exten'])
+            else:
+                if event['context'] == 'waiting-extens':
+                    LOGGER.info("waiting.agi behaved as expected.")
+                elif event['context'] == 'executing-extens':
+                    LOGGER.info("executing.agi behaved as expected.")
+            self.success_count += 1
+        elif result == "fail":
+            if event['exten'] != 'h':
+                LOGGER.error("%s.agi did not behave as intended." % event['exten'])
+            else:
+                if event['context'] == 'waiting-extens':
+                    LOGGER.error("waiting.agi did not behave as intended.")
+                elif event['context'] == 'executing-extens':
+                    LOGGER.error("executing.agi did not behave as intended.")
+        LOGGER.info("Successful tests: %d" % self.success_count)
+        if self.success_count == EXPECTED_SUCCESSES:
+            self.stop_reactor()
+
+    def new_exten_event_handler(self, ami, event):
+        """
+        Newexten event handler. Used to detect the start of an AGi script for
+        the specific purpose of hanging up the channel later.
+        """
+
+        def _handle_hangup_error(result):
+            """Handle a hangup error"""
+            LOGGER.warning("Error while hanging up channel: %s" % result)
+            self.stop_reactor()
+
+        def _hangup_channel(ami, channel):
+            """Hangup the specified channel"""
+            LOGGER.debug("Hanging up channel %s" % channel)
+            ami.hangup(channel).addErrback(_handle_hangup_error)
+
+        if 'application' not in event or 'channel' not in event:
+            return
+
+        if event['application'] != 'AGI':
+            return
+
+        self.can_call = True
+        LOGGER.info("Can call set to true.")
+        if self.interrupt_agi == False:
+            return
+        if event['exten'] == 'waiting' or event['exten'] == 'executing':
+            self.interrupt_agi = False
+            LOGGER.info("Detected channel %s in AGI" % event['channel'])
+            reactor.callLater(1, _hangup_channel, ami, event['channel'])
+
+    def hangup_event_handler(self, ami, event):
+        """
+        Hangup event handler. Detects when a channel hangs up so that a new
+        channel can start.
+        """
+        if event['event'] != 'Hangup' or 'channel' not in event:
+            return
+        LOGGER.info("Detected hangup for %s" % event['channel'])
+        if self.can_call == False:
+            return
+        if event['exten'] != 'waiting':
+            self.can_call = False
+        if event['exten'] == 'doesnotexist':
+            deferred = ami.originate(channel="Local/badinterpreter@default",
+                application="Echo")
+            deferred.addErrback(self.handle_originate_failure)
+        elif event['exten'] == 'badinterpreter':
+            deferred = ami.originate(channel=
+                "Local/badinterpreter2@default",application="Echo")
+            deferred.addErrback(self.handle_originate_failure)
+        elif event['exten'] == 'badinterpreter2':
+            deferred = ami.originate(channel=
+                "Local/badinterpreter3@default",application="Echo")
+            deferred.addErrback(self.handle_originate_failure)
+        elif event['exten'] == 'badinterpreter3':
+            deferred = ami.originate(channel="Local/donothing@default",
+                application="Echo")
+            deferred.addErrback(self.handle_originate_failure)
+        elif event['exten'] == 'donothing':
+            self.interrupt_agi = True
+            deferred = ami.originate(channel="Local/waiting@waiting-extens",
+                application="Echo")
+            deferred.addErrback(self.handle_originate_failure)
+        elif event['exten'] == 'h':
+            LOGGER.info("Hangup for h exten detected.")
+            if event['context'] == 'waiting-extens':
+                self.interrupt_agi = True
+                deferred = ami.originate(channel=
+                    "Local/executing@executing-extens",application="Echo")
+                deferred.addErrback(self.handle_originate_failure)
+
+def main():
+    """
+    Main method, run by default, determines if test passes or fails.
+    """
+    test = AGIExitStatusTest()
+    reactor.run()
+    if test.success_count != EXPECTED_SUCCESSES:
+        LOGGER.error("The expected amount of tests did not pass. Expected successes:"
+        " %d   Actual: %d" % (EXPECTED_SUCCESSES, test.success_count))
+        return 1
+    return 0
+if __name__ == "__main__":
+    sys.exit(main() or 0)

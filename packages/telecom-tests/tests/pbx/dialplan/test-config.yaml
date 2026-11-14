@@ -1,0 +1,45 @@
+testinfo:
+    summary: 'Test a variety of dialplan functions and features'
+    description: |
+        This test verifies a number of dialplan specific functions and features.  This includes,
+        but is not limited to, pattern matching, Goto, GotoIf, math functions, string functions,
+        looping, etc.
+
+test-modules:
+    test-object:
+        config-section: test-config
+        typename: 'test_case.SimpleTestCase'
+    modules:
+      -
+        config-section: 'ami-config'
+        typename: 'ami.AMIEventModule'
+
+test-config:
+  spawn-after-hangup: True
+  expected_events: 0
+  test-iterations:
+    -
+      channel: 'Local/s@DialContext'
+      context: 'test'
+      exten: 's'
+      priority: '1'
+
+ami-config:
+  -
+    type: 'headermatch'
+    conditions:
+      match:
+          Event: 'UserEvent'
+          UserEvent: 'TestResult'
+    requirements:
+      match:
+          Result: 'Success'
+    count: '>1'
+
+properties:
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk : 'res_crypto'
+    tags:
+        - dialplan

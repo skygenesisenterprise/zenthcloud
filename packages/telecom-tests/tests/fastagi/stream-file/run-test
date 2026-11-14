@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+'''
+Copyright (C) 2010, Digium, Inc.
+Erin Spiceland <espiceland@digium.com>
+
+This program is free software, distributed under the terms of
+the GNU General Public License Version 2.
+'''
+
+import sys
+from twisted.internet import reactor
+
+sys.path.append("lib/python")
+from asterisk.test_case import TestCase
+
+
+class FastAGIStreamFileTest(TestCase):
+    def __init__(self):
+        TestCase.__init__(self)
+
+        self.create_asterisk()
+        self.create_fastagi_factory()
+
+    # result of 0 indicates success
+    def finish_test(self, result):
+        if result[0] == 0 and result[1] > 100:
+            self.passed = True
+        self.agi.finish()
+        self.stop_reactor()
+
+    # This gets invoked by the dialplan when the call is answered
+    # send STREAM FILE command and wait for results
+    def fastagi_connect(self, agi):
+        print("Connection established.")
+        self.agi = agi
+        return agi.streamFile("beep", "").addCallback(
+            self.finish_test)
+
+    def launch_test(self):
+        print("Originating call to begin test.")
+        self.ast[0].cli_originate("Local/505@agitest extension echo@agitest")
+
+    def run(self):
+        TestCase.run(self)
+        self.launch_test()
+
+
+def main():
+    test = FastAGIStreamFileTest()
+    test.start_asterisk()
+    reactor.run()
+    test.stop_asterisk()
+    if test.passed is not True:
+        return 1
+
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main() or 0)

@@ -1,0 +1,72 @@
+testinfo:
+    summary: 'Ensure that repeated presence states do not result in new notifications.'
+    description: |
+        'A SIPp test runs that expects to receive only a single NOTIFY when it subscribes.
+        If it receives extra notifications, then the test fails.'
+
+properties:
+    dependencies:
+        - sipp :
+            version : 'v3.0'
+        - python: 'twisted'
+        - python: 'starpy'
+        - asterisk: 'res_pjsip'
+        - asterisk: 'res_pjsip_exten_state'
+    tags:
+        - pjsip
+        - refleaks
+
+test-modules:
+    test-object:
+        config-section: object-config
+        typename: test_case.TestCaseModule
+    modules:
+        -
+            config-section: event-action-config
+            typename: pluggable_modules.EventActionModule
+
+object-config:
+    reactor-timeout: 15
+    connect-ami: True
+
+event-action-config:
+    -
+        # On startup set the status
+        ami-start:
+        ami-actions:
+            action:
+                Action: SetVar
+                Variable: PRESENCE_STATE(CustomPresence:Eggs)
+                Value: AWAY,scrambled,feeling a bit sick
+    -
+        # Once the status is set issue a subscribe from the endpoint
+        ami-events:
+            conditions:
+                match:
+                    Event: PresenceStatus
+            requirements:
+                match:
+                    Status: away
+                    Subtype: scrambled
+                    Message: feeling a bit sick
+            count: '1'
+        sipp:
+            scenarios:
+                - { 'key-args': {'scenario': 'subscribe.xml', '-p': '5061'} }
+    -
+        # The test will end on completion of the SIPp scenario, but this event
+        # and subsequent action should trigger before that occurs
+        ami-events:
+            conditions:
+                match:
+                    Event: TestEvent
+                    State: SUBSCRIPTION_STATE_SET
+            requirements:
+                match:
+                    StateText: ACTIVE
+            count: '1'
+        ami-actions:
+            action:
+                Action: SetVar
+                Variable: PRESENCE_STATE(CustomPresence:Eggs)
+                Value: AWAY,scrambled,feeling a bit sick

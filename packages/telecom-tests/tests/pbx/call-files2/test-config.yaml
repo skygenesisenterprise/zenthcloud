@@ -1,0 +1,10 @@
+testinfo:
+    summary:     'Test Call Spools'
+    skip: 'Skip while failures are debugged'
+    description: |
+        'This test verifies that calls queued via the spooler do not cause warning messages about a file not existing.'
+
+properties:
+    tags:
+        - dialplan
+        - iax2

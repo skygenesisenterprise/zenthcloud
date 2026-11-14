@@ -1,0 +1,226 @@
+#! /bin/sh
+#
+
+usage() {
+	echo "$0: A script to install external testsuite dependencies."
+	echo ""
+	echo "It is assumed that you have already built and installed Asterisk."
+	echo "Run the script from the testsuite root directory."
+	echo ""
+	echo "Usage: $0                     Shows this message."
+	echo "Usage: $0 test                Prints commands it is about to run."
+	echo "Usage: $0 install             Really install."
+}
+
+# Basic build system:
+PACKAGES_DEBIAN="subversion git build-essential automake cmake"
+# Python tools
+PACKAGES_DEBIAN="$PACKAGES_DEBIAN python3 python3-pip python3-setuptools python3-dev python3-venv"
+# Testsuite: basic requirements:
+PACKAGES_DEBIAN="$PACKAGES_DEBIAN liblua5.1-0-dev lua5.1 gdb"
+# Sipp requirements
+PACKAGES_DEBIAN="$PACKAGES_DEBIAN libpcap-dev libssl-dev libsctp-dev libncurses5-dev libgsl-dev"
+
+# Basic build system:
+PACKAGES_RH="subversion git gcc gcc-c++ patch cmake"
+# Python tools
+PACKAGES_RH="$PACKAGES_RH python3 python3-pip python3-setuptools python3-devel python3-virtualenv"
+# Testsuite: basic requirements:
+PACKAGES_RH="$PACKAGES_RH lua-devel gdb"
+# Sipp requirements
+PACKAGES_RH="$PACKAGES_RH libpcap-devel openssl-devel lksctp-tools-devel gsl libgsl-devel"
+
+# Basic build system:
+PACKAGES_ARCH="git gcc cmake"
+# Python tools
+PACKAGES_ARCH="$PACKAGES_ARCH python python-pip python-setuptools"
+# Testsuite: basic requirements:
+PACKAGES_ARCH="$PACKAGES_ARCH lua51 gdb"
+# Sipp requirements
+PACKAGES_ARCH="$PACKAGES_ARCH libpcap openssl lksctp-tools gsl"
+
+LIBDIR=/usr/lib$(getconf LONG_BIT | fgrep 64)
+[ ! -d $LIBDIR ] && LIBDIR=/usr/lib
+
+LIBLOCALDIR=/usr/local/lib$(getconf LONG_BIT | fgrep 64)
+[ ! -d $LIBLOCALDIR ] && LIBLOCALDIR=/usr/local/lib
+
+MY_BIN=/usr/local/bin
+
+set -e
+
+case "$1" in
+test)
+	testcmd=echo
+	;;
+install)
+	testcmd=''
+	;;
+'')
+	usage
+	exit 0
+	;;
+*)
+	usage
+	exit 1
+	;;
+esac
+
+in_test_mode() {
+	test "$testcmd" != ''
+}
+
+check_installed_debs() {
+	for pack in "$@" ; do
+		tocheck="${tocheck} ^${pack}$ ~P^${pack}$"
+	done
+	pkgs=$(aptitude -F '%c %p' search ${tocheck} 2>/dev/null | awk '/^p/{print $2}')
+	if [ ${#pkgs} -ne 0 ]; then
+		echo $pkgs | sed -r -e "s/ ?[^ :]+:i386//g"
+	fi
+}
+
+# parsing the output of yum is close to impossible.
+# We'll use rpm and hope for the best:
+check_installed_rpms() {
+	for pack in "$@"
+	do
+		if ! rpm -q $pack >/dev/null 2>/dev/null
+		then echo $pack
+		fi
+	done
+}
+
+check_installed_pacman() {
+	for pack in "$@"
+	do
+		if ! pacman -Q --explicit $pack >/dev/null 2>/dev/null
+		then echo $pack
+		fi
+	done
+}
+
+install_debian() {
+	if ! [ -x "$(command -v aptitude)" ]; then
+		if in_test_mode; then
+			echo apt-get install aptitude
+			echo "$0: Please install aptitude and try again. Aborting."
+			exit 1
+		fi
+		apt-get install aptitude
+	fi
+	$testcmd aptitude update
+	extra_packs=`check_installed_debs $PACKAGES_DEBIAN`
+	if [ x"$extra_packs" != "x" ] ; then
+		$testcmd aptitude install -y $extra_packs
+	fi
+}
+
+install_rh() {
+	extra_packs=`check_installed_rpms $PACKAGES_RH`
+	if [ x"$extra_packs" != "x" ] ; then
+		$testcmd yum install -y $extra_packs
+	fi
+}
+
+install_arch() {
+	extra_packs=`check_installed_pacman $PACKAGES_ARCH`
+	if [ x"$extra_packs" != "x" ] ; then
+		$testcmd pacman -S --asexplicit --noconfirm $extra_packs
+	fi
+}
+
+OS=`uname -s`
+
+# A number of distributions we don't (yet?) support.
+if [ "$OS" != 'Linux' ]; then
+	echo >&2 "$0: Your OS ($OS) is currently not supported. Aborting."
+	exit 1
+fi
+
+unsupported_distro=''
+if [ -f /etc/gentoo-release ]; then
+	unsupported_distro='Gentoo'
+fi
+if [ -f /etc/mandrake-release ]; then
+	unsupported_distro='Mandriva'
+fi
+if [ -f /etc/SuSE-release ]; then
+	unsupported_distro='SUSE'
+fi
+if [ -f /etc/slackware-version ]; then
+	unsupported_distro='Slackware'
+fi
+if [ "$unsupported_distro" != '' ]; then
+	echo >&2 "$0: Your distribution ($unsupported_distro) is currently not supported. Aborting."
+	exit 1
+fi
+
+# The distributions we do support:
+if [ -r /etc/debian_version ]; then
+	install_packages=install_debian
+elif [ -r /etc/redhat-release ]; then
+	install_packages=install_rh
+elif [ -r /etc/arch-release ]; then
+	install_packages=install_arch
+else
+	echo >&2 "$0: Your distribution is currently not supported. Aborting."
+	exit 1
+fi
+
+install_asttest() {
+	$testcmd cd asttest
+	$testcmd make
+	$testcmd make install
+	$testcmd cd ..
+}
+
+# Build and install sipp
+install_sipp() {
+	SAVE_DIR=`pwd`
+	$testcmd cd /tmp
+
+	PROJECT_DIR=sipp
+
+	$testcmd rm -rf $PROJECT_DIR
+	$testcmd git clone https://github.com/SIPp/sipp $PROJECT_DIR
+	$testcmd cd $PROJECT_DIR
+
+	# Checkout and build the current latest released version.
+	$testcmd git checkout v3.7.5 || { echo "Failed to checkout sipp v3.7.5. Aborting." ; exit 1; }
+
+	$testcmd ./build.sh --full || { echo "Failed to build sipp. Aborting." ; exit 1; }
+	$testcmd make install || { echo "Failed to install sipp. Aborting." ; exit 1; }
+
+	$testcmd cd $SAVE_DIR
+}
+
+install_testsuite_dependencies()
+{
+	$install_packages
+
+	which asttest > /dev/null || install_asttest
+	which sipp > /dev/null || install_sipp
+}
+
+if in_test_mode; then
+	echo "#############################################"
+	echo "## test mode."
+	echo "## Use the commands here to install your system."
+	echo "#############################################"
+fi
+
+install_testsuite_dependencies
+
+if ! in_test_mode; then
+	echo "#############################################"
+	echo "## $1 completed successfully"
+	echo "#############################################"
+	echo ""
+	echo "Testsuite requires python version >= 3.6.8"
+	echo "Your installed python is"
+	python3 --version || python --version
+fi
+
+exit 0
+

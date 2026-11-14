@@ -1,0 +1,78 @@
+testinfo:
+    summary: 'Test that BridgeList and BridgeInfo AMI actions works properly'
+    description: |
+        'Set up a bridge between two endpoints and ensure that BridgeList
+        responds with the correct bridges and that BridgeInfo replies with
+        the correct channel information.'
+
+test-modules:
+    add-test-to-search-path: 'True'
+    test-object:
+        config-section: bridge-config
+        typename: 'bridge_test_case.BridgeTestCase'
+    modules:
+        -
+            typename: 'ami.AMIEventModule'
+            config-section: ami-uut
+
+bridge-config:
+  test-runs:
+    -
+        originate_channel: 'PJSIP/test_call@uut'
+        hangup: 'alice'
+
+ami-uut:
+    -
+        type: 'callback'
+        id: '0'
+        conditions:
+            match:
+                Event: 'BridgeEnter'
+                Channel: 'PJSIP/bob-.*'
+                BridgeType: 'basic'
+                BridgeTechnology: 'simple_bridge'
+        callbackModule: 'check_bridge'
+        callbackMethod: 'get_bridge_info'
+        count: '1'
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'UserEvent'
+                UserEvent: 'BridgeListFailure'
+        count: '0'
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'UserEvent'
+                UserEvent: 'BridgeInfoFailure'
+        count: '0'
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'UserEvent'
+                UserEvent: 'BridgeListSuccess'
+        count: '1'
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'UserEvent'
+                UserEvent: 'BridgeInfoSuccess'
+        count: '1'
+
+properties:
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk: 'app_dial'
+        - asterisk: 'chan_pjsip'
+    tags:
+        - bridge
+        - realtime-incompatible

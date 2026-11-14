@@ -1,0 +1,26 @@
+diff -ruN a/config b/config
+--- a/config	2007-10-27 17:42:32.000000000 -0500
++++ b/config	2010-06-22 15:27:10.000000000 -0500
+@@ -18,7 +18,8 @@
+ # Compilation directives
+ WARN= -O2 -Wall -fPIC -W -Waggregate-return -Wcast-align -Wmissing-prototypes -Wnested-externs -Wshadow -Wwrite-strings -pedantic
+ INCS= -I$(LUA_INC)
+-CFLAGS= $(WARN) $(INCS)
++LUA_CFLAGS=`pkg-config --cflags lua5.1 2> /dev/null || pkg-config --cflags lua-5.1 2> /dev/null || pkg-config --cflags lua 2> /dev/null`
++CFLAGS= $(WARN) $(LUA_CFLAGS)
+ CC= gcc
+ 
+ # $Id: config,v 1.21 2007/10/27 22:42:32 carregal Exp $
+diff -ruN a/src/lfs.c b/src/lfs.c
+--- a/src/lfs.c	2009-02-03 16:05:48.000000000 -0600
++++ b/src/lfs.c	2010-06-22 15:27:15.000000000 -0500
+@@ -232,7 +232,8 @@
+   }
+ }
+ #else
+-static int lfs_g_setmode (lua_State *L, FILE *f, int arg) {
++#define lfs_g_setmode(L, f, arg) __lfs_g_setmode(L)
++static int __lfs_g_setmode (lua_State *L) {
+   lua_pushboolean(L, 0);
+   lua_pushliteral(L, "setmode not supported on this platform");
+   return 2;

@@ -1,0 +1,14 @@
+# Enter tests here in the order they should be considered for execution:
+tests:
+    - test: 'digium_presence'
+    - test: 'presence_pidf'
+    - test: 'presence_xpidf'
+    - test: 'resubscribe'
+    - test: 'unsubscribe'
+    - test: 'no_accept_header'
+    - test: 'devstate_repeat'
+    - test: 'presencestate_repeat'
+    - test: 'presencestate_repeat_okay'
+    - test: 'dialog_info_xml'
+    - test: 'dialog_info_xml_remote'
+    - dir: 'verify_bodies'

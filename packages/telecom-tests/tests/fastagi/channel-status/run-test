@@ -1,0 +1,94 @@
+#!/usr/bin/env python
+'''
+Copyright (C) 2010, Digium, Inc.
+Erin Spiceland <espiceland@digium.com>
+
+This program is free software, distributed under the terms of
+the GNU General Public License Version 2.
+'''
+
+import sys
+from twisted.internet import reactor
+
+sys.path.append("lib/python")
+from asterisk.test_case import TestCase
+
+
+class FastAGIChannelStatusTest(TestCase):
+    def __init__(self):
+        TestCase.__init__(self)
+        self.test_status = {'4': False, '6':False}
+        self.test = 4
+
+        self.create_asterisk()
+        self.create_fastagi_factory()
+
+    def on_answer_failure(self, reason):
+        print('Could not answer the call:', reason.getTraceback())
+
+    def on_failure(self, reason):
+        print('Could not run deferred:', reason.getTraceback())
+
+    def on_answer(self, status):
+        self.fastagi_connect(self.agi)
+
+    def get_deferred(self, agi):
+        return agi.channelStatus(agi.variables['agi_channel'])
+
+    def finish_test(self, status):
+        print("status is", status)
+        self.test_status[status] = (self.test == status)
+        if self.test == 4:
+            print("Answering call")
+            self.test = 6
+            self.agi.answer().addCallback(self.on_answer).addErrback(
+                self.on_answer_failure)
+        elif self.test == 6:
+            self.result_changed()
+
+    # This gets invoked by the dialplan when the call is answered
+    # Disconnect agi and set test result values
+    def fastagi_connect(self, agi):
+        self.agi = agi
+        if self.test == 4:
+            print("Connection established. Testing for channel status code 4.")
+        elif self.test == 6:
+            print("Testing for channel status code 6.")
+
+        return self.get_deferred(agi).addCallback(
+            self.finish_test).addErrback(self.on_failure)
+
+	# Read test results and dialplan globals
+    def read_result(self):
+        self.agi.finish()
+        self.stop_reactor()
+        if self.test_status[4] is True and self.test_status[6] is True:
+            print("Success")
+        else:
+            print("Failed")
+
+    def launch_test(self):
+        print("Originating call to begin test.")
+        self.ast[0].cli_originate("Local/no_answer@agitest extension echo@agitest")
+
+    # Read result before timeout
+    def result_changed(self):
+        if self.test_status[6] is not None:
+            self.read_result()
+
+    def run(self):
+        TestCase.run(self)
+        self.launch_test()
+
+def main():
+    test = FastAGIChannelStatusTest()
+    test.start_asterisk()
+    reactor.run()
+    test.stop_asterisk()
+    if test.test_status[4] is not True or test.test_status[6] is not True:
+        return 1
+
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main() or 0)

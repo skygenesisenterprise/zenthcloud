@@ -1,0 +1,15 @@
+# Enter tests here in the order they should be considered for execution:
+tests:
+    - test: 'caller_local'
+    - test: 'caller_local_norefersub'
+    - test: 'caller_local_blonde'
+    - test: 'callee_local'
+    - test: 'callee_local_norefersub'
+    - test: 'callee_local_blonde'
+    - test: 'caller_remote'
+    - test: 'callee_remote'
+    - test: 'caller_local_app'
+    - test: 'callee_local_app'
+    - test: 'caller_local_direct_media'
+    - test: 'callee_local_direct_media'
+    - test: 'callee_local_semi_attended_transfer_record_route'

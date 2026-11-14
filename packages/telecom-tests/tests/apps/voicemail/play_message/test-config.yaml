@@ -1,0 +1,20 @@
+testinfo:
+    summary: 'Test the VoiceMailPlayMsg application'
+    description: |
+        This test verifies playing back a voicemail using the VoiceMailPlayMsg application
+        in a variety of settings.  It tests:
+        * playing a message from multiple mailboxes (in both default and non-default contexts)
+        * playing a message from multiple folders
+        * failure to play a message with no mailbox or message ID specified
+        * failure to play a message with an invalid message ID specified
+
+properties:
+    buildoption: 'TEST_FRAMEWORK'
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk: 'app_userevent'
+        - asterisk: 'app_voicemail'
+    tags:
+        - voicemail
+        - apps

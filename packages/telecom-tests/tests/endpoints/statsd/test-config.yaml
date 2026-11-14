@@ -1,0 +1,69 @@
+testinfo:
+    summary:  Test sending statistics to a StatsD server for Asterisk endpoints
+    description: |
+        This test verifies that endpoint statistics are sent to a StatsD server
+        when operations related to that endpoint occur. The test originates
+        a PJSIP channel, and verifies that the appropriate StatsD messages
+        are received.
+
+test-modules:
+    test-object:
+        config-section: 'test-object-config'
+        typename: 'test_case.TestCaseModule'
+    modules:
+        -
+            config-section: event-action-config
+            typename: 'pluggable_modules.EventActionModule'
+        -
+            typename: 'pluggable_modules.Originator'
+            config-section: 'originator-config'
+        -
+            typename: 'pluggable_modules.HangupMonitor'
+            config-section: 'hangup-monitor'
+
+test-object-config:
+    asterisk-instances: 1
+    connect-ami: True
+    reactor-timeout: 15
+
+hangup-monitor:
+    ids: '0'
+
+event-action-config:
+    event:
+        type: 'matcher_listener.Udp'
+        conditions:
+            -
+                'endpoints\.count:\+1\|g'
+            -
+                'endpoints\.state\.online:\+1\|g'
+            -
+                match: 'endpoints\.PJSIP\.test\.channels:1\|g'
+                count: 2
+            -
+                'endpoints\.PJSIP\.test\.channels:2\|g'
+            -
+                'endpoints\.PJSIP\.test\.channels:0\|g'
+            -
+                'endpoints\.state\.online:\-1\|g'
+            -
+                'endpoints\.count:\-1\|g'
+
+originator-config:
+    channel: 'PJSIP/test'
+    application: 'Echo'
+    trigger: 'ami_connect'
+    async: True
+
+properties:
+    dependencies:
+        - asterisk: 'app_echo'
+        - asterisk: 'chan_pjsip'
+        - asterisk: 'res_endpoint_stats'
+        - asterisk: 'res_statsd'
+        - python: 'autobahn.websocket'
+        - python: 'starpy'
+        - python: 'twisted'
+    tags:
+        - statsd
+        - refleaks

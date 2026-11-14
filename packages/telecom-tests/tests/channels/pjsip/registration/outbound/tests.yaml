@@ -1,0 +1,9 @@
+# Enter tests here in the order they should be considered for execution:
+tests:
+    - dir: 'unregister'
+    - test: 'auth_loop'
+    - test: 'failover'
+    - test: 'fatal_retry'
+    - test: 'forbidden_retry'
+    - test: 'interval_too_brief'
+    - test: 'line_parameter'

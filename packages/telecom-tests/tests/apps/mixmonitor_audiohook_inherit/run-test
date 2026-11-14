@@ -1,0 +1,131 @@
+#!/usr/bin/env python
+'''
+Copyright (C) 2010-2012, Digium, Inc.
+David Vossel <dvossel@digium.com>
+
+This program is free software, distributed under the terms of
+the GNU General Public License Version 2.
+'''
+
+import sys
+import os
+import logging
+
+sys.path.append("lib/python")
+from twisted.internet import reactor
+from asterisk.test_case import TestCase
+
+LOGGER = logging.getLogger(__name__)
+
+class MixMonitorAHookInheritTest(TestCase):
+    """
+    This test case starts a mixmonitored call which will then be transferred
+    using AUDIOHOOK_INHERIT to another recipient. It checks to make sure
+    MixMonitor isn't ended by the transfer.
+    """
+    def __init__(self):
+        TestCase.__init__(self)
+
+        # This is a minimum. Anything above this size will be acceptable.
+        self.expected_filesize = 300000
+        self.check_stop_passed = False
+        self.create_asterisk()
+
+    def run(self):
+        """
+        run and get AMI going
+        """
+        TestCase.run(self)
+        self.create_ami_factory()
+
+    def ami_connect(self, ami):
+        """
+        On successful AMI connection, we register events and get things started
+        """
+        ami.registerEvent("UserEvent", self.cb_check_test)
+        ami.registerEvent("TestEvent", self.cb_check_mixmonitor_stop)
+        self.__launch_test(ami)
+
+    def cb_check_mixmonitor_stop(self, ami, event):
+        """
+        When we receive a test event, we make sure it is a MIXMONITOR_END event
+        On ending the MixMonitor, if a flag indicating that mixmonitor stop is
+        allowed hasn't been raised yet, we fail immediately. Otherwise the test
+        will be determined by __read_result().
+        """
+        if event.get("state") != "MIXMONITOR_END":
+            return
+
+        if (self.check_stop_passed):
+            LOGGER.info("Stop event received properly before the "
+                        "MIXMONITOR_END event was received.")
+            self.__read_result()
+        else:
+            LOGGER.error("The MixMonitor stopped before we "
+                         "reached the checkstop point.")
+            self.stop_reactor()
+
+    def cb_check_test(self, ami, event):
+        """
+        On receiving a UserEvent of status 'CHECKSTOP', raise the flag to
+        indicate that MixMonitor is allowed to be stopped.
+        """
+        if event.get("userevent").lower() != "stop_mix_test":
+            return
+        status = event.get("status")
+
+        # CHECKSTOP must be raised before receiving MIXMONITOR_END.
+        if status == "CHECKSTOP":
+            LOGGER.info("Received the CHECKSTOP event. MixMonitor stopping is "
+                        "now anticipated.")
+            self.check_stop_passed = True
+
+    def __launch_test(self, ami):
+        """
+        Originate the call
+        """
+        LOGGER.info("Starting call")
+        ami.originate("Local/s@listener",exten = "101",\
+            context = "ast1",priority = 1).addErrback(self.handle_originate_failure)
+
+    def __read_result(self):
+        """
+        Validate that the MixMonitor actually recorded a file of some length to
+        determine final success/failure.
+        """
+        audiofile = "%s%s/%s" % (self.ast[0].base,
+            self.ast[0].directories['astspooldir'], "monitor/testaudio1.raw")
+
+        if not os.path.exists(audiofile):
+            LOGGER.error("Path to %s did not exist. Test Failed." % audiofile)
+            self.stop_reactor()
+            return
+
+        size = os.path.getsize(audiofile)
+
+        if size >= self.expected_filesize:
+            LOGGER.info("Recording of size %d meets the acceptable minimum of "
+                        "%d. Test Passed." % (size, self.expected_filesize))
+            self.passed = True
+        else:
+            LOGGER.error("Recording of Size %d is below acceptable minimum "
+                         "%d. Test Failed." % (size, self.expected_filesize))
+
+        self.stop_reactor()
+
+def main():
+    """
+    Start the Show
+    """
+    test = MixMonitorAHookInheritTest()
+    reactor.run()
+
+    if test.passed:
+        return 0
+    else:
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main() or 0)
+
+# vim:sw=4:ts=4:expandtab:textwidth=79

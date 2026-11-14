@@ -1,0 +1,90 @@
+#!/usr/bin/env python
+'''
+Copyright (C) 2010-2014, Digium, Inc.
+Erin Spiceland <espiceland@digium.com>
+Matt Jordan <mjordan@digium.com>
+
+This program is free software, distributed under the terms of
+the GNU General Public License Version 2.
+'''
+
+import sys
+import logging
+
+from twisted.internet import reactor
+
+sys.path.append("lib/python")
+from asterisk.test_case import TestCase
+
+testdir = "tests/fastagi"
+
+LOGGER = logging.getLogger(__name__)
+
+class FastAGIGetDataTest(TestCase):
+    def __init__(self):
+        super(FastAGIGetDataTest, self).__init__()
+
+        self.passed = False
+        self.timeout = 30
+
+        # Listen for results from dialplan
+        self.create_fastagi_factory()
+        self.agi = None
+
+        self.create_asterisk(base_configs_path="%s/configs" % testdir)
+
+    def on_failure(self, reason):
+        LOGGER.error('Could not run GET DATA: ')
+        LOGGER.error(reason.getTraceback())
+        self.agi.finish()
+
+    # result is (str digits, bool timeout)
+    def finish_test(self, result):
+        self.passed = True
+        if result[1] is True:
+            self.passed = False
+            LOGGER.error("GET DATA timed out.  This should never, ever happen!")
+
+        if result[0] == "3212333":
+            LOGGER.info("Got the input we expected")
+        else:
+            LOGGER.error("Got '%s' which wasn't what we expected." % result[0])
+            self.passed = False
+
+        self.read_result()
+
+    # This gets invoked by the dialplan when the call is answered
+    # send GET DATA command and wait for results
+    def fastagi_connect(self, agi):
+        self.agi = agi
+        LOGGER.error("Connection established.")
+        return agi.getData("beep", timeout=10, maxDigits=10).addCallback(
+            self.finish_test).addErrback(self.on_failure)
+
+    def read_result(self):
+        self.agi.finish()
+        self.stop_reactor()
+        if self.passed is True:
+            LOGGER.info("Test Success")
+        else:
+            LOGGER.error("Failed")
+
+    def launch_test(self):
+        LOGGER.info("Originating call to begin test.")
+        self.ast[0].cli_originate("Local/502@agitest extension 1@get-data")
+
+    def run(self):
+        super(FastAGIGetDataTest, self).run()
+        self.launch_test()
+
+
+def main():
+    test = FastAGIGetDataTest()
+    reactor.run()
+    if test.passed is not True:
+        return 1
+
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main() or 0)

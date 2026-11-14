@@ -1,0 +1,27 @@
+testinfo:
+    summary: 'Test sending an in dialog MESSAGE.'
+    description: |
+        'Set up a call with Asterisk and send an in dialog SIP MESSAGE
+         from one client to another.'
+
+properties:
+    dependencies:
+        - app : 'sipp'
+        - asterisk : 'res_pjsip'
+        - asterisk : 'res_pjsip_messaging'
+    tags:
+        - pjsip
+
+test-modules:
+    test-object:
+        config-section: test-object-config
+        typename: 'sipp.SIPpTestCase'
+
+test-object-config:
+    memcheck-delay-stop: 7
+    reactor-timeout: 10
+    test-iterations:
+        -
+             scenarios:
+                - { 'key-args': { 'scenario':'message_recv.xml', '-p':'5062' } }
+                - { 'key-args': { 'scenario':'message.xml', '-p':'5061' } }

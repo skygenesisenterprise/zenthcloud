@@ -1,0 +1,39 @@
+testinfo:
+    summary: Test whether dangerous functions are inhibited from ARI
+    description: |
+        From Stasis, attempt to execute the SHELL() function. It should not
+        work.
+
+test-modules:
+    add-test-to-search-path: True
+    test-object:
+        typename: ari.AriTestObject
+    modules:
+        -   config-section: ari-config
+            typename: ari.WebSocketEventModule
+
+ari-config:
+    events:
+        -   conditions:
+                match:
+                    type: StasisStart
+                    application: testsuite
+                    args: []
+            count: 1
+            callback:
+                module: safe
+                method: on_start
+
+properties:
+    dependencies:
+        - python : autobahn.websocket
+        - python : requests
+        - python : twisted
+        - python : starpy
+        - asterisk : res_ari_channels
+        - asterisk : app_echo
+        - asterisk : func_shell
+    tags:
+        - ARI
+
+

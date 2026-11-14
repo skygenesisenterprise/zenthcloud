@@ -1,0 +1,69 @@
+testinfo:
+    summary: Test continuing on from the RESTful API back to the dialplan
+    description: |
+        "This exhaustively tests the continue operation on channel resource. The
+        channel is entered into Stasis and then continued to the dialplan in a particular
+        location. At that location, the channel then re-enters Stasis. Each time the
+        channel enters Stasis, the channel gives its current dialplan location as an
+        application argument. The Stasis application checks this against its expected
+        entrance locations in order to determine if the continuation put the channel
+        into the expected place in the dialplan.
+
+        The dialplan also has 'traps' that will emit UserEvents that will automatically
+        fail the test if the channel reaches that extension."
+
+test-modules:
+    add-test-to-search-path: True
+    test-object:
+        config-section: test-object-config
+        typename: ari.AriTestObject
+    modules:
+        -   config-section: ari-config
+            typename: ari.WebSocketEventModule
+        -   config-section: ami-config
+            typename: ami.AMIEventModule
+
+test-object-config:
+    stop-on-end: False
+
+ari-config:
+    events:
+        -   conditions:
+                match:
+                    type: StasisStart
+                    application: testsuite
+            callback:
+                module: rest_continue
+                method: on_start
+            count: '25'
+        -   conditions:
+                match:
+                    type: StasisEnd
+                    application: testsuite
+            callback:
+                module: rest_continue
+                method: on_end
+            count: '25'
+
+ami-config:
+    -
+        type: 'headermatch'
+        conditions:
+            match:
+                Event: 'UserEvent'
+                UserEvent: 'Failed'
+        count: '0'
+
+
+properties:
+    dependencies:
+        - python : autobahn.websocket
+        - python : requests
+        - python : twisted
+        - python : starpy
+        - asterisk : res_ari_channels
+        - asterisk : app_echo
+    tags:
+        - ARI
+
+

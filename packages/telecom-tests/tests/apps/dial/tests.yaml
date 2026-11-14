@@ -1,0 +1,18 @@
+# Enter tests here in the order they should be considered for execution:
+tests:
+    - test: 'dial_announcements'
+    - test: 'dial_answer'
+    - test: 'dial_progress'
+    - test: 'dial_busy'
+    - test: 'dial_congestion'
+    - test: 'dial_hangup'
+    - test: 'dial_no_answer'
+    - test: 'dial_dtmf_hangup_cancel'
+    - test: 'dial_timeout'
+    - test: 'dial_unavail'
+    - dir: 'dial_parallel'
+    - dir: 'mid_call_events'
+    - dir: 'action_post_answer'
+    - test: 'peer_h_exten'
+    - test: 'preserve_top'
+    - dir: 'privacy'

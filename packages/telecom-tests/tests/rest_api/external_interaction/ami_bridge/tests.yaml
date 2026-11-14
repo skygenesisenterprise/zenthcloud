@@ -1,0 +1,3 @@
+tests:
+    - dir: 'stasis_bridge'
+    - dir: 'stasis_app'

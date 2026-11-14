@@ -1,0 +1,17 @@
+testinfo:
+    summary: 'Test faxing between PJSIP channels.'
+    description: |
+        "This test starts two Asterisk instances and sends a fax between them
+         using the PJSIP channel driver."
+
+properties:
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - custom : 'fax'
+        - asterisk : 'chan_pjsip'
+        - asterisk : 'res_pjsip_t38'
+    tags:
+        - pjsip
+        - fax
+

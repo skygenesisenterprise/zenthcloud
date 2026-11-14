@@ -1,0 +1,93 @@
+testinfo:
+    skip: 'requires further rework for pjsip, see ASTERISK-30292'
+    summary: 'Connected line update propagation across a bridge'
+    description: |
+        'Set up a bridge between two endpoints and ensure that the initial connected line update moves across the bridge as well as subsequent updates.'
+
+test-modules:
+    add-test-to-search-path: 'True'
+    test-object:
+        config-section: bridge-config
+        typename: 'bridge_test_case.BridgeTestCase'
+    modules:
+        -
+            # for orchestration of the test
+            typename: 'Tester.Tester'
+        -
+            # for checking events
+            typename: 'ami.AMIEventModule'
+            config-section: ami-uut
+
+bridge-config:
+  test-runs:
+    -
+        originate_channel: 'PJSIP/simple_bridge@uut'
+
+ami-uut:
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'UserEvent'
+                UserEvent: 'CLInfo'
+                CLInfo: 'Bob <4321>'
+        count: '>1'
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'UserEvent'
+                UserEvent: 'CLInfo'
+                CLInfo: 'newbob <2345>'
+        count: '1'
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'UserEvent'
+                UserEvent: 'CLInfo'
+                CLInfo: 'newalice <5432>'
+        count: '1'
+    -
+        type: 'headermatch'
+        id: '1'
+        conditions:
+            match:
+                Event: 'NewCallerid'
+                CallerIDName: 'newalice'
+                CallerIDNum: '5432'
+        count: '1'
+    -
+        type: 'headermatch'
+        id: '2'
+        conditions:
+            match:
+                Event: 'NewCallerid'
+                CallerIDName: 'newbob'
+                CallerIDNum: '2345'
+        count: '1'
+    -
+        type: 'headermatch'
+        id: '2'
+        conditions:
+            match:
+                Event: 'NewCallerid'
+                CallerIDName: 'Bob'
+                CallerIDNum: '4321'
+        count: '0'
+
+
+properties:
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk: 'app_dial'
+        - asterisk: 'app_stack'
+        - asterisk: 'app_userevent'
+        - asterisk: 'chan_pjsip'
+        - asterisk: 'func_callerid'
+    tags:
+        - bridge

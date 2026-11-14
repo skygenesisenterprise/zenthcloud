@@ -1,0 +1,8 @@
+# Enter tests here in the order they should be considered for execution:
+tests:
+    - test: 'create'
+    - test: 'delete'
+    - test: 'get'
+    - test: 'update'
+    - test: 'registration_cleanup'
+    - dir: 'pjsip'

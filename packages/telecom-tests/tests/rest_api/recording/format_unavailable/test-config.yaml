@@ -1,0 +1,39 @@
+testinfo:
+    summary: Test expected events and responses for recording with known and unknown formats
+    description: |
+        Put a channel in stasis then record a file from it with a format we should have. Stop the
+        recording and then start a new recording with a different format that we shouldn't have.
+
+test-modules:
+    add-test-to-search-path: True
+    test-object:
+        typename: ari.AriTestObject
+    modules:
+        -   config-section: ari-config
+            typename: ari.WebSocketEventModule
+
+ari-config:
+    apps: testsuite
+    events:
+        -   conditions:
+                match:
+                    type: StasisStart
+                    application: testsuite
+                    args: []
+            count: 1
+            callback:
+                module: recording
+                method: on_start
+
+properties:
+    dependencies:
+        - python : autobahn.websocket
+        - python : requests
+        - python : twisted
+        - python : starpy
+        - asterisk : res_ari_channels
+        - asterisk : res_ari_recordings
+        - asterisk : format_wav
+        - asterisk : app_echo
+    tags:
+        - ARI

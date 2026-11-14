@@ -1,0 +1,52 @@
+testinfo:
+    summary:     'Test max_initial_qualify time'
+    description: |
+        'With qualify_timeout = 6000, reactor-timeout = 10, and max_initial_qualify_time = 1,
+        send a qualify to a contact and verify that the contact is qualified before the
+        reactor timeout.  If it isn't then max_initial_qualify_time didn't work.
+
+test-modules:
+    test-object:
+        config-section: test-object-config
+        typename: 'sipp.SIPpTestCase'
+    modules:
+        -
+            config-section: 'ami-config-13.5'
+            typename: 'pluggable_modules.EventActionModule'
+
+test-object-config:
+    connect-ami: True
+    fail-on-any: False
+    reactor-timeout: 15
+    stop-after-scenarios: False
+    test-iterations:
+        -
+            scenarios:
+                - { 'key-args': {'scenario': 'options.xml', '-i': '127.0.0.1', '-p': '5061'} }
+
+ami-config-13.5:
+    -
+        ami-start:
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'ContactStatus'
+                    ContactStatus: 'Reachable'
+            requirements:
+                match:
+                    URI: 'sip:127.0.0.1:5061'
+            count: '>1'
+        stop_test:
+
+properties:
+    dependencies:
+        - buildoption: 'TEST_FRAMEWORK'
+        - python: 'twisted'
+        - python: 'starpy'
+        - sipp:
+            version: 'v3.3'
+        - asterisk: 'res_pjsip'
+    tags:
+        - pjsip
+

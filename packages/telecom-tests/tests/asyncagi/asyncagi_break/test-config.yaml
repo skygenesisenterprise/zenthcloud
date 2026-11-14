@@ -1,0 +1,88 @@
+testinfo:
+    summary: 'Test AsyncAGI break command'
+    description: |
+      'Test that the AsyncAGI break command is successfully queued for
+      execution and that we actually break out of the AsyncAGI.'
+
+test-modules:
+    add-test-to-search-path: 'True'
+    test-object:
+        config-section: test-object-config
+        typename: 'test_case.SimpleTestCase'
+    modules:
+        -
+            config-section: pluggable-config-12
+            typename: 'pluggable_modules.EventActionModule'
+
+test-object-config:
+    spawn-after-hangup: True
+    test-iterations:
+        -
+            channel: 'Local/s@default'
+            application: 'Echo'
+
+pluggable-config-12:
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'UserEvent'
+            requirements:
+                match:
+                    Result: 'pass'
+            count: '1'
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'AsyncAGIStart'
+                    Channel: 'Local/s@default-.*'
+        ami-actions:
+            action:
+                action: 'AGI'
+                channel: '{channel}'
+                command: 'STREAM FILE tt-monkeys ""'
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'AGIExecStart'
+                    Channel: 'Local/s@default-.*'
+                    Command: 'STREAM FILE tt-monkeys ""'
+        ami-actions:
+            action:
+                action: 'AGI'
+                channel: '{channel}'
+                command: 'ASYNCAGI BREAK'
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'AGIExecEnd'
+                    Channel: 'Local/s@default-.*'
+                    Command: 'STREAM FILE tt-monkeys ""'
+            requirements:
+                match:
+                    ResultCode: '200'
+                    Result: 'Success'
+            count: '1'
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'AGIExecEnd'
+                    Channel: 'Local/s@default-.*'
+                    Command: 'ASYNCAGI BREAK'
+            requirements:
+                match:
+                    ResultCode: '200'
+                    Result: 'Success'
+
+properties:
+    tags:
+      - AGI
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk : 'res_agi'
+        - asterisk : 'app_userevent'

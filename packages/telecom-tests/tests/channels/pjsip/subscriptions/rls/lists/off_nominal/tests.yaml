@@ -1,0 +1,5 @@
+tests:
+    - test: 'large_notify'
+    - dir: 'presence'
+    - dir: 'mwi'
+

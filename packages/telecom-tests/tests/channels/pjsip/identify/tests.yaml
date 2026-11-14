@@ -1,0 +1,10 @@
+# Enter tests here in the order they should be considered for execution:
+tests:
+    - test: 'header'
+    - test: 'header_or_ip'
+    - test: 'request_uri'
+    - test: 'transport'
+    - test: 'header_ordering_header_ip'
+    - test: 'header_ordering_ip_header'
+    - test: 'ordering'
+    - dir: 'port_matching'

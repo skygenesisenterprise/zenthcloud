@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+'''
+Copyright (C) 2010, Digium, Inc.
+Erin Spiceland <espiceland@digium.com>
+
+This program is free software, distributed under the terms of
+the GNU General Public License Version 2.
+'''
+
+import sys
+from twisted.internet import reactor
+
+sys.path.append("lib/python")
+from asterisk.test_case import TestCase
+
+
+class FastAGIConnectTest(TestCase):
+    def __init__(self):
+        TestCase.__init__(self)
+
+        self.create_asterisk()
+        self.create_fastagi_factory()
+
+    def fastagi_connect(self, agi):
+        print("Connection established.")
+        self.passed = True
+        self.result_changed()
+        return agi.finish()
+
+    def launch_test(self):
+        print("Originating call to begin test.")
+        self.ast[0].cli_originate("Local/501@agitest extension echo@agitest")
+
+    def result_changed(self):
+        if self.passed is True:
+            self.stop_reactor()
+
+    def run(self):
+        TestCase.run(self)
+        self.launch_test()
+
+
+def main():
+    test = FastAGIConnectTest()
+    test.start_asterisk()
+    reactor.run()
+    test.stop_asterisk()
+    if test.passed is not True:
+        return 1
+
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main() or 0)

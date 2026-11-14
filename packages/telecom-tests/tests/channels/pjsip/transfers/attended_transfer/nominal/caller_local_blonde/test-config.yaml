@@ -1,0 +1,86 @@
+testinfo:
+    summary: Test performing a caller-initiated attended transfer via chan_pjsip.
+    description: |
+        "Originate two SIP calls through Asterisk to remote endpoints and then have
+        one originating call transfer the other via REFER with Replaces header.
+
+        High-level scenario:
+        Alice calls Bob.  When he answers, Alice puts him on hold.
+        Alice calls Charlie.  Before he answers, Alice does a REFER Bob->Charlie.
+        When Charlie answers he and Bob are bridged and Alice goes away.
+
+        NOTE:  sipp doesn't allow more than one dialog in a scenario file so Alice
+        is actually implemented in two scenario files: alice_calls_bob and alice_calls_charlie.
+        The two coordinate using sipp's 3pcc capability.
+
+        Low-level flow:
+        alice_calls_bob starts by calling bob.
+        bob answers.
+        alice_calls_bob waits for a second then sends a reINVITE to put bob on hold.
+        alice_calls_bob does a sendCmd to start alice_calls_charlie then waits on a recvCmd from alice_calls_charlie.
+        charlie waits 5 seconds before answering.
+        alice_calls_charlie waits 1 second then does a sendCmd back to alice_calls_bob.
+        charlie is still waiting.
+        alice_calls_bob recvCmd returns.
+        alice_calls_bob does a REFER bob->charlie.
+        alice_calls_bob receives a 202 and 2 NOTIFYs.  The NOTIFYs are handled automatically by sipp.
+        alice_calls_bob waits again on a recvCmd from alice_calls_charlie.
+        alice_calls_charlie gets a 603 and sends an ACK.
+        alice_calls_charlie does a sendCmd to alice_calls_bob.
+        alice_calls_charlie.xml ENDS.
+        alice_calls_bob.xml recvCmd returns.
+        alice_calls_bob.xml sends a BYE.
+        alice_calls_bob.xml receives a 481.
+        alice_calls_bob.xml ENDS.
+        charlie finally answers.
+        charlie gets an ACK followed by a reINVITE with Bob's callerID.
+        charlie sends a 200 and gets an ACK.
+        bob gets a reINVITE with Charlie's callerID.
+        bob sends a 200 and gets an ACK.
+        bob waits on a BYE.
+        charlie sends a BYE.
+        bob gets the BYE and ENDS.
+        charlie ENDS.
+
+test-modules:
+    add-test-to-search-path: True
+    test-object:
+        config-section: test-object-config
+        typename: sipp.SIPpTestCase
+    modules:
+        -
+            config-section: ami-config
+            typename: 'ami.AMIEventModule'
+
+test-object-config:
+    fail-on-any: True
+    test-iterations:
+        -
+            scenarios:
+                - { 'coordinated-sender': {'key-args': {'scenario':'alice_calls_bob.xml', '-i':'127.0.0.2', '-p':'5060', '-sleep': '2'},
+                                           'ordered-args': [ '-aa', '-bind_local' ] },
+                    'coordinated-receiver': {'key-args': {'scenario':'alice_calls_charlie.xml', '-i':'127.0.0.3', '-p':'5060'},
+                                             'ordered-args': [ '-bind_local' ] } }
+                - { 'key-args': {'scenario':'bob.xml', '-i':'127.0.0.4', '-p':'5060', '-m':'2', '-sleep': '2'},
+                    'ordered-args': [ '-bind_local' ] }
+                - { 'key-args': {'scenario':'charlie.xml', '-i':'127.0.0.5', '-p':'5060', '-m':'2', '-sleep': '2'},
+                    'ordered-args': [ '-bind_local' ] }
+
+ami-config:
+    -
+        type: 'headermatch'
+        conditions:
+            match:
+                Event: 'AttendedTransfer'
+                Result: 'Success'
+        count: 1
+
+properties:
+    dependencies:
+        - python : twisted
+        - python : starpy
+        - asterisk : app_dial
+        - asterisk : chan_pjsip
+    tags:
+        - pjsip
+        - refleaks

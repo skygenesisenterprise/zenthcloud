@@ -1,0 +1,14 @@
+testinfo:
+    summary:     'Test Attended Transfer'
+    description: |
+        'This test verifies the Attended Transfer routine used in the feature code.'
+
+properties:
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk : 'app_talkdetect'
+    tags:
+        - features
+        - transfer
+        - iax2

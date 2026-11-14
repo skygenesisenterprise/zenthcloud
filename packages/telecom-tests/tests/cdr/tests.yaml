@@ -1,0 +1,18 @@
+# Enter tests here in the order they should be considered for execution:
+tests:
+    - test: 'console_dial_sip_answer'
+    - test: 'console_dial_sip_busy'
+    - test: 'console_dial_sip_congestion'
+    - test: 'cdr_originate_sip_congestion_log'
+    - test: 'cdr_bridge_multi'
+    - test: 'console_dial_sip_transfer'
+    - test: 'cdr_unanswered_yes'
+    - test: 'cdr_newcdrcolumns_yes'
+    - test: 'app_queue'
+    - test: 'originate-cdr-disposition'
+    - test: 'app_dial_G_flag'
+    - test: 'batch_cdrs'
+    - dir: 'cdr_manipulation'
+    - dir: 'cdr_properties'
+    - test: 'sqlite3'
+    - test: 'cdr_dial_subroutines'

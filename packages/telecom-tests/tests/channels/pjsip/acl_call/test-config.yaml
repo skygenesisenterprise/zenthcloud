@@ -1,0 +1,18 @@
+testinfo:
+    summary: 'Test res_pjsip usage of endpoint ACLs'
+    description: |
+        This tests SIP calls originating from different addresses against
+        PJSIP endpoints with varying means of specifying Access Control Lists.
+        This test is used to verify proper behavior of ACL and Named ACL
+        usage by the res_pjsip.
+
+properties:
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - app : 'sipp'
+        - asterisk : 'res_config_sqlite3'
+        - asterisk : 'res_pjsip'
+    tags:
+        - pjsip
+        - ACL

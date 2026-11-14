@@ -1,0 +1,104 @@
+#!/usr/bin/env python
+'''
+Copyright (C) 2010, Digium, Inc.
+Erin Spiceland <espiceland@digium.com>
+
+This program is free software, distributed under the terms of
+the GNU General Public License Version 2.
+'''
+
+import sys
+from twisted.internet import reactor
+from starpy import fastagi
+
+sys.path.append("lib/python")
+from asterisk.asterisk import Asterisk
+
+workingdir = "fastagi/wait-for-digit"
+testdir = "tests/fastagi"
+
+
+class FastAGIWaitForDigitTest:
+    def __init__(self):
+        self.passed = False
+        self.timeout = 30
+
+        # Listen for results from dialplan
+        self.agi_factory = fastagi.FastAGIFactory(self.do_test)
+        reactor.listenTCP(4573, self.agi_factory, self.timeout, '127.0.0.1')
+        reactor.callWhenRunning(self.run)
+
+        self.ast1 = Asterisk(base=workingdir)
+        self.ast1.install_configs("%s/configs/ast1" % (testdir))
+
+    def on_failure(self, reason):
+        print('Could not run WAIT FOR DIGIT: ', reason.getTraceback())
+        self.agi.finish()
+
+    # result is (str digits, bool timeout)
+    def finish_test(self, result):
+        self.passed = True
+        if result == 3212:
+            print("Got the input we expected.")
+        else:
+            print("Got '%s' which wasn't what we expected." % result)
+            self.passed = False
+
+        self.result_changed()
+
+    # This gets invoked by the dialplan when the call is answered
+    # send WAIT FOR DIGIT command and wait for results
+    def do_test(self, agi):
+        self.agi = agi
+        print("Connection established.")
+        return agi.waitForDigit(60, 'silence/10', '1234567890*#ABCD', 4, '#').addCallback(
+            self.finish_test).addErrback(self.on_failure)
+
+    def read_result(self):
+        self.stop_reactor()
+
+        if self.passed is True:
+            print("Success")
+        else:
+            print("Failed")
+
+    def stop_reactor(self):
+        def __finish_stop(result):
+            print("Stopping Reactor ...")
+            if reactor.running:
+                reactor.stop()
+            return result
+
+        df = self.ast1.stop()
+        df.addCallback(__finish_stop)
+
+    def launch_test(self):
+        print("Originating call to begin test.")
+        self.ast1.cli_originate("Local/basic_agi@agitest extension play_dtmf@agitest")
+
+    # Read result before timeout
+    def result_changed(self):
+        if self.passed is True:
+            self.read_result()
+
+    def run(self):
+        def __finish_start_ops(result):
+            self.launch_test()
+            reactor.callLater(self.timeout, self.stop_reactor)
+            return result
+
+        print("Starting Asterisk")
+        df = self.ast1.start()
+        df.addCallback(__finish_start_ops)
+
+
+def main():
+    test = FastAGIWaitForDigitTest()
+    reactor.run()
+    if test.passed is not True:
+        return 1
+
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main() or 0)

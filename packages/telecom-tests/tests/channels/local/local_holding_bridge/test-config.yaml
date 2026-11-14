@@ -1,0 +1,98 @@
+testinfo:
+    summary: 'Test Local channel operation with a holding bridge'
+    description: |
+        This test puts a Local channel between a SIP channel and a Holding
+        Bridge:
+        SIP/foo <---> Local/1 <-> Local/2 <---
+                 B0           LB           HB
+        In both iterations, regardless of the presence of the n flag, the Local
+        channel should not optimize away. Using the BridgeWait application
+        requires Local channels to not optimize, as it has the concept of
+        channel roles (which Local optimization typically destroys)
+
+properties:
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk : 'chan_pjsip'
+    tags:
+        - chan_local
+
+test-modules:
+    test-object:
+        config-section: test-object-config
+        typename: 'test_case.SimpleTestCase'
+    modules:
+        -
+            config-section: ami-config-12
+            typename: 'ami.AMIEventModule'
+
+test-object-config:
+    spawn-after-hangup: True
+    test-iterations:
+        -
+            channel: 'Local/holdem@default'
+            exten: 'dial_foo'
+            context: 'default'
+            priority: '1'
+        -
+            channel: 'Local/holdem@default/n'
+            exten: 'dial_foo'
+            context: 'default'
+            priority: '1'
+
+ami-config-12:
+    -
+        type: 'headermatch'
+        conditions:
+            match:
+                Event: 'LocalBridge'
+                LocalOneChannel: 'Local/holdem@default-.{7}0;1'
+                LocalTwoChannel: 'Local/holdem@default-.{7}0;2'
+        requirements:
+            match:
+                LocalOptimization: 'Yes'
+        count: '1'
+    -
+        type: 'headermatch'
+        conditions:
+            match:
+                Event: 'LocalOptimizationBegin'
+                LocalOneChannel: 'Local/holdem@default-.{7}0;1'
+                LocalTwoChannel: 'Local/holdem@default-.{7}0;2'
+        count: '0'
+    -
+        type: 'headermatch'
+        conditions:
+            match:
+                Event: 'LocalOptimizationEnd'
+                LocalOneChannel: 'Local/holdem@default-.{7}0;1'
+                LocalTwoChannel: 'Local/holdem@default-.{7}0;2'
+        count: '0'
+    -
+        type: 'headermatch'
+        conditions:
+            match:
+                Event: 'LocalBridge'
+                LocalOneChannel: 'Local/holdem@default-.{7}1;1'
+                LocalTwoChannel: 'Local/holdem@default-.{7}1;2'
+        requirements:
+            match:
+                LocalOptimization: 'No'
+        count: '1'
+    -
+        type: 'headermatch'
+        conditions:
+            match:
+                Event: 'LocalOptimizationBegin'
+                LocalOneChannel: 'Local/holdem@default-.{7}1;1'
+                LocalTwoChannel: 'Local/holdem@default-.{7}1;2'
+        count: '0'
+    -
+        type: 'headermatch'
+        conditions:
+            match:
+                Event: 'LocalOptimizationEnd'
+                LocalOneChannel: 'Local/holdem@default-.{7}1;1'
+                LocalTwoChannel: 'Local/holdem@default-.{7}1;2'
+        count: '0'

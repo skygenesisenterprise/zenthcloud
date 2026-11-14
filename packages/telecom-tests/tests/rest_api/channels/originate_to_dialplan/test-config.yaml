@@ -1,0 +1,134 @@
+testinfo:
+    summary: 'Test ARI origination of local channels to dialplan locations'
+    description: |
+        'This attempts to test originating local channels to the dialplan,
+        using all combinations of extension, context, priority, and label. The
+        originations go in the following order:
+        * Only extension specified
+        * Extension and priority specified
+        * Extension and label specified
+        * Extension, priority, and label specified
+        * Extension and numeric label specified
+        * Extension, priority, and numeric label specified
+        * All of the above repeated, this time specifying a context.
+
+        In total there are 12 originations performed. Each origination sets a
+        channel variable on the channel that specifies where we expect the
+        origination to end up. A user event is emitted from the dialplan to
+        indicate if the results meet expectations. Additionally ensure that no
+        ARI events are received.'
+
+properties:
+    dependencies:
+        - python: autobahn.websocket
+        - python: requests
+        - python: twisted
+        - python: starpy
+        - asterisk: res_ari_channels
+        - asterisk: app_userevent
+        - asterisk: app_echo
+    tags:
+        - ARI
+
+test-modules:
+    test-object:
+        config-section: originate-config
+        typename: ari.AriOriginateTestObject
+    modules:
+        -
+            config-section: pluggable-config
+            typename: pluggable_modules.EventActionModule
+
+originate-config:
+    test-iterations:
+        -
+            endpoint: 'Local/echo@default'
+            extension: 'test'
+            json: {'variables': {'location': 'test@default:1'}}
+        -
+            endpoint: 'Local/echo@default'
+            extension: 'test'
+            priority: 3
+            json: {'variables': {'location': 'test@default:3'}}
+        -
+            endpoint: 'Local/echo@default'
+            extension: 'test'
+            label: 'dopey'
+            json: {'variables': {'location': 'test@default:5'}}
+        -
+            endpoint: 'Local/echo@default'
+            extension: 'test'
+            priority: 5
+            label: 'doc'
+            json: {'variables': {'location': 'test@default:7'}}
+        -
+            endpoint: 'Local/echo@default'
+            extension: 'test'
+            label: '9'
+            json: {'variables': {'location': 'test@default:9'}}
+        -
+            endpoint: 'Local/echo@default'
+            extension: 'test'
+            priority: 5
+            label: '11'
+            json: {'variables': {'location': 'test@default:11'}}
+        -
+            endpoint: 'Local/echo@default'
+            context: 'grumpy'
+            extension: 'test'
+            json: {'variables': {'location': 'test@grumpy:1'}}
+        -
+            endpoint: 'Local/echo@default'
+            context: 'grumpy'
+            extension: 'test'
+            priority: 3
+            json: {'variables': {'location': 'test@grumpy:3'}}
+        -
+            endpoint: 'Local/echo@default'
+            context: 'grumpy'
+            extension: 'test'
+            label: 'sleepy'
+            json: {'variables': {'location': 'test@grumpy:5'}}
+        -
+            endpoint: 'Local/echo@default'
+            context: 'grumpy'
+            extension: 'test'
+            priority: 5
+            label: 'bashful'
+            json: {'variables': {'location': 'test@grumpy:7'}}
+        -
+            endpoint: 'Local/echo@default'
+            context: 'grumpy'
+            extension: 'test'
+            label: '9'
+            json: {'variables': {'location': 'test@grumpy:9'}}
+        -
+            endpoint: 'Local/echo@default'
+            context: 'grumpy'
+            extension: 'test'
+            priority: 5
+            label: '11'
+            json: {'variables': {'location': 'test@grumpy:11'}}
+
+pluggable-config:
+    # Ensure no ARI events are received.
+    -
+        ari-events:
+            match:
+                type: '.*'
+            count: '0'
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'UserEvent'
+                    UserEvent: 'Success'
+            count: '12'
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'UserEvent'
+                    UserEvent: 'Failed'
+            count: '0'
+

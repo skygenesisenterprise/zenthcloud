@@ -1,0 +1,103 @@
+testinfo:
+    summary: 'Test the call parking feature set via BRIDGE_FEATURES'
+    description: |
+        'This is the same as the basic call parking test, only the'
+        'feature is applied by the BRIDGE_FEATURES channel variable'
+        'instead of with application arguments.'
+
+test-modules:
+    add-test-to-search-path: 'True'
+    test-object:
+        config-section: bridge-config
+        typename: 'bridge_test_case.BridgeTestCase'
+    modules:
+        -
+            config-section: 'cdr-config'
+            typename: 'cdr.CDRModule'
+
+        -
+            typename: 'Executioner.Executioner'
+
+bridge-config:
+  test-runs:
+    -
+        originate_channel: 'PJSIP/alice_parkcall@uut'
+        features:
+            -
+                who: 'bob'
+                what: 'parkcall'
+                success: 'false'
+            -
+                who: 'alice'
+                what: 'parkcall'
+                success: 'true'
+
+    -
+        originate_channel: 'PJSIP/bob_parkcall@uut'
+        features:
+            -
+                who: 'alice'
+                what: 'parkcall'
+                success: 'false'
+            -
+                who: 'bob'
+                what: 'parkcall'
+                success: 'true'
+
+cdr-config:
+    -
+        file: 'Master'
+        lines:
+            -
+                source: '1234'
+                destination: 'alice_parkcall'
+                dcontext: 'default'
+                callerid: '"Alice" <1234>'
+                channel: '.*/alice-.*'
+                dchannel: '.*/bob-.*'
+                lastapp: 'Dial'
+                disposition: 'ANSWERED'
+                amaflags: 'DOCUMENTATION'
+            -
+                source: '4321'
+                dcontext: 'default'
+                callerid: '"Bob" <4321>'
+                channel: '.*/bob-.*'
+                dchannel: ''
+                lastapp: 'Park'
+                lastarg: 'default:701'
+                disposition: 'ANSWERED'
+                amaflags: 'DOCUMENTATION'
+            -
+                source: '1234'
+                destination: 'bob_parkcall'
+                dcontext: 'default'
+                callerid: '"Alice" <1234>'
+                channel: '.*/alice-.*'
+                dchannel: '.*/bob-.*'
+                lastapp: 'Dial'
+                disposition: 'ANSWERED'
+                amaflags: 'DOCUMENTATION'
+            -
+                source: '1234'
+                destination: 'bob_parkcall'
+                dcontext: 'default'
+                callerid: '"Alice" <1234>'
+                channel: '.*/alice-.*'
+                dchannel: ''
+                lastapp: 'Park'
+                lastarg: 'default:701'
+                disposition: 'ANSWERED'
+                amaflags: 'DOCUMENTATION'
+
+properties:
+    dependencies:
+        - buildoption: 'TEST_FRAMEWORK'
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk: 'app_dial'
+        - asterisk: 'chan_pjsip'
+        - asterisk: 'res_parking'
+    tags:
+        - bridge
+        - parking

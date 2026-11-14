@@ -1,0 +1,112 @@
+testinfo:
+    summary: Test spying on calls using ARI.
+    description: |
+        Originate a call and spy on it using ARI.
+
+test-modules:
+    add-test-to-search-path: True
+    test-object:
+        config-section: test-object-config
+        typename: ari.AriTestObject
+    modules:
+        -   config-section: ari-config
+            typename: ari.WebSocketEventModule
+        -
+            config-section: ami-uut
+            typename: 'ami.AMIEventModule'
+        -
+            config-section: ari-test-stopper
+            typename: pluggable_modules.EventActionModule
+
+test-object-config:
+    reactor-timeout: 60
+    stop-on-end: False
+    test-iterations:
+        -
+            -   channel: Local/s@default
+                application: Playback
+                data: demo-congrats
+
+
+ari-test-stopper:
+    -
+        ari-events:
+            match:
+                type: BridgeDestroyed
+                application: testsuite
+        stop_test:
+
+ami-uut:
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'VarSet'
+                Variable: 'AMDSTATUS'
+                Value: 'MACHINE'
+        count: '1'
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'ChanSpyStart'
+        count: '1'
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'ChanSpyStop'
+        count: '1'
+
+ari-config:
+    apps: testsuite
+    events:
+        -   conditions:
+                match:
+                    type: StasisStart
+                    application: testsuite
+                    args: []
+            count: 1
+            callback:
+                module: channel_spy
+                method: on_start
+        -   conditions:
+                match:
+                    type: StasisStart
+                    application: testsuite
+                    args: ['snoop']
+            count: 1
+            callback:
+                module: channel_spy
+                method: on_snoop_start
+        -   conditions:
+                match:
+                    type: StasisStart
+                    application: testsuite
+                    args: ['amd']
+            count: 1
+            callback:
+                module: channel_spy
+                method: on_amd_start
+        -   conditions:
+                match:
+                    type: StasisEnd
+                    application: testsuite
+            count: 3
+            callback:
+                module: channel_spy
+                method: on_end
+
+properties:
+    dependencies:
+        - python : autobahn.websocket
+        - python : requests
+        - python : twisted
+        - python : starpy
+        - asterisk : res_ari_channels
+        - asterisk : app_amd
+    tags:
+        - ARI

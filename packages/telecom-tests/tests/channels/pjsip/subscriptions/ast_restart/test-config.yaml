@@ -1,0 +1,108 @@
+testinfo:
+    summary: 'Test subscription persistence over Asterisk restarts'
+    description: |
+        Tests that subscriptions survive an Asterisk restart.
+        1) The SIPp scenario requests a subscription.
+        2) Asterisk is restarted when the subscription gets established.
+        3) The SIPp scenario sees the recreated subscription NOTIFY and
+        waits five seconds for the testsuite to reconnect the AMI connection.
+        4) The SIPp scenario then refreshes the subscription.
+        5) The SIPp scenario then unsubscribes and waits two seconds
+        for the testsuite to process the event before completing the
+        scenario.
+
+properties:
+    dependencies:
+        - buildoption: 'TEST_FRAMEWORK'
+        - python : 'twisted'
+        - python : 'starpy'
+        - sipp :
+            version : 'v3.0'
+        - asterisk : 'res_pjsip'
+        - asterisk : 'res_pjsip_pubsub'
+    tags:
+        - pjsip
+
+test-modules:
+    test-object:
+        config-section: sipp-config
+        typename: 'sipp.SIPpTestCase'
+    modules:
+        -
+            config-section: 'ami-config'
+            typename: 'pluggable_modules.EventActionModule'
+
+sipp-config:
+    stop-after-scenarios: True
+    fail-on-any: True
+
+    # Indicate that the test is going to be restarting Asterisk so
+    # we will require the AMI connection to get reconnected after the
+    # restart.  Old versions of starpy did not support reconnecting
+    # the AMI session if the connection was broken.  This option
+    # basically ensures that the test will fail with a meaningful
+    # error message if that feature is not supported by starpy.
+    allow-ami-reconnects: True
+
+    test-iterations:
+        -
+            scenarios:
+                - { 'key-args': {'scenario': 'subscribe.xml', '-p': '5061'} }
+
+ami-config:
+    -
+        # Event generated on initial subscription creation.
+        # Event also generated on subscription recreation after
+        # a restart but we may not see it depending on timing
+        # or the speed of the machine.
+        ami-events:
+            conditions:
+                match:
+                    Event: 'TestEvent'
+                    State: 'SUBSCRIPTION_ESTABLISHED'
+            requirements:
+                match:
+                    Resource: 'alice'
+            # Trigger on the first event
+            count: '>1'
+            trigger-on-count: True
+        ami-actions:
+            action:
+                Action: 'Command'
+                ActionID: '12345'
+                Command: 'core restart gracefully'
+    -
+        # Wake up after Asterisk is fully booted again.
+        #
+        # Depending upon timing or the speed of the machine
+        # this event is either too early or too late to get
+        # Asterisk and the SIPp scenario resynchronized after
+        # recreating the persistent subscriptions.  AMI either
+        # reconnects before Asterisk is fully booted and thus
+        # the persistent subscriptions haven't been recreated yet.
+        # Or AMI reconnects well after Asterisk has fully booted
+        # and the persistent subscriptions are already recreated.
+        #
+        # We'll just require that we get restarted once.
+        ami-restart:
+            count: '1'
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'TestEvent'
+                    State: 'SUBSCRIPTION_REFRESHED'
+            requirements:
+                match:
+                    Resource: 'alice'
+            count: '1'
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'TestEvent'
+                    State: 'SUBSCRIPTION_TERMINATED'
+            requirements:
+                match:
+                    Resource: 'alice'
+            count: '1'

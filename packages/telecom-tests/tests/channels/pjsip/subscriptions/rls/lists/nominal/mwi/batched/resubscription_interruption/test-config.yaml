@@ -1,0 +1,114 @@
+testinfo:
+    summary: 'Ensure that resubscriptions interrupt scheduled batches.'
+    description: |
+        'This test runs the following scenario:
+         * A SIPp scenario subscribes to a resource list with notification batching enabled.
+         * A state change occurs on one of the resources in the list.
+         * While the state change is being batched by Asterisk, the SIPp scenario resubscribes.
+         * The resubscription causes an immediate NOTIFY to be sent.
+
+properties:
+    dependencies:
+        - buildoption: 'TEST_FRAMEWORK'
+        - python: 'twisted'
+        - python: 'starpy'
+        - python: 'lxml'
+        - asterisk: 'res_pjsip'
+        - asterisk: 'res_pjsip_pubsub'
+        - asterisk: 'res_pjsip_mwi'
+        - asterisk: 'res_mwi_external'
+        - asterisk: 'res_mwi_external_ami'
+    tags:
+        - rls
+        - pjsip
+        - mwi_external
+        - refleaks
+
+test-modules:
+    add-test-to-search-path: 'True'
+    add-to-search-path:
+        -
+            'tests/channels/pjsip/subscriptions/rls'
+    test-object:
+        config-section: 'test-case-config'
+        typename: 'sipp.SIPpTestCase'
+    modules:
+        -
+            config-section: 'test-config'
+            typename: 'rls_test.RLSTest'
+        -
+            config-section: 'ami-config'
+            typename: 'pluggable_modules.EventActionModule'
+
+test-case-config:
+    stop-after-scenarios: False
+    test-iterations:
+        -
+            scenarios:
+                - { 'target': '127.0.0.1:5061', 'key-args': {'scenario': 'subscribe.xml', '-i': '127.0.0.1', '-p': '5062', '-s': 'mail_list', '-d': '3000'} }
+
+test-config:
+    stop-test-after-notifys: False
+    list-name: 'mail_list'
+    packets:
+        -
+            full-state: True
+            resources: { 'alice': {'type': 'MWI', 'state': 'active', 'voice_message': '0/0 (0/0)', 'messages_waiting': 'no'}, 'bob': {'type': 'MWI', 'state': 'active', 'voice_message': '0/0 (0/0)', 'messages_waiting': 'no'} }
+        -
+            full-state: True
+            resources: { 'alice': {'type': 'MWI', 'state': 'active', 'voice_message': '1/0 (0/0)', 'messages_waiting': 'yes'}, 'bob': {'type': 'MWI', 'state': 'active', 'voice_message': '0/0 (0/0)', 'messages_waiting': 'no'} }
+
+ami-config:
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'TestEvent'
+                    State: 'SUBSCRIPTION_ESTABLISHED'
+            count: 1
+        ami-actions:
+          -
+            action:
+                Action: 'MWIUpdate'
+                Mailbox: 'alice'
+                NewMessages: '1'
+                OldMessages: '0'
+    -
+        ami-events:
+          -
+            conditions:
+                match:
+                    Event: 'TestEvent'
+                    State: 'SUBSCRIPTION_STATE_CHANGED'
+            count: 0 # shouldn't receive any of these
+          -
+            conditions:
+                match:
+                    Event: 'TestEvent'
+                    State: 'SUBSCRIPTION_REFRESHED'
+            count: 1
+          -
+            conditions:
+                match:
+                    Event: 'TestEvent'
+                    State: 'SUBSCRIPTION_TERMINATED'
+            count: 0 # shouldn't receive any of these
+        ami-actions:
+          -
+            action:
+                Action: 'UserEvent'
+                UserEvent: 'RLSResult'
+                Result: 'pass'
+    -
+        ami-events:
+          -
+            conditions:
+                match:
+                    Event: 'UserEvent'
+                    UserEvent: 'RLSResult'
+            requirements:
+                match:
+                    Result: 'pass'
+            count: 2 # one after expected test events have been received, one after validation
+            trigger-on-count: True
+        stop_test:

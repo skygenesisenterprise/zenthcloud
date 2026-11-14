@@ -1,0 +1,10 @@
+testinfo:
+    summary:     'Test Call Parking'
+    description: |
+        'This test verifies that retrieving a parked call does not hamper the ability to park it once again.'
+
+properties:
+    tags:
+        - parking
+        - iax2
+        - refleaks

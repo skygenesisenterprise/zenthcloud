@@ -1,0 +1,298 @@
+#!/usr/bin/env python
+'''
+Copyright (C) 2012, Digium, Inc.
+Richard Mudgett <rmudgett@digium.com>
+
+This program is free software, distributed under the terms of
+the GNU General Public License Version 2.
+'''
+
+import sys
+import logging
+import resource
+from twisted.internet import reactor
+
+sys.path.append("lib/python")
+from asterisk.test_case import TestCase
+
+LOGGER = logging.getLogger(__name__)
+
+
+class MasqueradeTest(TestCase):
+    def __init__(self):
+        TestCase.__init__(self)
+
+        self.ami_count = 0
+        self.test_complete = False
+
+        self.parking_space_hdr = "parkingspace"
+
+        # Set longer timeout than default.
+        #
+        # Dialing and optimizing out long chains of local channels
+        # can take awhile and they can come in bursts.
+        self.reactor_timeout = 60
+
+        # Initial call chain parameters.
+        self.chain_length = 200
+        self.expected_space = 701
+        # Use IAX calls
+        # self.use_sip_calls = False
+        # Use PJSIP calls
+        self.use_sip_calls = True
+
+        if self.use_sip_calls:
+            self.base_exten = 8000
+        else:
+            self.base_exten = 9000
+
+        # Clear test completion stage flags.
+        self.dialed_count = 0
+        self.removed_count = 0
+        self.park_retrieved = False
+        self.got_AMI_ParkedCall = False
+        self.got_AMI_UnParkedCall = False
+        self.ast1_event = False
+        self.ast2_event = False
+
+        # Create two Asterisk instances ...
+        self.create_asterisk(2)
+
+    def check_result(self):
+        """Examine the current result standing to determine when the next
+        phase of the test needs to be started."""
+        if not self.got_AMI_ParkedCall:
+            return
+        if not self.park_retrieved:
+            if self.removed_count == self.chain_length:
+                # Call chain successfully optimized itself.
+                # Time to see if the call audio path is ok.
+                self.park_retrieved = True
+                self.get_parkedcall()
+            return
+        if not self.got_AMI_UnParkedCall:
+            return
+        if not self.ast1_event:
+            return
+        if not self.ast2_event:
+            return
+
+        # Call chain completed successfully.
+        LOGGER.info("Test completed successfully")
+        self.passed = True
+        self.stop_reactor()
+
+    def initiate_call_chain(self):
+        """Initiates the test call chain."""
+        LOGGER.info(
+            "Initiating test call for a chain length of "
+            + str(self.chain_length))
+        exten = self.base_exten + self.chain_length
+        self.ami[0].originate(
+            channel="Local/start@outgoing",
+            context="parked", exten="parkme12", priority=1,
+            timeout=900, nowait=True, variable={'DEST': str(exten)}
+            ).addErrback(TestCase.handle_originate_failure)
+
+    def get_parkedcall(self):
+        """Initiates a call to retrieve the parked call."""
+        LOGGER.info("Fetching parked call at " + str(self.expected_space))
+        channel = "IAX2/ast1/" + str(self.expected_space)
+        if self.use_sip_calls:
+            # PJSIP takes the extension before the endpoint.  After the
+            # endpoint it expects a SIP URI.
+            channel = "PJSIP/" + str(self.expected_space) + "@ast1"
+        self.ami[1].originate(
+            channel=channel,
+            context="getit", exten="retrieve", priority=1,
+            timeout=30, nowait=True
+            ).addErrback(TestCase.handle_originate_failure)
+
+    def evt_parkedcall(self, ami, event):
+        """Called when got the ParkedCall AMI event"""
+        if self.test_complete:
+            return
+        exten = event.get(self.parking_space_hdr)
+        if not exten or exten != str(self.expected_space):
+            LOGGER.warning(
+                "Call not parked in expected space "
+                + str(self.expected_space))
+            self.stop_reactor()
+            return
+        LOGGER.info("Call parked at exten: " + str(exten))
+
+        self.got_AMI_ParkedCall = True
+        self.check_result()
+
+    def evt_unparkedcall(self, ami, event):
+        """Called when got the UnParkedCall AMI event"""
+        if self.test_complete:
+            return
+        exten = event.get(self.parking_space_hdr)
+        if not exten or exten != str(self.expected_space):
+            LOGGER.warning(
+                "Call not retrieved from expected space "
+                + str(self.expected_space))
+            self.stop_reactor()
+            return
+        LOGGER.info("Parked call retrieved from exten: " + str(exten))
+
+        self.got_AMI_UnParkedCall = True
+        self.check_result()
+
+    def evt_parkedcalltimeout(self, ami, event):
+        """Called when got the ParkedCallTimeOut AMI event"""
+        if self.test_complete:
+            return
+        LOGGER.warning("Call park timeout!")
+        self.stop_reactor()
+
+    def evt_userevent(self, ami, event):
+        """Called when got the UserEvent event from either Asterisk instance"""
+        if self.test_complete:
+            return
+        # We want the AMI UserEvent header but the headers put
+        # in as dictionary keys are lowercased.
+        evt = event.get("userevent")
+        status = event.get("status")
+        LOGGER.info("UserEvent: " + str(evt) + " status: " + str(status))
+
+        if evt == "dialing":
+            self.dialed_count += 1
+            LOGGER.info("Calls dialed: " + str(self.dialed_count))
+            # Prod reactor timeout
+            self.reset_timeout()
+            return
+        elif evt == "optout":
+            self.removed_count += 1
+            LOGGER.info(
+                "Calls hungup or optimized out: " + str(self.removed_count))
+            # Prod reactor timeout
+            self.reset_timeout()
+            self.check_result()
+            return
+        elif evt == "last_call":
+            if "EXECUTING" in status:
+                # Prod reactor timeout
+                self.reset_timeout()
+                return
+            elif status == "HANGUP":
+                if self.park_retrieved:
+                    return
+                LOGGER.warning(
+                    "The last call in the chain disconnected too early.")
+            else:
+                LOGGER.info("Unknown status")
+        elif evt == "ast1":
+            if status == "SUCCESS":
+                self.ast1_event = True
+                self.check_result()
+                return
+        elif evt == "ast2":
+            if status == "SUCCESS":
+                self.ast2_event = True
+                self.check_result()
+                return
+        else:
+            LOGGER.info("Unknown UserEvent")
+            return
+        LOGGER.warning("UserEvent: " + str(evt) + " status: " + str(status))
+        self.stop_reactor()
+
+    def ami_connect(self, ami):
+        """This is called for each AMI connection established."""
+        # Add AMI event triggers
+        if ami.id == 0:
+            # Ast1 events to handle
+            self.ami[ami.id].registerEvent("ParkedCall", self.evt_parkedcall)
+            self.ami[ami.id].registerEvent(
+                "UnParkedCall", self.evt_unparkedcall)
+            self.ami[ami.id].registerEvent(
+                "ParkedCallTimeOut", self.evt_parkedcalltimeout)
+            self.ami[ami.id].registerEvent("UserEvent", self.evt_userevent)
+        elif ami.id == 1:
+            # Ast2 events to handle
+            self.ami[ami.id].registerEvent("UserEvent", self.evt_userevent)
+
+        # Initiate test when both AMI connections are established.
+        self.ami_count += 1
+        if self.ami_count == 2:
+            self.initiate_call_chain()
+
+    def run(self):
+        """This is called when the reactor has started running."""
+        TestCase.run(self)
+        self.create_ami_factory(2)
+
+    def send_core_show_locks(self):
+        """Send a core show locks CLI command"""
+        LOGGER.debug('sending core show locks')
+        cli_deferred = self.ast[0].cli_exec("core show locks")
+        cli_deferred.addCallbacks(self.send_core_show_locks_callback)
+
+    def send_core_show_locks_callback(self, cli_command):
+        """Callback handler for the core show locks CLI command output"""
+        LOGGER.info("Output for core show locks:")
+        LOGGER.info(cli_command.output)
+        TestCase.stop_reactor(self)
+        return cli_command
+
+    def stop_reactor(self):
+        """This is called when we stop the reactor."""
+        self.test_complete = True
+
+        # Try to interpret results to reduce stupid assumptions
+        # when trying to figure out what went wrong.
+        if self.passed:
+            # Nothing to say about the test passing.
+            pass
+        elif not self.got_AMI_ParkedCall \
+                and self.chain_length != self.dialed_count:
+            LOGGER.warning(
+                "Only dialed " + str(self.dialed_count) + " calls in chain.")
+        elif not self.got_AMI_ParkedCall:
+            LOGGER.warning("Call did not get parked.")
+        elif self.chain_length != self.removed_count:
+            LOGGER.warning(
+                "Only optimized " + str(self.removed_count)
+                + " calls in chain.")
+        elif not self.got_AMI_UnParkedCall:
+            LOGGER.warning("Call did not get retrieved from parking lot.")
+        elif not self.ast1_event or not self.ast2_event:
+            LOGGER.warning("DTMF handshake failed.")
+
+        # Get some useful output from the Asterisk instance
+        # under test before tearing down in case of problems.
+        # self.send_core_show_locks()
+
+        # Comment this out when enabling "core show locks"
+        TestCase.stop_reactor(self)
+
+
+def raise_file_limit():
+    """Raise the open file limit that the Asterisk instances inherit.
+
+    Each Local channel pair in the chain uses several file descriptors, so a
+    chain of 200 needs more than the common default soft limit of 1024.
+    """
+    soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+    wanted = 8192 if hard == resource.RLIM_INFINITY else min(hard, 8192)
+    if soft != resource.RLIM_INFINITY and soft < wanted:
+        resource.setrlimit(resource.RLIMIT_NOFILE, (wanted, hard))
+
+
+def main():
+    """Run Masquerade local channel chain Test"""
+    raise_file_limit()
+    test = MasqueradeTest()
+    reactor.run()
+    if test.passed:
+        LOGGER.info("Test passed")
+        return 0
+    return 1
+
+if __name__ == "__main__":
+    sys.exit(main() or 0)
+
+
+# vim:sw=4:ts=4:expandtab:textwidth=79

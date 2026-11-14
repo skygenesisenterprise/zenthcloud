@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+set -e
+
+PYTHON=""
+PYTHON3=$(which python3 2>/dev/null || true)
+
+if test -z "$PYTHON3"; then
+	PYTHON=$(which python 2>/dev/null || true)
+
+	if test -z "$PYTHON"; then
+		echo "No python binary found, cannot run any tests"
+		exit 1
+	fi
+fi
+
+run_test() {
+	# Arguments: test_name python_name python_bin
+	if test -n "$3"; then
+		echo " ==> Executing $1 ($2)"
+		$3 lib/python/asterisk/self_test/${1}.py
+	fi
+}
+
+ALL_TESTS=$(find lib/python/asterisk/self_test -name 'test*.py' -exec basename '{}' .py \;)
+for i in $ALL_TESTS; do
+	run_test $i python3 $PYTHON3
+done

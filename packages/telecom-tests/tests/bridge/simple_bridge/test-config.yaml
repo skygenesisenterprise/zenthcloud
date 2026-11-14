@@ -1,0 +1,367 @@
+testinfo:
+    summary: 'Test that a simple bridge works'
+    description: |
+        'Set up a bridge between two endpoints and ensure that things work
+        as expected.'
+
+test-modules:
+    test-object:
+        config-section: bridge-config
+        typename: 'bridge_test_case.BridgeTestCase'
+    modules:
+        -
+            config-section: 'cdr-config'
+            typename: 'cdr.CDRModule'
+        -
+            config-section: 'cel-config'
+            typename: 'ami.AMIEventModule'
+        -
+            config-section: 'ami-uut-v12'
+            typename: 'ami.AMIEventModule'
+        -
+            config-section: 'cel-13-config'
+            typename: 'ami.AMIEventModule'
+
+bridge-config:
+  test-runs:
+    -
+        originate_channel: 'PJSIP/test_call@uut'
+        hangup: 'alice'
+    -
+        originate_channel: 'PJSIP/test_call@uut'
+        hangup: 'bob'
+
+ami-uut-v12:
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'BridgeCreate'
+        requirements:
+            match:
+                BridgeType: 'basic'
+                BridgeTechnology: 'simple_bridge'
+        count: '2'
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'BridgeEnter'
+                Channel: 'PJSIP/alice-.*'
+        requirements:
+            match:
+                BridgeUniqueid: '.*-.*-.*'
+                BridgeType: 'basic'
+                BridgeTechnology: 'simple_bridge'
+                ChannelState: '6'
+                ChannelStateDesc: 'Up'
+                CallerIDNum: '1234'
+                CallerIDName: 'Alice'
+                ConnectedLineNum: '4321'
+                ConnectedLineName: 'Bob'
+                Context: 'default'
+                Exten: 'test_call'
+                Priority: '1'
+                Uniqueid: '.*'
+        count: '2'
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'BridgeEnter'
+                Channel: 'PJSIP/bob-.*'
+        requirements:
+            match:
+                BridgeUniqueid: '.*-.*-.*'
+                BridgeType: 'basic'
+                BridgeTechnology: 'simple_bridge'
+                ChannelState: '6'
+                ChannelStateDesc: 'Up'
+                ConnectedLineNum: '1234'
+                ConnectedLineName: 'Alice'
+                CallerIDNum: '4321'
+                CallerIDName: 'Bob'
+                Context: 'default'
+                Priority: '1'
+                Uniqueid: '.*'
+        count: '2'
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'BridgeLeave'
+                Channel: 'PJSIP/alice-.*'
+        requirements:
+            match:
+                BridgeUniqueid: '.*-.*-.*'
+                BridgeType: 'basic'
+                BridgeTechnology: 'simple_bridge'
+                ChannelState: '6'
+                ChannelStateDesc: 'Up'
+                CallerIDNum: '1234'
+                CallerIDName: 'Alice'
+                ConnectedLineNum: '4321'
+                ConnectedLineName: 'Bob'
+                Context: 'default'
+                Exten: 'test_call'
+                Priority: '1'
+                Uniqueid: '.*'
+        count: '2'
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'BridgeLeave'
+                Channel: 'PJSIP/bob-.*'
+        requirements:
+            match:
+                BridgeUniqueid: '.*-.*-.*'
+                BridgeType: 'basic'
+                BridgeTechnology: 'simple_bridge'
+                ChannelState: '6'
+                ChannelStateDesc: 'Up'
+                ConnectedLineNum: '1234'
+                ConnectedLineName: 'Alice'
+                CallerIDNum: '4321'
+                CallerIDName: 'Bob'
+                Context: 'default'
+                Priority: '1'
+                Uniqueid: '.*'
+        count: '2'
+    -
+        type: 'headermatch'
+        id: '0'
+        conditions:
+            match:
+                Event: 'BridgeDestroy'
+        requirements:
+            match:
+                BridgeUniqueid: '.*-.*-.*'
+                BridgeType: 'basic'
+                BridgeTechnology: 'simple_bridge'
+        count: '2'
+
+cdr-config:
+    -
+        file: 'Master'
+        lines:
+            -
+                source: '1234'
+                destination: 'test_call'
+                dcontext: 'default'
+                callerid: '"Alice" <1234>'
+                channel: '.*/alice-.*'
+                dchannel: '.*/bob-.*'
+                lastapp: 'Dial'
+                disposition: 'ANSWERED'
+                amaflags: 'DOCUMENTATION'
+            -
+                source: '1234'
+                destination: 'test_call'
+                dcontext: 'default'
+                callerid: '"Alice" <1234>'
+                channel: '.*/alice-.*'
+                dchannel: '.*/bob-.*'
+                lastapp: 'Dial'
+                disposition: 'ANSWERED'
+                amaflags: 'DOCUMENTATION'
+
+cel-config:
+    -
+        type: 'cel'
+        conditions:
+            match:
+                Channel: '.*/bob-.*'
+        requirements:
+            # First iteration
+            -
+                id: 'bob-start-one'
+                partialorder:
+                    after: 'alice-app-start-one'
+                match:
+                    EventName: 'CHAN_START'
+            -
+                id: 'bob-answer-one'
+                partialorder:
+                    before: 'alice-answer-one'
+                    before: 'alice-enter-bridge-one'
+                match:
+                    EventName: 'ANSWER'
+            -
+                id: 'bob-enter-bridge-one'
+                match:
+                    EventName: 'BRIDGE_ENTER'
+            -
+                match:
+                    EventName: 'BRIDGE_EXIT'
+            -
+                match:
+                    EventName: 'HANGUP'
+            -
+                match:
+                    EventName: 'CHAN_END'
+            # Second iteration
+            -
+                id: 'bob-start-two'
+                partialorder:
+                    after: 'alice-app-start-two'
+                match:
+                    EventName: 'CHAN_START'
+            -
+                id: 'bob-answer-two'
+                partialorder:
+                    before: 'alice-answer-two'
+                    before: 'alice-bridge-enter-two'
+                match:
+                    EventName: 'ANSWER'
+            -
+                match:
+                    EventName: 'BRIDGE_ENTER'
+            -
+                match:
+                    EventName: 'BRIDGE_EXIT'
+            -
+                match:
+                    EventName: 'HANGUP'
+            -
+                id: 'bob-end-two'
+                match:
+                    EventName: 'CHAN_END'
+    -
+        type: 'cel'
+        conditions:
+            match:
+                Channel: '.*/alice-.*'
+        requirements:
+            # First iteration
+            -
+                match:
+                    EventName: 'CHAN_START'
+            -
+                id: 'alice-app-start-one'
+                match:
+                    EventName: 'APP_START'
+            -
+                id: 'alice-answer-one'
+                partialorder:
+                    after: 'bob-answer-one'
+                    before: 'bob-enter-bridge-one'
+                match:
+                    EventName: 'ANSWER'
+            -
+                id: 'alice-enter-bridge-one'
+                match:
+                    EventName: 'BRIDGE_ENTER'
+            -
+                match:
+                    EventName: 'BRIDGE_EXIT'
+            -
+                match:
+                    EventName: 'APP_END'
+            -
+                match:
+                    EventName: 'HANGUP'
+            -
+                id: 'alice-end-one'
+                match:
+                    EventName: 'CHAN_END'
+            # Second iteration
+            -
+                id: 'alice-start-two'
+                partialorder:
+                    after: 'alice-end-one'
+                match:
+                    EventName: 'CHAN_START'
+            -
+                id: 'alice-app-start-two'
+                match:
+                    EventName: 'APP_START'
+            -
+                id: 'alice-answer-two'
+                partialorder:
+                    after: 'bob-answer-two'
+                match:
+                    EventName: 'ANSWER'
+            -
+                id: 'alice-bridge-enter-two'
+                match:
+                    EventName: 'BRIDGE_ENTER'
+            -
+                match:
+                    EventName: 'BRIDGE_EXIT'
+            -
+                match:
+                    EventName: 'APP_END'
+            -
+                match:
+                    EventName: 'HANGUP'
+            -
+                match:
+                    EventName: 'CHAN_END'
+
+cel-13-config:
+    -
+        type: 'cel'
+        conditions:
+            match:
+                Channel: '.*/bob-.*'
+        requirements:
+            # First iteration
+            -
+                id: 'bob-enter-bridge-one'
+                match:
+                    EventName: 'BRIDGE_ENTER'
+            -
+                match:
+                    EventName: 'BRIDGE_EXIT'
+            # Second iteration
+            -
+                match:
+                    EventName: 'BRIDGE_ENTER'
+            -
+                match:
+                    EventName: 'BRIDGE_EXIT'
+    -
+        type: 'cel'
+        conditions:
+            match:
+                Channel: '.*/alice-.*'
+        requirements:
+            # First iteration
+            -
+                id: 'alice-enter-bridge-one'
+                match:
+                    EventName: 'BRIDGE_ENTER'
+                    extra:
+                        bridge_technology: 'simple_bridge'
+            -
+                match:
+                    EventName: 'BRIDGE_EXIT'
+                    extra:
+                        bridge_technology: 'simple_bridge'
+            # Second iteration
+            -
+                id: 'alice-bridge-enter-two'
+                match:
+                    EventName: 'BRIDGE_ENTER'
+                    extra:
+                        bridge_technology: 'simple_bridge'
+            -
+                match:
+                    EventName: 'BRIDGE_EXIT'
+                    extra:
+                        bridge_technology: 'simple_bridge'
+
+properties:
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk: 'app_dial'
+        - asterisk: 'chan_pjsip'
+    tags:
+        - bridge

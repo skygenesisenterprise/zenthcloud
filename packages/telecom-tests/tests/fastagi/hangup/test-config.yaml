@@ -1,0 +1,22 @@
+testinfo:
+    summary:     'Test AGI HANGUP command using FastAGI.'
+    description: |
+        'Test AGI HANGUP command using FastAGI. Note: this test requires that
+        CHANNEL STATUS throw an error when it is asked to check the status
+        of a dead channel.'
+
+
+properties:
+    dependencies:
+        - app : 'python'
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk: 'app_dial'
+        - asterisk: 'app_echo'
+        - asterisk: 'app_playback'
+        - asterisk: 'app_senddtmf'
+        - asterisk: 'app_talkdetect'
+        - asterisk: 'func_global'
+        - asterisk: 'res_agi'
+    tags:
+        - AGI

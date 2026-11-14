@@ -1,0 +1,116 @@
+testinfo:
+    summary: 'Test PJSIP Config Wizard Outbound Registration'
+    description: |
+        Tests the PJSIP Config Wizard to make sure the
+        objects created are the same as discretely defined objects.
+
+properties:
+    dependencies:
+        - asterisk : 'res_pjsip'
+        - asterisk : 'res_pjsip_config_wizard'
+        - asterisk : 'res_pjsip_endpoint_identifier_ip'
+        - asterisk : 'res_pjsip_outbound_registration'
+
+    tags:
+        - pjsip
+        - realtime-incompatible
+
+test-modules:
+    test-object:
+        config-section: object-config
+        typename: 'test_case.TestCaseModule'
+    modules:
+        -
+            config-section: 'ami-config'
+            typename: 'pluggable_modules.EventActionModule'
+
+object-config:
+    reactor-timeout: 15
+    connect-ami: True
+
+ami-config:
+    -
+        ami-start:
+        ami-actions:
+            action:
+                Action: 'PJSIPShowRegistrationsOutbound'
+                ActionID: '12345'
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'OutboundRegistrationDetail'
+                    ClientUri: 'sip:testuser@127.0.0.5:41060'
+            requirements:
+                match:
+                    ActionID: '12345'
+                    ObjectType: 'registration'
+                    ObjectName: 'trunk1-reg-*'
+                    OutboundAuth: 'trunk1-oauth'
+                    AuthRejectionPermanent: 'true'
+                    MaxRetries: '10'
+                    ForbiddenRetryInterval: '0'
+                    RetryInterval: '38'
+                    Expiration: '3600'
+                    OutboundProxy: ''
+                    Transport: 'ipv4'
+                    ContactUser: ''
+                    ServerUri: 'sip:127.*'
+                    Status: 'Unregistered|Rejected'
+                    NextReg: '0'
+            count: 1
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'OutboundRegistrationDetail'
+                    ClientUri: 'sip:testuser@127.0.0.6:41070'
+            requirements:
+                match:
+                    ActionID: '12345'
+                    ObjectType: 'registration'
+                    ObjectName: 'trunk1-reg-*'
+                    OutboundAuth: 'trunk1-oauth'
+                    AuthRejectionPermanent: 'true'
+                    MaxRetries: '10'
+                    ForbiddenRetryInterval: '0'
+                    RetryInterval: '38'
+                    Expiration: '3600'
+                    OutboundProxy: ''
+                    Transport: 'ipv4'
+                    ContactUser: ''
+                    ServerUri: 'sip:127.*'
+                    Status: 'Unregistered|Rejected'
+                    NextReg: '0'
+            count: 1
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'AuthDetail'
+            requirements:
+                match:
+                    ActionID: '12345'
+                    ObjectType: 'auth'
+                    ObjectName: 'trunk1-oauth'
+                    AuthType: 'userpass'
+                    NonceLifetime: '32'
+                    Realm: ''
+                    Md5Cred: ''
+                    Password: 'testpass'
+                    Username: 'testuser'
+
+            count: 2
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'OutboundRegistrationDetailComplete'
+            requirements:
+                match:
+                    ActionID: '12345'
+                    EventList: 'Complete'
+                    Registered: '0'
+                    NotRegistered: '2'
+            count: 1
+        stop_test:

@@ -1,0 +1,145 @@
+testinfo:
+    summary: 'Test results of a hangup while in a bridge when doing playback to the channel'
+    description: |
+        * Originate a channel
+        * Create a bridge
+        * Add the channel to the bridge
+        * Playback two audio files to the channel (not the bridge)
+        * Wait for the first to complete
+        * hangup the channel when the second starts
+        * Delete the bridge
+        * Validate all the events
+
+properties:
+    dependencies:
+        - python : autobahn.websocket
+        - python : requests
+        - python : twisted
+        - python : starpy
+        - asterisk : res_ari_channels
+        - asterisk : res_ari_bridges
+        - asterisk : app_echo
+    tags:
+        - ARI
+
+test-modules:
+    test-object:
+        config-section: test-object-config
+        typename: ari.AriOriginateTestObject
+    modules:
+        -   config-section: ari-config
+            typename: ari.WebSocketEventModule
+        -
+            config-section: ari-test-stopper
+            typename: pluggable_modules.EventActionModule
+
+test-object-config:
+    stop-on-end: False
+
+ari-test-stopper:
+    -
+        ari-events:
+            match:
+                type: StasisEnd
+                application: testsuite
+        stop_test:
+
+ari-config:
+    apps: testsuite
+    events:
+        -
+            conditions:
+                match:
+                    type: StasisStart
+                    application: testsuite
+                    channel:
+                        id: 'testsuite-default-id$'
+            count: 1
+            requests:
+                -
+                    instance: 1
+                    method: 'post'
+                    uri: 'bridges'
+                    params:
+                        bridgeId: 'testsuite-bridge'
+                -
+                    instance: 1
+                    method: 'post'
+                    uri: 'channels/testsuite-default-id/answer'
+                -
+                    instance: 1
+                    method: 'post'
+                    uri: 'bridges/testsuite-bridge/addChannel'
+                    params:
+                        channel: 'testsuite-default-id'
+        -
+            conditions:
+                match:
+                    type: ChannelEnteredBridge
+                    application: testsuite
+            count: 1
+            requests:
+                -
+                    instance: 1
+                    method: 'post'
+                    uri: 'channels/testsuite-default-id/play/MyPlaybackId1'
+                    params:
+                        media: 'sound:silence/5'
+                -
+                    instance: 1
+                    method: 'post'
+                    uri: 'channels/testsuite-default-id/play/MyPlaybackId2'
+                    params:
+                        media: 'sound:silence/5'
+        -
+            conditions:
+                match:
+                    type: PlaybackStarted
+                    application: testsuite
+                    playback:
+                        id: 'MyPlaybackId1'
+                        target_uri: 'channel:testsuite-default-id$'
+            count: 1
+        -
+            conditions:
+                match:
+                    type: PlaybackFinished
+                    application: testsuite
+                    playback:
+                        id: 'MyPlaybackId1'
+                        target_uri: 'channel:testsuite-default-id$'
+            count: 1
+        -
+            conditions:
+                match:
+                    type: PlaybackStarted
+                    application: testsuite
+                    playback:
+                        id: 'MyPlaybackId2'
+                        target_uri: 'channel:testsuite-default-id$'
+            requests:
+                -
+                    instance: 1
+                    method: 'delete'
+                    uri: 'channels/testsuite-default-id'
+            count: 1
+        -
+            conditions:
+                match:
+                    type: PlaybackFinished
+                    application: testsuite
+                    playback:
+                        id: 'MyPlaybackId2'
+                        target_uri: 'channel:testsuite-default-id$'
+            count: 1
+        -
+            conditions:
+                match:
+                    type: ChannelLeftBridge
+                    application: testsuite
+            count: 1
+            requests:
+                -
+                    instance: 1
+                    method: 'delete'
+                    uri: 'bridges/testsuite-bridge'

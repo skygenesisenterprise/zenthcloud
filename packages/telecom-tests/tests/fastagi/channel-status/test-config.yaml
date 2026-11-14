@@ -1,0 +1,22 @@
+testinfo:
+    summary:     'Test AGI CHANNEL STATUS command using FastAGI.'
+    description: |
+        "Test AGI CHANNEL STATUS command using FastAGI. Note: This test also 
+        relies on the ANSWER command, so this test can be considered 
+        a test for both commands."
+
+
+properties:
+    dependencies:
+        - app : 'python'
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk: 'app_dial'
+        - asterisk: 'app_echo'
+        - asterisk: 'app_playback'
+        - asterisk: 'app_senddtmf'
+        - asterisk: 'app_talkdetect'
+        - asterisk: 'func_global'
+        - asterisk: 'res_agi'
+    tags:
+        - AGI

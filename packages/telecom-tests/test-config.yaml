@@ -1,0 +1,211 @@
+# This configuration file defines global settings for test execution.
+# The test suite will attempt to apply these settings to all tests that
+# support them.
+
+# Global settings
+global-settings:
+    # The active test configuration.  The value must match a subsequent key
+    # in this file, which defines the global settings to apply to the test execution
+    # run.
+    test-configuration: config-standard
+
+    # The following sequence defines for any test configuration the available pre-
+    # and post-test conditions.  The 'name' field specifies how the test configurations
+    # refer to the pre- and post-test conditions in order to activate them.
+    condition-definitions:
+            -
+                name: 'threads'
+                pre:
+                    typename: 'thread_test_condition.ThreadPreTestCondition'
+                post:
+                    typename: 'thread_test_condition.ThreadPostTestCondition'
+                    related-type: 'thread_test_condition.ThreadPreTestCondition'
+            -
+                name: 'sip-dialogs'
+                pre:
+                    typename: 'sip_dialog_test_condition.SipDialogPreTestCondition'
+                post:
+                    typename: 'sip_dialog_test_condition.SipDialogPostTestCondition'
+            -
+                name: 'locks'
+                pre:
+                    typename: 'lock_test_condition.LockTestCondition'
+                post:
+                    typename: 'lock_test_condition.LockTestCondition'
+            -
+                name: 'file-descriptors'
+                pre:
+                    typename: 'fd_test_condition.FdPreTestCondition'
+                post:
+                    typename: 'fd_test_condition.FdPostTestCondition'
+                    related-type: 'fd_test_condition.FdPreTestCondition'
+            -
+                name: 'channels'
+                pre:
+                    typename: 'channel_test_condition.ChannelTestCondition'
+                post:
+                    typename: 'channel_test_condition.ChannelTestCondition'
+            -
+                name: 'sip-channels'
+                pre:
+                    typename: 'sip_channel_test_condition.SipChannelTestCondition'
+                post:
+                    typename: 'sip_channel_test_condition.SipChannelTestCondition'
+            -
+                name: 'pjsip-channels'
+                pre:
+                    typename: 'pjsip_channel_test_condition.PJSipChannelTestCondition'
+                post:
+                    typename: 'pjsip_channel_test_condition.PJSipChannelTestCondition'
+            -
+                name: 'memory'
+                pre:
+                    typename: 'memory_test_condition.MemoryPreTestCondition'
+                post:
+                    typename: 'memory_test_condition.MemoryPostTestCondition'
+                    related-type: 'memory_test_condition.MemoryPreTestCondition'
+            -
+                name: 'taskprocessors'
+                pre:
+                    typename: 'taskprocessor_test_condition.TaskprocessorPreTestCondition'
+                post:
+                    typename: 'taskprocessor_test_condition.TaskprocessorPostTestCondition'
+                    related-type: 'taskprocessor_test_condition.TaskprocessorPreTestCondition'
+
+# Exclude all long-running tests (greater than one minute)
+config-fast:
+    exclude-tests:
+        - 'authenticate_invalid_password'
+        - 'check_voicemail_callback'
+        - 'check_voicemail_delete'
+        - 'check_voicemail_dialout'
+        - 'check_voicemail_envelope'
+        - 'check_voicemail_new_user'
+        - 'check_voicemail_nominal'
+        - 'check_voicemail_reply'
+        - 'leave_voicemail_external_notification'
+        - 'leave_voicemail_nominal'
+        - 'gateway_g711_t38'
+        - 'gateway_mix1'
+        - 'gateway_mix2'
+        - 'gateway_mix3'
+        - 'gateway_mix4'
+        - 'gateway_native_t38'
+        - 'gateway_native_t38_ced'
+        - 'gateway_no_t38'
+        - 'gateway_t38_g711'
+        - 'gateway_timeout1'
+        - 'gateway_timeout2'
+        - 'gateway_timeout3'
+        - 'gateway_timeout4'
+        - 'gateway_timeout5'
+
+# Include all tests that can run under the installed version of Asterisk.
+# It is included merely for completeness.
+config-standard:
+
+# This section defines how the Test Suite will behave if running against
+# a remote instance of Asterisk. In this particular case, the Test Suite
+# will not spawn or control any local instances of Asterisk; instead, it
+# will use an SSH connection to run CLI commands against remote Asterisk
+# instances and point its AMI/AGI/ARI interfaces at the configured instance(s).
+#
+# Note that the remote system should be in your known_hosts file before
+# running a test.
+#
+# This is useful when you want to use the Test Suite to test Asterisk, but
+# where Asterisk has a particular complex configuration and is part of a
+# larger integrated system.
+#
+# Because of checks for the running Asterisk version, when running against
+# a remote instance of Asterisk, you must specify the version with the -v
+# option to runtests.py
+config-remote:
+    asterisk-instances:
+        -
+            # The host to connect to. This will be used for the SSH
+            # connection, as well as for the various API connections
+            host: '192.168.0.102'
+            # Path to the SSH private key
+            identity: '~/.ssh/id_psa'
+            # Passphrase used for encrypted private keys
+            passphrase: 'imalittleteapot'
+            # SSH username
+            username: 'user'
+            # SSH password
+            passsword: 'supersecret'
+            # AMI credentials.
+            ami:
+                username: 'asterisk'
+                secret: 'asterisk'
+
+# This test enables the pre- and post-test condition checking on all tests
+# that support it.  Individual tests can override the behavior of a pre-
+# and post-test in their test-config.yaml files.
+config-pessimistic:
+    properties:
+        testconditions:
+            - name: 'threads'
+            - name: 'sip-dialogs'
+            - name: 'locks'
+            - name: 'file-descriptors'
+            - name: 'channels'
+            - name: 'sip-channels'
+            - name: 'memory'
+
+# This section demonstrates how to integrate automatic realtime testing into
+# the testsuite. If realtime-config is specified, then Asterisk will replace known
+# configuration file data with realtime equivalents when running tests.
+#
+# The tests assume that the realtime engine being used by Asterisk is ODBC since that
+# is the only realtime backend that has core support.
+#
+# It is strongly recommended that a test-run that uses realtime configuration also
+# specifies a tag so that tests can opt into being run in realtime mode.
+config-realtime:
+    test-modules:
+        modules:
+            -
+                typename: realtime_converter.RealtimeConverter
+                config-section: realtime-config
+
+    realtime-config:
+        # The DBMS being used for the test. This is passed as a URL type to
+        # sqlalchemy. For information on what types of technology can be specified
+        # here, see http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls
+        #
+        # Default: postgresql
+        engine: 'postgresql'
+        # User that should access the database. This is used both by sqlalchemy when
+        # populating the database and by Asterisk when reading configuration from the
+        # database
+        #
+        # Default: asterisk
+        username: 'asterisk'
+        # Password that corresponds to the user accessing the database. This is used
+        # both by sqlalchemy when populating the database and by Asterisk when reading
+        # configuration from the database
+        #
+        # Default: asterisk
+        password: 'asterisk'
+        # Hostname or IP address where the database can be reached. This is used by
+        # sqlalchemy when populating the database.
+        #
+        # Default: localhost
+        host: 'localhost'
+        # Port where the database can be reached. This is used by sqlalchemy when
+        # populating the database.
+        #
+        # Default: 5432
+        port: '5432'
+        # The name of the database where the configuration tables can be found. This is
+        # used by sqlalchemy when populating the database.
+        #
+        # Default: asterisk
+        db: 'asterisk'
+        # The name of the ODBC DSN for Asterisk to use when connecting to the database. This
+        # DSN references an odbc.ini file that tells the database, host, and port for Asterisk
+        # to use when connecting to the database.
+        #
+        # Default: asterisk
+        dsn: 'asterisk'

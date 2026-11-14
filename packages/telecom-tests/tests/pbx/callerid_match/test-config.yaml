@@ -1,0 +1,10 @@
+testinfo:
+    summary:     'Test callerid pattern matching'
+    description: 'Sends calls into test context with various callerid'
+
+properties:
+    dependencies:
+        - python: 'twisted'
+        - python: 'starpy'
+    tags:
+        - dialplan

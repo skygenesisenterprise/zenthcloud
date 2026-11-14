@@ -1,0 +1,20 @@
+testinfo:
+    skip: 'Python3-issues'
+    summary:     'Test func_jitterbuffer'
+    description: |
+        'This test exercises the JITTERBUFFER dialplan function.
+        This includes tests for
+         * Fixed and adaptive jitter buffers
+         * Using the default values versus configured values
+         Each test verifies that the jitter buffer was created,
+         and that content streamed through the jitter buffer is
+         handled appropriately using app_talkdetect'
+
+properties:
+    buildoption: 'TEST_FRAMEWORK'
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk: 'app_talkdetect'
+        - asterisk: 'func_jitterbuffer'
+        - asterisk : 'chan_pjsip'

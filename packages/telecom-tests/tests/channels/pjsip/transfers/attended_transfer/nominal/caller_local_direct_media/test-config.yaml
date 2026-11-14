@@ -1,0 +1,115 @@
+testinfo:
+    skip: 'See ASTERISK-30199 - test unstable'
+    summary: "Caller initiated attended transfer w/Replaces, direct media, hold"
+    description: |
+        "This verifies a caller initiated local attended transfer with
+         REFER/Replaces, hold, and direct media. This uses a specialized packet
+         sniffer module that generates AMI UserEvents that are then checked to
+         determine the result of this test.
+
+         Alice calls bob via extension '101' and bob answers. Upon alice and
+         bob being remotely bridged, alice places bob on hold. Upon bob's
+         remote bridge being torn down, alice places a second call to charlie.
+         Charlie answers and once alice's second call and charlie are remotely
+         bridged, alice transfers bob to charlie via an attended transfer.
+
+         This then checks some data from the REFER and NOTIFY sipfrag. It
+         also ensures MOH is stopped on bob and that bob and charlie are
+         remotely bridged. If a race condition occurs between pjsua putting a
+         call on hold and Asterisk setting up direct media, the resulting 491
+         Request Pending message is examined and hold is attempted again."
+
+
+test-modules:
+    add-test-to-search-path: True
+    test-object:
+        config-section: test-object-config
+        typename: sipp.SIPpTestCase
+    modules:
+        -
+            config-section: ami-config
+            typename: 'pluggable_modules.EventActionModule'
+
+test-object-config:
+    memcheck-delay-stop: 7
+    fail-on-any: True
+    test-iterations:
+        -
+            scenarios:
+                # Pre-register alice and bob and charlie
+                - { 'key-args': {'scenario': 'alice-registers.xml', '-i': '127.0.0.1', '-p': '5061'} }
+                - { 'key-args': {'scenario': 'bob-registers.xml', '-i': '127.0.0.1', '-p': '5062'} }
+                - { 'key-args': {'scenario': 'charlie-registers.xml', '-i': '127.0.0.1', '-p': '5063'} }
+        -
+            scenarios:
+                - { 'coordinated-sender': {'key-args': {'scenario':'referer.xml', '-p':'5061', '-mi': '127.0.0.3', '-sleep': '2'} },
+                    'coordinated-receiver': {'key-args': {'scenario':'referee.xml', '-p':'5071', '-mi': '127.0.0.3'} } }
+                - { 'key-args': {'scenario': 'wait-for-a-call.xml', '-i': '127.0.0.1', '-p': '5062', '-mi': '127.0.0.3'} }
+                - { 'key-args': {'scenario': 'wait-for-a-call-then-send-bye.xml', '-i': '127.0.0.1', '-p': '5063', '-mi': '127.0.0.3'} }
+
+ami-config:
+    # Ensure MOH starts on bob.
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'MusicOnHoldStart'
+                    Channel: 'PJSIP/bob-.*'
+            count: 1
+    # Ensure MOH stops on bob's channel.
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'MusicOnHoldStop'
+                    Channel: 'PJSIP/bob-.*'
+            count: 1
+    # Ensure the transfer is successful.
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'AttendedTransfer'
+                    OrigTransfererChannel: 'PJSIP/alice-.*'
+                    SecondTransfererChannel: 'PJSIP/alice-.*'
+                    TransfereeChannel: 'PJSIP/bob-.*'
+                    TransferTargetChannel: 'PJSIP/charlie-.*'
+                    Result: 'Success'
+            count: 1
+    # Ensure each alice channel leaves the bridge it was in.
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'BridgeLeave'
+                    Channel: 'PJSIP/alice-.*'
+            count: 2
+    # Ensure alice's second call to charlie is hung up.
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'Hangup'
+                    Channel: 'PJSIP/alice-.*'
+                    Exten: '102'
+            count: 1
+    # Ensure alice's first call to bob is hung up.
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'Hangup'
+                    Channel: 'PJSIP/alice-.*'
+                    Exten: '101'
+            count: 1
+
+properties:
+    dependencies:
+        - python : twisted
+        - python : starpy
+        - app: 'sipp'
+        - asterisk : res_pjsip
+    tags:
+        - pjsip
+        - refleaks
+

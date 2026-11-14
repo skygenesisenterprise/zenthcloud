@@ -1,0 +1,121 @@
+#!/usr/bin/env python
+'''
+Copyright (C) 2014, Digium, Inc.
+Scott Griepentrog <sgriepentrog@digium.com>
+
+This program is free software, distributed under the terms of
+the GNU General Public License Version 2.
+'''
+
+from asyncio.log import logger
+from builtins import bytes, len, list, str
+import logging
+import requests
+import json
+import sys
+
+from twisted.internet import reactor
+
+sys.path.append("lib/python")
+from asterisk.test_case import TestCase
+
+LOGGER = logging.getLogger(__name__)
+
+HOST = 'localhost'
+PORT = 8088
+USERNAME = 'testsuite'
+PASSWORD = 'testsuite'
+
+
+def build_url(*args):
+    url = "http://%s:%d/%s" % (HOST, PORT, '/'.join([str(arg) for arg in args]))
+    logger.info("built url %s" % url)
+    return bytes(url, "utf-8")
+
+
+def chunkizer(test):
+    for char in list(test):
+        yield char
+
+
+def large_chunkizer(test):
+    split = len(test) / 2
+    yield test[:split]
+    yield test[split:]
+
+
+class ARIChunkedTransferTest(TestCase):
+    def __init__(self):
+        TestCase.__init__(self)
+        self.passed = False
+        self.create_asterisk()
+
+    def run(self):
+        pass1 = False
+        pass2 = False
+        keystring = "%s:%s" % (USERNAME, PASSWORD)
+        paramstring = {'api_key': keystring}
+        databytes = b"{ b'variable': b'foo', b'value': b'bar'' }"
+        data = {b'variable': b'foo', b'value': b'bar'}
+        datachunks = chunkizer(databytes)
+        try:
+            ''' small chunks '''
+            res = requests.post(
+                build_url('ari', 'asterisk', 'variable'),
+                data=data,
+                headers={b'Content-Type': b'application/json'},
+                auth = (USERNAME, PASSWORD))
+            res.raise_for_status()
+
+            res = requests.get(
+                build_url('ari', 'asterisk', 'variable'),
+                data=b'{ "variable": "foo"}',
+                headers={b'Content-Type': 'application/json', },
+                auth = (USERNAME, PASSWORD))
+            res.raise_for_status()
+
+            result = json.loads(res.text)
+            if result['value'] == 'bar':
+                pass1 = True
+
+            ''' big chunks '''
+            value = 'all work and no play makes jack a dull boy.' * 5
+            res = requests.post(
+                build_url('ari', 'asterisk', 'variable'),
+                data=large_chunkizer('{ "variable": "foo2", "value": "' +
+                                     value + '" }'),
+                headers={b'Content-Type': 'application/json', },
+                auth = (USERNAME, PASSWORD))
+            res.raise_for_status()
+
+            res = requests.get(
+                build_url('ari', 'asterisk', 'variable'),
+                data=b'{ "variable": "foo2"}',
+                headers={b'Content-Type': 'application/json', },
+                auth = (USERNAME, PASSWORD))
+            res.raise_for_status()
+
+            result = json.loads(res.text)
+            if result['value'] == value:
+                pass2 = True
+
+        except:
+            logging.exception("Exception caught during test")
+
+        if pass1 and pass2:
+                self.passed = True
+
+        self.stop_reactor()
+
+
+def main():
+    test = ARIChunkedTransferTest()
+    reactor.run()
+    if test.passed:
+        return 0
+    return 1
+
+if __name__ == "__main__":
+    sys.exit(main() or 0)
+
+# vim: set ts=8 sw=4 sts=4 et ai tw=79:

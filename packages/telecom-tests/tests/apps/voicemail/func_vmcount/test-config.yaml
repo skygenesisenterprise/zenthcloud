@@ -1,0 +1,17 @@
+testinfo:
+    summary: 'Tests execution of VMCOUNT, which utilizes app_voicemail features'
+    description: |
+        This test verifies the ability of the VMCOUNT function to accurately count the
+        voicemails in a users mailbox.  VMCOUNT, for the most part, acts as a pass through
+        to the underlying mechanisms in app_voicemail
+
+properties:
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk: 'app_userevent'
+        - asterisk: 'app_voicemail'
+        - asterisk: 'func_vmcount'
+    tags:
+        - voicemail
+        - apps

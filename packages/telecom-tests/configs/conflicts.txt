@@ -1,0 +1,13 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; this file contains a key/value mapping of conflicts between loadable modules.
+;;
+;; if a test has a dependency found in the comma separated list left of the
+;; equal sign (the key) it will not load the associated comma separated list
+;; of modules found on the right side of the equals (the value).
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+app_voicemail=res_ari_mailboxes.so,res_mwi_external.so,res_mwi_external_ami.so,res_stasis_mailbox.so
+res_ari_mailboxes,res_mwi_external,res_mwi_external_ami,res_stasis_mailbox=app_voicemail.so
+
+chan_rtp=chan_multicast_rtp.so
+chan_multicast_rtp=chan_rtp.so

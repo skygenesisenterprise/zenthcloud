@@ -1,0 +1,177 @@
+testinfo:
+    summary:     'Tests that calls are torn down when no response is received'
+    description: |
+        'Run one instance of Asterisk ("UUT") and originate an outgoing call to
+         SIPp ("Bob"). Bob does not respond to the INVITE. This ensures that
+         Asterisk tears down the calls after the default value of timer B
+         (32 seconds) expires. This is performed using ipv4/ipv6 & udp/tcp.'
+
+test-modules:
+    test-object:
+        config-section: test-object-config
+        typename: 'sipp.SIPpTestCase'
+    modules:
+        -
+            config-section: originator-config-ipv4-udp
+            typename: 'pluggable_modules.Originator'
+        -
+            config-section: originator-config-ipv4-tcp
+            typename: 'pluggable_modules.Originator'
+        -
+            config-section: originator-config-ipv6-udp
+            typename: 'pluggable_modules.Originator'
+        -
+            config-section: originator-config-ipv6-tcp
+            typename: 'pluggable_modules.Originator'
+        -
+            config-section: 'ami-config'
+            typename: 'pluggable_modules.EventActionModule'
+
+test-object-config:
+   reactor-timeout: 70
+   fail-on-any: False
+   test-iterations:
+       -
+           scenarios:
+               - { 'key-args': {'scenario': 'receive.xml', '-i': '127.0.0.1', '-p': '5062', '-s': 'bob-ipv4-udp', '-timeout': '30000'}, 'ordered-args': ['-enable-retrans'] }
+               - { 'key-args': {'scenario': 'receive.xml', '-i': '127.0.0.1', '-p': '5063', '-t': 't1', '-s': 'bob-ipv4-tcp', '-timeout': '30000'} }
+               - { 'target': '[::1]', 'key-args': {'scenario': 'receive.xml', '-i': '[::1]', '-p': '5064', '-s': 'bob-ipv6-udp', '-timeout': '30000'}, 'ordered-args': ['-enable-retrans'] }
+               - { 'target': '[::1]', 'key-args': {'scenario': 'receive.xml', '-i': '[::1]', '-p': '5065', '-t': 't1', '-s': 'bob-ipv6-tcp', '-timeout': '30000'} }
+
+originator-config-ipv4-udp:
+    trigger: 'scenario_start'
+    scenario-trigger-after: '4'
+    ignore-originate-failure: 'yes'
+    id: '0'
+    channel: 'local/bob-ipv4-udp@default'
+    context: 'default'
+    exten: 'answered'
+    priority: '1'
+    timeout: 40
+    async: 'True'
+
+originator-config-ipv4-tcp:
+    trigger: 'scenario_start'
+    scenario-trigger-after: '4'
+    ignore-originate-failure: 'yes'
+    id: '0'
+    channel: 'local/bob-ipv4-tcp@default'
+    context: 'default'
+    exten: 'answered'
+    priority: '1'
+    timeout: 40
+    async: 'True'
+
+originator-config-ipv6-udp:
+    trigger: 'scenario_start'
+    scenario-trigger-after: '4'
+    ignore-originate-failure: 'yes'
+    id: '0'
+    channel: 'local/bob-ipv6-udp@default'
+    context: 'default'
+    exten: 'answered'
+    priority: '1'
+    timeout: 40
+    async: 'True'
+
+originator-config-ipv6-tcp:
+    trigger: 'scenario_start'
+    scenario-trigger-after: '4'
+    ignore-originate-failure: 'yes'
+    id: '0'
+    channel: 'local/bob-ipv6-tcp@default'
+    context: 'default'
+    exten: 'answered'
+    priority: '1'
+    timeout: 40
+    async: 'True'
+
+ami-config:
+    # UUT events
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'UserEvent'
+                    UserEvent: 'AfterDial'
+            count: '4'
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'UserEvent'
+                    UserEvent: 'Answered'
+            count: '0'
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'UserEvent'
+                    UserEvent: 'DIALSTATUS'
+            requirements:
+                match:
+                    Result: 'CHANUNAVAIL'
+            count: '4'
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'SoftHangupRequest'
+                    Channel: 'Local/bob-.*'
+            requirements:
+                match:
+                    Cause: '16'
+            count: '4'
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'HangupRequest'
+                    Channel: 'Local/bob-.*'
+            requirements:
+                match:
+                    Cause: '18'
+            count: '4'
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'Hangup'
+                    Channel: 'PJSIP/bob-.*'
+            requirements:
+                match:
+                    Cause: '18'
+            count: '4'
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'Hangup'
+                    Channel: 'Local/bob-.*;2'
+            requirements:
+                match:
+                    Cause: '18'
+            count: '4'
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'Hangup'
+                    Channel: 'Local/bob-.*;1'
+            requirements:
+                match:
+                    Cause: '18'
+            count: '4'
+            trigger-on-count: True
+        stop_test:
+
+properties:
+    dependencies:
+        - sipp :
+            version : 'v3.3'
+        - asterisk : 'app_dial'
+        - asterisk : 'app_userevent'
+        - asterisk : 'res_pjsip'
+    tags:
+        - pjsip
+

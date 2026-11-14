@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE scenario SYSTEM "sipp.dtd">
+
+<scenario name="Receive INVITE">
+  <Global variables="remote_tag" />
+  <User variables="OB1,OB2,OB3,IB1,IB2,IB3,IB4,IB5,IB6" />
+  <recv request="INVITE" crlf="true">
+      <!-- Save the from tag. We'll need it when we send our BYE -->
+      <action>
+          <ereg regexp=".*(;tag=.*)" search_in="hdr" header="From:" check_it="true" assign_to="1,remote_tag"/>
+     			<ereg regexp="epsilon" search_in="hdr" header="X-custom-OB-1:" check_it="true" assign_to="OB1"/>
+          <ereg regexp="zeta-two" search_in="hdr" header="X-custom-OB-2:" check_it="true" assign_to="OB2"/>
+          <ereg regexp="X-custom-OB-3:.*" search_in="msg" check_it_inverse="true" assign_to="OB3"/>
+          <ereg regexp="alpha" search_in="hdr" header="X-custom-1:" check_it="true" assign_to="IB1"/>
+          <ereg regexp="beta" search_in="hdr" header="X-custom-2:" check_it="true" assign_to="IB2"/>
+          <ereg regexp="X-custom-3:.*" search_in="msg" check_it_inverse="true" assign_to="IB3"/>
+          <ereg regexp="X-custom-4:.*" search_in="msg" check_it_inverse="true" assign_to="IB4"/>
+          <ereg regexp="kappa" search_in="hdr" header="X-custom-5:" check_it="true" assign_to="IB5"/>
+          <ereg regexp="lambda" search_in="hdr" header="X-custom-6:" check_it="true" assign_to="IB6"/>
+      </action>
+  </recv>
+
+  <Reference variables="1","OB1","OB2","IB1","IB2","IB5","IB6" />
+
+  <send>
+    <![CDATA[
+      SIP/2.0 180 Ringing
+      [last_Via:]
+      [last_From:]
+      [last_To:];tag=[pid]SIPpTag01[call_number]
+      [last_Call-ID:]
+      [last_CSeq:]
+      Contact: <sip:[local_ip]:[local_port];transport=[transport]>
+      Content-Length: 0
+    ]]>
+  </send>
+
+  <send retrans="500">
+    <![CDATA[
+      SIP/2.0 200 OK
+      [last_Via:]
+      [last_From:]
+      [last_To:];tag=[pid]SIPpTag01[call_number]
+      [last_Call-ID:]
+      [last_CSeq:]
+      Contact: <sip:[local_ip]:[local_port];transport=[transport]>
+      Content-Type: application/sdp
+      Content-Length: [len]
+
+      v=0
+      o=- 1324901698 1324901698 IN IP[local_ip_type] [local_ip]
+      s=-
+      c=IN IP[media_ip_type] [media_ip]
+      t=0 0
+      m=audio [media_port] RTP/AVP 0 101
+      a=sendrecv
+      a=rtpmap:0 PCMU/8000
+      a=rtpmap:101 telephone-event/8000
+    ]]>
+  </send>
+
+  <recv request="ACK" rtd="true" crlf="true" />
+
+  <pause />
+
+  <send retrans="500">
+    <![CDATA[
+      BYE sip:outbound@[remote_ip]:[remote_port] SIP/2.0
+      Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch]
+      From: <sip:outbound-recv@[local_ip]:[local_port]>;tag=[pid]SIPpTag01[call_number]
+      To: <sip:outbound@[remote_ip]:[remote_port]>[$remote_tag]
+      [last_Call-ID:]
+      CSeq: [cseq] BYE
+      Contact: sip:outbound-recv@[local_ip]:[local_port]
+      Max-Forwards: 70
+      Subject: Test
+      Content-Length: 0
+    ]]>
+  </send>
+
+  <recv response="200" />
+</scenario>

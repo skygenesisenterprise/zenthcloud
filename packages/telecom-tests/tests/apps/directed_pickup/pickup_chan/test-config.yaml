@@ -1,0 +1,17 @@
+testinfo:
+    summary:     'Test PickupChan'
+    description: |
+        'This test verifies functionality of the PickupChan app and its options'
+
+properties:
+    dependencies:
+        - python : 'twisted'
+        - python : 'starpy'
+        - asterisk : 'app_userevent'
+        - asterisk : 'chan_iax2'
+        - asterisk : 'app_dial'
+        - asterisk : 'app_directed_pickup'
+        - asterisk : 'app_echo'
+    tags:
+        - iax2
+        - pickup

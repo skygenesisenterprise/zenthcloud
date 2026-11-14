@@ -1,0 +1,50 @@
+testinfo:
+    summary:     'Test qualify timeout'
+    description: |
+        'With qualify_timeout = 2, and sipp pausing for 6 seconds, send a qualify to a
+        contact and verify that the contact is marked Unavailable.
+
+test-modules:
+    test-object:
+        config-section: test-object-config
+        typename: 'sipp.SIPpTestCase'
+    modules:
+        -
+            config-section: 'ami-config-13.5'
+            typename: 'pluggable_modules.EventActionModule'
+
+test-object-config:
+    fail-on-any: False
+    reactor-timeout: 25
+    stop-after-scenarios: False
+    test-iterations:
+        -
+            scenarios:
+                - { 'key-args': {'scenario': 'options.xml', '-i': '127.0.0.1', '-d': '10000', '-p': '5061'}, 'ordered-args': ['-enable-retrans'] }
+
+ami-config-13.5:
+    -
+        ami-start:
+    -
+        ami-events:
+            conditions:
+                match:
+                    Event: 'ContactStatus'
+                    ContactStatus: 'Unreachable'
+            requirements:
+                match:
+                    URI: 'sip:127.0.0.1:5061'
+            count: '>1'
+        stop_test:
+
+properties:
+    dependencies:
+        - buildoption: 'TEST_FRAMEWORK'
+        - python: 'twisted'
+        - python: 'starpy'
+        - sipp:
+            version: 'v3.3'
+        - asterisk: 'res_pjsip'
+    tags:
+        - pjsip
+

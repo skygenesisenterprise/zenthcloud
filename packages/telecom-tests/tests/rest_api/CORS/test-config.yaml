@@ -1,0 +1,14 @@
+testinfo:
+    summary: Test CORS (Cross-Origin Resource Sharing) with the RESTful API
+    description: |
+        This test attempts several accesses to the RESTful API using various
+        allowable origins.
+
+properties:
+    dependencies:
+        - python : twisted
+        - python : starpy
+        - python : requests
+        - asterisk : res_ari_channels
+    tags:
+        - ARI

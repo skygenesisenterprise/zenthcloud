@@ -1,0 +1,73 @@
+testinfo:
+    summary: 'Ensure that in a basic scenario, notifications are batched when appropriate.'
+    description: |
+        'This runs a basic scenario that does the following:
+         * A SIPp scenario subscribes to a resource list with notification batching enabled.
+         * A state change occurs on one of the resources in the list.
+         * After the batching period, a NOTIFY is sent to the scenario.
+         * The SIPp scenario resubscribes to the resource.
+         * A state change occurs on one of the resources in the list.
+         * After the batching period, a NOTIFY is sent to the scenario.
+         * The SIpp scneario terminates its subscription to the resource.
+         The important part is that the NOTIFYs that Asterisk sends in response to SUBSCRIBE
+         request are not delayed by the batching interval but that the NOTIFYs that Asterisk
+         sends in response to state changes are delayed.'
+
+properties:
+    dependencies:
+        - buildoption: 'TEST_FRAMEWORK'
+        - python: 'twisted'
+        - python: 'starpy'
+        - python: 'lxml'
+        - asterisk: 'res_pjsip'
+        - asterisk: 'res_pjsip_pubsub'
+        - asterisk: 'res_pjsip_mwi'
+        - asterisk: 'res_mwi_external'
+        - asterisk: 'res_mwi_external_ami'
+    tags:
+        - rls
+        - pjsip
+        - mwi_external
+        - refleaks
+
+test-modules:
+    add-test-to-search-path: 'True'
+    add-to-search-path:
+        -
+            'tests/channels/pjsip/subscriptions/rls'
+    test-object:
+        config-section: 'test-case-config'
+        typename: 'sipp.SIPpTestCase'
+    modules:
+        -
+            config-section: 'test-config'
+            typename: 'rls_test.RLSTest'
+        -
+            typename: 'driver.TestDriver'
+
+test-case-config:
+    stop-after-scenarios: True
+    test-iterations:
+        -
+            scenarios:
+                - { 'target': '127.0.0.1:5061', 'key-args': {'scenario': 'subscribe.xml', '-i': '127.0.0.1', '-p': '5062', '-s': 'mail_list'} }
+
+test-config:
+    stop-test-after-notifys: False
+    list-name: 'mail_list'
+    packets:
+        -
+            full-state: True
+            resources: { 'alice': {'type': 'MWI', 'state': 'active', 'voice_message': '0/0 (0/0)', 'messages_waiting': 'no'}, 'bob': {'type': 'MWI', 'state': 'active', 'voice_message': '0/0 (0/0)', 'messages_waiting': 'no'} }
+        -
+            full-state: False
+            resources: { 'alice': {'type': 'MWI', 'state': 'active', 'voice_message': '1/0 (0/0)', 'messages_waiting': 'yes'} }
+        -
+            full-state: True
+            resources: { 'alice': {'type': 'MWI', 'state': 'active', 'voice_message': '1/0 (0/0)', 'messages_waiting': 'yes'}, 'bob': {'type': 'MWI', 'state': 'active', 'voice_message': '0/0 (0/0)', 'messages_waiting': 'no'} }
+        -
+            full-state: False
+            resources: { 'bob': {'type': 'MWI', 'state': 'active', 'voice_message': '1/0 (0/0)', 'messages_waiting': 'yes'} }
+        -
+            full-state: True
+            resources: { 'alice': {'type': 'MWI', 'state': 'terminated', 'voice_message': '1/0 (0/0)', 'messages_waiting': 'yes'}, 'bob': {'type': 'MWI', 'state': 'terminated', 'voice_message': '1/0 (0/0)', 'messages_waiting': 'yes'} }

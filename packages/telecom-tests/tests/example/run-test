@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+echo "Checking to see if Asterisk is installed ..."
+
+if [ ! -f ${AST_TEST_ROOT}/usr/sbin/asterisk ] && [ ! -f /usr/local/sbin/asterisk ] ; then
+	echo "Asterisk not found!"
+	exit 1
+fi
+
+echo "Asterisk found."

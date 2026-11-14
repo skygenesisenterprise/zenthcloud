@@ -1,0 +1,31 @@
+tinfo:
+    summary: 'Test PJSIPQualify AMI Action'
+    description: |
+        This Tests the AMI Action PJSIPQualify in order to make sure
+        the functionality is working properly.
+
+properties:
+    dependencies:
+        - sipp :
+            version : 'v3.0'
+        - asterisk : 'res_pjsip'
+    tags:
+        - pjsip
+
+test-modules:
+    test-object:
+        config-section: sipp-config
+        typename: 'sipp.SIPpAMIActionTestCase'
+
+sipp-config:
+    reactor-timeout: 15
+    fail-on-any: True
+    test-iterations:
+        -
+            scenarios:
+                - { 'key-args': {'scenario': 'options.xml', '-p': '5062'} }
+    ami-action:
+        delay: 1
+        args:
+            Action: "PJSIPQualify"
+            Endpoint: "user1"
