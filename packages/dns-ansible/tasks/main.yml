@@ -1,0 +1,200 @@
+---
+
+- name: Include OS-specific variables (generic to specific)
+  ansible.builtin.include_vars: "{{ role_path }}/vars/{{ item }}"
+  loop:
+    - "{{ ansible_facts.os_family }}.yml"
+    - "{{ ansible_facts.distribution }}.yml"
+    - "{{ ansible_facts.os_family }}-{{ ansible_facts.distribution_major_version }}.yml"
+    - "{{ ansible_facts.distribution }}-{{ ansible_facts.distribution_major_version }}.yml"
+  when:
+    - lookup('ansible.builtin.fileglob', role_path ~ '/vars/' ~ item, wantlist=True) | length > 0
+  tags:
+    - always
+
+# Handlers cannot read role parameters reliably when the role runs more than
+# once in a play; they resolve to the last invocation. Publish them as facts.
+- name: Publish the handler context of this role invocation
+  ansible.builtin.set_fact:
+    _pdns_disable_handlers: "{{ pdns_disable_handlers }}"
+    _pdns_service_name: "{{ pdns_service_name }}"
+    _pdns_service_state: "{{ pdns_service_state }}"
+  tags:
+    - always
+
+- name: Set fact for repo name
+  when: "pdns_install_repo | length > 0"
+  ansible.builtin.set_fact:
+    pdns_auth_repo_name: "{{ pdns_remove_versioned_repo_files | ternary(pdns_install_repo_name, pdns_auth_install_repo['name']) }}"
+    pdns_auth_repo_regex: "{{ pdns_remove_versioned_repo_files | ternary(pdns_remove_versioned_repo_regex, pdns_install_repo_regex) }}"
+  tags:
+    - install
+    - repository
+
+- name: Setup repository
+  ansible.builtin.include_tasks: "repo-{{ ansible_facts.os_family }}.yml"
+  when: "pdns_install_repo | length > 0"
+  tags:
+    - install
+    - repository
+
+- name: Install PowerDNS
+  ansible.builtin.include_tasks: install.yml
+  tags:
+    - install
+
+- name: Get version of PowerDNS instance
+  ansible.builtin.include_tasks: inspect.yml
+  when: pdns_package_state != 'absent'
+  tags:
+    - backend
+    - config
+
+- name: Configure SELinux
+  ansible.builtin.include_tasks: selinux.yml
+  when:
+    - pdns_package_state != 'absent'
+    - pdns_manage_selinux | bool
+    - ansible_facts.selinux is defined
+    - ansible_facts.selinux.status == 'enabled'
+  tags:
+    - selinux
+    - config
+
+- name: Install and configure MySQL database
+  ansible.builtin.include_tasks: database-mysql.yml
+  when:
+    - >-
+      (
+        pdns_package_state != 'absent'
+        and pdns_mysql_manage_database | bool
+      ) or pdns_mysql_packages_state == 'absent'
+    - >-
+      (pdns_backends | dict2items
+      | selectattr('key', 'match', '^gmysql(:.*)?$')
+      | list
+      | length) > 0
+  tags:
+    - install
+    - config
+    - backend
+
+- name: Install and configure PostgreSQL database
+  ansible.builtin.include_tasks: database-pgsql.yml
+  when:
+    - >-
+      (
+        pdns_package_state != 'absent'
+        and pdns_pgsql_manage_database | bool
+      ) or pdns_pgsql_packages_state == 'absent'
+    - >-
+      (pdns_backends | dict2items
+      | selectattr('key', 'match', '^gpgsql(:.*)?$')
+      | list
+      | length) > 0
+  tags:
+    - install
+    - config
+    - backend
+
+- name: Install and configure SQlite database
+  ansible.builtin.include_tasks: database-sqlite3.yml
+  when:
+    - >-
+      (
+        pdns_package_state != 'absent'
+        and pdns_sqlite_databases_locations | length > 0
+      ) or pdns_sqlite_package_state == 'absent'
+  tags:
+    - install
+    - config
+    - backend
+
+- name: Install and configure LMDB database
+  ansible.builtin.include_tasks: database-lmdb.yml
+  when:
+    - pdns_package_state != 'absent'
+    - pdns_lmdb_databases_locations | length > 0
+  tags:
+    - config
+    - backend
+
+- name: Build config file
+  ansible.builtin.include_tasks: configure.yml
+  when: pdns_package_state != 'absent'
+  tags:
+    - config
+
+# The unit is gone by the time the handlers flush, so the reload happens here
+# rather than through the restart handler, and it is not suppressed by
+# pdns_disable_handlers: leaving systemd with drop-ins it still holds but that
+# no longer exist is what this removes.
+#
+# The whole drop-in directory goes here, because the unit it belongs to is being
+# removed. While the package stays installed only the file this role writes is
+# removed, when its override dict is emptied - see tasks/configure.yml.
+- name: Remove the systemd drop-in overrides on uninstall
+  when:
+    - pdns_package_state == 'absent'
+    - ansible_facts.service_mgr == 'systemd'
+  tags:
+    - config
+    - service
+  block:
+    - name: Remove the PowerDNS drop-in override directory (systemd)
+      ansible.builtin.file:
+        path: "/etc/systemd/system/{{ pdns_service_name }}.service.d"
+        state: absent
+      register: _pdns_uninstall_dropin_dir
+
+    - name: Reload systemd after removing the drop-in overrides  # noqa: no-handler
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+      when: _pdns_uninstall_dropin_dir is defined and _pdns_uninstall_dropin_dir.changed
+
+# The handlers flush at the end of the play, so systemd still holds the unit it
+# loaded before this run when this task starts a service that is not running
+# yet: reload first when this run changed a drop-in. An already running service
+# is untouched by the reload, which is what the restart handler is for.
+- name: Start and enable the PowerDNS service (systemd)
+  throttle: 1
+  ansible.builtin.systemd_service:
+    name: "{{ pdns_service_name }}"
+    state: "{{ pdns_service_state }}"
+    enabled: "{{ pdns_service_enabled }}"
+    masked: "{{ pdns_service_masked }}"
+    daemon_reload: >-
+      {{ (_pdns_service_override is defined and _pdns_service_override.changed)
+         or (_pdns_service_override_removed is defined and _pdns_service_override_removed.changed) }}
+  when: pdns_package_state != 'absent'
+  tags:
+    - service
+
+# Provisioning talks to the API of the running server with the configured
+# address, port and API key, so a pending restart has to happen first.
+- name: Flush the handlers before provisioning
+  ansible.builtin.meta: flush_handlers
+  when:
+    - pdns_package_state != 'absent'
+    - pdns_provision | bool
+  tags:
+    - always
+
+# ansible.builtin.uri has no check mode of its own and fails under --check, and
+# there is nothing to simulate here anyway: provisioning talks to a running
+# instance. Every included file repeats the guard on its own outer block, because
+# include_tasks does not pass its condition or its tags to the tasks it includes.
+- name: Provision PowerDNS
+  ansible.builtin.include_tasks: provision.yml
+  when:
+    - pdns_package_state != 'absent'
+    - pdns_provision | bool
+    - not ansible_check_mode
+  tags:
+    - config
+
+- name: Flush the handlers
+  ansible.builtin.meta: flush_handlers
+  when: pdns_flush_handlers | bool
+  tags:
+    - always

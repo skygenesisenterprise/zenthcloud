@@ -1,0 +1,97 @@
+---
+- name: Find repo files using version suffixed sources and list files
+  ansible.builtin.find:
+    paths: /etc/yum.repos.d/
+    patterns: "{{ pdns_auth_repo_regex }}"
+    use_regex: true
+  register: _pdns_auth_version_suffixed_repo_files
+  tags:
+    - install
+    - repository
+
+- name: Remove version suffixed repo files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ _pdns_auth_version_suffixed_repo_files.files | map(attribute='path') | list }}"
+  tags:
+    - install
+    - repository
+
+- name: Install EPEL repositories on RedHat-family distributions
+  when: pdns_install_epel
+  tags:
+    - install
+    - repository
+  block:
+
+    - name: Install epel-release on CentOS
+      ansible.builtin.package:
+        name: epel-release
+        state: present
+      when: ansible_facts.distribution in [ 'CentOS', 'Rocky', 'AlmaLinux' ]
+
+    - name: Install epel-release on RHEL
+      ansible.builtin.package:
+        name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_facts.distribution_major_version }}.noarch.rpm"
+        state: present
+      when: ansible_facts.distribution in [ 'RedHat' ]
+
+    - name: Install epel-release on OracleLinux
+      ansible.builtin.package:
+        name:
+          - "oracle-epel-release-el{{ ansible_facts.distribution_major_version }}"
+        state: present
+
+      when: ansible_facts.distribution in [ 'OracleLinux' ]
+
+- name: Install yum-plugin-priorities
+  ansible.builtin.package:
+    name: yum-plugin-priorities
+    state: present
+  when:
+    - ansible_facts.distribution in [ 'CentOS', 'Rocky', 'AlmaLinux' ]
+    - ansible_facts.distribution_major_version | int < 8
+  tags:
+    - install
+    - repository
+
+- name: Install policycoreutils-python-utils to manage an SELinux environment.
+  ansible.builtin.package:
+    name: policycoreutils-python-utils
+    state: present
+  when:
+    - ansible_facts.distribution in [ 'RedHat', 'CentOS', 'Rocky', 'AlmaLinux', 'OracleLinux' ]
+    - ansible_facts.distribution_major_version | int >= 8
+  tags:
+    - install
+    - repository
+
+- name: Add the PowerDNS YUM Repository
+  ansible.builtin.yum_repository:
+    name: "{{ pdns_auth_repo_name }}"
+    file: "{{ pdns_auth_repo_name }}"
+    description: PowerDNS Authoritative Server
+    baseurl: "{{ pdns_install_repo['yum_repo_baseurl'] }}"
+    gpgkey: "{{ pdns_install_repo['gpg_key'] }}"
+    gpgcheck: true
+    priority: "90"
+    state: present
+  tags:
+    - install
+    - repository
+
+- name: Add the PowerDNS debug symbols YUM Repository
+  ansible.builtin.yum_repository:
+    name: "{{ pdns_auth_repo_name }}-debuginfo"
+    file: "{{ pdns_auth_repo_name }}"
+    description: PowerDNS Authoritative Server - debug symbols
+    baseurl: "{{ pdns_install_repo['yum_debug_symbols_repo_baseurl'] }}"
+    gpgkey: "{{ pdns_install_repo['gpg_key'] }}"
+    gpgcheck: true
+    priority: "90"
+    state: present
+  when: pdns_install_debug_symbols_package
+  tags:
+    - install
+    - repository

@@ -1,0 +1,47 @@
+---
+
+# The name of the PowerDNS Authoritative Server package
+default_pdns_package_name: "pdns-server"
+
+# The name of the PowerDNS Authoritative Server debug package
+default_pdns_debug_symbols_package_name: "pdns-server-dbg"
+
+# Packages needed to install MySQL
+#
+# PyMySQL rather than MySQLdb: the MySQL modules warn that "support of
+# mysqlclient/MySQLdb connector is deprecated", they stop testing it in
+# collection version 4.0.0 and remove the code in 5.0.0. Enterprise Linux and
+# Arch Linux already use PyMySQL here, so this also makes the three families
+# consistent.
+default_pdns_mysql_packages:
+  - default-mysql-client
+  - python3-pymysql
+  - python3-cryptography
+
+# The command used for MySQL/MariaDB schema checks/import
+default_pdns_backends_mysql_cmd: "mariadb"
+default_pdns_mysql_cli_extra_args: ""
+
+# Packages needed to install PostgreSQL
+default_pdns_pgsql_packages:
+  - postgresql-client
+  - python3-psycopg2
+
+# List of PowerDNS Authoritative Server Backends packages on Debian
+default_pdns_backends_packages:
+  bind: pdns-backend-bind
+  geo: pdns-backend-geo
+  geoip: pdns-backend-geoip
+  gmysql: pdns-backend-mysql
+  gpgsql: pdns-backend-pgsql
+  gsqlite3: pdns-backend-sqlite3
+  ldap: pdns-backend-ldap
+  lmdb: pdns-backend-lmdb
+  lua: pdns-backend-lua
+  mydns: pdns-backend-mydns
+  pipe: pdns-backend-pipe
+  remote: pdns-backend-remote
+  tinydns: pdns-backend-tinydns
+
+# The directory where the PowerDNS Authoritative Server configuration is located
+default_pdns_config_dir: "/etc/powerdns"

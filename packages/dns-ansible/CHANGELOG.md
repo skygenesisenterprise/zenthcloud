@@ -1,0 +1,291 @@
+## Unreleased
+
+BUG FIXES:
+- Move the `pdns_backends` default to `default_pdns_backends` and reference it through a template string, the way `pdns_backends_packages` already is. With `hash_behaviour=merge` the plain dict default was merged into the backends declared in inventory, so `launch+=bind` appeared next to the intended backend and, the bind module not being installed, the server failed to start
+- Add `bind` to the Debian backend package map (`pdns-backend-bind`), so a declared bind backend gets its package installed; on repo.powerdns.com 4.8+ and on Debian/Ubuntu it is a separate package
+
+## v1.11.0 (24-08-2026)
+
+NEW FEATURES:
+- Provision autoprimaries (`pdns_provision_autoprimaries`), zones and catalog zones (`pdns_provision_zones`), records (`pdns_provision_records`), zone metadata (`pdns_provision_zone_metadata`), DNSSEC keys (`pdns_provision_cryptokeys`), TSIG keys (`pdns_provision_tsigkeys`), view membership (`pdns_provision_views`) and networks mapped to a view (`pdns_provision_networks`) through the REST API. Every entry is submitted as written, with only the few keys that build the request URL read by the role and removed from the body, so any field the API accepts can be given whether or not the role knows about it. Provisioning adds and removes nothing: an entry that is already there is left alone, and so is anything on the server that no list mentions ([\#276](https://github.com/PowerDNS/pdns-ansible/pull/276))
+- Add `pdns_provision_records` for the records of a zone, one entry per RRset, with `changetype` defaulting to `REPLACE` and `DELETE` removing an RRset. Zone and record lifecycles are separate resources with separate endpoints, so they are declared separately: records inside a `pdns_provision_zones` entry only apply when that zone is created. Each entry is compared against the zone before anything is written, which keeps a repeated converge at `changed=0` and leaves the SOA serial alone - the serial moves on every PATCH the API receives, including one that changes nothing ([\#276](https://github.com/PowerDNS/pdns-ansible/pull/276))
+- Add `pdns_provision_pdnsutils`, a list of commands run through `pdnsutil`, for what the REST API cannot do. Each entry takes `args` and an optional `unless` probe that makes it safe to repeat, since pdnsutil subcommands are not idempotent by themselves. The commands run as `pdns_user` rather than root: pdnsutil writes the backend's own files, and root-owned ones leave the unprivileged server unable to write them, which running the role again does not repair. The invocation carries `--config-name` for an instance, so it cannot silently act on the default one ([\#276](https://github.com/PowerDNS/pdns-ansible/pull/276))
+- Add `pdns_provision_update_existing` to write the declared attributes of a zone entry onto a zone that already exists, and `pdns_provision_prune` to delete autoprimaries, TSIG keys and view members that the lists do not declare and to unmap an undeclared network. Both default to false. Zones and DNSSEC keys are never deleted whatever `pdns_provision_prune` is set to ([\#276](https://github.com/PowerDNS/pdns-ansible/pull/276))
+- Add `pdns_provision_ignore_missing_zone`, default true, so that metadata and DNSSEC keys declared for a zone that does not exist are skipped on the API's 404 instead of failing the play ([\#276](https://github.com/PowerDNS/pdns-ansible/pull/276))
+- Add `pdns_provision_run_once` to provision against the first host of the play instead of once per host, for a cluster whose hosts share one database. Off by default, because with a per-host backend - lmdb, bind, or a local gsqlite3 file - running once would leave every host but the first unprovisioned ([\#276](https://github.com/PowerDNS/pdns-ansible/pull/276))
+
+IMPROVEMENTS:
+- Normalize the values the API canonicalizes before comparing them, so a repeated converge settles. A TSIG key declared with a trailing dot is stored without one, and a zone `kind` of `native` is stored as `Native`; both used to look different on every run, and the TSIG mismatch repeated the create until the API answered 409 and failed the play ([\#276](https://github.com/PowerDNS/pdns-ansible/pull/276))
+
+DEPRECATIONS:
+- `pdns_autoprimaries` is deprecated in favour of `pdns_provision_autoprimaries`, the name the rest of the provisioning family uses, and will be removed in the next release. `pdns_provision_autoprimaries` defaults to `pdns_autoprimaries`, so a playbook that still sets the old name keeps working, and setting the new name takes precedence ([\#276](https://github.com/PowerDNS/pdns-ansible/pull/276))
+
+BREAKING CHANGES:
+- Autoprimaries are no longer removed unless `pdns_provision_prune` is enabled. Provisioning previously deleted any autoprimary that `pdns_autoprimaries` did not list, on every converge; it now follows the same rule as every other provisioned resource and removes nothing by default. Set `pdns_provision_prune: true` to keep the previous behaviour ([\#276](https://github.com/PowerDNS/pdns-ansible/pull/276))
+
+IMPROVEMENTS:
+- Skip provisioning under `--check` instead of failing on it. `ansible.builtin.uri` has no check mode and aborts the play, and there is nothing to simulate, since provisioning talks to a running instance ([\#276](https://github.com/PowerDNS/pdns-ansible/pull/276))
+- Report a provisioning request that ran as changed. `ansible.builtin.uri` reports `changed: false` even for a 201, so a converge that created zones and keys used to claim it had changed nothing ([\#276](https://github.com/PowerDNS/pdns-ansible/pull/276))
+- Submit an autoprimary entry as written, rather than rebuilding the body from `ip`, `nameserver` and `account`, so the remaining fields of the API are reachable. `account` still defaults to an empty string, which the API requires ([\#276](https://github.com/PowerDNS/pdns-ansible/pull/276))
+- Split the provisioning tasks into one file per resource, included from `tasks/provision.yml` ([\#276](https://github.com/PowerDNS/pdns-ansible/pull/276))
+- Cover provisioning in the same run that changes the API key in the `default` scenario's side effect. The key is written to the configuration file, so the instance serves the old one until the restart the role flushes before provisioning; without that flush every request is answered 401 ([\#276](https://github.com/PowerDNS/pdns-ansible/pull/276))
+- Document provisioning in the README ([\#276](https://github.com/PowerDNS/pdns-ansible/pull/276))
+- Read facts through `ansible_facts` instead of the injected top-level `ansible_*` variables. ansible-core deprecated that injection and removes it in 2.24, after which a role reading `ansible_distribution` would break. The Molecule configuration sets `inject_facts_as_vars: false`, so a missed reference fails a test run instead of surfacing on a future ansible-core ([\#274](https://github.com/PowerDNS/pdns-ansible/pull/274))
+- Install `python3-pymysql` instead of `python3-mysqldb` on Debian. The MySQL modules warn that support of the MySQLdb connector is deprecated, they stop testing it in collection version 4.0.0 and remove it in 5.0.0. Enterprise Linux and Arch Linux already used PyMySQL, so the three families now agree ([\#274](https://github.com/PowerDNS/pdns-ansible/pull/274))
+- Cap every collection in `requirements.yml`. A collection that raises its `requires_ansible` in a new major would otherwise break the ansible-core 2.16 leg on the day it is published, without a change in this repository ([\#274](https://github.com/PowerDNS/pdns-ansible/pull/274))
+- Manage the service with `ansible.builtin.systemd_service` instead of `ansible.builtin.systemd`, matching the module name used by the other PowerDNS roles ([\#274](https://github.com/PowerDNS/pdns-ansible/pull/274))
+- Declare Ubuntu 26.04 in the Galaxy metadata ([\#274](https://github.com/PowerDNS/pdns-ansible/pull/274))
+- Rework apt and dnf repo file creation to stop using version suffixed file names which are not cleaned up on version changes ([\#265](https://github.com/PowerDNS/pdns-ansible/pull/265), @l00d3r)
+- Remove version suffixed apt and dnf repo files ([\#265](https://github.com/PowerDNS/pdns-ansible/pull/265), @l00d3r)
+- Document the check mode support (converged hosts only) and the package/service state variables in the README ([\#271](https://github.com/PowerDNS/pdns-ansible/pull/271))
+- Document the handler behaviour and the multi-instance usage in the README ([\#272](https://github.com/PowerDNS/pdns-ansible/pull/272))
+
+NEW FEATURES:
+- Add `pdns_mysql_flavor`, `mysql` or `mariadb`, to choose which collection creates the database and the user of the `gmysql` backend: `ansible.mysql` or `ansible.mariadb`. The default `mysql` keeps the current behaviour for every existing user, because `ansible.mysql` still manages MariaDB, while warning that its support ends in 6.0.0. A MariaDB server can be moved to the collection that keeps supporting it by setting `mariadb`; nothing else about the backend changes ([\#274](https://github.com/PowerDNS/pdns-ansible/pull/274))
+- Add the `pdns_auth_powerdns_repo_51` repository preset for the '5.1.x' release series ([\#274](https://github.com/PowerDNS/pdns-ansible/pull/274))
+- Add support for provisioning autoprimaries through the PowerDNS API ([\#265](https://github.com/PowerDNS/pdns-ansible/pull/268), @nocderechte)
+- Add `pdns_flush_handlers` to run the notified handlers at the end of the role instead of at the end of the play, which is required when the role runs more than once in a play ([\#272](https://github.com/PowerDNS/pdns-ansible/pull/272))
+- Add the `multi-instance` Molecule scenario, which configures two instances in a single play ([\#272](https://github.com/PowerDNS/pdns-ansible/pull/272))
+
+BUG FIXES:
+- Skip the restart under `--skip-tags service`. Ansible filters tasks by tag but not handlers, so a run that deliberately left the service alone still restarted it on a configuration change - and restarting an inactive unit starts it. The handler reads `ansible_skip_tags` and still reloads the units, so a `--tags config` run is unaffected ([\#275](https://github.com/PowerDNS/pdns-ansible/pull/275))
+- Reload the systemd units in the same task that restarts the service. A restart can no longer run against a unit systemd has not read, and a host left with a drop-in systemd never loaded is repaired by the next change instead of restarting onto the stale unit ([\#275](https://github.com/PowerDNS/pdns-ansible/pull/275))
+- Reload the systemd units in the service task when this run changed the drop-in. Handlers flush at the end of the play, so a service that was not running yet was started from the unit systemd had loaded before the run and kept the previous settings until the handler restarted it ([\#275](https://github.com/PowerDNS/pdns-ansible/pull/275))
+- Remove `/etc/systemd/system/<service name>.service.d/override.conf` when `pdns_service_overrides` is empty, and restart the service. The file used to stay on disk, so emptying the variable kept the previous overrides - including the `User` and `Group` of the default value - applied forever. Other drop-ins in that directory are left alone ([\#275](https://github.com/PowerDNS/pdns-ansible/pull/275))
+- Remove the drop-in override directory when `pdns_package_state: absent`, so a later reinstall does not inherit the overrides of the previous installation. The unit it belongs to is being removed, so the whole directory goes; while the package stays installed only the file this role writes is removed ([\#275](https://github.com/PowerDNS/pdns-ansible/pull/275))
+- Tag the tasks inside `inspect.yml`, `selinux.yml`, `database-*.yml` and `provision.yml`, and tag the `Set fact for repo name` task with `install` and `repository`. A dynamic `include_tasks` does not pass its tags to the tasks it includes, so `--tags install` and `--tags repository` failed with `'pdns_auth_repo_regex' is undefined`, and `--tags backend` and `--tags selinux` silently did nothing ([\#271](https://github.com/PowerDNS/pdns-ansible/pull/271))
+- Add `check_mode: false` to the read-only schema location probes of all three SQL backends and to the MySQL empty-database probe, so `--check` no longer reasons about schema state from empty registered results ([\#271](https://github.com/PowerDNS/pdns-ansible/pull/271))
+- Flush the handlers before provisioning when `pdns_provision` is enabled. Provisioning calls the API of the running server with the configured address, port and API key, so rotating the API key or changing the webserver port failed with `401 Unauthorized` or a refused connection while the pending restart was still queued for the end of the play ([\#272](https://github.com/PowerDNS/pdns-ansible/pull/272))
+- Read the service name and state from facts published per role invocation in the restart handlers. Ansible shares handlers between invocations of the same role and resolves role parameters to the last invocation, so a play with more than one instance restarted the wrong service. Correct restarts need `pdns_flush_handlers: true` as well ([\#272](https://github.com/PowerDNS/pdns-ansible/pull/272))
+- Replace `community.mysql.mysql_db` and `community.mysql.mysql_user` with `ansible.mysql.mysql_db` and `ansible.mysql.mysql_user`. `community.mysql` 5.x redirects both modules and removes them in 6.0.0, which also made `ansible-lint` fail on `fqcn[canonical]` ([\#271](https://github.com/PowerDNS/pdns-ansible/pull/271))
+
+BREAKING CHANGES:
+- Require ansible-core 2.16 or later (`min_ansible_version` 2.15 -> 2.16) and drop the 2.15 CI leg. `ansible.mysql` declares `requires_ansible: '>=2.16.0'` ([\#271](https://github.com/PowerDNS/pdns-ansible/pull/271))
+- Manage Enterprise Linux 8 targets with ansible-core 2.16 only. Their system Python is 3.6, which ansible-core 2.20 modules cannot run ([\#274](https://github.com/PowerDNS/pdns-ansible/pull/274))
+
+REMOVED FEATURES:
+- Remove `vars/Ubuntu-20.yml`. Ubuntu 20.04 hosts now fall through to `vars/Debian.yml`, which uses `python3-mysqldb` instead of `python3-pymysql` for the MySQL modules. Ubuntu 20.04 itself stays supported and tested against the 4.9 series, the only one upstream publishes `focal` packages for, with ansible-core 2.16 because of its Python 3.8 ([\#274](https://github.com/PowerDNS/pdns-ansible/pull/274))
+- Stop testing the `auth-master` repository and the 4.8 series, and test the three most recent release series instead. The `pdns_auth_powerdns_repo_master` and `pdns_auth_powerdns_repo_48` presets are unchanged and still usable ([\#274](https://github.com/PowerDNS/pdns-ansible/pull/274))
+- Remove the per-backend tags `mysql`, `pgsql`, `sqlite` and `lmdb`, and rename `db` to `backend`. The role tag vocabulary is now `repository`, `install`, `config`, `service`, `backend` and `selinux`. The removed tags never selected the backend tasks anyway ([\#271](https://github.com/PowerDNS/pdns-ansible/pull/271))
+
+## v1.10.0 (2026-02-24)
+
+NEW FEATURES:
+- Add role-level package state controls for PowerDNS, debug symbols, backend packages, and backend dependency packages:
+  `pdns_package_state`, `pdns_debug_symbols_package_state`, `pdns_backends_packages_state`,
+  `pdns_mysql_packages_state`, `pdns_pgsql_packages_state`, and `pdns_sqlite_package_state`.
+- Add role documentation section describing standard tags (`install`, `config`, `service`, `repository`).
+
+IMPROVEMENTS:
+- Add explicit task/handler tags across installation, repository, configuration, and service flows to support predictable partial runs.
+- Refactor MySQL, PostgreSQL, and SQLite database tasks into clearer management blocks with explicit package-state handling.
+- Improve role behavior when `pdns_package_state: absent` by skipping runtime configuration/service tasks while still allowing dependency/package removal paths.
+- Normalize defaults/documentation booleans (`true`/`false`) and fix minor typos.
+- Include `hostname` in the EL Molecule Docker image package set.
+
+## v1.9.0 (2026-02-23)
+
+NEW FEATURES:
+- Add configuration for flat files ([\#79](https://github.com/PowerDNS/pdns-ansible/pull/79), @sorrowless)
+- Allow installation of custom scripts ([\#210](https://github.com/PowerDNS/pdns-ansible/pull/210), @zerwes)
+- Add support and tests for Rocky Linux and AlmaLinux ([\#209](https://github.com/PowerDNS/pdns-ansible/pull/209), @romeroalx)
+- Add pdns49 repository and CI ([\#213](https://github.com/PowerDNS/pdns-ansible/pull/213), @npmdnl)
+- Add pdns50 repository and CI ([\#247](https://github.com/PowerDNS/pdns-ansible/pull/247), @npmdnl)
+- Add PostgreSQL backend provisioning and Molecule coverage
+  (based in [\#216](https://github.com/PowerDNS/pdns-ansible/pull/216) @dtrdnk,
+  [\#211](https://github.com/PowerDNS/pdns-ansible/pull/211) @Exchizz,
+  [\#104](https://github.com/PowerDNS/pdns-ansible/pull/104) @commonism)
+- Add role-level toggles for PostgreSQL backend bootstrap (`pdns_pgsql_manage_database`, `pdns_pgsql_schema_load`, `pdns_pgsql_schema_on_first_node_only`)
+- Add role-level SELinux control via `pdns_manage_selinux` (enabled by default)
+- Add service masking support via `pdns_service_masked`
+- Add role verbosity toggle (`pdns_verbose`) to control redaction of sensitive SQL task logs
+- Add architecture-aware APT repository settings for Debian-family systems (`pdns_apt_repo_arch` map with `amd64`/`arm64`)
+
+IMPROVEMENTS:
+- Include `mysql_schema_file` in MySQL import task names ([\#119](https://github.com/PowerDNS/pdns-ansible/pull/119), @zerwes)
+- Run MySQL database commands on the first node only for clustered setups ([\#120](https://github.com/PowerDNS/pdns-ansible/pull/120), @zerwes)
+- Remove `nolog` from backend install while still hiding passwords in logs ([\#175](https://github.com/PowerDNS/pdns-ansible/pull/175), @zerwes)
+- Update `pdns-master` CI configuration and replace Ubuntu Bionic with Focal ([\#207](https://github.com/PowerDNS/pdns-ansible/pull/207), @romeroalx)
+- Update SQLite3 backend defaults ([\#220](https://github.com/PowerDNS/pdns-ansible/pull/220), @kleini)
+- Fix CI request handling in GitHub Actions ([\#221](https://github.com/PowerDNS/pdns-ansible/pull/221), @romeroalx)
+- Upgrade CI tests to newer `molecule` and `ansible-core` versions ([\#230](https://github.com/PowerDNS/pdns-ansible/pull/230), @romeroalx)
+- Update examples after variable deprecations ([\#240](https://github.com/PowerDNS/pdns-ansible/pull/240), @henkjan)
+- Add Deb822 APT repository support on Debian-family systems while keeping legacy `apt_repo` compatibility
+  (based on [\#242](https://github.com/PowerDNS/pdns-ansible/pull/242) @l00d3r,
+  [\#246](https://github.com/PowerDNS/pdns-ansible/pull/246) @joshsol1)
+- Bump `ansible-lint` to 6.18.0 ([\#190](https://github.com/PowerDNS/pdns-ansible/pull/190), @dependabot[bot])
+- Rework MySQL bootstrap workflow for MySQL 8.4/9 and MariaDB compatibility:
+  - socket/TCP selection with `pdns_mysql_query_use_socket` and `pdns_mysql_unix_socket`
+  - configurable SQL CLI command/flags via `pdns_backends_mysql_cmd` and `pdns_mysql_cli_extra_args`
+  - auth plugin and password-update controls via `pdns_mysql_auth_plugin` and `pdns_mysql_user_update_password`
+- Improve PostgreSQL bootstrap workflow with socket/TCP selection and first-node-only execution controls
+- Improve SQLite schema detection/import by supporting compressed schemas (`.gz`, `.xz`) and additional distro-specific paths
+- Improve PowerDNS version detection by parsing both stdout/stderr to handle plugin load noise
+- Consolidate OS variable loading order in role (`os_family` -> `distribution` -> major-version overrides)
+- Standardize service management on `ansible.builtin.systemd` and apt cache updates through handlers
+
+REMOVED / EOL:
+- Drop pdns46 repository (EOL) ([\#208](https://github.com/PowerDNS/pdns-ansible/pull/208), @npmdnl)
+- Remove EOL CI targets RHEL 7, Debian 10, and Ubuntu 20.04; add Debian 11, Debian 12, and Ubuntu 24.04 ([\#222](https://github.com/PowerDNS/pdns-ansible/pull/222), @romeroalx, [\#243](https://github.com/PowerDNS/pdns-ansible/pull/243), @romeroalx)
+- Drop pdns47 repository (EOL) ([\#247](https://github.com/PowerDNS/pdns-ansible/pull/247), @npmdnl)
+- Remove deprecated named-schema generation role components (`tasks/database-named.yml`, `templates/named.conf.j2`, `templates/named.zone.j2`)
+- Remove version-specific RedHat vars files in favor of consolidated `vars/RedHat.yml`
+
+BUG FIXES:
+- Reorder `selinux.yml` include to resolve issue #122 ([\#123](https://github.com/PowerDNS/pdns-ansible/pull/123), @pixelrebel)
+- Add missing closing braces ([\#172](https://github.com/PowerDNS/pdns-ansible/pull/172), @arjenz)
+- Fix logging for grant access task ([\#195](https://github.com/PowerDNS/pdns-ansible/pull/195), @zerwes)
+- Fix `pdns-os-repos` CI tests ([\#214](https://github.com/PowerDNS/pdns-ansible/pull/214), @romeroalx)
+- Add missing RHEL-family packages required for SELinux support ([\#218](https://github.com/PowerDNS/pdns-ansible/pull/218), @vhsantos)
+- Move PowerDNS restart logic to handlers ([\#244](https://github.com/PowerDNS/pdns-ansible/pull/244), @valiac)
+- Exclude local `.ansible` cache directory from linting ([\#245](https://github.com/PowerDNS/pdns-ansible/pull/245), @valiac)
+- Fix SELinux DB-connect boolean activation for both MySQL and PostgreSQL backends (including multi-instance backend names)
+- Fix MySQL/MariaDB bootstrap on `caching_sha2_password` by adding required `python*-cryptography` dependencies in role defaults
+
+## v1.8.0 (2023-08-03)
+
+NEW FEATURES:
+- Added pdns48 repository and CI ([\#180](https://github.com/PowerDNS/pdns-ansible/pull/180))
+- Added support for OL9 ([\#145](https://github.com/PowerDNS/pdns-ansible/pull/145))
+- Added pdns47 repository and CI ([\#135](https://github.com/PowerDNS/pdns-ansible/pull/135))
+- Replaced Centos8 with OL8 ([\#133](https://github.com/PowerDNS/pdns-ansible/pull/133))
+- Added pdns46 repository and CI ([\#117](https://github.com/PowerDNS/pdns-ansible/pull/117))
+
+IMPROVEMENTS:
+- Bump versions and various fixes in CI and README.md ([\#179](https://github.com/PowerDNS/pdns-ansible/pull/179)
+- Bump versions in requirements.txt ([\#144](https://github.com/PowerDNS/pdns-ansible/pull/144))
+- Removal of deprecation warning ([\#121](https://github.com/PowerDNS/pdns-ansible/pull/121))
+- Do not restart all servers at once ([\#109](https://github.com/PowerDNS/pdns-ansible/pull/109))
+- Prevent logging of password information ([\#106](https://github.com/PowerDNS/pdns-ansible/pull/106))
+
+REMOVED FEATURES:
+- Drop pdns45, support for Debian 9 ([\#179](https://github.com/PowerDNS/pdns-ansible/pull/179)) EOL
+- Drop Ansible v2.9 - v2.10 - v2.11 from CI  and removed pdns43 and pdns44 ([\#144](https://github.com/PowerDNS/pdns-ansible/pull/144)) for EOL
+
+BUG FIXES:
+- Add MySQL schema path with PowerDNS 4.6 and Rocky Linux 8 with EPEL package installation ([\#114](https://github.com/PowerDNS/pdns-ansible/pull/114))
+
+## v1.7.0 (2021-07-01)
+
+NEW FEATURES:
+- Create directory, set the ownership and permissions for LMDB databases ([\#95](https://github.com/PowerDNS/pdns-ansible/pull/95))
+- Add database schema file detection on the target system with override possibility ([\#100](https://github.com/PowerDNS/pdns-ansible/pull/100))
+- Add 4.4 repositories ([\#91](https://github.com/PowerDNS/pdns-ansible/pull/91))
+
+IMPROVEMENTS:
+- Use systemd task option `daemon_reload` instead of command task ([\#90](https://github.com/PowerDNS/pdns-ansible/pull/90))
+
+REMOVED FEATURES:
+- Drop EL6 support ([\#91](https://github.com/PowerDNS/pdns-ansible/pull/91), [\#94](https://github.com/PowerDNS/pdns-ansible/pull/94))
+- Remove 4.1 and 4.2 repositories ([\#101](https://github.com/PowerDNS/pdns-ansible/pull/101))
+
+BUG FIXES:
+- Re-instate molecule tests ([\#100](https://github.com/PowerDNS/pdns-ansible/pull/100))
+
+## v1.6.1 (2020-10-01)
+
+BUG FIXES:
+- Ensure install does not fail when no overrides are defined ([\#85](https://github.com/PowerDNS/pdns-ansible/pull/85))
+- Ensure that `ExecStart` is overridden, not appended to ([\#86](https://github.com/PowerDNS/pdns-ansible/pull/86))
+
+## v1.6.0 (2020-09-18)
+
+BUG FIXES:
+- Fix path to MySQL schema for Debian 10 ([\#73](https://github.com/PowerDNS/pdns-ansible/pull/73))
+
+IMPROVEMENTS:
+- Allow loading apt key from the ansible server ([\#75](https://github.com/PowerDNS/pdns-ansible/pull/75))
+- CentOS 8 support ([\#74](https://github.com/PowerDNS/pdns-ansible/pull/74), [\#81](https://github.com/PowerDNS/pdns-ansible/pull/81))
+- Archlinux support ([\#76](https://github.com/PowerDNS/pdns-ansible/pull/76))
+- Set the ownership and permissions for config files and databases ([\#82](https://github.com/PowerDNS/pdns-ansible/pull/82))
+- Ensure PowerDNS is started as an unprivileged user by default (in line with PowerDNS 4.3+ behaviour)
+
+## v1.5.0 (2019-12-11)
+
+BUG FIXES:
+- - Fix the restart of the PowerDNS service in case of instances with different `pdns_service_name` being configured in the same play ([\#70](https://github.com/PowerDNS/pdns-ansible/pull/70))
+
+IMPROVEMENTS:
+- Add support to the PowerDNS 4.3.x release ([\#69](https://github.com/PowerDNS/pdns-ansible/pull/69))
+- Add support to the PowerDNS 4.2.x release ([\#61](https://github.com/PowerDNS/pdns-ansible/pull/61))
+- Install missing SQLite packages ([\#69](https://github.com/PowerDNS/pdns-ansible/pull/69))
+- Improved PowerDNS configuration files and directories permissions handling ([\#69](https://github.com/PowerDNS/pdns-ansible/pull/69))
+- Stop interpreting 0 & 1 as no & yes in the PowerDNS configuration template ([\#68](https://github.com/PowerDNS/pdns-ansible/pull/68))
+- Fix some strings comparisons and variable types issues reported by ansible-lint ([\#66](https://github.com/PowerDNS/pdns-ansible/pull/66))
+- Update the CI infrastructure to test the role against the Ansible 2.7, 2.8 and 2.9 releases ([\#67](https://github.com/PowerDNS/pdns-ansible/pull/67))
+- Update the CI infrastructure to stop testing against an EOL Ubuntu release ([\#62](https://github.com/PowerDNS/pdns-ansible/pull/62))
+
+## v1.4.0 (2018-12-02)
+
+BUG FIXES:
+- Fix handling of lists expansion in the PowerDNS configuration template ([\#55](https://github.com/PowerDNS/pdns-ansible/pull/55))
+
+NEW FEATURES:
+- Allow to disable automated restart of the service on configuration changes ([\#54](https://github.com/PowerDNS/pdns-ansible/pull/54))
+
+## v1.3.0 (2018-07-13)
+
+NEW FEATURES:
+- Add support to systemd overrides definitions ([\#53](https://github.com/PowerDNS/pdns-ansible/pull/53))
+
+IMPROVEMENTS:
+- Implement stricter `pdns_config_dir` and `pdns_config['include-dir']` folders permissions ([\#53](https://github.com/PowerDNS/pdns-ansible/pull/53))
+- Improved documentation ([\#52](https://github.com/PowerDNS/pdns-ansible/pull/52))
+- Update the CI infrastructure to use molecule 2.14.0 ([\#51](https://github.com/PowerDNS/pdns-ansible/pull/51))
+- Improved test coverage of systemd support ([\#49](https://github.com/PowerDNS/pdns-ansible/pull/49))
+
+## v1.2.1 (2018-04-06)
+
+BUG FIXES:
+- Fix the name of the PostgreSQL backend on RHEL
+
+## v1.2.0 (2018-04-05)
+
+NEW FEATURES:
+- Allow to install PowerDNS debug packages ([\#47](https://github.com/PowerDNS/pdns-ansible/pull/47))
+
+IMPROVEMENTS:
+- Improved test-suite ([\#47](https://github.com/PowerDNS/pdns-ansible/pull/47))
+- Improved config files permissions handling ([\#45](https://github.com/PowerDNS/pdns-ansible/pull/45))
+
+## v1.1.0 (2017-11-25)
+
+IMPROVEMENTS:
+- Implement testing against multiple ansible versions with tox ([\#43](https://github.com/PowerDNS/pdns-ansible/pull/43))
+
+BUG FIXES:
+- Fixed test cases and hardened file permissions ([\#42](https://github.com/PowerDNS/pdns-ansible/pull/42))
+
+## v1.0.0 (2017-10-27)
+
+IMPROVEMENTS:
+- Implement sorting of the configuration options ([\#35](https://github.com/PowerDNS/pdns-ansible/pull/35), [\#37](https://github.com/PowerDNS/pdns-ansible/pull/37))
+
+BUG FIXES:
+- Fix the logic handling the different packages versions for Debian and CentOS ([\#43](https://github.com/PowerDNS/pdns-ansible/pull/43))
+- Fix a few typos in the README file ([\#39](https://github.com/PowerDNS/pdns-ansible/pull/39))
+
+## v0.1.1 (2017-10-10)
+
+NEW FEATURES:
+- Allow to pin the PowerDNS version to be installed ([\#34](https://github.com/PowerDNS/pdns-ansible/pull/34))
+
+IMPROVEMENTS:
+- Add support to the PowerDNS 4.1.x release ([\#33](https://github.com/PowerDNS/pdns-ansible/pull/33))
+- Fixing minor linter issues with whitespace ([\#30](https://github.com/PowerDNS/pdns-ansible/pull/30))
+
+BUG FIXES:
+- Fix Ubuntu APT repositories pinning ([\#32](https://github.com/PowerDNS/pdns-ansible/pull/32))
+
+## v0.1.0 (2017-06-27)
+
+Initial release.
+
+NEW FEATURES:
+- MySQL and SQLite databases initialization
+- PowerDNS installation and configuration with RHEL/CentOS and Debian/Ubuntu support
+- Continuous testing with TravisCI
+
+IMPROVEMENTS:
+- Switch to the MIT License ([\#27](https://github.com/PowerDNS/pdns-ansible/pull/27))
+- Overall role refactoring ([\#28](https://github.com/PowerDNS/pdns-ansible/pull/28))

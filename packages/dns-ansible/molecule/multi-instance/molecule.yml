@@ -1,0 +1,19 @@
+---
+
+##
+# Two instances of the templated pdns@.service unit configured in a single play,
+# which is what makes the role flush its handlers per invocation.
+##
+
+scenario:
+  name: multi-instance
+
+provisioner:
+  playbooks:
+    # create is also named here so a bare `molecule` invocation, which does not
+    # load molecule/config.yml, still reaches the platform guard in create.yml.
+    create: ../resources/create.yml
+    side_effect: side_effect.yml
+
+verifier:
+  directory: ../resources/tests/multi-instance
