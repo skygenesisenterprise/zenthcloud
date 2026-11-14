@@ -768,11 +768,17 @@ export type NavigationWorkspace = {
 export type WorkspaceNavigation = PanelNavigation & {
 	workspace: NavigationWorkspace;
 	/**
-	 * Sections owned by the active workspace. They are additive: the global tree
-	 * above stays intact, so moving between workspaces never removes the
-	 * organization-wide navigation.
+	 * Sections owned by the active workspace. They are additive by default: the
+	 * global tree above stays intact, so moving between workspaces never removes
+	 * the organization-wide navigation.
 	 */
 	contextual: PanelNavigationSection[];
+	/**
+	 * When true the workspace owns the whole sidebar: the global tree is not
+	 * rendered above it. Domain resources use this so a domain page shows the
+	 * domain's own destinations instead of mixing them with the account tree.
+	 */
+	exclusive: boolean;
 };
 
 const GLOBAL_WORKSPACE: NavigationWorkspace = {
@@ -1256,6 +1262,7 @@ export function resolveWorkspaceNavigation(opts: {
 					: undefined,
 			},
 			contextual: [section],
+			exclusive: resource.kind === "domain",
 		};
 	}
 
@@ -1271,6 +1278,7 @@ export function resolveWorkspaceNavigation(opts: {
 			contextual: INFRASTRUCTURE_WORKSPACE.sections.map((section) =>
 				buildWorkspaceSection(opts.organizationId, section),
 			),
+			exclusive: false,
 		};
 	}
 
@@ -1292,6 +1300,7 @@ export function resolveWorkspaceNavigation(opts: {
 			contextual: domain.sections.map((section) =>
 				buildWorkspaceSection(opts.organizationId, section),
 			),
+			exclusive: false,
 		};
 	}
 
@@ -1299,5 +1308,6 @@ export function resolveWorkspaceNavigation(opts: {
 		...navigation,
 		workspace: GLOBAL_WORKSPACE,
 		contextual: [],
+		exclusive: false,
 	};
 }

@@ -21,7 +21,7 @@ export interface PanelHeaderUser {
 }
 
 /** Public support entry point, shared with the rest of the product. */
-const SUPPORT_URL = "https://zenthcloud.com/community";
+export const SUPPORT_URL = "https://zenthcloud.com/community";
 
 /**
  * Quiet text action of the top bar. The header carries secondary,

@@ -566,6 +566,16 @@ describe("panel workspace navigation", () => {
 		).toContain(`/${ORG}/domains/dom_123/dns`);
 	});
 
+	it("makes a domain workspace exclusive so it replaces the global tree", () => {
+		const domain = resolve(`/${ORG}/domains/dom_123`);
+		const product = resolve(`/${ORG}/ai/agents`);
+		const organization = resolve(`/${ORG}/home`);
+
+		expect(domain.exclusive).toBe(true);
+		expect(product.exclusive).toBe(false);
+		expect(organization.exclusive).toBe(false);
+	});
+
 	it("does not treat a workspace root as a resource", () => {
 		const resolved = resolve(`/${ORG}/domains`);
 

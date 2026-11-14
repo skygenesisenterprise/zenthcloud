@@ -1,13 +1,20 @@
 "use client";
 
 import {
+	BellIcon,
+	CaretLeftIcon,
 	CaretRightIcon,
 	CaretUpDownIcon,
 	MagnifyingGlassIcon,
+	QuestionIcon,
+	SparkleIcon,
+	StarIcon,
+	UserIcon,
 } from "@phosphor-icons/react";
 import {
 	Button,
 	DropdownMenu,
+	LinkButton,
 	LinkProvider,
 	Sidebar,
 	ZenthcloudLogo,
@@ -16,6 +23,7 @@ import { Check, X } from "lucide-react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { resolveAppEnvironment } from "@/lib/product";
 import { cn } from "@/lib/utils";
@@ -23,15 +31,15 @@ import { api } from "@/utils/api";
 import { useWorkspaceLicense } from "@/utils/hooks/use-workspace-license";
 import {
 	ACCOUNT_DESTINATIONS,
-	findActiveNavigation,
 	isNavigationHrefActive,
 	isNavigationItemActive,
 	organizationPath,
 	type PanelNavigationItem,
 	resolveWorkspaceNavigation,
 } from "./navigation";
+
 import { useOrganization } from "./organization-context";
-import { PanelHeader, type PanelHeaderUser } from "./panel-header";
+import { PanelHeader, type PanelHeaderUser, SUPPORT_URL } from "./panel-header";
 
 /** Bridges the design system's links to the Next.js router. */
 const PanelLink = forwardRef<
@@ -237,10 +245,12 @@ export function PanelShell({
 	title,
 	user,
 	children,
+	domainName,
 }: {
 	title: string;
 	user: PanelHeaderUser;
 	children: React.ReactNode;
+	domainName?: string;
 }) {
 	const router = useRouter();
 	const { organization, activation, syncSession } = useOrganization();
@@ -261,6 +271,11 @@ export function PanelShell({
 		await router.push(organizationPath(organizationId, "home"));
 	};
 
+	const signOut = async () => {
+		await authClient.signOut();
+		await router.push("/");
+	};
+
 	const environment =
 		resolveAppEnvironment({ product, isCloud }) === "cloud" ? "cloud" : "self";
 
@@ -277,9 +292,11 @@ export function PanelShell({
 		license,
 		pathname,
 	});
-	const active = findActiveNavigation(navigation, { pathname });
 
 	const sections = useMemo(() => {
+		// An exclusive workspace owns the sidebar: its own destinations replace
+		// the organization-wide tree instead of being appended below it.
+		if (navigation.exclusive) return [];
 		const needle = query.trim().toLowerCase();
 		if (!needle) return navigation.sections;
 		return navigation.sections
@@ -290,7 +307,7 @@ export function PanelShell({
 				),
 			}))
 			.filter((section) => section.items.length > 0);
-	}, [navigation.sections, query]);
+	}, [navigation.exclusive, navigation.sections, query]);
 
 	const contextual = useMemo(() => {
 		const needle = query.trim().toLowerCase();
@@ -433,22 +450,43 @@ export function PanelShell({
 							</Sidebar.Group>
 						))}
 
+						{navigation.workspace.parent && (
+							<div className="group-data-[state=collapsed]/sidebar:hidden">
+								<Sidebar.Menu>
+									<Sidebar.MenuItem>
+										<Sidebar.MenuButton
+											href={navigation.workspace.parent.href}
+											icon={CaretLeftIcon}
+											tooltip={`Retour à ${navigation.workspace.parent.label}`}
+											className="cursor-pointer"
+										>
+											<span className="min-w-0 flex-1 truncate">
+												Retour à {navigation.workspace.parent.label}
+											</span>
+										</Sidebar.MenuButton>
+									</Sidebar.MenuItem>
+								</Sidebar.Menu>
+							</div>
+						)}
+
 						{/* Contextual workspace: the URL decides which product surface is
-						    active, and its own sections are appended below the global tree
-						    instead of replacing it. */}
+						    active. It is appended below the global tree, or replaces it
+						    when the workspace is exclusive (as for a domain page). */}
 						{contextual.length > 0 && (
 							<>
-								<div className="mt-3 border-t border-zenth-line px-2 pt-3 pb-1 group-data-[state=collapsed]/sidebar:hidden">
-									<p className="text-[11px] font-semibold tracking-wider text-zenth-subtle uppercase">
-										Espace de travail
-									</p>
-									<p className="min-w-0 truncate text-sm font-medium text-zenth-default">
-										{navigation.workspace.label}
-									</p>
-								</div>
+								{!navigation.exclusive && (
+									<div className="mt-3 border-t border-zenth-line px-2 pt-3 pb-1 group-data-[state=collapsed]/sidebar:hidden">
+										<p className="text-[11px] font-semibold tracking-wider text-zenth-subtle uppercase">
+											Espace de travail
+										</p>
+										<p className="min-w-0 truncate text-sm font-medium text-zenth-default">
+											{navigation.workspace.label}
+										</p>
+									</div>
+								)}
 								{contextual.map((section) => (
 									<Sidebar.Group key={section.id}>
-										{section.label && (
+										{!navigation.exclusive && section.label && (
 											<Sidebar.GroupLabel>{section.label}</Sidebar.GroupLabel>
 										)}
 										<Sidebar.Menu>
@@ -543,6 +581,126 @@ export function PanelShell({
 						</div>
 					</Sidebar.Footer>
 				</Sidebar>
+
+				{/* When a domain page passes its name we render a top bar that mirrors
+					    the reference dashboard: the domain selector (name + Free chip +
+					    chevron + star) sits between the account header and the page
+					    header, with the global search and the session utilities to its
+					    right. */}
+				{domainName && (
+					<div className="flex shrink-0 border-b border-zenth-line bg-zenth-base px-4">
+						<div className="mx-auto flex max-w-6xl items-center gap-3">
+							{/* Domain selector: name, Free chip, chevron and star. */}
+							<div className="flex items-center gap-2 rounded-md border bg-background px-2 py-1">
+								<span className="text-sm font-medium">{domainName}</span>
+								<span className="rounded-md border bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">
+									Free
+								</span>
+								<CaretUpDownIcon
+									aria-hidden
+									className="size-3.5 text-muted-foreground"
+								/>
+								<StarIcon
+									aria-hidden
+									className="size-3.5 text-muted-foreground"
+								/>
+							</div>
+
+							{/* Global search. */}
+							<div className="flex items-center gap-2 rounded-md border bg-zenth-base px-2.5 py-1.5 focus-within:ring-2 focus-within:ring-zenth-brand focus-within:ring-inset">
+								<MagnifyingGlassIcon
+									aria-hidden
+									className="size-3.5 shrink-0 text-zenth-subtle"
+								/>
+								<input
+									type="search"
+									value={query}
+									onChange={(event) => setQuery(event.target.value)}
+									placeholder="Recherche rapide…"
+									aria-label="Recherche rapide dans la navigation"
+									className="min-w-0 flex-1 bg-transparent text-sm text-zenth-default outline-none placeholder:text-zenth-subtle"
+								/>
+								<kbd className="shrink-0 rounded border border-zenth-line px-1 text-[10px] text-zenth-subtle">
+									Ctrl K
+								</kbd>
+							</div>
+
+							{/* Session utilities. */}
+							<div className="ml-auto flex items-center gap-0.5">
+								<Button
+									variant="ghost"
+									icon={<SparkleIcon className="size-4.5" aria-hidden />}
+									aria-label="Demander à l'IA"
+									className="gap-2 px-2 text-[13px] font-normal"
+									onClick={() => toast.info("L'assistant IA arrive bientôt")}
+								>
+									<span className="hidden sm:inline">Demander à l&apos;IA</span>
+								</Button>
+
+								<LinkButton
+									href={SUPPORT_URL}
+									external
+									variant="ghost"
+									icon={<QuestionIcon className="size-4.5" aria-hidden />}
+									aria-label="Assistance"
+									className="gap-2 px-2 text-[13px] font-normal"
+								>
+									<span className="hidden sm:inline">Assistance</span>
+								</LinkButton>
+
+								<Button
+									variant="ghost"
+									shape="square"
+									icon={<BellIcon className="size-4.5" aria-hidden />}
+									aria-label="Notifications"
+									onClick={() =>
+										toast.info("Le centre de notifications arrive bientôt")
+									}
+								/>
+
+								<DropdownMenu>
+									<DropdownMenu.Trigger>
+										<Button
+											variant="ghost"
+											shape="square"
+											icon={<UserIcon className="size-4.5" aria-hidden />}
+											aria-label="Compte et paramètres de session"
+											className="ml-1"
+										/>
+									</DropdownMenu.Trigger>
+									<DropdownMenu.Content
+										align="end"
+										sideOffset={6}
+										className="w-56 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+									>
+										<DropdownMenu.Group>
+											<DropdownMenu.Label className="truncate text-xs font-normal text-zenth-subtle">
+												{user.email}
+											</DropdownMenu.Label>
+										</DropdownMenu.Group>
+										<DropdownMenu.Separator />
+										<DropdownMenu.Item
+											onClick={() => toast.info("Le profil arrive bientôt")}
+										>
+											Profil
+										</DropdownMenu.Item>
+										<DropdownMenu.Item
+											onClick={() =>
+												toast.info("La facturation arrive bientôt")
+											}
+										>
+											Facturation
+										</DropdownMenu.Item>
+										<DropdownMenu.Separator />
+										<DropdownMenu.Item variant="danger" onClick={signOut}>
+											Se déconnecter
+										</DropdownMenu.Item>
+									</DropdownMenu.Content>
+								</DropdownMenu>
+							</div>
+						</div>
+					</div>
+				)}
 
 				<main
 					className={cn(
