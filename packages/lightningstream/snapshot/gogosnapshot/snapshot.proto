@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package gogosnapshot;
+
+import "gogo.proto";
+option (gogoproto.goproto_unrecognized_all) = false;
+option (gogoproto.goproto_sizecache_all) = false;
+option (gogoproto.equal_all) = true;
+option (gogoproto.verbose_equal_all) = true;
+option (gogoproto.populate_all) = true;
+
+message KV {
+  bytes key = 1;
+  bytes value = 2;
+  fixed64 timestampNano = 3;
+  uint32 flags = 4; // only flags in header.FlagSyncMask are allowed here (added in v2)
+  // TODO: add this in the future
+  //bytes extraHeader = 5;
+}
+
+message DBI {
+  string name = 1;
+  repeated KV entries = 2 [(gogoproto.nullable) = false];  // Must be in LMDB sort order!
+  uint64 flags = 3; // DBI flags stored in the LMDB (from v3 always the original DBI, not shadow)
+  string transform = 4; // Transformation applied, e.g. "dupsort_hack_v1" (added in v3)
+}
+
+message Snapshot {
+  uint32 formatVersion = 1; // version of this snapshot format
+  uint32 compatVersion = 4; // compatible with clients that support at least this version
+
+  message Meta {
+    string generationID = 1;
+    string instanceID = 2;
+    string hostname = 3;
+    int64 lmdbTxnID = 4;
+    fixed64 timestampNano = 5; // UNIX timestamp in nanoseconds (year 1678-2262)
+    reserved 6; // was: string previousSnapshot = 6;
+    string databaseName = 7;
+    int64 fromLmdbTxnID = 8; // exclusive
+  }
+  Meta meta = 2 [(gogoproto.nullable) = false];
+
+  repeated DBI databases = 3;
+}

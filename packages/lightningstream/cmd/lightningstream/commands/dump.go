@@ -1,0 +1,90 @@
+package commands
+
+import (
+	"fmt"
+	"sort"
+	"strings"
+
+	"github.com/PowerDNS/lightningstream/config"
+	"github.com/PowerDNS/lightningstream/lmdbenv"
+	"github.com/PowerDNS/lightningstream/syncer"
+	"github.com/PowerDNS/lightningstream/utils"
+	"github.com/PowerDNS/lmdb-go/lmdb"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+)
+
+var (
+	dumpName string
+	dumpHide bool
+)
+
+func init() {
+	rootCmd.AddCommand(dumpCmd)
+	dumpCmd.Flags().BoolVarP(&dumpHide, "hide", "H", false, "Hide private lightningstream databases")
+	dumpCmd.Flags().StringVarP(&dumpName, "name", "n", "", "Only dump given database name")
+}
+
+func dumpLMDB(name string, lc config.LMDB) error {
+	env, err := lmdbenv.NewWithOptions(lc.Path, lc.Options)
+	if err != nil {
+		return err
+	}
+	defer env.Close()
+
+	err = env.View(func(txn *lmdb.Txn) error {
+		names, err := lmdbenv.ReadDBINames(txn)
+		if err != nil {
+			return err
+		}
+
+		for _, dbiName := range names {
+			if dumpHide && strings.HasPrefix(dbiName, syncer.SyncDBIPrefix) {
+				continue
+			}
+
+			fmt.Printf("\n### %s :: %s\n\n", name, dbiName)
+
+			dbi, err := txn.OpenDBI(dbiName, 0)
+			if err != nil {
+				return fmt.Errorf("dbi %s: %w", dbiName, err)
+			}
+
+			items, err := lmdbenv.ReadDBI(txn, dbi)
+			if err != nil {
+				return fmt.Errorf("read dbi %s: %w", dbiName, err)
+			}
+
+			for _, item := range items {
+				fmt.Printf("%s  =  %s\n",
+					utils.DisplayASCII(item.Key),
+					utils.DisplayASCII(item.Val),
+				)
+			}
+		}
+
+		return nil
+	})
+	return err
+}
+
+var dumpCmd = &cobra.Command{
+	Use:   "dump",
+	Short: "Dump LMDB contents",
+	Run: func(cmd *cobra.Command, args []string) {
+		var names []string
+		for name := range conf.LMDBs {
+			if dumpName != "" && dumpName != name {
+				continue
+			}
+			names = append(names, name)
+		}
+		sort.Strings(names)
+		for _, name := range names {
+			lc := conf.LMDBs[name]
+			if err := dumpLMDB(name, lc); err != nil {
+				logrus.WithError(err).WithField("db", name).Error("LMDB dump error")
+			}
+		}
+	},
+}

@@ -1,0 +1,70 @@
+package commands
+
+import (
+	"fmt"
+	"sort"
+	"strings"
+
+	"github.com/PowerDNS/lightningstream/config"
+	"github.com/PowerDNS/lightningstream/lmdbenv"
+	"github.com/PowerDNS/lightningstream/syncer"
+	"github.com/PowerDNS/lmdb-go/lmdb"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+)
+
+func init() {
+	rootCmd.AddCommand(dropshadowCmd)
+}
+
+func dropshadowForLMDB(name string, lc config.LMDB) error {
+	env, err := lmdbenv.NewWithOptions(lc.Path, lc.Options)
+	if err != nil {
+		return err
+	}
+	defer env.Close()
+
+	err = env.Update(func(txn *lmdb.Txn) error {
+		names, err := lmdbenv.ReadDBINames(txn)
+		if err != nil {
+			return err
+		}
+
+		for _, dbiName := range names {
+			if !strings.HasPrefix(dbiName, syncer.SyncDBIPrefix) {
+				continue
+			}
+
+			dbi, err := txn.OpenDBI(dbiName, 0)
+			if err != nil {
+				return fmt.Errorf("dbi %s: %w", dbiName, err)
+			}
+
+			logrus.WithField("db", dbiName).Info("Dropping")
+			err = txn.Drop(dbi, true)
+			if err != nil {
+				return fmt.Errorf("dbi drop %s: %w", dbiName, err)
+			}
+		}
+		return nil
+	})
+	return err
+}
+
+var dropshadowCmd = &cobra.Command{
+	Use:   "drop-shadow",
+	Short: "Drop all shadow dbs and other sync metadata. This can potentially cause data loss.",
+	Run: func(cmd *cobra.Command, args []string) {
+		var names []string
+		for name := range conf.LMDBs {
+			names = append(names, name)
+		}
+		sort.Strings(names)
+		for _, name := range names {
+			lc := conf.LMDBs[name]
+			if err := dropshadowForLMDB(name, lc); err != nil {
+				logrus.WithError(err).WithField("db", name).Error("LMDB drop-shadow error")
+			}
+		}
+	},
+}

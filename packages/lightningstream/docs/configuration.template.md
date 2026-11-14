@@ -1,0 +1,332 @@
+# Configuration
+
+The individual configuration statements are documented in the example YAML configuration file, which is reproduced
+at the end of this chapter.
+
+The configuration consists of the following general sections:
+
+- Instance name
+- Storage backend for snapshots
+- LMDBs to sync
+- Sync parameter tweaking
+- Monitoring and logging
+
+Lightning Stream allows environment variables in the YAML configuration files, e.g.:
+
+```yaml
+instance: ${LS_INSTANCE}
+```
+
+
+## Instance name
+
+!!! warning
+
+    Every instance **MUST** have a unique instance name.
+
+Every instance MUST have a unique instance name. This instance name is included in the snapshot filenames
+and used to ignore its own snapshots.
+
+If you accidentally configure two instances with the same name, the following will happen:
+
+- They will not see each other's changes, unless a third instance happens to include them in a snapshot.
+- Other instances may not see all the changes from both instances, because they will only load the most
+  recent snapshot for this instance name.
+
+The instance name can either be configured in the config file:
+
+```yaml
+instance: unique-instance-name-here
+```
+
+Or it can be passed using the `--instance` commandline flag, but then you must be careful to always pass it.
+
+As mentioned above, environment variables can be used in the YAML configuration, which can be
+useful for the instance name:
+
+```yaml
+instance: ${LS_INSTANCE}
+```
+
+The instance name should be composed of safe characters, like ASCII letters, numbers, dashes and dots.
+It MUST NOT contain underscores, slashes, spaces or other special characters. Basically, what is allowed
+in a hostname is safe.
+
+
+## Storage
+
+Lightning Stream uses our [Simpleblob](https://github.com/PowerDNS/simpleblob) library to support different storage
+backends. It supports S3, local filesystem and in-memory backends. The local filesystem backend would require something
+like NFS to be considered useful for production.
+
+
+### S3 backend
+
+This backend stores snapshots in S3 (or S3 API compatible) storage. We have tested it against Amazon AWS S3 and MinIO
+servers.
+
+MinIO example for testing without TLS:
+
+```yaml
+storage:
+  type: s3
+  options:
+    access_key: minioadmin
+    secret_key: minioadmin
+    region: us-east-1
+    bucket: lightningstream
+    endpoint_url: http://localhost:9000
+```
+
+Currently available options:
+
+| Option | Type | Summary |
+|--------|------|---------|
+| access_key | string | S3 access key |
+| secret_key | string | S3 secret key |
+| access_key_file | string | File location to read S3 access key from |
+| secret_key_file | string | File location to read S3 secret key from |
+| secrets_refresh_interval | duration | Time between secrets retrieval from file (default: "15s", minimum "1s") |
+| region | string | S3 region (default: "us-east-1") |
+| bucket | string | Name of S3 bucket |
+| storage_class | string | S3 Storage Class |
+| create_bucket | bool | Create bucket if it does not exist |
+| global_prefix | string | Transparently apply a global prefix to all names before storage |
+| prefix_folders | bool | Show folders in list instead of recursively listing them (deprecated) |
+| hide_folders | string | Hide all keys that end in `/` |
+| endpoint_url | string | Use a custom endpoint URL, e.g. for Minio |
+| disable_send_content_md5 | bool | Disable sending the Content-MD5 header |
+| num_minio_threads | string | Number of threads Minio uses for its workers |
+| tls | [tlsconfig.Config](https://github.com/PowerDNS/go-tlsconfig) | TLS configuration |
+| init_timeout | duration | Time allowed for initialisation (default: "20s") |
+| idle_conn_timeout | duration | Time before closing an idle connection (default: "90s") |
+| max_idle_conns | integer | Maximum number of idle connections (default: 100) |
+| dial_timeout | duration | Time allowed for connection setup (default: "10s") |
+| dial_keep_alive | duration | Interval between keep-alive probes (default: "10s") |
+| tls_handshake_timeout | duration | Time allowed for TLS handshake (default: "10s") |
+| client_timeout | duration | Time allowed for any full request (default: "15m") |
+| use_update_marker | bool | Reduce LIST commands, see link below |
+| update_marker_force_list_interval | duration | See link below for details |
+
+The `use_update_marker` option can reduce your AWS S3 bill in small personal
+deployments without compromises on update latency, as GET operations are 10 times cheaper
+than LIST operations, but it cannot reliably be used when you are using a bucket mirror
+mechanism to keep multiple buckets in sync.
+
+You can find all the available S3 options with full descriptions in Simpleblob's S3 backend [Options
+struct](https://pkg.go.dev/github.com/PowerDNS/simpleblob/backends/s3#Options).
+
+
+### Azure Blob Storage backend
+
+Lightning Stream supports Azure Blob Storage as another production-ready backend.
+
+#### Authentication
+
+The backend supports two authentication methods:
+
+**Shared key** (static credentials): set `use_shared_key: true` and provide `account_name` and
+`account_key`. This is appropriate for Azurite (local emulator) and simple deployments.
+
+```yaml
+storage:
+  type: azure
+  options:
+    account_name: myaccount
+    account_key: myaccountkey==
+    use_shared_key: true
+    container: lightningstream
+    create_container: true
+```
+
+**DefaultAzureCredential** (recommended for production): omit `use_shared_key` (or set it to
+`false`) and do not set `account_key`. The Azure SDK will automatically try, in order: environment
+variables, workload identity, managed identity, Azure CLI, and other ambient credentials.
+
+To use a service principal, set these environment variables before starting Lightning Stream:
+
+```
+AZURE_CLIENT_ID=<your-client-id>
+AZURE_TENANT_ID=<your-tenant-id>
+AZURE_CLIENT_SECRET=<your-client-secret>
+```
+
+```yaml
+storage:
+  type: azure
+  options:
+    container: lightningstream
+    endpoint_url: https://myaccount.blob.core.windows.net/
+    create_container: true
+```
+
+!!! warning
+
+    `DefaultAzureCredential` requires an HTTPS endpoint. It will refuse to authenticate over plain
+    HTTP. Use `use_shared_key: true` whenever your endpoint is HTTP (e.g. Azurite without TLS).
+
+#### Local testing with Azurite
+
+[Azurite](https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite) is
+Microsoft's open-source Azure Storage emulator. A working example is included in the
+`docker-compose.yml` in this repository.
+
+```yaml
+storage:
+  type: azure
+  options:
+    account_name: devstoreaccount1
+    account_key: <base64-key-matching-AZURITE_ACCOUNTS>
+    use_shared_key: true
+    container: lightningstream
+    endpoint_url: http://azurite:10000/devstoreaccount1
+    create_container: true
+```
+
+#### Available options
+
+| Option | Type | Summary |
+|--------|------|---------|
+| account_name | string | Azure storage account name (required for shared key auth) |
+| account_key | string | Azure storage account key (required for shared key auth) |
+| account_key_file | string | File location to read Azure storage account key from |
+| secrets_refresh_interval | duration | Time between secrets retrieval from file (default: "15s", minimum "1s") |
+| use_shared_key | bool | Use shared key authentication; if false, `DefaultAzureCredential` is used |
+| container | string | Azure blob container name (required) |
+| create_container | bool | Create the container if it does not exist |
+| endpoint_url | string | Custom endpoint URL (defaults to `https://<account_name>.blob.core.windows.net`) |
+| global_prefix | string | Transparently apply a global prefix to all blob names |
+| tls | [tlsconfig.Config](https://github.com/PowerDNS/go-tlsconfig) | TLS configuration |
+| init_timeout | duration | Time allowed for initialisation (default: "20s") |
+| idle_conn_timeout | duration | Time before closing an idle connection (default: "90s") |
+| max_idle_conns | integer | Maximum number of idle connections (default: 100) |
+| dial_timeout | duration | Time allowed for connection setup (default: "10s") |
+| dial_keep_alive | duration | Interval between keep-alive probes (default: "10s") |
+| tls_handshake_timeout | duration | Time allowed for TLS handshake (default: "10s") |
+| client_timeout | duration | Time allowed for any full request (default: "15m") |
+| use_update_marker | bool | Reduce LIST commands, see link below |
+| update_marker_force_list_interval | duration | See link below for details |
+| concurrency | int | Max concurrent block uploads per Store call (default: 1) |
+
+The `use_update_marker` option can significantly reduce Azure Storage costs. GET operations are
+approximately 12x cheaper than LIST on Azure. When enabled, Lightning Stream writes a small marker
+blob on every store or delete, and uses it to skip LIST calls when nothing has changed.
+
+!!! warning
+
+    `use_update_marker` must be enabled or disabled consistently across **all** instances sharing
+    the same container. It also cannot be used reliably when the container itself is replicated
+    in an active-active fashion between data centres.
+
+You can find all available options with full descriptions in Simpleblob's Azure backend [Options
+struct](https://pkg.go.dev/github.com/PowerDNS/simpleblob/backends/azure#Options).
+
+
+### Filesystem backend
+
+For local testing, it can be convenient to store all snapshots in a local directory instead of
+an S3 bucket:
+
+```yaml
+storage:
+  type: fs
+  options:
+    root_path: /tmp/snapshots
+```
+
+
+## LMDBs
+
+The `lmdbs` section configures which LMDB databases to sync. One Lightning Stream instance can sync more than
+one LMDB database. Snapshots are independent per LMDB.
+
+Every database requires a name that must not change over time,
+as it is included in the snapshot filenames. The name should only contain
+lowercase letters and must not contains spaces, underscores or special characters.
+If you are bad at naming things and have only one database, "main" is a good safe choice.
+
+A basic example for an LMDB with a [native schema](schema-native.md):
+
+```yaml
+lmdbs:
+  main:
+    path: /path/to/lmdb/dir
+    options:
+      create: true
+      map_size: 1GB
+    schema_tracks_changes: true  # native schema
+```
+
+The `path` option is the file path to the LMDB directory, or file if `options.no_subdir` is `true`.
+
+Some commonly use LMDB options:
+
+- `no_subdir`: the LMDB does not use a directory, but a plain file (required for PowerDNS).
+- `create`: create the LMDB if it does not exist yet.
+- `map_size`: the LMDB map size, which is the maximum size the LMDB can grow to.
+
+The `schema_tracks_changes` indicates if the LMDB supported the [native Lightning Stream schema](schema-native.md).
+
+If the LMDB does not support a native schema, you can use a configuration like this:
+
+```yaml
+lmdbs:
+  main:
+    path: /path/to/lmdb/dir
+    options:
+      create: true
+      map_size: 1GB
+    schema_tracks_changes: false  # non-native schema
+    dupsort_hack: true            # set this if the non-native LMDB uses MDB_DUPSORT
+```
+
+Do read [the section on schemas](schema.md) to evaluate if the used LMDB schema is safe for syncing.
+
+
+## Sync parameters
+
+There are some top-level sync parameters that you may want to tweak for specific deployments, but
+these do have sensible defaults, so you probably do not need to.
+
+The ones you are more likely to want to change are:
+
+- `storage_poll_interval`: how often to list the storage to check for new snapshots (default: 1s)
+- `storage_force_snapshot_interval`: how often to force a snapshot when there are no changes (default: 4h)
+- `lmdb_poll_interval`: how often to check the LMDB for changes (default: 1s). This check is very fast by itself, but
+  you may want to adjust it if you want to limit the rate at which an instance can generate snapshots when there
+  are frequent updates.
+
+More can be found with descriptions in the example configuration.
+
+
+## Monitoring and logging
+
+Example of a few logging and monitoring options:
+
+```yaml
+# HTTP server with status page, Prometheus metrics and /healthz endpoint.
+# Disabled by default.
+http:
+  address: ":8500"    # listen on port 8500 on all interfaces
+
+# Logging configuration
+log:
+   level: info        # "debug", "info", "warning", "error", "fatal"
+   format: human      # "human", "logfmt", "json"
+   timestamp: short   # "short", "disable", "full"
+
+health:
+   # ... see example config
+```
+
+
+## Example config with comments
+
+This example configuration assumes a PowerDNS Authoritative server setup with native schemas, but it
+explains every available option.
+See [Lightning Stream with PowerDNS Authoritative server](pdns-auth-installation.md) for details on
+Lightning Stream integration with PowerDNS Authoritative server.
+
+```yaml
+__CONFIG__
+```
