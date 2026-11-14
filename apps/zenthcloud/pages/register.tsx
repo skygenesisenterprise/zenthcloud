@@ -208,9 +208,8 @@ export default function RegisterPage({ IS_CLOUD }: Props) {
 			const { error } = await authClient.signUp.email({
 				email: values.email,
 				password: values.password,
-				// better-auth requires a display name; the organization step can
-				// complete the profile later.
 				name: values.email,
+				lastName: "",
 			});
 
 			if (error) {
@@ -312,7 +311,6 @@ export default function RegisterPage({ IS_CLOUD }: Props) {
 
 				<Field
 					label="Password"
-					description="Use at least 8 characters."
 					error={
 						passwordError ? { message: passwordError, match: true } : undefined
 					}

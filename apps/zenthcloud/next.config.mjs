@@ -39,6 +39,7 @@ const webpackAliases = {
 // the config is refused by that bundler, so it is only exported for the webpack
 // build (`next build --webpack`, the production image).
 const useTurbopack = Boolean(process.env.TURBOPACK);
+const isDevelopment = process.env.NODE_ENV === "development";
 
 /** @type {import("next").NextConfig} */
 const nextConfig = {
@@ -59,6 +60,12 @@ const nextConfig = {
 	 * name is already the default.
 	 */
 	async rewrites() {
+		// The API service uses this same Next config for its own route handlers.
+		// Applying the client proxy there rewrites `/api/*` to `http://api:4000`
+		// again, so every request loops back into the same server until the socket
+		// is reset (and `/api/health` never answers).
+		if (process.env.ZENTHCLOUD_ROLE === "api") return [];
+
 		const apiInternalUrl = process.env.API_INTERNAL_URL ?? "http://api:4000";
 		return {
 			beforeFiles: [
@@ -102,15 +109,6 @@ const nextConfig = {
 				],
 			},
 			{
-				source: "/_next/static/development/:path*",
-				headers: [
-					{
-						key: "Content-Type",
-						value: "application/javascript; charset=utf-8",
-					},
-				],
-			},
-			{
 				// Apply security headers to all routes
 				source: "/:path*",
 				headers: [
@@ -122,10 +120,19 @@ const nextConfig = {
 						key: "Content-Security-Policy",
 						value: "frame-ancestors 'none'",
 					},
-					{
-						key: "X-Content-Type-Options",
-						value: "nosniff",
-					},
+					// Next 16 still serves the Turbopack dev middleware manifest
+					// (`_clientMiddlewareManifest.js`) as `application/json` even
+					// though the browser loads it through a <script> tag. `nosniff`
+					// makes the browser reject it, so it is production-only until
+					// the upstream fix ships (vercel/next.js#92180).
+					...(!isDevelopment
+						? [
+								{
+									key: "X-Content-Type-Options",
+									value: "nosniff",
+								},
+							]
+						: []),
 					{
 						key: "Referrer-Policy",
 						value: "strict-origin-when-cross-origin",
