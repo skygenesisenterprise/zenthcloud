@@ -657,17 +657,17 @@ describe("workspace navigation", () => {
 	});
 
 	it("prefers the resource workspace inside a product domain", () => {
-		const resolved = resolve(`/${ORG}/domains/dom_123/dns`);
+		const resolved = resolve(`/${ORG}/domains/dom_123/dns/records`);
 
 		expect(resolved.workspace.kind).toBe("resource");
 		expect(resolved.workspace.id).toBe("resource:domain:dom_123");
 		expect(resolved.workspace.parent).toMatchObject({
 			id: "domain:domains",
 			label: "Domains",
-			href: `/${ORG}/domains`,
+			href: `/${ORG}/domains/overview`,
 		});
 		expect(resolved.contextual[0]?.items[0]).toMatchObject({
-			label: "Overview",
+			label: "Vue d’ensemble",
 			href: `/${ORG}/domains/dom_123`,
 			implemented: true,
 		});
@@ -677,6 +677,37 @@ describe("workspace navigation", () => {
 		expect(resolved.contextual[0]?.items.map((item) => item.label)).toContain(
 			"DNS",
 		);
+		const dns = resolved.contextual[0]?.items.find(
+			(item) => item.label === "DNS",
+		);
+		expect(dns?.expandable).toBe(true);
+		expect(dns?.children).toEqual([
+			{
+				id: "domain.dns.records",
+				label: "Enregistrements",
+				href: `/${ORG}/domains/dom_123/dns/records`,
+				implemented: true,
+			},
+			{
+				id: "domain.dns.analytics",
+				label: "Analytics",
+				href: `/${ORG}/domains/dom_123/dns/analytics`,
+				implemented: false,
+			},
+			{
+				id: "domain.dns.settings",
+				label: "Paramètres",
+				href: `/${ORG}/domains/dom_123/dns/settings`,
+				implemented: false,
+			},
+		]);
+		expect(
+			dns?.children?.some((child) =>
+				isNavigationChildActive(dns, child, {
+					pathname: `/${ORG}/domains/dom_123/dns/records`,
+				}),
+			),
+		).toBe(true);
 	});
 
 	it("detects an infrastructure resource under the infrastructure umbrella", () => {
@@ -709,26 +740,32 @@ describe("panel contextual navigation", () => {
 		expect(section.id).toBe("contextual-domain");
 		expect(section.label).toBe("Domain");
 		expect(section.items.map((item) => item.label)).toEqual([
-			"Overview",
-			"Activity",
-			"AI Crawler Management",
-			"Agent Readiness",
+			"Vue d’ensemble",
+			"Historique",
+			"AI Crawl Control",
+			"Préparation pour agents",
 			"Analytics",
 			"Observability",
 			"DNS",
-			"Email",
+			"E-mail",
 			"SSL/TLS",
-			"Security",
+			"Sécurité",
 			"Access",
-			"Performance",
+			"Speed",
 			"Caching",
-			"Runtime Routes",
-			"Rules",
-			"Error Pages",
-			"Network",
-			"Traffic",
+			"Routes Workers",
+			"Règles",
+			"Pages d’erreur",
+			"Réseau",
+			"Trafic",
 			"Web3",
 		]);
+		expect(section.items.find((item) => item.label === "Observability")?.badge).toBe(
+			"Nouveau",
+		);
+		expect(section.items.find((item) => item.label === "Pages d’erreur")?.badge).toBe(
+			"Nouveau",
+		);
 		expect(section.items.map((item) => item.href)).toEqual([
 			`/${ORG}/domains/dom_123`,
 			`/${ORG}/domains/dom_123/history`,
@@ -880,7 +917,7 @@ describe("panel workspace navigation", () => {
 		expect(resolved.workspace.kind).toBe("resource");
 		expect(resolved.workspace.id).toBe("resource:domain:dom_123");
 		expect(resolved.workspace.parent?.id).toBe("domain:domains");
-		expect(resolved.workspace.parent?.href).toBe(`/${ORG}/domains`);
+		expect(resolved.workspace.parent?.href).toBe(`/${ORG}/domains/overview`);
 		expect(resolved.contextual).toHaveLength(1);
 		expect(
 			resolved.contextual[0]?.items.map((item) => item.href),
@@ -895,6 +932,30 @@ describe("panel workspace navigation", () => {
 		expect(domain.exclusive).toBe(true);
 		expect(product.exclusive).toBe(false);
 		expect(organization.exclusive).toBe(false);
+	});
+
+	it("activates the overview and returns to the Domains list for a domain name", () => {
+		const pathname = `/${ORG}/domains/example.com`;
+		const resolved = resolve(pathname);
+		const overview = resolved.contextual[0]?.items[0];
+
+		expect(resolved.workspace).toMatchObject({
+			kind: "resource",
+			id: "resource:domain:example.com",
+			parent: {
+				id: "domain:domains",
+				label: "Domains",
+				href: `/${ORG}/domains/overview`,
+			},
+		});
+		expect(overview).toMatchObject({
+			label: "Vue d’ensemble",
+			href: pathname,
+			implemented: true,
+		});
+		expect(
+			overview && isNavigationItemActive(overview, { pathname }),
+		).toBe(true);
 	});
 
 	it("does not treat a workspace root as a resource", () => {

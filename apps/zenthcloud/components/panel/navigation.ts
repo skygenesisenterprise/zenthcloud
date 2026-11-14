@@ -809,6 +809,8 @@ type ContextualDestination = {
 	label: string;
 	path: string;
 	implemented?: boolean;
+	badge?: string;
+	children?: readonly ContextualDestination[];
 };
 
 /**
@@ -829,25 +831,33 @@ const RESOURCE_WORKSPACES: Record<
 		label: "Domain",
 		basePath: "domains",
 		match: ["domains"],
-		// Keep the domain capabilities in a stable order. Only the overview route
-		// is implemented today; the remaining entries stay disabled.
+		// Keep the domain capabilities in the same order as the domain dashboard.
+		// Routes without a page stay disabled until their screens are implemented.
 		items: [
 			{ label: "Overview", path: "", implemented: true },
-			{ label: "Activity", path: "history" },
-			{ label: "AI Crawler Management", path: "ai-crawl-control" },
+			{ label: "History", path: "history" },
+			{ label: "AI Crawl Control", path: "ai-crawl-control" },
 			{ label: "Agent Readiness", path: "agent-readiness" },
 			{ label: "Analytics", path: "analytics" },
-			{ label: "Observability", path: "observability" },
-			{ label: "DNS", path: "dns" },
+			{ label: "Observability", path: "observability", badge: "New" },
+			{
+				label: "DNS",
+				path: "dns",
+				children: [
+					{ label: "Records", path: "dns/records", implemented: true },
+					{ label: "Analytics", path: "dns/analytics" },
+					{ label: "Settings", path: "dns/settings" },
+				],
+			},
 			{ label: "Email", path: "email" },
 			{ label: "SSL/TLS", path: "ssl" },
 			{ label: "Security", path: "security" },
 			{ label: "Access", path: "access" },
-			{ label: "Performance", path: "speed" },
+			{ label: "Speed", path: "speed" },
 			{ label: "Caching", path: "caching" },
-			{ label: "Runtime Routes", path: "workers-routes" },
+			{ label: "Workers Routes", path: "workers-routes" },
 			{ label: "Rules", path: "rules" },
-			{ label: "Error Pages", path: "error-pages" },
+			{ label: "Error Pages", path: "error-pages", badge: "New" },
 			{ label: "Network", path: "network" },
 			{ label: "Traffic", path: "traffic" },
 			{ label: "Web3", path: "web3" },
@@ -946,17 +956,27 @@ export function resolveContextualNavigation(opts: {
 		id: `contextual-${opts.resource.kind}`,
 		label: definition.label,
 		items: definition.items.map((destination) => ({
-			id: `${opts.resource.kind}.${destination.path}`,
+			id: `${opts.resource.kind}.${destination.path.replaceAll("/", ".")}`,
 			label: destination.label,
 			href: organizationPath(
 				opts.organizationId,
 				[...base, destination.path].filter(Boolean).join("/"),
 			),
-			icon: buildContextualIcon(destination.path),
+			icon: buildContextualIcon(
+				destination.path.split("/").at(-1) ?? destination.path,
+			),
 			implemented: destination.implemented === true,
-			// Contextual entries open a leaf page; they have no sub-tree of
-			// their own, so they carry no disclosure chevron.
-			expandable: false,
+			badge: destination.badge,
+			expandable: Boolean(destination.children?.length),
+			children: destination.children?.map((child) => ({
+				id: `${opts.resource.kind}.${child.path.replaceAll("/", ".")}`,
+				label: child.label,
+				href: organizationPath(
+					opts.organizationId,
+					[...base, child.path].filter(Boolean).join("/"),
+				),
+				implemented: child.implemented === true,
+			})),
 			minLicense: undefined,
 		})),
 	};
@@ -967,19 +987,36 @@ function buildContextualIcon(path: string): Icon {
 		case "dns":
 		case "records":
 			return GlobeIcon;
-		case "ssl":
+		case "ai-crawl-control":
+			return BugIcon;
+		case "agent-readiness":
 			return ShieldCheckIcon;
+		case "ssl":
+		case "security":
+			return ShieldCheckIcon;
+		case "email":
+			return BroadcastIcon;
 		case "analytics":
 		case "monitoring":
 		case "traffic":
 		case "observability":
 			return PulseIcon;
+		case "speed":
+			return GaugeIcon;
+		case "caching":
+			return DatabaseIcon;
+		case "workers-routes":
+			return CodeIcon;
+		case "rules":
+			return GearIcon;
+		case "error-pages":
+			return ShieldWarningIcon;
+		case "web3":
+			return GlobeIcon;
 		case "network":
 			return NetworkIcon;
 		case "history":
 			return ClockCounterClockwiseIcon;
-		case "security":
-			return ShieldCheckIcon;
 		case "storage":
 			return DatabaseIcon;
 		case "activity":
@@ -1062,6 +1099,8 @@ type DomainWorkspaceDefinition = {
 	id: string;
 	label: string;
 	basePath: string;
+	/** Destination used when returning to this workspace from a resource. */
+	parentPath?: string;
 	sections: readonly WorkspaceSectionDefinition[];
 };
 
@@ -1183,6 +1222,7 @@ const DOMAIN_WORKSPACES: readonly DomainWorkspaceDefinition[] = [
 		id: "domains",
 		label: "Domains",
 		basePath: "domains",
+		parentPath: "domains/overview",
 		// The Domains pages live in the global tree, under the Domains
 		// sub-menu: the workspace keeps the URL context but repeats none of
 		// them in a contextual section.
@@ -1820,11 +1860,13 @@ export function resolveWorkspaceNavigation(opts: {
 				id: `domain:${workspace.id}`,
 				label: workspace.label,
 				basePath: workspace.basePath,
+				parentPath: workspace.parentPath ?? workspace.basePath,
 			})),
 			{
 				id: INFRASTRUCTURE_WORKSPACE.id,
 				label: INFRASTRUCTURE_WORKSPACE.label,
 				basePath: INFRASTRUCTURE_WORKSPACE.basePath,
+				parentPath: INFRASTRUCTURE_WORKSPACE.basePath,
 			},
 		];
 		const parent = parentCandidates
@@ -1848,7 +1890,7 @@ export function resolveWorkspaceNavigation(opts: {
 					? {
 							id: parent.id,
 							label: parent.label,
-							href: organizationPath(opts.organizationId, parent.basePath),
+							href: organizationPath(opts.organizationId, parent.parentPath),
 						}
 					: undefined,
 			},

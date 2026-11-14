@@ -1,20 +1,14 @@
 "use client";
 
 import {
-	BellIcon,
 	CaretLeftIcon,
 	CaretRightIcon,
 	CaretUpDownIcon,
 	MagnifyingGlassIcon,
-	QuestionIcon,
-	SparkleIcon,
-	StarIcon,
-	UserIcon,
 } from "@phosphor-icons/react";
 import {
 	Button,
 	DropdownMenu,
-	LinkButton,
 	LinkProvider,
 	Sidebar,
 	ZenthcloudLogo,
@@ -23,7 +17,6 @@ import { Check, X } from "lucide-react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { resolveAppEnvironment } from "@/lib/product";
 import { cn } from "@/lib/utils";
@@ -40,7 +33,7 @@ import {
 	resolveWorkspaceNavigation,
 } from "./navigation";
 import { useOrganization } from "./organization-context";
-import { PanelHeader, type PanelHeaderUser, SUPPORT_URL } from "./panel-header";
+import { PanelHeader, type PanelHeaderUser } from "./panel-header";
 import { useRecentPages } from "./recent-pages";
 
 /** Bridges the design system's links to the Next.js router. */
@@ -60,6 +53,10 @@ PanelLink.displayName = "PanelLink";
  */
 const SUBMENU_CLASS =
 	"ml-4 border-l border-zenth-line pl-4 [&>li[aria-hidden]]:hidden";
+const SIDEBAR_ITEM_TEXT_CLASS =
+	"text-sm font-normal text-[#3F3F46] data-[active=true]:text-[#18181B]";
+const SIDEBAR_SECTION_TEXT_CLASS =
+	"[&>div>div]:text-xs [&>div>div]:font-medium [&>div>div]:text-[#71717A]";
 
 /** Support and legal links shared by every page of the panel. */
 const PANEL_FOOTER_LINKS = [
@@ -153,7 +150,11 @@ function NavigationRow({
 				<Sidebar.Collapsible open={open} onOpenChange={setOpen}>
 					<Sidebar.CollapsibleTrigger
 						render={
-							<Sidebar.MenuButton icon={item.icon} tooltip={item.label}>
+							<Sidebar.MenuButton
+								icon={item.icon}
+								tooltip={item.label}
+								className={SIDEBAR_ITEM_TEXT_CLASS}
+							>
 								{content}
 							</Sidebar.MenuButton>
 						}
@@ -173,6 +174,7 @@ function NavigationRow({
 											href={child.href}
 											active={childActive}
 											aria-current={childActive ? "page" : undefined}
+											className={SIDEBAR_ITEM_TEXT_CLASS}
 										>
 											{child.label}
 										</Sidebar.MenuSubButton>
@@ -182,7 +184,7 @@ function NavigationRow({
 										<Sidebar.MenuSubButton
 											disabled
 											title="Coming soon"
-											className="cursor-default"
+											className={`${SIDEBAR_ITEM_TEXT_CLASS} cursor-default`}
 										>
 											{child.label}
 										</Sidebar.MenuSubButton>
@@ -204,7 +206,7 @@ function NavigationRow({
 					disabled
 					tooltip={`${item.label} — coming soon`}
 					aria-label={`${item.label} (coming soon)`}
-					className="cursor-not-allowed opacity-55"
+					className={`${SIDEBAR_ITEM_TEXT_CLASS} cursor-not-allowed opacity-55`}
 				>
 					{content}
 				</Sidebar.MenuButton>
@@ -226,6 +228,7 @@ function NavigationRow({
 				active={isActive}
 				tooltip={item.label}
 				aria-current={isActive ? "page" : undefined}
+				className={SIDEBAR_ITEM_TEXT_CLASS}
 			>
 				{content}
 			</Sidebar.MenuButton>
@@ -247,11 +250,13 @@ export function PanelShell({
 	user,
 	children,
 	domainName,
+	fullWidthContent = false,
 }: {
 	title: string;
 	user: PanelHeaderUser;
 	children: React.ReactNode;
 	domainName?: string;
+	fullWidthContent?: boolean;
 }) {
 	const router = useRouter();
 	const { organization, activation, syncSession } = useOrganization();
@@ -270,11 +275,6 @@ export function PanelShell({
 		if (organizationId === organization.id) return;
 		await authClient.organization.setActive({ organizationId });
 		await router.push(organizationPath(organizationId, "home"));
-	};
-
-	const signOut = async () => {
-		await authClient.signOut();
-		await router.push("/");
 	};
 
 	const environment =
@@ -360,14 +360,18 @@ export function PanelShell({
 
 	return (
 		<LinkProvider component={PanelLink}>
-			<Sidebar.Provider defaultOpen collapsible="icon">
+			<Sidebar.Provider
+				defaultOpen
+				collapsible="icon"
+				className="h-svh overflow-hidden"
+			>
 				{/* `h-svh` keeps the rail at viewport height while the page scrolls, so
 				    the footer is always anchored to the bottom of the sidebar. */}
 				<Sidebar
 					aria-label={`Navigation for ${title}`}
 					className="sticky top-0 h-svh! self-start"
 				>
-					<Sidebar.Header className="group-data-[state=collapsed]/sidebar:justify-center group-data-[state=collapsed]/sidebar:px-0">
+					<Sidebar.Header className="h-[58px] shrink-0 justify-center border-b border-zenth-line group-data-[state=collapsed]/sidebar:justify-center group-data-[state=collapsed]/sidebar:px-0">
 						{/* The workspace name opens the account switcher, as in the
 						    reference: one row, one affordance. It ellipsizes when the rail
 						    is narrow and disappears once the rail is collapsed to icons. */}
@@ -376,7 +380,7 @@ export function PanelShell({
 								<Button
 									variant="ghost"
 									aria-label={`Switch account (${organization.name})`}
-									className="min-h-9 w-full min-w-0 justify-start gap-2 px-1.5 py-1.5 text-sm font-medium group-data-[state=collapsed]/sidebar:justify-center group-data-[state=collapsed]/sidebar:px-0"
+									className="min-h-9 w-full min-w-0 justify-start gap-2 px-1.5 py-1.5 text-sm font-normal group-data-[state=collapsed]/sidebar:justify-center group-data-[state=collapsed]/sidebar:px-0"
 								>
 									<ZenthcloudLogo
 										variant="glyph"
@@ -388,7 +392,7 @@ export function PanelShell({
 									    and the full value stays available in the tooltip. */}
 									<span
 										title={organization.name}
-										className="min-w-0 flex-1 overflow-hidden text-left text-[13px] leading-tight font-medium whitespace-nowrap group-data-[state=collapsed]/sidebar:hidden"
+										className="min-w-0 flex-1 overflow-hidden text-left text-sm leading-tight font-normal whitespace-nowrap group-data-[state=collapsed]/sidebar:hidden"
 									>
 										{organization.name}
 									</span>
@@ -451,7 +455,7 @@ export function PanelShell({
 									aria-label="Search Navigation"
 									className="min-w-0 flex-1 bg-transparent text-sm text-zenth-default outline-none placeholder:text-zenth-subtle"
 								/>
-								<kbd className="shrink-0 rounded border border-zenth-line px-1 text-[10px] text-zenth-subtle group-data-[state=collapsed]/sidebar:hidden">
+								<kbd className="shrink-0 rounded border border-zenth-line px-1 text-xs text-[#71717A] group-data-[state=collapsed]/sidebar:hidden">
 									Ctrl K
 								</kbd>
 							</div>
@@ -460,7 +464,9 @@ export function PanelShell({
 						{sections.map((section) => (
 							<Sidebar.Group key={section.id}>
 								{section.label && (
-									<Sidebar.GroupLabel>{section.label}</Sidebar.GroupLabel>
+									<Sidebar.GroupLabel className={SIDEBAR_SECTION_TEXT_CLASS}>
+										{section.label}
+									</Sidebar.GroupLabel>
 								)}
 								<Sidebar.Menu>
 									{section.items.map((item) => (
@@ -482,7 +488,7 @@ export function PanelShell({
 											href={navigation.workspace.parent.href}
 											icon={CaretLeftIcon}
 											tooltip={`Back to ${navigation.workspace.parent.label}`}
-											className="cursor-pointer"
+											className={`${SIDEBAR_ITEM_TEXT_CLASS} cursor-pointer`}
 										>
 											<span className="min-w-0 flex-1 truncate">
 												Back to {navigation.workspace.parent.label}
@@ -500,7 +506,7 @@ export function PanelShell({
 							<>
 								{!navigation.exclusive && (
 									<div className="mt-3 border-t border-zenth-line px-2 pt-3 pb-1 group-data-[state=collapsed]/sidebar:hidden">
-										<p className="text-[11px] font-semibold tracking-wider text-zenth-subtle uppercase">
+										<p className="text-xs font-medium text-[#71717A]">
 											Workspace
 										</p>
 										<p className="min-w-0 truncate text-sm font-medium text-zenth-default">
@@ -511,7 +517,11 @@ export function PanelShell({
 								{contextual.map((section) => (
 									<Sidebar.Group key={section.id}>
 										{!navigation.exclusive && section.label && (
-											<Sidebar.GroupLabel>{section.label}</Sidebar.GroupLabel>
+											<Sidebar.GroupLabel
+												className={SIDEBAR_SECTION_TEXT_CLASS}
+											>
+												{section.label}
+											</Sidebar.GroupLabel>
 										)}
 										<Sidebar.Menu>
 											{section.items.map((item) => (
@@ -545,6 +555,7 @@ export function PanelShell({
 														<Sidebar.MenuButton
 															icon={item.icon}
 															tooltip={item.label}
+															className={SIDEBAR_ITEM_TEXT_CLASS}
 														>
 															<span className="min-w-0 flex-1 truncate">
 																{item.label}
@@ -575,6 +586,7 @@ export function PanelShell({
 																			href={href}
 																			active={active}
 																			aria-current={active ? "page" : undefined}
+																			className={SIDEBAR_ITEM_TEXT_CLASS}
 																		>
 																			{entry.label}
 																		</Sidebar.MenuSubButton>
@@ -582,7 +594,7 @@ export function PanelShell({
 																		<Sidebar.MenuSubButton
 																			disabled
 																			title="Coming soon"
-																			className="cursor-not-allowed opacity-55"
+																			className={`${SIDEBAR_ITEM_TEXT_CLASS} cursor-not-allowed opacity-55`}
 																		>
 																			{entry.label}
 																		</Sidebar.MenuSubButton>
@@ -629,124 +641,6 @@ export function PanelShell({
 					</Sidebar.Footer>
 				</Sidebar>
 
-				{/* When a domain page passes its name we render a top bar that mirrors
-					    the reference dashboard: the domain selector (name + Free chip +
-					    chevron + star) sits between the account header and the page
-					    header, with the global search and the session utilities to its
-					    right. */}
-				{domainName && (
-					<div className="flex shrink-0 border-b border-zenth-line bg-zenth-base px-4">
-						<div className="mx-auto flex max-w-6xl items-center gap-3">
-							{/* Domain selector: name, Free chip, chevron and star. */}
-							<div className="flex items-center gap-2 rounded-md border bg-background px-2 py-1">
-								<span className="text-sm font-medium">{domainName}</span>
-								<span className="rounded-md border bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">
-									Free
-								</span>
-								<CaretUpDownIcon
-									aria-hidden
-									className="size-3.5 text-muted-foreground"
-								/>
-								<StarIcon
-									aria-hidden
-									className="size-3.5 text-muted-foreground"
-								/>
-							</div>
-
-							{/* Global search. */}
-							<div className="flex items-center gap-2 rounded-md border bg-zenth-base px-2.5 py-1.5 focus-within:ring-2 focus-within:ring-zenth-brand focus-within:ring-inset">
-								<MagnifyingGlassIcon
-									aria-hidden
-									className="size-3.5 shrink-0 text-zenth-subtle"
-								/>
-								<input
-									type="search"
-									value={query}
-									onChange={(event) => setQuery(event.target.value)}
-									placeholder="Quick Search…"
-									aria-label="Search Navigation"
-									className="min-w-0 flex-1 bg-transparent text-sm text-zenth-default outline-none placeholder:text-zenth-subtle"
-								/>
-								<kbd className="shrink-0 rounded border border-zenth-line px-1 text-[10px] text-zenth-subtle">
-									Ctrl K
-								</kbd>
-							</div>
-
-							{/* Session utilities. */}
-							<div className="ml-auto flex items-center gap-0.5">
-								<Button
-									variant="ghost"
-									icon={<SparkleIcon className="size-4.5" aria-hidden />}
-									aria-label="Demander à l'IA"
-									className="gap-2 px-2 text-[13px] font-normal"
-									onClick={() => toast.info("L'assistant IA arrive bientôt")}
-								>
-									<span className="hidden sm:inline">Demander à l&apos;IA</span>
-								</Button>
-
-								<LinkButton
-									href={SUPPORT_URL}
-									external
-									variant="ghost"
-									icon={<QuestionIcon className="size-4.5" aria-hidden />}
-									aria-label="Assistance"
-									className="gap-2 px-2 text-[13px] font-normal"
-								>
-									<span className="hidden sm:inline">Assistance</span>
-								</LinkButton>
-
-								<Button
-									variant="ghost"
-									shape="square"
-									icon={<BellIcon className="size-4.5" aria-hidden />}
-									aria-label="Notifications"
-									onClick={() =>
-										toast.info("Le centre de notifications arrive bientôt")
-									}
-								/>
-
-								<DropdownMenu>
-									<DropdownMenu.Trigger>
-										<Button
-											variant="ghost"
-											shape="square"
-											icon={<UserIcon className="size-4.5" aria-hidden />}
-											aria-label="Account and Session Settings"
-											className="ml-1"
-										/>
-									</DropdownMenu.Trigger>
-									<DropdownMenu.Content
-										align="end"
-										sideOffset={6}
-										className="w-56 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-									>
-										<DropdownMenu.Group>
-											<DropdownMenu.Label className="truncate text-xs font-normal text-zenth-subtle">
-												{user.email}
-											</DropdownMenu.Label>
-										</DropdownMenu.Group>
-										<DropdownMenu.Separator />
-										<DropdownMenu.Item
-											onClick={() => toast.info("Profile is coming soon")}
-										>
-											Profile
-										</DropdownMenu.Item>
-										<DropdownMenu.Item
-											onClick={() => toast.info("Billing is coming soon")}
-										>
-											Billing
-										</DropdownMenu.Item>
-										<DropdownMenu.Separator />
-										<DropdownMenu.Item variant="danger" onClick={signOut}>
-											Sign Out
-										</DropdownMenu.Item>
-									</DropdownMenu.Content>
-								</DropdownMenu>
-							</div>
-						</div>
-					</div>
-				)}
-
 				<main
 					className={cn(
 						// The panel owns the viewport height: the header, the scroll
@@ -756,9 +650,7 @@ export function PanelShell({
 						"bg-zenth-base text-zenth-default",
 					)}
 				>
-					{/* The header sits outside the scrolling area, so it stays put while
-					    the workspace page scrolls underneath it. */}
-					<PanelHeader user={user} />
+					<PanelHeader user={user} domainName={domainName} />
 
 					{activation === "error" && (
 						<div className="flex items-center gap-3 border-b border-zenth-line px-4 py-2 text-xs text-zenth-subtle">
@@ -776,7 +668,14 @@ export function PanelShell({
 					    grows to fill the viewport and the footer closes the page at the
 					    bottom edge, while long pages scroll it into view normally. */}
 					<div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-						<div className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-8">
+						<div
+							className={cn(
+								"mx-auto w-full flex-1",
+								fullWidthContent
+									? "max-w-none p-0"
+									: "max-w-6xl px-4 py-8 sm:px-8",
+							)}
+						>
 							{children}
 						</div>
 						{/* The footer closes the page, in the flow of the scroll area: it
