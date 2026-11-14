@@ -52,6 +52,8 @@ const SAVED_LOGIN_KEY = "zenthcloud.saved-login";
 const LOGIN_PATH = "/login";
 /** The second factor lives on its own page; login only hands the challenge over. */
 const TWO_FACTOR_PATH = "/two-factor";
+/** Where a signed-in account that owns no workspace finishes onboarding. */
+const CREATE_ACCOUNT_PATH = "/create-account";
 
 /**
  * Workspace an authenticated user belongs to. The organization is resolved on
@@ -62,12 +64,28 @@ function workspaceDestination(organizationId: string | null | undefined) {
 }
 
 /**
- * Completes a sign-in as a document navigation. The next request carries the
- * fresh session cookie, so `/login` can answer with a 307 to the workspace
- * instead of the client guessing the organization.
+ * Opens the workspace of the account that just signed in. The active
+ * organization lives in the session, not in the sign-in response, so it is read
+ * back once the session cookie exists.
  */
-function redirectToWorkspace() {
-	window.location.assign(LOGIN_PATH);
+async function openWorkspace() {
+	let organizationId: string | null = null;
+	try {
+		const { data } = await authClient.getSession();
+		const session = data?.session as
+			| { activeOrganizationId?: string | null }
+			| null
+			| undefined;
+		organizationId = session?.activeOrganizationId ?? null;
+	} catch {
+		// Reading the session back must not block a successful sign-in.
+	}
+
+	// Document navigation: the workspace route owns the dashboard, and the next
+	// request carries the fresh session instead of the client guessing.
+	window.location.assign(
+		organizationId ? `/${organizationId}/home` : CREATE_ACCOUNT_PATH,
+	);
 }
 
 /**
@@ -346,7 +364,7 @@ export default function LoginPage({ IS_CLOUD, enforceSSO }: Props) {
 			}
 
 			toast.success("Logged in successfully");
-			redirectToWorkspace();
+			await openWorkspace();
 		} catch {
 			toast.error("An error occurred while logging in");
 		} finally {
