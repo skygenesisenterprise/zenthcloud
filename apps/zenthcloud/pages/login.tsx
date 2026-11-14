@@ -33,6 +33,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { SignInWithSSO } from "@/components/proprietary/sso/sign-in-with-sso";
 import { authClient } from "@/lib/auth-client";
+import { getTwoFactorMethod } from "@/lib/webauthn-two-factor";
 import { appRouter } from "@/server/api/root";
 import { generateServerSideHelper } from "@/utils/create-server-helpers";
 
@@ -67,6 +68,18 @@ function workspaceDestination(organizationId: string | null | undefined) {
  */
 function redirectToWorkspace() {
 	window.location.assign(LOGIN_PATH);
+}
+
+/**
+ * better-auth answers a 2FA account with `twoFactorRedirect` instead of a
+ * session: the password step stays pending in its cookie and `/two-factor`
+ * owns the challenge. A sign-in response without a user therefore still has a
+ * second factor to complete.
+ */
+function isSecondFactorPending(data: unknown) {
+	if (!data || typeof data !== "object") return false;
+	const payload = data as { twoFactorRedirect?: boolean; user?: unknown };
+	return payload.twoFactorRedirect === true || payload.user === undefined;
 }
 
 interface SavedLogin {
@@ -239,6 +252,32 @@ export default function LoginPage({ IS_CLOUD, enforceSSO }: Props) {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
+	// A password step may already be pending when the browser comes back here
+	// (back button, reload or an identity-provider callback). The method
+	// endpoint reads that pending challenge, so login hands the account's second
+	// factor over to its own page instead of asking for the password again.
+	useEffect(() => {
+		// `?restart=1` is the deliberate way back from /two-factor: it must not
+		// bounce the user straight into the challenge again.
+		if (router.query.restart) return;
+
+		let cancelled = false;
+		getTwoFactorMethod()
+			.then(({ summary }) => {
+				if (!cancelled && summary) {
+					window.location.assign(TWO_FACTOR_PATH);
+				}
+			})
+			.catch(() => {
+				// No pending challenge: the form stays as it is.
+			});
+
+		return () => {
+			cancelled = true;
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
 	const persistLogin = (email: string, method: string) => {
 		if (!rememberDevice) return;
 		const value = { email, method };
@@ -300,7 +339,7 @@ export default function LoginPage({ IS_CLOUD, enforceSSO }: Props) {
 
 			// better-auth kept a pending challenge in its cookie. The dedicated
 			// page owns the second factor, so login only navigates to it.
-			if (data && "twoFactorRedirect" in data && data.twoFactorRedirect) {
+			if (isSecondFactorPending(data)) {
 				toast.info("Please complete your second factor");
 				window.location.assign(TWO_FACTOR_PATH);
 				return;
@@ -517,7 +556,7 @@ export default function LoginPage({ IS_CLOUD, enforceSSO }: Props) {
 				<Text variant="secondary" size="sm">
 					Forgot your email or password?{" "}
 					{IS_CLOUD ? (
-						<AuthLink href="/send-reset-password">Reset it</AuthLink>
+						<AuthLink href="/reset-password">Reset it</AuthLink>
 					) : (
 						<AuthLink
 							href="https://docs.zenthcloud.com/docs/core/reset-password"

@@ -428,7 +428,7 @@ export default function RegisterPage({ IS_CLOUD }: Props) {
 			className="flex min-h-svh flex-col bg-zenth-base text-zenth-default"
 		>
 			<Head>
-				<title>ZenthCloud Dashboard | Create Your Account</title>
+				<title>ZenthCloud Dashboard | Manage Your Account</title>
 			</Head>
 			<header className="flex h-20 items-center justify-end gap-4 px-6">
 				<div className="flex items-center gap-3">
