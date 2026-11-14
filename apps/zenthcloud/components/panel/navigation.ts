@@ -1,24 +1,24 @@
-import type { LucideIcon } from "lucide-react";
 import {
-	Activity,
-	Bug,
-	CircleDollarSign,
-	Code2,
-	Cpu,
-	Database,
-	Gauge,
-	Globe,
-	History,
-	House,
-	Images,
-	Network,
-	Radio,
-	Server,
-	Settings,
-	ShieldAlert,
-	ShieldCheck,
-	Sparkles,
-} from "lucide-react";
+	BroadcastIcon,
+	BugIcon,
+	ClockCounterClockwiseIcon,
+	CodeIcon,
+	CpuIcon,
+	CurrencyCircleDollarIcon,
+	DatabaseIcon,
+	GaugeIcon,
+	GearIcon,
+	GlobeIcon,
+	HardDrivesIcon,
+	HouseIcon,
+	type Icon,
+	ImagesIcon,
+	NetworkIcon,
+	PulseIcon,
+	ShieldCheckIcon,
+	ShieldWarningIcon,
+	SparkleIcon,
+} from "@phosphor-icons/react";
 
 /**
  * Navigation model of the ZenthCloud panel.
@@ -55,7 +55,7 @@ export type NavigationDestination = {
 	label: string;
 	/** Path inside the workspace, relative to `/{organizationId}`. */
 	path: string;
-	icon: LucideIcon;
+	icon: Icon;
 	/** Extra paths that also select this destination. */
 	activePaths?: readonly string[];
 	/** Permission required to see the destination, as `resource.action`. */
@@ -77,24 +77,24 @@ const NAVIGATION_DESTINATIONS = {
 	home: {
 		label: "Accueil du compte",
 		path: "home",
-		icon: House,
+		icon: HouseIcon,
 		implemented: true,
 	},
 	history: {
 		label: "Historique",
 		path: "history",
-		icon: History,
+		icon: ClockCounterClockwiseIcon,
 	},
 	domains: {
 		label: "Domaines",
 		path: "domains",
-		icon: Globe,
+		icon: GlobeIcon,
 		requires: "dnsProvider.read",
 	},
 	observability: {
 		label: "Observabilité",
 		path: "observability",
-		icon: Activity,
+		icon: PulseIcon,
 		requires: "traffic.read",
 		badge: "Nouveau",
 	},
@@ -104,74 +104,74 @@ const NAVIGATION_DESTINATIONS = {
 	infrastructure: {
 		label: "Infrastructure",
 		path: "infrastructure",
-		icon: Server,
+		icon: HardDrivesIcon,
 		implemented: false,
 	},
 	compute: {
 		label: "Calcul",
 		path: "compute",
-		icon: Cpu,
+		icon: CpuIcon,
 	},
 	ai: {
 		label: "AI",
 		path: "ai",
-		icon: Sparkles,
+		icon: SparkleIcon,
 	},
 	storage: {
 		label: "Stockage et bases de données",
 		path: "storage",
-		icon: Database,
+		icon: DatabaseIcon,
 	},
 	media: {
 		label: "Images & Stream",
 		path: "media",
-		icon: Images,
+		icon: ImagesIcon,
 	},
 	realtime: {
 		label: "Realtime",
 		path: "realtime",
-		icon: Radio,
+		icon: BroadcastIcon,
 	},
 	development: {
 		label: "Développement et déploiement",
 		path: "development",
-		icon: Code2,
+		icon: CodeIcon,
 	},
 	applicationSecurity: {
 		label: "Sécurité des applications",
 		path: "security/applications",
-		icon: ShieldCheck,
+		icon: ShieldCheckIcon,
 	},
 	zeroTrust: {
 		label: "Zero Trust",
 		path: "security/zero-trust",
-		icon: ShieldAlert,
+		icon: ShieldWarningIcon,
 	},
 	networks: {
 		label: "Réseaux",
 		path: "networks",
-		icon: Network,
+		icon: NetworkIcon,
 	},
 	threats: {
 		label: "Menaces & défense",
 		path: "security/threats",
-		icon: Bug,
+		icon: BugIcon,
 	},
 	monetize: {
 		label: "Monétiser",
 		path: "monetize",
-		icon: CircleDollarSign,
+		icon: CurrencyCircleDollarIcon,
 		badge: "Nouveau",
 	},
 	delivery: {
 		label: "Livraison et performance",
 		path: "delivery",
-		icon: Gauge,
+		icon: GaugeIcon,
 	},
 	account: {
 		label: "Gérer le compte",
 		path: "account",
-		icon: Settings,
+		icon: GearIcon,
 	},
 } satisfies Record<string, NavigationDestination>;
 
@@ -312,7 +312,7 @@ export type PanelNavigationItem = {
 	label: string;
 	/** Absolute, workspace-scoped href. Always built from the URL organization. */
 	href: string;
-	icon: LucideIcon;
+	icon: Icon;
 	/** Whether the page behind `href` exists today. */
 	implemented: boolean;
 	/** Whether the destination will expose a contextual sub-navigation. */
@@ -382,7 +382,12 @@ function isInEnvironment(
 
 function resolveDomainChildren(organizationId: string): PanelNavigationChild[] {
 	return [
-		{ id: "overview", label: "Vue d'ensemble", path: "domains/overview" },
+		{
+			id: "overview",
+			label: "Vue d'ensemble",
+			path: "domains/overview",
+			implemented: true,
+		},
 		{
 			id: "registrations",
 			label: "Enregistrements",
@@ -393,7 +398,7 @@ function resolveDomainChildren(organizationId: string): PanelNavigationChild[] {
 		id: `domains.${entry.id}`,
 		label: entry.label,
 		href: organizationPath(organizationId, entry.path),
-		implemented: false,
+		implemented: entry.implemented === true,
 	}));
 }
 
@@ -484,14 +489,26 @@ function normalizePath(pathname: string): string {
 	return pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
 }
 
+/**
+ * Whether an absolute workspace href is the current location or one of its
+ * descendants. Shared by menu entries and their sub-entries, so a product
+ * surface stays marked while one of its pages is open.
+ */
+export function isNavigationHrefActive(
+	href: string,
+	location: { pathname: string },
+): boolean {
+	const pathname = normalizePath(location.pathname);
+	const target = normalizePath(href);
+	return pathname === target || pathname.startsWith(`${target}/`);
+}
+
 /** Whether a rendered entry is the current location. */
 export function isNavigationItemActive(
 	item: PanelNavigationItem,
 	location: { pathname: string },
 ): boolean {
-	const pathname = normalizePath(location.pathname);
-	const href = normalizePath(item.href);
-	return pathname === href || pathname.startsWith(`${href}/`);
+	return isNavigationHrefActive(item.href, location);
 }
 
 export function findActiveNavigation(
@@ -553,12 +570,29 @@ const RESOURCE_WORKSPACES: Record<
 		label: "Domaine",
 		basePath: "domains",
 		match: ["domains"],
+		// The domain workspace nav follows the reference dashboard: every product
+		// surface of a zone is listed, in the order it appears there. Only the
+		// overview page exists today, so the others stay disabled.
 		items: [
-			{ label: "Vue d'ensemble", path: "overview" },
-			{ label: "DNS", path: "dns" },
-			{ label: "SSL/TLS", path: "ssl" },
-			{ label: "Enregistrements", path: "records" },
+			{ label: "Vue d'ensemble", path: "", implemented: true },
+			{ label: "Historique", path: "history" },
+			{ label: "AI Crawl Control", path: "ai-crawl-control" },
+			{ label: "Préparation pour agents", path: "agent-readiness" },
 			{ label: "Analytics", path: "analytics" },
+			{ label: "Observabilité", path: "observability" },
+			{ label: "DNS", path: "dns" },
+			{ label: "E-mail", path: "email" },
+			{ label: "SSL/TLS", path: "ssl" },
+			{ label: "Sécurité", path: "security" },
+			{ label: "Access", path: "access" },
+			{ label: "Speed", path: "speed" },
+			{ label: "Caching", path: "caching" },
+			{ label: "Routes Workers", path: "workers-routes" },
+			{ label: "Règles", path: "rules" },
+			{ label: "Pages d'erreur", path: "error-pages" },
+			{ label: "Réseau", path: "network" },
+			{ label: "Trafic", path: "traffic" },
+			{ label: "Web3", path: "web3" },
 		],
 	},
 	instance: {
@@ -658,7 +692,7 @@ export function resolveContextualNavigation(opts: {
 			label: destination.label,
 			href: organizationPath(
 				opts.organizationId,
-				[...base, destination.path].join("/"),
+				[...base, destination.path].filter(Boolean).join("/"),
 			),
 			icon: buildContextualIcon(destination.path),
 			implemented: destination.implemented === true,
@@ -670,26 +704,32 @@ export function resolveContextualNavigation(opts: {
 	};
 }
 
-function buildContextualIcon(path: string): LucideIcon {
+function buildContextualIcon(path: string): Icon {
 	switch (path) {
 		case "dns":
 		case "records":
-			return Globe;
+			return GlobeIcon;
 		case "ssl":
-			return ShieldCheck;
+			return ShieldCheckIcon;
 		case "analytics":
 		case "monitoring":
-			return Activity;
+		case "traffic":
+		case "observability":
+			return PulseIcon;
 		case "network":
-			return Network;
+			return NetworkIcon;
+		case "history":
+			return ClockCounterClockwiseIcon;
+		case "security":
+			return ShieldCheckIcon;
 		case "storage":
-			return Database;
+			return DatabaseIcon;
 		case "activity":
-			return History;
+			return ClockCounterClockwiseIcon;
 		case "objects":
-			return Images;
+			return ImagesIcon;
 		default:
-			return Gauge;
+			return GaugeIcon;
 	}
 }
 
@@ -839,22 +879,21 @@ const INFRASTRUCTURE_WORKSPACE: {
 };
 
 /** Product surfaces that open a domain workspace of their own. */
+/**
+ * Standalone pages of the Domains sub-menu. They are reachable from the global
+ * navigation only, so they must not be detected as a domain resource.
+ */
+const DOMAIN_STATIC_PAGES = new Set(["overview", "registrations", "transfers"]);
+
 const DOMAIN_WORKSPACES: readonly DomainWorkspaceDefinition[] = [
 	{
 		id: "domains",
 		label: "Domaines",
 		basePath: "domains",
-		sections: [
-			{
-				id: "domain-domains",
-				label: "Domaines",
-				items: [
-					{ label: "Vue d'ensemble", path: "domains/overview" },
-					{ label: "Enregistrements", path: "domains/registrations" },
-					{ label: "Transferts", path: "domains/transfers" },
-				],
-			},
-		],
+		// The Domains pages live in the global tree, under the "Domaines"
+		// sub-menu: the workspace keeps the URL context but repeats none of
+		// them in a contextual section.
+		sections: [],
 	},
 	{
 		id: "ai",
@@ -1166,6 +1205,7 @@ export function resolveWorkspaceNavigation(opts: {
 		if (resource && resource.depth >= definition.match.length) continue;
 		const id = segments[definition.match.length];
 		if (!id) continue;
+		if (kind === "domain" && DOMAIN_STATIC_PAGES.has(id)) continue;
 		resource = { kind, id, depth: definition.match.length };
 	}
 

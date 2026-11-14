@@ -1,14 +1,14 @@
 import {
-	CalendarDays,
-	ChevronRight,
-	Clock,
-	Globe,
-	MoreHorizontal,
-	Plus,
-	RefreshCw,
-	Search,
-	Wrench,
-} from "lucide-react";
+	ArrowsClockwiseIcon,
+	CalendarDotsIcon,
+	CaretRightIcon,
+	ClockIcon,
+	DotsThreeIcon,
+	GlobeIcon,
+	MagnifyingGlassIcon,
+	PlusIcon,
+	WrenchIcon,
+} from "@phosphor-icons/react";
 import type { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useState } from "react";
@@ -126,7 +126,7 @@ function MetricCard({
 					aria-label={`Options de ${metric.label}`}
 					className={`${ICON_BUTTON_CLASSES} cursor-default`}
 				>
-					<MoreHorizontal aria-hidden className="size-4" />
+					<DotsThreeIcon aria-hidden className="size-4" />
 				</button>
 			</div>
 			<div className="mt-2 flex flex-wrap items-baseline gap-2">
@@ -215,7 +215,7 @@ export default function OrganizationHomePage({
 								<label htmlFor="workspace-search" className="sr-only">
 									Rechercher dans l’espace de travail
 								</label>
-								<Search
+								<MagnifyingGlassIcon
 									aria-hidden
 									className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground"
 								/>
@@ -241,14 +241,13 @@ export default function OrganizationHomePage({
 						<div className="grid gap-x-10 gap-y-8 lg:grid-cols-3">
 							<section aria-labelledby="domains-heading">
 								<div className="flex items-center gap-2 pb-1">
-									<Globe aria-hidden className="size-4 text-muted-foreground" />
 									<h2 id="domains-heading" className="text-sm font-medium">
 										Domaines
 									</h2>
 									<span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
 										8
 									</span>
-									<ChevronRight
+									<CaretRightIcon
 										aria-hidden
 										className="size-3.5 text-muted-foreground"
 									/>
@@ -258,7 +257,7 @@ export default function OrganizationHomePage({
 										aria-label="Options des domaines"
 										className={`${ICON_BUTTON_CLASSES} ml-auto cursor-default`}
 									>
-										<MoreHorizontal aria-hidden className="size-4" />
+										<DotsThreeIcon aria-hidden className="size-4" />
 									</button>
 								</div>
 
@@ -268,12 +267,12 @@ export default function OrganizationHomePage({
 											key={domain}
 											className="flex items-center gap-3 border-b py-3.5 text-sm"
 										>
-											<Globe
+											<GlobeIcon
 												aria-hidden
 												className="size-4 shrink-0 text-muted-foreground"
 											/>
 											<span className="min-w-0 flex-1 truncate">{domain}</span>
-											<ChevronRight
+											<CaretRightIcon
 												aria-hidden
 												className="size-3.5 shrink-0 text-muted-foreground"
 											/>
@@ -292,7 +291,7 @@ export default function OrganizationHomePage({
 									<h2 id="workers-heading" className="text-sm font-medium">
 										Workers
 									</h2>
-									<ChevronRight
+									<CaretRightIcon
 										aria-hidden
 										className="size-3.5 text-muted-foreground"
 									/>
@@ -302,7 +301,7 @@ export default function OrganizationHomePage({
 										aria-label="Options des Workers"
 										className={`${ICON_BUTTON_CLASSES} ml-auto cursor-default`}
 									>
-										<MoreHorizontal aria-hidden className="size-4" />
+										<DotsThreeIcon aria-hidden className="size-4" />
 									</button>
 								</div>
 
@@ -312,7 +311,7 @@ export default function OrganizationHomePage({
 									title="Bientôt disponible"
 									className="mt-4 flex w-full cursor-default items-center justify-center gap-2 rounded-lg bg-muted py-4 text-sm font-medium text-muted-foreground"
 								>
-									<Wrench aria-hidden className="size-4" />
+									<WrenchIcon aria-hidden className="size-4" />
 									Ship something new
 								</button>
 							</section>
@@ -328,7 +327,7 @@ export default function OrganizationHomePage({
 										aria-label="Options des récents"
 										className={`${ICON_BUTTON_CLASSES} ml-auto cursor-default`}
 									>
-										<MoreHorizontal aria-hidden className="size-4" />
+										<DotsThreeIcon aria-hidden className="size-4" />
 									</button>
 								</div>
 
@@ -338,7 +337,7 @@ export default function OrganizationHomePage({
 											key={`${entry.section}-${entry.item}`}
 											className="flex items-center gap-3 border-b py-3.5 text-sm"
 										>
-											<Clock
+											<ClockIcon
 												aria-hidden
 												className="size-4 shrink-0 text-muted-foreground"
 											/>
@@ -348,7 +347,7 @@ export default function OrganizationHomePage({
 												</span>{" "}
 												/ {entry.item}
 											</span>
-											<ChevronRight
+											<CaretRightIcon
 												aria-hidden
 												className="size-3.5 shrink-0 text-muted-foreground"
 											/>
@@ -377,7 +376,7 @@ export default function OrganizationHomePage({
 										disabled
 										className="flex h-8 cursor-default items-center gap-2 rounded-lg border bg-background px-3 text-xs font-medium text-muted-foreground"
 									>
-										<CalendarDays aria-hidden className="size-4" />
+										<CalendarDotsIcon aria-hidden className="size-4" />
 										24 dernières heures
 									</button>
 									<button
@@ -386,7 +385,7 @@ export default function OrganizationHomePage({
 										aria-label="Ajouter une métrique"
 										className={`${ICON_BUTTON_CLASSES} cursor-default`}
 									>
-										<Plus aria-hidden className="size-4" />
+										<PlusIcon aria-hidden className="size-4" />
 									</button>
 									<button
 										type="button"
@@ -394,7 +393,7 @@ export default function OrganizationHomePage({
 										aria-label="Actualiser les métriques"
 										className={`${ICON_BUTTON_CLASSES} cursor-default`}
 									>
-										<RefreshCw aria-hidden className="size-4" />
+										<ArrowsClockwiseIcon aria-hidden className="size-4" />
 									</button>
 								</div>
 							</div>

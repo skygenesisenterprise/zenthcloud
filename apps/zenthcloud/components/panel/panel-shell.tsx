@@ -24,6 +24,7 @@ import { useWorkspaceLicense } from "@/utils/hooks/use-workspace-license";
 import {
 	ACCOUNT_DESTINATIONS,
 	findActiveNavigation,
+	isNavigationHrefActive,
 	isNavigationItemActive,
 	organizationPath,
 	type PanelNavigationItem,
@@ -106,6 +107,21 @@ function NavigationRow({
 	item: PanelNavigationItem;
 	pathname: string;
 }) {
+	// The row opens itself on the page it contains, and reopens whenever the
+	// current page moves into its sub-menu, so the active entry stays visible.
+	const hasActiveChild =
+		item.children?.some(
+			(child) =>
+				child.implemented && isNavigationHrefActive(child.href, { pathname }),
+		) ?? false;
+	const [open, setOpen] = useState(
+		item.children?.length ? hasActiveChild : false,
+	);
+
+	useEffect(() => {
+		if (hasActiveChild) setOpen(true);
+	}, [hasActiveChild]);
+
 	const content = (
 		<>
 			<span className="min-w-0 flex-1 truncate">{item.label}</span>
@@ -125,7 +141,7 @@ function NavigationRow({
 	if (item.children && item.children.length > 0) {
 		return (
 			<Sidebar.MenuItem>
-				<Sidebar.Collapsible>
+				<Sidebar.Collapsible open={open} onOpenChange={setOpen}>
 					<Sidebar.CollapsibleTrigger
 						render={
 							<Sidebar.MenuButton icon={item.icon} tooltip={item.label}>
@@ -138,10 +154,17 @@ function NavigationRow({
 						    reference. It is drawn by the list itself and indented with
 						    the entries, so the bar never crosses the labels. */}
 						<Sidebar.MenuSub className={SUBMENU_CLASS}>
-							{item.children.map((child) =>
-								child.implemented ? (
+							{item.children.map((child) => {
+								const childActive =
+									child.implemented &&
+									isNavigationHrefActive(child.href, { pathname });
+								return child.implemented ? (
 									<Sidebar.MenuSubItem key={child.id}>
-										<Sidebar.MenuSubButton href={child.href}>
+										<Sidebar.MenuSubButton
+											href={child.href}
+											active={childActive}
+											aria-current={childActive ? "page" : undefined}
+										>
 											{child.label}
 										</Sidebar.MenuSubButton>
 									</Sidebar.MenuSubItem>
@@ -155,8 +178,8 @@ function NavigationRow({
 											{child.label}
 										</Sidebar.MenuSubButton>
 									</Sidebar.MenuSubItem>
-								),
-							)}
+								);
+							})}
 						</Sidebar.MenuSub>
 					</Sidebar.CollapsibleContent>
 				</Sidebar.Collapsible>
@@ -180,7 +203,11 @@ function NavigationRow({
 		);
 	}
 
-	const isActive = isNavigationItemActive(item, { pathname });
+	// A row that owns a sub-menu is only highlighted on its own page: deeper
+	// paths highlight the sub-entry instead, so two rows never look active.
+	const isActive = item.children?.length
+		? item.href === pathname.replace(/\/+$/, "")
+		: isNavigationItemActive(item, { pathname });
 
 	return (
 		<Sidebar.MenuItem>
@@ -542,8 +569,11 @@ export function PanelShell({
 						</div>
 					)}
 
-					<div className="min-h-0 flex-1 overflow-y-auto">
-						<div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-8">
+					{/* Flex column so short pages still reach the footer: the content
+					    grows to fill the viewport and the footer closes the page at the
+					    bottom edge, while long pages scroll it into view normally. */}
+					<div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+						<div className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-8">
 							{children}
 						</div>
 						{/* The footer closes the page, in the flow of the scroll area: it
