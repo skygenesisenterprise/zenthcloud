@@ -12,6 +12,7 @@ import {
 	Sidebar,
 	ZenthcloudLogo,
 } from "@zenthcloud/react";
+import { Check, X } from "lucide-react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
@@ -22,11 +23,11 @@ import { api } from "@/utils/api";
 import { useWorkspaceLicense } from "@/utils/hooks/use-workspace-license";
 import {
 	ACCOUNT_DESTINATIONS,
-	createNavigation,
 	findActiveNavigation,
 	isNavigationItemActive,
 	organizationPath,
 	type PanelNavigationItem,
+	resolveWorkspaceNavigation,
 } from "./navigation";
 import { useOrganization } from "./organization-context";
 import { PanelHeader, type PanelHeaderUser } from "./panel-header";
@@ -39,6 +40,59 @@ const PanelLink = forwardRef<
 	<NextLink ref={ref} href={href ?? to ?? "#"} {...rest} />
 ));
 PanelLink.displayName = "PanelLink";
+
+/**
+ * Rail shared by every sub-menu of the sidebar: the list draws its own left
+ * border, indented with the entries, so the bar never crosses the labels. The
+ * design system's absolute guide is hidden when it is present, which keeps the
+ * markup identical across the bundled and source versions of the sidebar.
+ */
+const SUBMENU_CLASS =
+	"ml-4 border-l border-zenth-line pl-4 [&>li[aria-hidden]]:hidden";
+
+/** Support and legal links shared by every page of the panel. */
+const PANEL_FOOTER_LINKS = [
+	"Assistance",
+	"État du système",
+	"Carrières",
+	"Conditions d’utilisation",
+	"Signaler les problèmes de sécurité",
+	"Politique de confidentialité",
+] as const;
+
+/**
+ * Closing footer of the panel. It lives in the shell rather than in each page,
+ * so every workspace page ends with the same support, legal and privacy
+ * entries.
+ */
+function PanelFooter() {
+	return (
+		<footer className="flex min-h-12 shrink-0 flex-wrap items-center justify-center gap-x-5 gap-y-2 border-t border-zenth-line bg-background px-4 py-2 text-xs text-muted-foreground sm:h-12 sm:flex-nowrap sm:py-0">
+			{PANEL_FOOTER_LINKS.map((link, index) => (
+				<span key={link} className="flex items-center gap-5">
+					{index > 0 && <span aria-hidden className="h-4 w-px bg-border" />}
+					<span>{link}</span>
+				</span>
+			))}
+			<span aria-hidden className="h-4 w-px bg-border" />
+			<button
+				type="button"
+				disabled
+				aria-label="Préférences relatives aux cookies"
+				className="flex cursor-default items-center gap-1.5"
+			>
+				<span className="flex items-center gap-0.5 rounded-full bg-blue-600 px-1 py-0.5">
+					<span className="flex size-3.5 items-center justify-center rounded-full bg-white text-blue-600">
+						<Check aria-hidden className="size-2.5" />
+					</span>
+					<X aria-hidden className="size-3 text-white" />
+				</span>
+				Préférences relatives aux cookies
+			</button>
+			<span>© 2026 ZenthCloud, Inc.</span>
+		</footer>
+	);
+}
 
 /**
  * One row of the sidebar. Implemented destinations navigate; the others are
@@ -59,11 +113,56 @@ function NavigationRow({
 			{item.expandable && (
 				<CaretRightIcon
 					aria-hidden
-					className="ml-auto size-3 shrink-0 text-zenth-subtle group-data-[state=collapsed]/sidebar:hidden"
+					className="ml-auto size-3 shrink-0 text-zenth-subtle transition-transform group-data-[open]/menu-button:rotate-90 group-data-[state=collapsed]/sidebar:hidden"
 				/>
 			)}
 		</>
 	);
+
+	// A destination that carries its own sub-menu stays interactive even when
+	// its landing page is missing: clicking the row reveals the entries instead
+	// of doing nothing.
+	if (item.children && item.children.length > 0) {
+		return (
+			<Sidebar.MenuItem>
+				<Sidebar.Collapsible>
+					<Sidebar.CollapsibleTrigger
+						render={
+							<Sidebar.MenuButton icon={item.icon} tooltip={item.label}>
+								{content}
+							</Sidebar.MenuButton>
+						}
+					/>
+					<Sidebar.CollapsibleContent>
+						{/* Open sub-menus are framed by a rail on the left, matching the
+						    reference. It is drawn by the list itself and indented with
+						    the entries, so the bar never crosses the labels. */}
+						<Sidebar.MenuSub className={SUBMENU_CLASS}>
+							{item.children.map((child) =>
+								child.implemented ? (
+									<Sidebar.MenuSubItem key={child.id}>
+										<Sidebar.MenuSubButton href={child.href}>
+											{child.label}
+										</Sidebar.MenuSubButton>
+									</Sidebar.MenuSubItem>
+								) : (
+									<Sidebar.MenuSubItem key={child.id}>
+										<Sidebar.MenuSubButton
+											disabled
+											title="Bientôt disponible"
+											className="cursor-default"
+										>
+											{child.label}
+										</Sidebar.MenuSubButton>
+									</Sidebar.MenuSubItem>
+								),
+							)}
+						</Sidebar.MenuSub>
+					</Sidebar.CollapsibleContent>
+				</Sidebar.Collapsible>
+			</Sidebar.MenuItem>
+		);
+	}
 
 	if (!item.implemented) {
 		return (
@@ -138,16 +237,19 @@ export function PanelShell({
 	const environment =
 		resolveAppEnvironment({ product, isCloud }) === "cloud" ? "cloud" : "self";
 
-	const navigation = createNavigation({
+	// `asPath` is the URL the user is on; `pathname` is only the route pattern
+	// (`/[organizationId]/home`), which never matches an absolute item href.
+	const pathname = router.asPath.split("?")[0] ?? router.asPath;
+
+	// The resolver keeps the global tree and adds the sections of the
+	// workspace the URL belongs to (infrastructure, product domain, resource).
+	const navigation = resolveWorkspaceNavigation({
 		organizationId: organization.id,
 		environment,
 		permissions,
 		license,
+		pathname,
 	});
-
-	// `asPath` is the URL the user is on; `pathname` is only the route pattern
-	// (`/[organizationId]/home`), which never matches an absolute item href.
-	const pathname = router.asPath.split("?")[0] ?? router.asPath;
 	const active = findActiveNavigation(navigation, { pathname });
 
 	const sections = useMemo(() => {
@@ -162,6 +264,19 @@ export function PanelShell({
 			}))
 			.filter((section) => section.items.length > 0);
 	}, [navigation.sections, query]);
+
+	const contextual = useMemo(() => {
+		const needle = query.trim().toLowerCase();
+		if (!needle) return navigation.contextual;
+		return navigation.contextual
+			.map((section) => ({
+				...section,
+				items: section.items.filter((item) =>
+					item.label.toLowerCase().includes(needle),
+				),
+			}))
+			.filter((section) => section.items.length > 0);
+	}, [navigation.contextual, query]);
 
 	// Ctrl/⌘ K focuses the quick search, matching the rest of the product.
 	useEffect(() => {
@@ -200,10 +315,13 @@ export function PanelShell({
 										className="h-5 w-auto shrink-0"
 										aria-hidden
 									/>
-									{/* The name wraps onto a second line instead of being cut: an
-									    account is identified by its full name, and the header is
-									    tall enough for two lines of `text-sm`. */}
-									<span className="min-w-0 flex-1 text-left text-sm leading-tight break-words group-data-[state=collapsed]/sidebar:hidden">
+									{/* One line, like the reference header: the name never wraps
+									    under the logo. It ellipsizes when the rail is too narrow,
+									    and the full value stays available in the tooltip. */}
+									<span
+										title={organization.name}
+										className="min-w-0 flex-1 overflow-hidden text-left text-[13px] leading-tight font-medium whitespace-nowrap group-data-[state=collapsed]/sidebar:hidden"
+									>
 										{organization.name}
 									</span>
 									<CaretUpDownIcon
@@ -288,6 +406,38 @@ export function PanelShell({
 							</Sidebar.Group>
 						))}
 
+						{/* Contextual workspace: the URL decides which product surface is
+						    active, and its own sections are appended below the global tree
+						    instead of replacing it. */}
+						{contextual.length > 0 && (
+							<>
+								<div className="mt-3 border-t border-zenth-line px-2 pt-3 pb-1 group-data-[state=collapsed]/sidebar:hidden">
+									<p className="text-[11px] font-semibold tracking-wider text-zenth-subtle uppercase">
+										Espace de travail
+									</p>
+									<p className="min-w-0 truncate text-sm font-medium text-zenth-default">
+										{navigation.workspace.label}
+									</p>
+								</div>
+								{contextual.map((section) => (
+									<Sidebar.Group key={section.id}>
+										{section.label && (
+											<Sidebar.GroupLabel>{section.label}</Sidebar.GroupLabel>
+										)}
+										<Sidebar.Menu>
+											{section.items.map((item) => (
+												<NavigationRow
+													key={item.id}
+													item={item}
+													pathname={pathname}
+												/>
+											))}
+										</Sidebar.Menu>
+									</Sidebar.Group>
+								))}
+							</>
+						)}
+
 						{/* The account entry sits at the end of the tree, right after the
 						    last section, the way the reference panel groups it. The
 						    collapse control stays outside the scroll area, at the very
@@ -317,7 +467,7 @@ export function PanelShell({
 												<Sidebar.CollapsibleContent>
 													{/* The sub-menu's indent guide is a drawn vertical rule; the
 													    panel already has enough rail lines, so drop it. */}
-													<Sidebar.MenuSub className="[&>li[aria-hidden]]:hidden">
+													<Sidebar.MenuSub className={SUBMENU_CLASS}>
 														{ACCOUNT_DESTINATIONS.map((entry) => (
 															<Sidebar.MenuSubButton
 																key={entry.path}
@@ -343,11 +493,13 @@ export function PanelShell({
 							</Sidebar.Menu>
 						</Sidebar.Group>
 
-						{query.trim() && sections.length === 0 && (
-							<p className="px-3 py-4 text-xs text-zenth-subtle">
-								Aucune destination ne correspond à « {query.trim()} ».
-							</p>
-						)}
+						{query.trim() &&
+							sections.length === 0 &&
+							contextual.length === 0 && (
+								<p className="px-3 py-4 text-xs text-zenth-subtle">
+									Aucune destination ne correspond à « {query.trim()} ».
+								</p>
+							)}
 					</Sidebar.Content>
 
 					{/* Only the collapse control lives below the scroll area: the account
@@ -357,18 +509,20 @@ export function PanelShell({
 						style={{ height: "auto" }}
 						className="mt-auto flex-col items-stretch gap-0 p-0!"
 					>
-						<div className="border-t border-zenth-line px-[11px] pt-1.5 pb-2.5 group-not-data-[state=collapsed]/sidebar:px-3.5">
+						<div className="flex h-12 items-center border-t border-zenth-line px-[11px] group-not-data-[state=collapsed]/sidebar:px-3.5">
 							{/* The design system's own collapse glyph, unframed: no border and
 							    no background, only the row the trigger already styles. */}
 							<Sidebar.Trigger />
 						</div>
 					</Sidebar.Footer>
-					<Sidebar.Rail />
 				</Sidebar>
 
 				<main
 					className={cn(
-						"flex min-h-svh min-w-0 flex-1 flex-col",
+						// The panel owns the viewport height: the header, the scroll
+						// area and the footer are three rows of one fixed column, so
+						// only the page content ever scrolls.
+						"flex h-svh min-w-0 flex-1 flex-col overflow-hidden",
 						"bg-zenth-base text-zenth-default",
 					)}
 				>
@@ -392,6 +546,9 @@ export function PanelShell({
 						<div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-8">
 							{children}
 						</div>
+						{/* The footer closes the page, in the flow of the scroll area: it
+						    is only reached once the content ends, never pinned over it. */}
+						<PanelFooter />
 					</div>
 				</main>
 			</Sidebar.Provider>

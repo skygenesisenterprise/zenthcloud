@@ -6,6 +6,7 @@ import {
 	isNavigationItemActive,
 	organizationPath,
 	resolveContextualNavigation,
+	resolveWorkspaceNavigation,
 	type PanelNavigation,
 	type PanelNavigationItem,
 } from "@/components/panel/navigation";
@@ -87,6 +88,7 @@ describe("panel navigation structure", () => {
 			"domains",
 			"observability",
 			"compute",
+			"infrastructure",
 			"ai",
 			"storage",
 			"media",
@@ -288,6 +290,110 @@ describe("panel navigation licences", () => {
 	});
 });
 
+describe("workspace navigation", () => {
+	function resolve(pathname: string) {
+		return resolveWorkspaceNavigation({
+			organizationId: ORG,
+			environment: "cloud",
+			permissions: ALL_PERMISSIONS,
+			license: "enterprise",
+			pathname,
+		});
+	}
+
+	it("stays global when the URL is not inside a workspace", () => {
+		const resolved = resolve(`/${ORG}/home`);
+
+		expect(resolved.workspace.kind).toBe("global");
+		expect(resolved.workspace.id).toBe("global");
+		expect(resolved.contextual).toEqual([]);
+		expect(resolved.sections.map((section) => section.id)).toEqual([
+			"main",
+			"build",
+			"protect",
+		]);
+	});
+
+	it("opens the infrastructure workspace without removing global sections", () => {
+		const resolved = resolve(`/${ORG}/infrastructure/network`);
+
+		expect(resolved.workspace).toMatchObject({
+			kind: "infrastructure",
+			id: "infrastructure",
+			label: "Infrastructure",
+		});
+		expect(resolved.sections.map((section) => section.id)).toEqual([
+			"main",
+			"build",
+			"protect",
+		]);
+		expect(resolved.contextual.map((section) => section.label)).toEqual([
+			"Vue d'ensemble",
+			"Calcul",
+			"Stockage et bases de données",
+			"Réseau",
+			"Sécurité",
+			"Opérations",
+		]);
+	});
+
+	it("opens the domain workspace of a product surface", () => {
+		const resolved = resolve(`/${ORG}/ai/agents`);
+
+		expect(resolved.workspace).toMatchObject({
+			kind: "domain",
+			id: "domain:ai",
+			label: "AI",
+		});
+		expect(resolved.contextual).toHaveLength(1);
+		expect(
+			resolved.contextual[0]?.items.map((item) => item.href),
+		).toContain(`/${ORG}/ai/agents`);
+	});
+
+	it("never links a workspace entry whose page is missing", () => {
+		const resolved = resolve(`/${ORG}/ai/agents`);
+
+		for (const item of resolved.contextual.flatMap((section) => section.items)) {
+			expect(item.implemented).toBe(false);
+		}
+	});
+
+	it("prefers the resource workspace inside a product domain", () => {
+		const resolved = resolve(`/${ORG}/domains/dom_123/dns`);
+
+		expect(resolved.workspace.kind).toBe("resource");
+		expect(resolved.workspace.id).toBe("resource:domain:dom_123");
+		expect(resolved.workspace.parent).toMatchObject({
+			id: "domain:domains",
+			label: "Domaines",
+			href: `/${ORG}/domains`,
+		});
+		expect(resolved.contextual[0]?.items.map((item) => item.label)).toContain(
+			"DNS",
+		);
+	});
+
+	it("detects an infrastructure resource under the infrastructure umbrella", () => {
+		const resolved = resolve(
+			`/${ORG}/infrastructure/servers/srv_1/monitoring`,
+		);
+
+		expect(resolved.workspace.id).toBe("resource:server:srv_1");
+		expect(resolved.workspace.parent).toMatchObject({
+			id: "infrastructure",
+			label: "Infrastructure",
+		});
+	});
+
+	it("ignores a path that belongs to another organization", () => {
+		const resolved = resolve(`/${OTHER_ORG}/ai/agents`);
+
+		expect(resolved.workspace.kind).toBe("global");
+		expect(resolved.contextual).toEqual([]);
+	});
+});
+
 describe("panel contextual navigation", () => {
 	it("adds the domain destinations under the workspace tree", () => {
 		const section = resolveContextualNavigation({
@@ -341,5 +447,117 @@ describe("panel contextual navigation", () => {
 		for (const item of [...instance.items, ...bucket.items]) {
 			expect(item.implemented).toBe(false);
 		}
+	});
+});
+
+describe("panel workspace navigation", () => {
+	function resolve(
+		pathname: string,
+		options: Partial<Parameters<typeof resolveWorkspaceNavigation>[0]> = {},
+	) {
+		return resolveWorkspaceNavigation({
+			organizationId: ORG,
+			environment: "cloud",
+			permissions: ALL_PERMISSIONS,
+			license: "enterprise",
+			pathname,
+			...options,
+		});
+	}
+
+	it("keeps the global workspace on organization pages", () => {
+		const resolved = resolve(`/${ORG}/home`);
+
+		expect(resolved.workspace.kind).toBe("global");
+		expect(resolved.workspace.id).toBe("global");
+		expect(resolved.contextual).toEqual([]);
+		expect(resolved.sections.map((section) => section.id)).toEqual([
+			"main",
+			"build",
+			"protect",
+		]);
+	});
+
+	it("opens the infrastructure workspace", () => {
+		const resolved = resolve(`/${ORG}/infrastructure/network`);
+
+		expect(resolved.workspace.kind).toBe("infrastructure");
+		expect(resolved.workspace.id).toBe("infrastructure");
+		expect(resolved.contextual.map((section) => section.label)).toEqual([
+			"Vue d'ensemble",
+			"Calcul",
+			"Stockage et bases de données",
+			"Réseau",
+			"Sécurité",
+			"Opérations",
+		]);
+		const hrefs = resolved.contextual.flatMap((section) =>
+			section.items.map((item) => item.href),
+		);
+		expect(hrefs).toContain(`/${ORG}/network`);
+		expect(hrefs).toContain(`/${ORG}/workers/containers`);
+		for (const href of hrefs) {
+			expect(href.startsWith(`/${ORG}/`)).toBe(true);
+		}
+	});
+
+	it("opens a domain workspace and keeps the global tree", () => {
+		const resolved = resolve(`/${ORG}/ai/agents`);
+
+		expect(resolved.workspace.kind).toBe("domain");
+		expect(resolved.workspace.id).toBe("domain:ai");
+		expect(resolved.workspace.label).toBe("AI");
+		expect(resolved.contextual.map((section) => section.label)).toEqual([
+			"AI",
+		]);
+		expect(
+			resolved.contextual[0]?.items.map((item) => item.href),
+		).toContain(`/${ORG}/ai/agents`);
+		// The organization-wide navigation is still the same tree.
+		expect(resolved.sections).toEqual(create().sections);
+		expect(resolved.footer.map((item) => item.id)).toEqual(["account"]);
+	});
+
+	it("selects the longest domain workspace for nested routes", () => {
+		const resolved = resolve(`/${ORG}/network/tunnels`);
+
+		expect(resolved.workspace.kind).toBe("domain");
+		expect(resolved.workspace.id).toBe("domain:networks");
+	});
+
+	it("opens a resource workspace under its parent", () => {
+		const resolved = resolve(`/${ORG}/domains/dom_123/dns`);
+
+		expect(resolved.workspace.kind).toBe("resource");
+		expect(resolved.workspace.id).toBe("resource:domain:dom_123");
+		expect(resolved.workspace.parent?.id).toBe("domain:domains");
+		expect(resolved.workspace.parent?.href).toBe(`/${ORG}/domains`);
+		expect(resolved.contextual).toHaveLength(1);
+		expect(
+			resolved.contextual[0]?.items.map((item) => item.href),
+		).toContain(`/${ORG}/domains/dom_123/dns`);
+	});
+
+	it("does not treat a workspace root as a resource", () => {
+		const resolved = resolve(`/${ORG}/domains`);
+
+		expect(resolved.workspace.kind).toBe("domain");
+		expect(resolved.workspace.id).toBe("domain:domains");
+	});
+
+	it("detects infrastructure resources from their URL", () => {
+		const resolved = resolve(`/${ORG}/network/tunnels/tun_1/overview`);
+
+		expect(resolved.workspace.kind).toBe("resource");
+		expect(resolved.workspace.id).toBe("resource:tunnel:tun_1");
+		expect(resolved.workspace.parent?.id).toBe("domain:networks");
+		expect(resolved.contextual[0]?.label).toBe("Tunnel");
+	});
+
+	it("ignores paths of another organization", () => {
+		const resolved = resolve(`/${OTHER_ORG}/ai/agents`);
+
+		expect(resolved.workspace.kind).toBe("global");
+		expect(resolved.contextual).toEqual([]);
 	});
 });

@@ -44,6 +44,10 @@ const isDevelopment = process.env.NODE_ENV === "development";
 /** @type {import("next").NextConfig} */
 const nextConfig = {
 	reactStrictMode: true,
+	// The dev indicator floats over the bottom-right corner, where the panel
+	// renders its global footer. It is a development affordance, not part of
+	// the product UI, so it stays off.
+	devIndicators: false,
 	typescript: {
 		ignoreBuildErrors: true,
 	},
