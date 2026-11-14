@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+plusvariant=''
+_context=${context%-variant}
+if [ $context != $_context ]
+then
+    plusvariant='..variant'
+fi
+
+zone=test.dyndns
+zonewithvariant=${zone}${plusvariant}
+
+NOW=$(date +%s)
+
+# lower SOA so that the test makes sense
+$PDNSUTIL --config-dir=. --config-name=$backend \
+    replace-rrset ${zonewithvariant} ${zone} SOA "ns1.${zone} ahu.example.dyndns 10 28800 7200 604800 86400" \
+    > /dev/null
+
+$PDNSUTIL --config-dir=. --config-name=$backend list-zone ${zonewithvariant} | grep SOA
+
+$PDNSUTIL --config-dir=. --config-name=$backend set-meta ${zonewithvariant} SOA-EDIT INCEPTION-EPOCH
+
+$PDNSUTIL --config-dir=. --config-name=$backend increase-serial ${zonewithvariant} > /dev/null
+
+NEWSERIAL=$($PDNSUTIL --config-dir=. --config-name=$backend list-zone ${zonewithvariant} | grep SOA | awk '{print $7}')
+
+NOWPLUSTEN=$((NOW + 10))
+
+if [ $NOW -le $NEWSERIAL ] && [ $NOW -le $NOWPLUSTEN ]
+then
+	echo New serial is within range
+else
+	echo New serial is NOT within range
+fi
+
+# remove meta
+$PDNSUTIL --config-dir=. --config-name=$backend set-meta ${zonewithvariant} SOA-EDIT
+
+# restore old SOA
+$PDNSUTIL --config-dir=. --config-name=$backend \
+    replace-rrset ${zonewithvariant} ${zone} SOA "ns1.${zone} ahu.example.dyndns 2012060701 28800 7200 604800 86400" \
+    > /dev/null

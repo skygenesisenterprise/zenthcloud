@@ -1,0 +1,14 @@
+case $context in
+	tinydns)
+		$RUNWRAPPER $PDNS --loglevel=7 --daemon=no --local-address=$address --local-port=$port --socket-dir=./ \
+			--no-shuffle --launch=tinydns \
+		 --cache-ttl=$cachettl --dname-processing --no-config \
+			--dnsupdate=yes \
+			--logging-structured=yes \
+			--tinydns-dbfile=../modules/tinydnsbackend/data.cdb --module-dir="$PDNS_MODULE_PATH" &
+		skipreasons="nodnssec noent nodyndns nometa noaxfr noalias"
+		;;
+
+	*)
+		nocontext=yes
+esac

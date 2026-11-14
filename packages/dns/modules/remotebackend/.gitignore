@@ -1,0 +1,4 @@
+*.test
+*.trs
+*.log
+venv

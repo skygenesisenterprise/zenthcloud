@@ -1,0 +1,143 @@
+/*
+ * This file is part of PowerDNS or dnsdist.
+ * Copyright -- PowerDNS.COM B.V. and its contributors
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
+ *
+ * In addition, for the avoidance of any doubt, permission is granted to
+ * link this program with OpenSSL and to (re)distribute the binaries
+ * produced as the result of such linking.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+#pragma once
+
+#include <string>
+
+#include "logger.hh"
+#include "logr.hh"
+#include "pdnsexception.hh"
+#include "noinitvector.hh"
+#include "remote_logger.hh"
+#include "query-local-address.hh"
+
+class FrameStreamLogger;
+struct DNSRecord;
+struct ResolveContext;
+
+// Helper to be defined by main program: queue data and log based on return value of queueData()
+RemoteLoggerInterface::Result remoteLoggerQueueData(RemoteLoggerInterface&, const std::string&, bool dolog = true);
+
+extern std::shared_ptr<Logr::Logger> g_slogout;
+extern bool g_paddingOutgoing;
+extern bool g_ECSHardening;
+
+class LWResException : public PDNSException
+{
+public:
+  LWResException(const string& reason_) :
+    PDNSException(reason_) {}
+};
+
+//! LWRes class
+class LWResult
+{
+public:
+  enum class Result : uint8_t
+  {
+    Timeout = 0,
+    Success = 1,
+    PermanentError = 2 /* not transport related */,
+    OSLimitError = 3,
+    Spoofed = 4, /* Spoofing attempt (too many near-misses) */
+    ChainLimitError = 5,
+    ECSMissing = 6,
+    BadCookie = 7,
+    BindError = 8,
+  };
+
+  enum class AnswerType : uint8_t
+  {
+    Unknown = 0,
+    PositiveAnswer,
+    Referral,
+    NoData,
+    NXDomain,
+  };
+
+  class ExpandedWildcardData
+  {
+  public:
+    // wildcards expanded onto themselves (*.powerdns.com. returned as a query
+    // for *.powerdns.com., for example) DO exist, so trying to prove that they
+    // don't would fail.
+    bool shouldDenialOfExistenceBeValidated() const
+    {
+      return !d_expandedOntoItself;
+    }
+
+    // The number of labels of the wildcard (from the RRSIG)
+    // so that we can reconstruct it. Remember to check if this is a
+    // wildcard expanded onto itself (shouldDenialOfExistenceBeValidated)
+    // when consuming this.
+    uint8_t d_labelsCount{0};
+    bool d_expandedOntoItself{false};
+  };
+
+  [[nodiscard]] static bool isLimitError(Result res)
+  {
+    return res == Result::OSLimitError || res == Result::ChainLimitError;
+  }
+
+  std::vector<DNSRecord> d_records;
+  // The names have been expanded from a wildcard, so we need to
+  // 1/ check that the initial name did not exist (denial of existence) so
+  //    that the wildcard could have been applied
+  // 2/ gather the corresponding NSEC/NSEC3 records and their RRSIGs to allow
+  //    downstream validators to do their thing
+  std::unordered_map<DNSName, ExpandedWildcardData> d_synthesizedFromWildcard;
+  std::optional<DNSName> d_seenSOA{std::nullopt};
+  // if this a referral, the new (more specific) auth
+  std::optional<DNSName> d_newAuth{std::nullopt};
+  uint32_t d_usec{0};
+  uint32_t d_bytesReceived{0};
+  // this needs to be a signed integer because the Lua policies
+  // use negative values to stop processing of queries
+  int d_rcode{0};
+  AnswerType d_answerType{AnswerType::Unknown};
+  bool d_validpacket{false};
+  bool d_aabit{false};
+  bool d_tcbit{false};
+  bool d_haveEDNS{false};
+  bool d_isCNAMEAnswer{false};
+  bool d_isDNAMEAnswer{false};
+  // whether we have seen at least one NSEC(3) record in AUTHORITY.
+  // This might indicate a denial of the DS in referrals
+  bool d_seenNSEC{false};
+  // whether the answer denies the existence of a DS (referrals)
+  bool d_deniesDS{false};
+};
+
+class EDNSSubnetOpts;
+
+LWResult::Result asendto(const void* data, size_t len, const ComboAddress& toAddress,
+                         std::optional<pdns::AddressAndInterface>& localAddress, uint16_t qid,
+                         const DNSName& domain, uint16_t qtype, const std::optional<EDNSSubnetOpts>& ecs, int* fileDesc, timeval& now);
+LWResult::Result arecvfrom(PacketBuffer& packet, const ComboAddress& fromAddr, size_t& len, uint16_t qid,
+                           const DNSName& domain, uint16_t qtype, int fileDesc, const std::optional<EDNSSubnetOpts>& ecs, const struct timeval& now);
+
+LWResult::Result asyncresolve(const OptLog& log, const ComboAddress& address, const DNSName& domain, int type, bool doTCP, bool sendRDQuery, int EDNS0Level, struct timeval* now, std::optional<Netmask>& srcmask, const ResolveContext& context, const std::shared_ptr<std::vector<std::unique_ptr<RemoteLogger>>>& outgoingLoggers, const std::shared_ptr<std::vector<std::unique_ptr<FrameStreamLogger>>>& fstrmLoggers, const std::set<uint16_t>& exportTypes, LWResult* lwr, bool* chained);
+uint64_t dumpCookies(int fileDesc);
+uint64_t clearCookies(vector<string>::iterator begin, vector<string>::iterator end, string& errors);
+uint64_t addCookiesUnsupported(vector<string>::iterator begin, vector<string>::iterator end, string& errors);
+void pruneCookies(time_t cutoff);
+std::string enableOutgoingCookies(bool flag, const std::string& unsupported);

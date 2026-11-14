@@ -1,0 +1,204 @@
+/*
+ * This file is part of PowerDNS or dnsdist.
+ * Copyright -- PowerDNS.COM B.V. and its contributors
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
+ *
+ * In addition, for the avoidance of any doubt, permission is granted to
+ * link this program with OpenSSL and to (re)distribute the binaries
+ * produced as the result of such linking.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+#pragma once
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <iostream>
+#include "misc.hh"
+#include "pdnsexception.hh"
+#include <sys/types.h>
+#include <pwd.h>
+#include <grp.h>
+
+#include "namespaces.hh"
+#include "logging.hh"
+
+using ArgException = PDNSException;
+
+/** This class helps parsing argc and argv into a map of parameters. We have 3 kinds of formats:
+
+
+    -w           this leads to a key/value pair of "w"/void
+
+    --port=25    "port"/"25"
+
+    --daemon     "daemon"/void
+
+    We do not support "--port 25" syntax.
+
+    It can also read from a file. This file can contain '#' to delimit comments.
+
+    Some sample code:
+
+    \code
+
+    ArgvMap R;
+
+    R.set("port")="25";  // use this to specify default parameters
+    R.file("./default.conf"); // parse configuration file
+
+    R.parse(argc, argv); // read the arguments from main()
+
+    cout<<"Will we be a daemon?: "<<R.isset("daemon")<<endl;
+    cout<<"Our port will be "<<R["port"]<<endl;
+
+    map<string,string>::const_iterator i;
+    cout<<"via iterator"<<endl;
+    for(i=R.begin();i!=R.end();i++)
+    cout<<i->first<<"="<<i->second<<endl;
+    \endcode
+*/
+
+class ArgvMap
+{
+public:
+  ArgvMap();
+  void parse(int& argc, char** argv, bool lax = false); //!< use this to parse from argc and argv
+  void laxParse(int& argc, char** argv) //!< use this to parse from argc and argv
+  {
+    parse(argc, argv, true);
+  }
+  void preParse(int& argc, char** argv, const string& arg); //!< use this to preparse a single var
+  bool preParseFile(const string& fname, const string& arg, const string& theDefault = ""); //!< use this to preparse a single var in configuration
+
+  bool file(const string& fname, bool lax = false); //!< Parses a file with parameters
+  bool file(const string& fname, bool lax, bool included);
+  bool laxFile(const string& fname)
+  {
+    return file(fname, true);
+  }
+  bool parseFile(const string& fname, const string& arg, bool lax); //<! parse one line
+  bool parmIsset(const string& var); //!< Checks if a parameter is set to *a* value
+  bool mustDo(const string& var); //!< if a switch is given, if we must do something (--help)
+  uid_t asUid(const string& arg); //!< return user id, resolves if necessary
+  gid_t asGid(const string& arg); //!< return group id, resolves if necessary
+  double asDouble(const string& arg); //!< return a variable value as a number
+  string& set(const string&, bool sensitive = false); //!< Gives a writable reference and allocates space for it
+  string& set(const string&, const string&, bool sensitive = false); //!< Does the same but also allows one to specify a help message
+  string& set(const string& var, const char* help, bool sensitive = false)
+  {
+    return set(var, std::string(help), sensitive);
+  }
+  void setCmd(const string&, const string&); //!< Add a command flag
+  string& setSwitch(const string&, const string&); //!< Add a switch flag
+  string helpstring(string prefix = ""); //!< generates the --help
+  string configstring(bool running, bool full); //!< generates the --config
+  bool contains(const string& var, const string& val);
+  bool isEmpty(const string& arg); //!< checks if variable has value
+  bool isSensitive(const string& arg); //!< checks if variable value should be redacted
+  void setDefault(const string& var, const string& value, bool sensitive = false);
+  void setDefaults();
+
+  template <typename T>
+  T asBoundedNum(const string& arg, T minval = std::numeric_limits<T>::min(), T maxval = std::numeric_limits<T>::max(), T def = 0, int base = 0)
+  {
+    if (!parmIsset(arg)) {
+      throw ArgException(string("Undefined but needed argument: '") + arg + "'");
+    }
+
+    // use default for empty values
+    const std::string& param = d_params[arg].first;
+    if (param.empty()) {
+      return def;
+    }
+
+    try {
+      size_t end{0};
+      T retval = pdns::checked_stoi<T>(param, &end, base);
+      if (retval < minval || retval > maxval) {
+        throw std::out_of_range("oh no!");
+      }
+      if (end != param.length()) {
+        throw std::invalid_argument("oh no!");
+      }
+      return retval;
+    }
+    catch (std::invalid_argument&) {
+      throw ArgException("'" + arg + "' value '" + param + string("' is not a valid number"));
+    }
+    catch (std::out_of_range&) {
+      throw ArgException("'" + arg + "' value '" + param + string("' value is out of [" + std::to_string(minval) + ".." + std::to_string(maxval) + "] range"));
+    }
+  }
+
+  template <typename T = int>
+  T asNum(const string& arg, T def = 0, int base = 0)
+  {
+    return asBoundedNum<T>(arg, std::numeric_limits<T>::min(), std::numeric_limits<T>::max(), def, base);
+  }
+
+  template <typename T = int>
+  void assignNum(T& var, const string& arg, T def = 0, int base = 0)
+  {
+    var = asNum<T>(arg, def, base);
+  }
+
+  mode_t asMode(const string& arg) //!< return value interpreted as octal number
+  {
+    return asNum<mode_t>(arg, 0, 8);
+  }
+
+  vector<string> list();
+  [[nodiscard]] string getHelp(const string& item) const
+  {
+    auto iter = helpmap.find(item);
+    return iter == helpmap.end() ? "" : iter->second;
+  }
+  [[nodiscard]] string getDefault(const string& item) const
+  {
+    auto iter = defaultmap.find(item);
+    return iter == defaultmap.end() ? "" : iter->second.first;
+  }
+
+  using param_info = std::pair<std::string, bool>;
+  using param_t = std::map<std::string, param_info>; //!< use this if you need to know the content of the map
+
+  const string& operator[](const string&); //!< iterator semantics
+  const vector<string>& getCommands();
+  void gatherIncludes(const std::string& dir, const std::string& suffix, std::vector<std::string>& extraConfigs);
+  void warnIfDeprecated(const string& var) const;
+  [[nodiscard]] static string isDeprecated(const string& var);
+#if defined(PDNS_AUTH) || defined(RECURSOR)
+  void setSLog(Logr::log_t log)
+  {
+    d_log = log;
+  }
+#endif
+private:
+  void parseOne(const string& arg, const string& parseOnly = "", bool lax = false);
+  static string formatOne(bool running, bool full, const string& var, const string& help, const string& theDefault, const string& current);
+  param_t d_params;
+  std::map<std::string, std::string> d_unknownParams;
+  std::map<std::string, std::string> helpmap;
+  param_t defaultmap;
+  std::map<std::string, std::string> d_typeMap;
+  std::vector<std::string> d_cmds;
+  std::set<std::string> d_cleared;
+#if defined(PDNS_AUTH) || defined(RECURSOR)
+  std::shared_ptr<Logr::Logger> d_log;
+#endif
+};
+
+extern ArgvMap& arg();

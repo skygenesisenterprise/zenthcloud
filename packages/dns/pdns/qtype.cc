@@ -1,0 +1,208 @@
+/*
+ * This file is part of PowerDNS or dnsdist.
+ * Copyright -- PowerDNS.COM B.V. and its contributors
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
+ *
+ * In addition, for the avoidance of any doubt, permission is granted to
+ * link this program with OpenSSL and to (re)distribute the binaries
+ * produced as the result of such linking.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+#include "qtype.hh"
+#include "misc.hh"
+
+static_assert(sizeof(QType) == 2, "QType is not 2 bytes in size, something is wrong!");
+
+const std::map<const std::string, uint16_t> QType::names = {
+  {"A", 1},
+  {"NS", 2},
+  {"CNAME", 5},
+  {"SOA", 6},
+  {"MB", 7},
+  {"MG", 8},
+  {"MR", 9},
+  {"PTR", 12},
+  {"HINFO", 13},
+  {"MINFO", 14},
+  {"MX", 15},
+  {"TXT", 16},
+  {"RP", 17},
+  {"AFSDB", 18},
+  {"SIG", 24},
+  {"KEY", 25},
+  {"AAAA", 28},
+  {"LOC", 29},
+  {"SRV", 33},
+  {"NAPTR", 35},
+  {"KX", 36},
+  {"CERT", 37},
+  {"A6", 38},
+  {"DNAME", 39},
+  {"OPT", 41},
+  {"APL", 42},
+  {"DS", 43},
+  {"SSHFP", 44},
+  {"IPSECKEY", 45},
+  {"RRSIG", 46},
+  {"NSEC", 47},
+  {"DNSKEY", 48},
+  {"DHCID", 49},
+  {"NSEC3", 50},
+  {"NSEC3PARAM", 51},
+  {"TLSA", 52},
+  {"SMIMEA", 53},
+  {"RKEY", 57},
+  {"CDS", 59},
+  {"CDNSKEY", 60},
+  {"OPENPGPKEY", 61},
+  {"CSYNC", 62},
+  {"ZONEMD", 63},
+  {"SVCB", 64},
+  {"HTTPS", 65},
+  {"HHIT", 67},
+  {"BRID", 68},
+  {"SPF", 99},
+  {"NID", 104},
+  {"L32", 105},
+  {"L64", 106},
+  {"LP", 107},
+  {"EUI48", 108},
+  {"EUI64", 109},
+  {"TKEY", 249},
+  {"TSIG", 250},
+  {"IXFR", 251},
+  {"AXFR", 252},
+  {"MAILB", 253},
+  {"MAILA", 254},
+  {"ANY", 255},
+  {"URI", 256},
+  {"CAA", 257},
+  {"RESINFO", 261},
+  {"WALLET", 262},
+  {"DLV", 32769},
+  {"ADDR", 65400},
+#if !defined(RECURSOR)
+  {"ALIAS", 65401},
+  {"LUA", 65402},
+#endif
+};
+
+static std::map<uint16_t, const std::string> swapElements(const std::map<const std::string, uint16_t>& names)
+{
+  std::map<uint16_t, const std::string> ret;
+
+  for (const auto& name : names) {
+    ret.emplace(name.second, name.first);
+  }
+  return ret;
+}
+
+const std::map<uint16_t, const std::string> QType::numbers = swapElements(names);
+
+bool QType::isSupportedType() const
+{
+  return numbers.count(code) == 1;
+}
+
+bool QType::isMetadataType() const
+{
+  // rfc6895 section 3.1, note ANY is 255 and falls outside the range
+  return code == QType::OPT || (code >= rfc6895MetaLowerBound && code <= rfc6895MetaUpperBound);
+}
+
+std::string QType::toString() const
+{
+  const auto& name = numbers.find(code);
+  if (name != numbers.cend()) {
+    return name->second;
+  }
+  return "TYPE" + std::to_string(code);
+}
+
+uint16_t QType::chartocode(const char* ptr)
+{
+  std::string upper = toUpper(ptr);
+
+  const auto& num = names.find(upper);
+  if (num != names.cend()) {
+    return num->second;
+  }
+
+  const char* digits{nullptr};
+  if (*ptr == '#') {
+    digits = ptr + 1; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  }
+  else if (boost::starts_with(upper, "TYPE")) {
+    digits = ptr + 4; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  }
+  if (digits != nullptr) {
+    // We would ideally return pdns::checked_stoi<uint16_t>(digits) here, but
+    // not all callers are ready to handle exceptions arising here.
+    char* end{nullptr};
+    unsigned long typeno = strtoul(digits, &end, 10);
+    if (typeno <= std::numeric_limits<uint16_t>::max() && end != digits && (*end == '\0' || isspace(static_cast<unsigned char>(*end)) != 0)) {
+      return typeno;
+    }
+  }
+  // Similarly, we would ideally throw std::invalid_argument here, but won't yet.
+  return 0;
+}
+
+QType& QType::operator=(const char* ptr)
+{
+  code = chartocode(ptr);
+  return *this;
+}
+
+QType& QType::operator=(const string& str)
+{
+  code = chartocode(str.c_str());
+  return *this;
+}
+
+static const std::map<const std::string, uint16_t> s_classMap = {
+  {"IN", QClass::IN},
+  {"CHAOS", QClass::CHAOS},
+  {"NONE", QClass::NONE},
+  {"ANY", QClass::ANY},
+};
+
+QClass::QClass(const std::string& code)
+{
+  auto mapIt = s_classMap.find(code);
+  if (mapIt == s_classMap.end()) {
+    throw std::runtime_error("Invalid QClass '" + code + "'");
+  }
+  qclass = mapIt->second;
+}
+
+std::string QClass::toString() const
+{
+  switch (qclass) {
+  case IN:
+    return "IN";
+  case CHAOS:
+    return "CHAOS";
+  case NONE:
+    return "NONE";
+  case ANY:
+    return "ANY";
+  default:
+    return "CLASS" + std::to_string(qclass);
+  }
+}
+
+const std::set<uint16_t> QType::exclusiveEntryTypes = {
+  QType::CNAME};

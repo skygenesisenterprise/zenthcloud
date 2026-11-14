@@ -1,0 +1,114 @@
+/*
+ * This file is part of PowerDNS or dnsdist.
+ * Copyright -- PowerDNS.COM B.V. and its contributors
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
+ *
+ * In addition, for the avoidance of any doubt, permission is granted to
+ * link this program with OpenSSL and to (re)distribute the binaries
+ * produced as the result of such linking.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include "statbag.hh"
+#include "logger.hh"
+#include "threadname.hh"
+#include "iputils.hh"
+#include "sstuff.hh"
+#include "arguments.hh"
+#include "auth-main.hh"
+
+#include "namespaces.hh"
+
+void carbonDumpThread(Logr::log_t slog)
+{
+  try {
+    setThreadName("pdns/carbonDump");
+    extern StatBag S;
+
+    string namespace_name=arg()["carbon-namespace"];
+    string hostname=arg()["carbon-ourname"];
+    if (hostname.empty()) {
+      try {
+        hostname = getCarbonHostName();
+      }
+      catch(const std::exception& e) {
+        throw std::runtime_error(std::string("The 'carbon-ourname' setting has not been set and we are unable to determine the system's hostname: ") + e.what());
+      }
+    }
+    string instance_name=arg()["carbon-instance"];
+
+    vector<string> carbonServers;
+    stringtok(carbonServers, arg()["carbon-server"], ", ");
+
+    for(;;) {
+      if(carbonServers.empty()) {
+        sleep(1);
+        continue;
+      }
+
+      string msg;
+      vector<string> entries = S.getEntries();
+      ostringstream str;
+      time_t now=time(nullptr);
+      for(const string& entry : entries) {
+        switch (S.getStatType(entry)) {
+        case StatType::counter:
+        case StatType::gauge:
+          str<<namespace_name<<'.'<<hostname<<'.'<<instance_name<<'.'<<entry<<' '<<S.readCounter(entry)<<' '<<now<<"\r\n";
+          break;
+        case StatType::histogram:
+          {
+            StatBag::Histogram histo = S.readHistogram(entry);
+            for (uint8_t bucket = StatBag::HistoBucket::Bucket_first; bucket <= StatBag::HistoBucket::Bucket_last; ++bucket) {
+              str<<namespace_name<<'.'<<hostname<<'.'<<instance_name<<'.'<<entry<<StatBag::s_histo_suffixes.at(bucket)<<' '<<histo.at(bucket)<<' '<<now<<"\r\n";
+            }
+          }
+          break;
+        }
+      }
+      msg = str.str();
+
+      for (const auto& carbonServer : carbonServers) {
+        ComboAddress remote(carbonServer, 2003);
+
+        try {
+          Socket s(remote.sin4.sin_family, SOCK_STREAM);
+          s.setNonBlocking();
+          s.connect(remote, 2);
+
+          writen2WithTimeout(s.getHandle(), msg.c_str(), msg.length(), timeval{2,0});
+        } catch (runtime_error &e){
+          SLOG(g_log<<Logger::Warning<<"Unable to write data to carbon server at "<<remote.toStringWithPort()<<": "<<e.what()<<endl,
+               slog->error(Logr::Warning, e.what(), "Unable to write data to carbon server", "remote", Logging::Loggable(remote.toStringWithPort())));
+          continue;
+        }
+      }
+      sleep(arg().asNum<unsigned int>("carbon-interval")); // NOLINT(concurrency-mt-unsafe): yes, sleep may be implemented using SIGALRM. But it's 2026 now.
+    }
+  }
+  catch(std::exception& e) {
+    SLOG(g_log<<Logger::Error<<"Carbon thread died: "<<e.what()<<endl,
+         slog->error(Logr::Error, e.what(), "Carbon thread died"));
+  }
+  catch(PDNSException& e) {
+    SLOG(g_log<<Logger::Error<<"Carbon thread died, PDNSException: "<<e.reason<<endl,
+         slog->error(Logr::Error, e.reason, "Carbon thread died with PDNSException"));
+  }
+  catch(...) {
+    SLOG(g_log<<Logger::Error<<"Carbon thread died"<<endl,
+         slog->info(Logr::Error, "Carbon thread died"));
+  }
+}

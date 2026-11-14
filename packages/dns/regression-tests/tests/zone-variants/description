@@ -1,0 +1,7 @@
+Tests for zone variant handling.
+The expected result for backends without CAP_VIEWS support is failure.
+
+The current expected_result file is -wrong- for those backends. It shows how
+they ignore the variant, instead of rejecting it. Left it like this so CI
+is green. Backends with CAP_VIEWS support (lmdb, gpgsql) have their own
+expected_result.<backend> showing the correct behaviour.

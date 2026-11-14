@@ -1,0 +1,369 @@
+/*
+ * This file is part of PowerDNS or dnsdist.
+ * Copyright -- PowerDNS.COM B.V. and its contributors
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
+ *
+ * In addition, for the avoidance of any doubt, permission is granted to
+ * link this program with OpenSSL and to (re)distribute the binaries
+ * produced as the result of such linking.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+#pragma once
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include <string>
+#include <deque>
+#include <queue>
+#include <vector>
+#include <thread>
+#include "threadname.hh"
+#include <unistd.h>
+
+#include "channel.hh"
+#include "logger.hh"
+#include "dns.hh"
+#include "dnsbackend.hh"
+#include "pdnsexception.hh"
+#include "arguments.hh"
+#include <atomic>
+#include "statbag.hh"
+#include "gss_context.hh"
+
+extern StatBag S;
+
+/** the Distributor template class enables you to multithread slow question/answer 
+    processes. 
+    
+    Questions are posed to the Distributor, which returns the answer via a callback.
+
+    The Distributor spawns sufficient backends, and if they thrown an exception,
+    it will cycle the backend but drop the query that was active during the exception.
+*/
+
+template<class Answer, class Question, class Backend> class Distributor
+{
+public:
+  //!< Create a new Distributor with \param n threads
+  static Distributor* Create(int n, Logr::log_t slog);
+  using callback_t = std::function<void(std::unique_ptr<Answer>&, Logr::log_t, int)>;
+  virtual int question(Question&, callback_t callback) =0; //!< Submit a question to the Distributor
+  virtual int getQueueSize() =0; //!< Returns length of question queue
+  virtual bool isOverloaded() =0;
+  virtual ~Distributor() { cerr<<__func__<<endl;}
+};
+
+template<class Answer, class Question, class Backend> class SingleThreadDistributor
+    : public Distributor<Answer, Question, Backend>
+{
+public:
+  SingleThreadDistributor(const SingleThreadDistributor&) = delete;
+  void operator=(const SingleThreadDistributor&) = delete;
+  SingleThreadDistributor(Logr::log_t slog);
+  using callback_t = std::function<void(std::unique_ptr<Answer>&, Logr::log_t, int)>;
+  int question(Question&, callback_t callback) override; //!< Submit a question to the Distributor
+  int getQueueSize() override {
+    return 0;
+  }
+
+  bool isOverloaded() override
+  {
+    return false;
+  }
+
+private:
+  std::unique_ptr<Backend> b{nullptr};
+  std::shared_ptr<Logr::Logger> d_slog;
+};
+
+template<class Answer, class Question, class Backend> class MultiThreadDistributor
+    : public Distributor<Answer, Question, Backend>
+{
+public:
+  MultiThreadDistributor(const MultiThreadDistributor&) = delete;
+  void operator=(const MultiThreadDistributor&) = delete;
+  MultiThreadDistributor(int n, Logr::log_t slog);
+  using callback_t = std::function<void(std::unique_ptr<Answer>&, Logr::log_t, int)>;
+  int question(Question&, callback_t callback) override; //!< Submit a question to the Distributor
+  void distribute(int n);
+  int getQueueSize() override {
+    return d_queued;
+  }
+
+  struct QuestionData
+  {
+    QuestionData(const Question& query): Q(query)
+    {
+      start = Q.d_dt.udiff();
+    }
+
+    Question Q;
+    callback_t callback{nullptr};
+    int id{0};
+    int start{0};
+  };
+
+  bool isOverloaded() override
+  {
+    return d_overloadQueueLength && (d_queued > d_overloadQueueLength);
+  }
+
+private:
+  std::vector<pdns::channel::Sender<QuestionData>> d_senders;
+  std::vector<pdns::channel::Receiver<QuestionData>> d_receivers;
+  time_t d_last_started{0};
+  std::atomic<unsigned int> d_queued{0};
+  unsigned int d_overloadQueueLength{0};
+  unsigned int d_maxQueueLength{0};
+  int d_nextid{0};
+  int d_num_threads{0};
+  std::shared_ptr<Logr::Logger> d_slog;
+};
+
+template<class Answer, class Question, class Backend> Distributor<Answer,Question,Backend>* Distributor<Answer,Question,Backend>::Create(int n, Logr::log_t slog)
+{
+    if( n == 1 )
+      return new SingleThreadDistributor<Answer,Question,Backend>(slog);
+    else
+      return new MultiThreadDistributor<Answer,Question,Backend>(n, slog);
+}
+
+template<class Answer, class Question, class Backend>SingleThreadDistributor<Answer,Question,Backend>::SingleThreadDistributor(Logr::log_t slog)
+{
+  d_slog = slog;
+  SLOG(g_log<<Logger::Error<<"Only asked for 1 backend thread - operating unthreaded"<<endl,
+       d_slog->info(Logr::Error, "Only asked for 1 backend thread - operating unthreaded"));
+  try {
+    b=make_unique<Backend>(d_slog);
+  }
+  catch(const PDNSException &AE) {
+    SLOG(g_log<<Logger::Error<<"Distributor caught fatal exception: "<<AE.reason<<endl,
+         d_slog->error(Logr::Error, AE.reason, "Distributor caught fatal exception"));
+    _exit(1);
+  }
+  catch(const std::exception& e) {
+    SLOG(g_log<<Logger::Error<<"Distributor caught fatal exception: "<<e.what()<<endl,
+         d_slog->error(Logr::Error, e.what(), "Distributor caught fatal exception"));
+    _exit(1);
+  }
+  catch(...) {
+    SLOG(g_log<<Logger::Error<<"Caught an unknown exception when creating backend, probably"<<endl,
+         d_slog->info(Logr::Error, "Caught an unknown exception when creating backend, probably"));
+    _exit(1);
+  }
+}
+
+template<class Answer, class Question, class Backend>MultiThreadDistributor<Answer,Question,Backend>::MultiThreadDistributor(int numberOfThreads, Logr::log_t slog) :
+  d_last_started(time(nullptr)), d_overloadQueueLength(::arg().asNum<decltype(d_overloadQueueLength)>("overload-queue-length")), d_maxQueueLength(::arg().asNum<decltype(d_maxQueueLength)>("max-queue-length")), d_num_threads(numberOfThreads)
+{
+  d_slog = slog;
+  if (numberOfThreads < 1) {
+    SLOG(g_log<<Logger::Error<<"Asked for fewer than 1 threads, nothing to do"<<endl,
+         d_slog->info(Logr::Error, "Asked for fewer than 1 threads, nothing to do"));
+    _exit(1);
+  }
+
+  for (int distributorIdx = 0; distributorIdx < numberOfThreads; distributorIdx++) {
+    auto [sender, receiver] = pdns::channel::createObjectQueue<QuestionData>(pdns::channel::SenderBlockingMode::SenderBlocking, pdns::channel::ReceiverBlockingMode::ReceiverBlocking);
+    d_senders.push_back(std::move(sender));
+    d_receivers.push_back(std::move(receiver));
+  }
+
+  SLOG(g_log<<Logger::Warning<<"About to create "<<numberOfThreads<<" backend threads for UDP"<<endl,
+       d_slog->info(Logr::Warning, "About to create backend threads for UDP", "count", Logging::Loggable(numberOfThreads)));
+
+  for (int distributorIdx = 0; distributorIdx < numberOfThreads; distributorIdx++) {
+    std::thread t([=](){distribute(distributorIdx);});
+    t.detach();
+    Utility::usleep(50000); // we've overloaded mysql in the past :-)
+  }
+  SLOG(g_log<<Logger::Warning<<"Done launching threads, ready to distribute questions"<<endl,
+       d_slog->info(Logr::Warning, "Done launching threads, ready to distribute questions"));
+}
+
+
+// start of a new thread
+template<class Answer, class Question, class Backend>void MultiThreadDistributor<Answer,Question,Backend>::distribute(int ournum)
+{
+  // this is the longest name we can use, not a typo
+  setThreadName("pdns/distributo");
+
+  try {
+    auto b = make_unique<Backend>(d_slog); // this will answer our questions
+    auto queuetimeout = ::arg().asBoundedNum<int>("queue-limit", 0, INT_MAX);
+    auto& receiver = d_receivers.at(ournum);
+
+    for (;;) {
+      auto tempQD = receiver.receive();
+      if (!tempQD) {
+	unixDie("read");
+      }
+      --d_queued;
+      auto questionData = std::move(*tempQD);
+      std::unique_ptr<Answer> a = nullptr;
+      if (queuetimeout && questionData->Q.d_dt.udiff() > queuetimeout * 1000) {
+        S.inc("timedout-packets");
+        continue;
+      }
+
+      bool allowRetry = true;
+retry:
+      // this is the only point where we interact with the backend (synchronous)
+      try {
+        if (!b) {
+          allowRetry = false;
+          b = make_unique<Backend>(d_slog);
+        }
+        a = b->question(questionData->Q);
+      }
+      catch (const PDNSException &e) {
+        b.reset();
+        if (!allowRetry) {
+          SLOG(g_log<<Logger::Error<<"Backend error: "<<e.reason<<endl,
+               d_slog->error(Logr::Error, e.reason, "Backend error"));
+          a = questionData->Q.replyPacket();
+
+          a->setRcode(RCode::ServFail);
+          S.inc("servfail-packets");
+          S.ringAccount("servfail-queries", questionData->Q.qdomain, questionData->Q.qtype);
+        } else {
+          SLOG(g_log<<Logger::Notice<<"Backend error (retry once): "<<e.reason<<endl,
+               d_slog->error(Logr::Notice, e.reason, "Backend error (retry once)"));
+          goto retry;
+        }
+      }
+      catch (...) {
+        b.reset();
+        if (!allowRetry) {
+          SLOG(g_log<<Logger::Error<<"Caught unknown exception in Distributor thread "<<std::this_thread::get_id()<<endl,
+               d_slog->info(Logr::Error, "Caught unknown exception in Distributor thread", "thread id", Logging::Loggable(std::this_thread::get_id())));
+          a = questionData->Q.replyPacket();
+
+          a->setRcode(RCode::ServFail);
+          S.inc("servfail-packets");
+          S.ringAccount("servfail-queries", questionData->Q.qdomain, questionData->Q.qtype);
+        } else {
+          SLOG(g_log<<Logger::Warning<<"Caught unknown exception in Distributor thread "<<std::this_thread::get_id()<<" (retry once)"<<endl,
+               d_slog->info(Logr::Warning, "Caught unknown exception in Distributor thread (retry once)", "thread id", Logging::Loggable(std::this_thread::get_id())));
+          goto retry;
+        }
+      }
+
+      questionData->callback(a, d_slog, questionData->start);
+#ifdef ENABLE_GSS_TSIG
+      if (g_doGssTSIG && a != nullptr) {
+        questionData->Q.cleanupGSS(a->d.rcode);
+      }
+#endif
+      questionData.reset();
+    }
+
+    b.reset();
+  }
+  catch (const PDNSException &AE) {
+    SLOG(g_log<<Logger::Error<<"Distributor caught fatal exception: "<<AE.reason<<endl,
+         d_slog->error(Logr::Error, AE.reason, "Distributor caught fatal exception"));
+    _exit(1);
+  }
+  catch (const std::exception& e) {
+    SLOG(g_log<<Logger::Error<<"Distributor caught fatal exception: "<<e.what()<<endl,
+         d_slog->error(Logr::Error, e.what(), "Distributor caught fatal exception"));
+    _exit(1);
+  }
+  catch (...) {
+    SLOG(g_log<<Logger::Error<<"Caught an unknown exception when creating backend, probably"<<endl,
+         d_slog->info(Logr::Error, "Caught an unknown exception when creating backend, probably"));
+    _exit(1);
+  }
+}
+
+template<class Answer, class Question, class Backend>int SingleThreadDistributor<Answer,Question,Backend>::question(Question& q, callback_t callback)
+{
+  int start = q.d_dt.udiff();
+  std::unique_ptr<Answer> a = nullptr;
+  bool allowRetry=true;
+retry:
+  try {
+    if (!b) {
+      allowRetry=false;
+      b=make_unique<Backend>(d_slog);
+    }
+    a=b->question(q); // a can be NULL!
+  }
+  catch(const PDNSException &e) {
+    b.reset();
+    if (!allowRetry) {
+      SLOG(g_log<<Logger::Error<<"Backend error: "<<e.reason<<endl,
+           d_slog->error(Logr::Error, e.reason, "Backend error"));
+      a=q.replyPacket();
+
+      a->setRcode(RCode::ServFail);
+      S.inc("servfail-packets");
+      S.ringAccount("servfail-queries", q.qdomain, q.qtype);
+    } else {
+      SLOG(g_log<<Logger::Notice<<"Backend error (retry once): "<<e.reason<<endl,
+           d_slog->error(Logr::Notice, e.reason, "Backend error (retry once)"));
+      goto retry;
+    }
+  }
+  catch(...) {
+    b.reset();
+    if (!allowRetry) {
+      SLOG(g_log<<Logger::Error<<"Caught unknown exception in Distributor thread "<<std::this_thread::get_id()<<endl,
+           d_slog->info(Logr::Error, "Caught unknown exception in Distributor thread", "thread id", Logging::Loggable(std::this_thread::get_id())));
+      a=q.replyPacket();
+
+      a->setRcode(RCode::ServFail);
+      S.inc("servfail-packets");
+      S.ringAccount("servfail-queries", q.qdomain, q.qtype);
+    } else {
+      SLOG(g_log<<Logger::Warning<<"Caught unknown exception in Distributor thread "<<std::this_thread::get_id()<<" (retry once)"<<endl,
+           d_slog->info(Logr::Warning, "Caught unknown exception in Distributor thread (retry once)", "thread id", Logging::Loggable(std::this_thread::get_id())));
+      goto retry;
+    }
+  }
+  callback(a, d_slog, start);
+#ifdef ENABLE_GSS_TSIG
+  if (g_doGssTSIG && a != nullptr) {
+    q.cleanupGSS(a->d.rcode);
+  }
+#endif
+  return 0;
+}
+
+struct DistributorFatal{};
+
+template<class Answer, class Question, class Backend>int MultiThreadDistributor<Answer,Question,Backend>::question(Question& q, callback_t callback)
+{
+  // this is passed to other process over pipe and released there
+  auto questionData = std::make_unique<QuestionData>(q);
+  auto ret = questionData->id = d_nextid++; // might be deleted after write!
+  questionData->callback = callback;
+
+  ++d_queued;
+  if (!d_senders.at(questionData->id % d_senders.size()).send(std::move(questionData))) {
+    --d_queued;
+    questionData.reset();
+    unixDie("write");
+  }
+
+  if (d_queued > d_maxQueueLength) {
+    SLOG(g_log<<Logger::Error<< d_queued <<" questions waiting for database/backend attention. Limit is "<<d_maxQueueLength<<", respawning"<<endl,
+         d_slog->info(Logr::Error, "Too many questions waiting for backend attention, respawning", "count", Logging::Loggable(d_queued), "limit", Logging::Loggable(d_maxQueueLength)));
+    // this will leak the entire contents of all pipes, nothing will be freed. Respawn when this happens!
+    throw DistributorFatal();
+  }
+
+  return ret;
+}

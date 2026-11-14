@@ -1,0 +1,23 @@
+source ./backends/gsql-common
+case $context in
+	godbc_sqlite3-nodnssec | godbc_sqlite3 | godbc_sqlite3-nsec3 | godbc_sqlite3-nsec3-optout | godbc_sqlite3-nsec3-narrow)
+		rm -f pdns.sqlite3
+		sqlite3 pdns.sqlite3 < ../modules/gsqlite3backend/schema.sqlite3.sql
+		tosql gsqlite | sqlite3 pdns.sqlite3
+		echo 'ANALYZE; PRAGMA journal_mode=WAL;' | sqlite3 pdns.sqlite3
+
+		cat > pdns-godbc_sqlite3.conf << __EOF__
+module-dir=$PDNS_MODULE_PATH
+launch=godbc
+godbc-datasource=$GODBC_SQLITE3_DSN
+
+logging-structured
+__EOF__
+		${PDNSSERVER:-../pdns/pdns_server} --launch=gsqlite3 --config | grep query= | perl -pe 's/^# gsqlite3/godbc/; s/:\w+/?/g' >> pdns-godbc_sqlite3.conf
+
+		gsql_master godbc_sqlite3 nodyndns
+		;;
+
+	*)
+		nocontext=yes
+esac

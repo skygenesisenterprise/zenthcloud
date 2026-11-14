@@ -1,0 +1,82 @@
+import dns
+import os
+import time
+from recursortests import RecursorTest
+
+
+class TrustAnchorsEnabledTest(RecursorTest):
+    """This test will do a query for "trustanchor.server CH TXT" and hopes to get
+    a proper answer"""
+
+    _confdir = "TrustAnchorsEnabled"
+    _roothints = None
+    _root_DS = None
+    _config_template = """
+     allow-trust-anchor-query=yes
+"""
+    _lua_config_file = """
+addTA("powerdns.com", "44030 8 1 B763646757DF621DD1204AD3BFA0675B49BE3279")
+addNTA("example")
+addNTA("example.com", "some reason")
+"""
+
+    def testTrustanchorDotServer(self):
+        expected = dns.rrset.from_text_list(
+            "trustanchor.server.", 86400, dns.rdataclass.CH, "TXT", ['". 20326 38696"', '"powerdns.com. 44030"']
+        )
+        query = dns.message.make_query("trustanchor.server", "TXT", dns.rdataclass.CH)
+        result = self.sendUDPQuery(query)
+
+        self.assertRcodeEqual(result, dns.rcode.NOERROR)
+        self.assertRRsetInAnswer(result, expected)
+
+    def testNegativerustanchorDotServer(self):
+        expected = dns.rrset.from_text_list(
+            "negativetrustanchor.server.", 86400, dns.rdataclass.CH, "TXT", ['"example."', '"example.com. some reason"']
+        )
+        query = dns.message.make_query("negativetrustanchor.server", "TXT", dns.rdataclass.CH)
+        result = self.sendUDPQuery(query)
+
+        self.assertRcodeEqual(result, dns.rcode.NOERROR)
+        self.assertRRsetInAnswer(result, expected)
+
+
+class TrustAnchorsDisabledTest(RecursorTest):
+    """This test will do a query for "trustanchor.server CH TXT" and hopes to get
+    a proper answer"""
+
+    _confdir = "TrustAnchorsDisabled"
+    _roothints = None
+    _root_DS = None
+    _config_template = """
+"""
+
+    def testTrustanchorDotServer(self):
+        query = dns.message.make_query("trustanchor.server", "TXT", dns.rdataclass.CH)
+        result = self.sendUDPQuery(query)
+
+        self.assertRcodeEqual(result, dns.rcode.SERVFAIL)
+
+    def testNegativerustanchorDotServer(self):
+        query = dns.message.make_query("negativetrustanchor.server", "TXT", dns.rdataclass.CH)
+        result = self.sendUDPQuery(query)
+
+        self.assertRcodeEqual(result, dns.rcode.SERVFAIL)
+
+
+class TrustAnchorsIncompleteTest(RecursorTest):
+    """This test will check of incomplete TAs are detected"""
+
+    _confdir = "TrustAnchorsIncomplete"
+    _auth_zones = RecursorTest._default_auth_zones
+    _root_DS = None
+    _config_template = """
+"""
+
+    def testMetric(self):
+        confdir = os.path.join("configs", TrustAnchorsIncompleteTest._confdir)
+        for i in range(50):
+            value = self.recControl(confdir, "get", "unknown-root-keys")
+            if value == "0\n":
+                time.sleep(0.1)
+        self.assertEqual(value, "1\n")

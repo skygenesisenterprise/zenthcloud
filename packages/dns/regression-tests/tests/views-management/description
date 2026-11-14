@@ -1,0 +1,2 @@
+Tests for views management.
+The expected result for backends without CAP_VIEWS support is failure.

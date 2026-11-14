@@ -1,0 +1,754 @@
+Changelogs for 5.5.X
+====================
+
+Before upgrading, it is advised to read the :doc:`../upgrade`.
+
+.. changelog::
+  :version: 5.5.0-beta1
+  :released: 11th of November 2026
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 18195
+
+    Report unknown root key signing keys seen in log and as a metric.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18244
+
+    Update cargo dependencies, fixing a couple of minor security issues.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18246
+
+    Handle redundant SOAs in ZoneMD processing.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18247
+
+    Determine re-use TLS connection based on more parameters.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18248
+
+    Sysconf can return -1 for _SC_GETGR_R_SIZE_MAX and _SC_GETPW_R_SIZE_MAX, use sane default.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 18260
+
+    Do not flush cache on initial (synchronous) RPZ load from seed or file.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 18268
+
+    Dnsparser: Yet another hardening PR.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 18270
+
+    Two very minor Coverity fixes.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 18277
+
+    Dnsname: Fix length check for DNS name lacking the final dot.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 18305
+
+    Refactor processing of answers received from authoritative servers.
+
+.. changelog::
+  :version: 5.5.0-alpha2
+  :released: 27th of October 2026
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17715
+    :tickets: 17492
+
+    NSspeed computation improvements.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17734
+    :tickets: 17726
+
+    Add more, empty Special Use domains.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17773
+
+    DNSSEC: MLDSA44 (Module-Lattice Digital Signature Algorithm for DNSSEC).
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17878
+
+    Better numerical parameter parsing.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17883
+
+    Dnsrecords: bound APL wire elements to the record length.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17894
+    :tickets: 17893
+
+    Scrub (most) answer records from rcode != 0 answers.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17895
+
+    On quit-nicely wait for mthreads to be done.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17897,17978
+
+    Store scope zero replies in packetcache and modify on retrieval.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17905
+
+    Minor optimization.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17958
+    :tickets: 17710
+
+    Move to yaml_serde.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17984
+
+    Padding should be last of all EDE options.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17985
+
+    Stop using the 257 DNSKEY flag value directly.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18029
+
+    Fix Lua to YAML conversion of custom RPZ policies.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18035
+
+    Retrieve DNSSEC data with RPZ processing disabled.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 18050
+
+    Two new SVCParams
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18060
+
+    Fix Lua processing of wipePacketCache flag, was not processed for file RPZ.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18068
+
+    Catch exception thrown by parsing system resolver result.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18069
+
+    Catch two cases of the system resolver throwing an exception that isn't caught..
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18070
+
+    Wipe caches when wiping all NTA's.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18076
+
+    Correct stat name lookup in udpErrorStats() (Benjamin Gentil).
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18084
+
+    Fix axfr failure to invalidate fd on close in all cases.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18085
+
+    RPZ transfer limits are megabytes, not bytes.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 18173
+
+    Update crates and modify pkcs12 code to handle the newer API.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 18177
+
+    Reject RPZ out of zone records instead of rejecting the whole zone.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 18178
+
+    TxtEscape(): reduce allocations and copying by reserving enough space for the typical case.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18182
+
+    Actually compare TA file against current config.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18190
+
+    Limit size of http(s) downloads for zoneToCache as advertized.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18204
+
+    Stricter umask usage.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18207
+
+    Limit pointer to pointer chains in DNS names.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18208
+
+    Set IP_BIND_ADDRESS_NO_PORT to circumvent too many sockets in TIME_WAIT issue.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18214, 18216
+
+    Ensure the map with TCP Connections is cleaned.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18217
+
+    Fix YWH-306: do no let an oob access to a NS set the flag permanently.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18218
+
+    Fix YWH323: enforce EDNS option record has root as its name.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18219
+
+    Fix TLS handshake, YWH-307.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 18220
+
+    Fix bound of EDNS option read while checking scopeZero ECS (YWH415).
+
+.. changelog::
+  :version: 5.5.0-alpha1
+  :released: 13th of August 2026
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 16855
+
+    Add feature to read TLS key info from an encrypted PKCS12 (pfx) file for the embedded web server.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 16856
+
+    Rec and dnsdist: Update rustc and cargo to 1.93
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 16858
+
+    Add feature to optionally use a client certificate for outgoing DoT.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 16891
+    :tickets: 16199
+
+    Handle NSEC3 records where hash(owner) > hash(next) in aggressive cache decision.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 16905
+
+    Save outgoing TLSContext for later re-use.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 16907
+
+    Meson: Add missing checks for `TLS_client_method`, `gnutls_transport_set_fastopen`.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 16915,17128,17658,17789
+
+    Coverity reports
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 16936
+
+    Drop QR=0 responses from auths.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 16970
+    :tickets: 14854
+
+    RPZ add auto cache flush of packet cache feature on RPZ updates.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 16986
+
+    Add ubuntu-resolute build target.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 16993
+
+    Fix serialization of cached authority records.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 16995
+
+    Two protobuf logging features: use 4 byte frame size and add strategy.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 16998
+
+    Apply specific minimum TTL for root NS records.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 16999
+
+    More getRR return value checks.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17005
+
+    Continue processing response Policies if a discarded policy is hit.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17011
+
+    Redact more configuration secrets in the /config endpoint.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17016
+
+    Give better error message on api-dir not set.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17019
+
+    Prevent dist failure if cargo is in a non-default location.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17034
+
+    Add meson option to not build man pages.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17053
+    :tickets: 17052
+
+    Fix lua addRecord function implementation (Sasha Kabenin).
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17076
+
+    Handle malformed pointers in dnswriter.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17077
+
+    Harden the DNS parser against malformed records.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17101
+
+    Better handling of RFC5155 transitions in the aggressive NSEC cache.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17156
+
+    Fix DNSSEC validation of wildcard-expanded proof.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17157
+    :tickets: 17137
+
+    Fix DNAME interaction with aggressive use of NSEC3.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17161
+
+    Skip ZONEMD records in RPZs.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17194
+
+    Limit size of incoming web request.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17197
+
+    Estimate size and refuse to cache big negcache entries.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17199
+
+    Work on a copy of PolicyZoneData while building the new RPZ zone.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17200
+
+    Fix two cases of lacking/wrong max size compares (YWH-PGM6095-90).
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17201
+
+    Prevent null-pointer dereference in aggressive NSEC cache.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17202
+
+    Only check cookie if we sent one out (YWH-PGM6095-134).
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17203
+
+    Zonemd null pointer dereference on non-standard schemes (#YWH-PGM6095-156).
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17205
+
+    Throw if no valid SOA found (YWH-PGM6095-168)
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17235
+
+    Check boundary in getUnquotedText() as we do in getText().
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17283
+    :tickets: 17230
+
+    Be more consistent in logging source and remote.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17285
+
+    Check bytes received limit immediate after increase.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17289
+
+    Optimize dns64 PTR processing (#YWH-PGM6095-280).
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17297
+
+    Implement a cors flag to set allowed origin in webserver.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17320
+
+    Smarter memory need computation.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17359
+
+    Janitor work on (generated) Rust code.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17360
+
+    Keep cache warm for a list of names.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17376
+
+    Credentials: Try harder to zero out existing data.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17384
+
+    Ednscookies: Fix timestamp validity check.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17396
+
+    Snmp-agent: Fix a memory leak.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17398
+
+    Libssl: Minor fixes.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17455
+
+    Yet more xfr* hardening
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17460
+
+    Iputils: Return early when the tree is empty.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17502
+
+    Zap autotools as build system.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17528
+
+    Remote logger: Reconnect if writes have been stalled for too long.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17535
+
+    Only set ACCESS_CONTROL_ALLOW_ORIGIN if auth succeeded (#YWH-PGM-6095-250).
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17554
+
+    Protozero: extend test to determine endianness.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17597
+
+    Reject out of zone records.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17598
+
+    Do not store ECS scope 0 carrying requests/replies in the packetcache.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17599
+
+    Fix validation bypass for ZONEMD (part of YWH-PGM6095-274).
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17602
+
+    Reject (more) strange headers.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17605
+
+    With catalog zone transfers, check if SOA is defined before using.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17608
+
+    Check RRSIG record is valid in zonemd before processing further (#YWH-PGM6095-275).
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17609
+
+    If EDNS is mandatory, do it always in the first iteration (#YWH-PGM6095-290).
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17659
+
+    Set Rust LTO mode automatically, and allow setting RUSTFLAGS.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17666
+    :tickets: 9090
+
+    Better reporting of filesystem errors.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17693
+
+    Add handling of new protobuf logging parameter: stalledWriteTimeout.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17696
+
+    Update our Rust deps.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17708,17746
+
+    Allow explicitly named interface for source address.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17728
+
+    Do not use string compare for DNS names.
+
+  .. change::
+    :tags: Improvements
+    :pullreq: 17737
+
+    Emit EDE 33 (Negative Trust Anchor) on NTA-covered responses (Babak Farrokhi).
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17748
+
+    Do not attempt to refresh NS records in refresh-almost-expired..
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17760
+
+    Correct the EDNS option length bound in queryMatches.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17761
+
+    RRSIGs with too few labels can lead to bypass of DNSSEC wildcard validation.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17762
+
+    Wildcard CNAME proof validation bypass.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17769
+
+    Reject NSECs whose next names are out of the zone earlier.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17786
+    :tickets: 17772
+
+    Bandaid for disabling algo 8 also disables DS digest 2.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17790
+
+    Dnsname: Properly reject 256-bytes wire-encoded DNS names.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17797
+
+    Dnsname: Account for the existing content when parsing labels.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17869
+
+    Skip unexpected tags when deserializing protobuf messages.
+
+  .. change::
+    :tags: Bug Fixes
+    :pullreq: 17888
+
+    Fix typo in rec_control command name.
+

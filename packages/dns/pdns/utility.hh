@@ -1,0 +1,118 @@
+/*
+ * This file is part of PowerDNS or dnsdist.
+ * Copyright -- PowerDNS.COM B.V. and its contributors
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
+ *
+ * In addition, for the avoidance of any doubt, permission is granted to
+ * link this program with OpenSSL and to (re)distribute the binaries
+ * produced as the result of such linking.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+// Utility class specification.
+#pragma once
+
+#ifdef NEED_POSIX_TYPEDEF
+typedef unsigned char uint8_t;
+typedef unsigned short int uint16_t;
+typedef unsigned int uint32_t;
+typedef unsigned long long uint64_t;
+#endif
+
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <sys/uio.h>
+#include <csignal>
+#include <pthread.h>
+#include <semaphore.h>
+#include <cerrno>
+#include <unistd.h>
+
+#include <memory>
+
+//! A semaphore class.
+class Semaphore
+{
+private:
+  using sem_value_t = int;
+
+#if defined(_AIX) || defined(__APPLE__)
+  uint32_t m_magic;
+  pthread_mutex_t m_lock;
+  pthread_cond_t m_gtzero;
+  sem_value_t m_count;
+  uint32_t m_nwaiters;
+#else
+  std::unique_ptr<sem_t> m_pSemaphore;
+#endif
+
+protected:
+public:
+  Semaphore(const Semaphore&) = delete;
+  void operator=(const Semaphore&) = delete;
+  //! Default constructor.
+  Semaphore(unsigned int value = 0);
+
+  Semaphore(Semaphore&&) = delete;
+  Semaphore& operator=(Semaphore&&) = delete;
+
+  //! Destructor.
+  ~Semaphore();
+
+  //! Posts to a semaphore.
+  int post();
+
+  //! Waits for a semaphore.
+  int wait();
+
+  //! Tries to wait for a semaphore.
+  int tryWait();
+
+  //! Retrieves the semaphore value.
+  int getValue(Semaphore::sem_value_t* sval);
+};
+
+//! This is a utility class used for platform independent abstraction.
+class Utility
+{
+public:
+  //! Connect with timeout
+  // Returns:
+  //    > 0 on success
+  //    -1 on error
+  //    0 on timeout
+  static int timed_connect(int sock,
+                           const sockaddr* addr,
+                           socklen_t sockaddr_size,
+                           int timeout_sec,
+                           int timeout_usec);
+
+  //! Drops the program's group privileges.
+  static void dropGroupPrivs(uid_t uid, gid_t gid);
+
+  //! Drops the program's user privileges.
+  static void dropUserPrivs(uid_t uid);
+
+  //! Sets the socket into Bind-any mode
+  static void setBindAny(int family, int socket);
+
+  //! Sleeps for a number of seconds.
+  static void sleep(unsigned int seconds);
+
+  //! Sleeps for a number of microseconds.
+  static void usleep(unsigned long usec);
+
+  static time_t timegm(struct tm* time);
+};

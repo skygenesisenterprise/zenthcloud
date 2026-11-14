@@ -1,0 +1,86 @@
+/*
+ * This file is part of PowerDNS or dnsdist.
+ * Copyright -- PowerDNS.COM B.V. and its contributors
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
+ *
+ * In addition, for the avoidance of any doubt, permission is granted to
+ * link this program with OpenSSL and to (re)distribute the binaries
+ * produced as the result of such linking.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+#pragma once
+#include "dns.hh"
+#include "iputils.hh"
+#include "dnsbackend.hh"
+#include "packethandler.hh"
+#include <vector>
+#include <poll.h>
+#include <sys/select.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <netdb.h>
+#include <sys/uio.h>
+#include <sys/select.h>
+
+#include "lock.hh"
+#include "namespaces.hh"
+
+class ChunkedSigningPipe;
+
+class TCPNameserver
+{
+public:
+  TCPNameserver(Logr::log_t slog);
+  ~TCPNameserver();
+  void go();
+  unsigned int numTCPConnections();
+private:
+
+  class XFRContext;
+
+  static void sendPacket(std::unique_ptr<DNSPacket>& p, int outsock, bool last=true);
+  static void getQuestion(int fd, char* mesg, int pktlen, const ComboAddress& remote, unsigned int totalTime);
+  static int doAXFR(std::unique_ptr<DNSPacket>& q, int outsock, Logr::log_t slog);
+  static int doAXFRinternal(XFRContext& ctx);
+  static int doIXFR(std::unique_ptr<DNSPacket>& q, int outsock, Logr::log_t slog);
+  static bool canDoAXFR(std::unique_ptr<DNSPacket>& q, XFRContext& ctx, std::unique_ptr<PacketHandler>& packetHandler);
+  static bool axfrCheckTSIG(XFRContext& ctx, UeberBackend& db, bool alwaysCheck);
+  static bool axfrProducerZone(XFRContext& ctx, vector<DNSZoneRecord>& zrrs);
+  static bool axfrRegularZone(XFRContext& ctx, vector<DNSZoneRecord>& zrrs);
+  static bool axfrAlias(XFRContext& ctx, vector<DNSZoneRecord>& zrrs, DNSZoneRecord& zrr);
+  static void axfrHints(XFRContext& ctx, vector<DNSZoneRecord>& zrrs);
+  static void axfrKeys(XFRContext& ctx, vector<DNSZoneRecord>& zrrs, DNSSECKeeper& dk);
+  static bool axfrRectify(XFRContext& ctx, vector<DNSZoneRecord>& zrrs, const set<DNSName>& qnames, const set<DNSName>& nsset);
+  static void axfrSubmitRecords(XFRContext& ctx, vector<DNSZoneRecord>& zrrs, ChunkedSigningPipe& csp);
+  static void doConnection(int fd, Logr::log_t slog);
+  static void decrementClientCount(const ComboAddress& remote);
+  void thread();
+
+  static LockGuarded<std::map<ComboAddress,size_t,ComboAddress::addressOnlyLessThan>> s_clientsCount;
+  static LockGuarded<std::unique_ptr<PacketHandler>> s_P;
+  static std::unique_ptr<Semaphore> d_connectionroom_sem;
+  static unsigned int d_maxTCPConnections;
+  static NetmaskGroup d_ng;
+  static size_t d_maxTransactionsPerConn;
+  static size_t d_maxConnectionsPerClient;
+  static unsigned int d_idleTimeout;
+  static unsigned int d_maxConnectionDuration;
+
+  vector<int>d_sockets;
+  vector<struct pollfd> d_prfds;
+  std::shared_ptr<Logr::Logger> d_slog;
+};
