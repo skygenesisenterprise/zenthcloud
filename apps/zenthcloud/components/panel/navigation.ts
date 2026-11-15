@@ -1,10 +1,15 @@
 import {
+	ArrowCircleUpIcon,
+	ArrowsClockwiseIcon,
+	ArrowsLeftRightIcon,
+	BellIcon,
 	BroadcastIcon,
 	BugIcon,
+	CertificateIcon,
 	ClockCounterClockwiseIcon,
 	CodeIcon,
+	CopyIcon,
 	CpuIcon,
-	CurrencyCircleDollarIcon,
 	DatabaseIcon,
 	GaugeIcon,
 	GearIcon,
@@ -13,12 +18,15 @@ import {
 	HouseIcon,
 	type Icon,
 	ImagesIcon,
+	LifebuoyIcon,
+	ListChecksIcon,
 	NetworkIcon,
 	PhoneIcon,
 	PulseIcon,
+	ScalesIcon,
 	ShieldCheckIcon,
 	ShieldWarningIcon,
-	SparkleIcon,
+	WrenchIcon,
 } from "@phosphor-icons/react";
 
 /**
@@ -118,11 +126,6 @@ const NAVIGATION_DESTINATIONS = {
 		icon: CpuIcon,
 		subMenuLabel: "Service",
 	},
-	ai: {
-		label: "AI",
-		path: "ai",
-		icon: SparkleIcon,
-	},
 	storage: {
 		label: "Data & Storage",
 		path: "storage",
@@ -163,11 +166,6 @@ const NAVIGATION_DESTINATIONS = {
 		path: "security/threats",
 		icon: BugIcon,
 	},
-	monetize: {
-		label: "Commerce",
-		path: "monetize",
-		icon: CurrencyCircleDollarIcon,
-	},
 	delivery: {
 		label: "Delivery & Performance",
 		path: "delivery",
@@ -198,7 +196,6 @@ export const CLOUD_DESTINATION_MIN_LICENSE = {
 	infrastructure: "free",
 	telecom: "free",
 	compute: "free",
-	ai: "free",
 	storage: "pro",
 	media: "pro",
 	realtime: "pro",
@@ -207,7 +204,6 @@ export const CLOUD_DESTINATION_MIN_LICENSE = {
 	zeroTrust: "enterprise",
 	networks: "free",
 	threats: "enterprise",
-	monetize: "pro",
 	delivery: "free",
 	account: "free",
 } satisfies Record<NavigationDestinationId, LicenseTier>;
@@ -250,7 +246,6 @@ export const NAVIGATION_SECTIONS: readonly NavigationSectionDefinition[] = [
 			{ destination: "infrastructure" },
 			{ destination: "telecom" },
 			{ destination: "compute" },
-			{ destination: "ai" },
 			{ destination: "storage" },
 			{ destination: "media" },
 			{ destination: "realtime" },
@@ -265,7 +260,6 @@ export const NAVIGATION_SECTIONS: readonly NavigationSectionDefinition[] = [
 			{ destination: "zeroTrust" },
 			{ destination: "networks" },
 			{ destination: "threats" },
-			{ destination: "monetize" },
 			{ destination: "delivery" },
 		],
 	},
@@ -431,24 +425,63 @@ function resolveDomainChildren(organizationId: string): PanelNavigationChild[] {
 	}));
 }
 
-const COMPUTE_SERVICE_DESTINATIONS = [
+/**
+ * Global sub-menu of the Cloud destination, shaped like the Domains sub-menu:
+ * three entries only. Overview opens the Cloud Workspace; Access Control and
+ * Settings are organization-wide pages reached without entering the workspace.
+ */
+function resolveCloudChildren(organizationId: string): PanelNavigationChild[] {
+	return [
+		{
+			id: "overview",
+			label: "Overview",
+			path: "cloud/overview",
+			implemented: true,
+		},
+		{
+			id: "access-control",
+			label: "Access Control",
+			path: "account/members",
+			implemented: true,
+		},
+		{
+			id: "settings",
+			label: "Settings",
+			path: "account/configurations",
+			implemented: true,
+		},
+	].map((entry) => ({
+		id: `cloud.${entry.id}`,
+		label: entry.label,
+		href: organizationPath(organizationId, entry.path),
+		implemented: entry.implemented === true,
+	}));
+}
+
+type ServiceDestination = {
+	readonly label: string;
+	readonly group: string;
+	readonly description: string;
+	readonly path: string;
+	readonly implemented: boolean;
+};
+
+/**
+ * Global children of Compute. These pages are owned by Compute only; the
+ * Development & Runtime parent exposes the remaining worker services so no
+ * route appears twice in the global tree.
+ */
+const COMPUTE_SERVICE_DESTINATIONS: readonly ServiceDestination[] = [
 	{
 		label: "Workers & Pages",
-		group: "Development & Runtime",
+		group: "Compute",
 		description: "Application execution and hosting",
 		path: "workers",
 		implemented: true,
 	},
 	{
-		label: "Observability",
-		group: "Observability",
-		description: "Monitoring and diagnostics",
-		path: "observability",
-		implemented: true,
-	},
-	{
 		label: "Workers for Platforms",
-		group: "Development & Runtime",
+		group: "Compute",
 		description: "Multi-tenant execution platform",
 		path: "workers/platforms",
 		implemented: true,
@@ -462,11 +495,29 @@ const COMPUTE_SERVICE_DESTINATIONS = [
 	},
 	{
 		label: "Durable Objects",
-		group: "Realtime / Compute",
+		group: "Compute",
 		description: "Distributed state and coordination",
 		path: "workers/durable-objects",
 		implemented: true,
 	},
+	{
+		label: "Browser Rendering",
+		group: "Compute",
+		description: "Browser execution",
+		path: "workers/browser-run",
+		implemented: true,
+	},
+	{
+		label: "VPC",
+		group: "Networking",
+		description: "Virtual private network",
+		path: "workers/vpc",
+		implemented: true,
+	},
+];
+
+/** Global children of Development & Runtime, disjoint from Compute. */
+const DEVELOPMENT_SERVICE_DESTINATIONS: readonly ServiceDestination[] = [
 	{
 		label: "Queues",
 		group: "Messaging & Events",
@@ -482,53 +533,61 @@ const COMPUTE_SERVICE_DESTINATIONS = [
 		implemented: true,
 	},
 	{
-		label: "Browser Rendering",
-		group: "Media / Automation",
-		description: "Browser execution",
-		path: "workers/browser-run",
+		label: "Observability",
+		group: "Observability",
+		description: "Monitoring and diagnostics",
+		path: "workers/observability",
 		implemented: true,
 	},
 	{
-		label: "VPC",
-		group: "Networking",
-		description: "Virtual private network",
-		path: "workers/vpc",
+		label: "Feature Flags",
+		group: "Development & Runtime",
+		description: "Product and offer flags",
+		path: "workers/flagship",
 		implemented: true,
 	},
 	{
-		label: "Email Routing",
-		group: "Telecom / Messaging",
-		description: "Email routing",
-		path: "telecom/email-routing",
-		implemented: false,
-	},
-	{
-		label: "Workers Plans",
+		label: "Plans",
 		group: "Account & Billing",
 		description: "Plans and pricing",
 		path: "workers/plans",
 		implemented: true,
 	},
-	{
-		label: "Flagship",
-		group: "To Identify",
-		description: "Product or offer to clarify",
-		path: "workers/flagship",
-		implemented: true,
-	},
-] as const;
+];
 
-function resolveComputeChildren(
+function resolveServiceChildren(
 	organizationId: string,
+	prefix: string,
+	entries: readonly ServiceDestination[],
 ): PanelNavigationChild[] {
-	return COMPUTE_SERVICE_DESTINATIONS.map((entry) => ({
-		id: `compute.${entry.path.replaceAll("/", ".")}`,
+	return entries.map((entry) => ({
+		id: `${prefix}.${entry.path.replaceAll("/", ".")}`,
 		label: entry.label,
 		group: entry.group,
 		description: entry.description,
 		href: organizationPath(organizationId, entry.path),
 		implemented: entry.implemented,
 	}));
+}
+
+function resolveComputeChildren(
+	organizationId: string,
+): PanelNavigationChild[] {
+	return resolveServiceChildren(
+		organizationId,
+		"compute",
+		COMPUTE_SERVICE_DESTINATIONS,
+	);
+}
+
+function resolveDevelopmentChildren(
+	organizationId: string,
+): PanelNavigationChild[] {
+	return resolveServiceChildren(
+		organizationId,
+		"development",
+		DEVELOPMENT_SERVICE_DESTINATIONS,
+	);
 }
 
 function resolvePlacement(
@@ -571,9 +630,7 @@ function resolvePlacement(
 		// Every destination except the workspace home leads to a deeper level
 		// (a list, then a resource) and is rendered with a disclosure chevron.
 		expandable:
-			placement.destination !== "home" &&
-			placement.destination !== "infrastructure" &&
-			placement.destination !== "telecom",
+			placement.destination !== "home" && placement.destination !== "telecom",
 		badge: destination.badge,
 		minLicense,
 		subMenuLabel: destination.subMenuLabel,
@@ -803,7 +860,13 @@ export type ContextualResource =
 	| { kind: "database"; id: string }
 	| { kind: "vm"; id: string }
 	| { kind: "server"; id: string }
-	| { kind: "tunnel"; id: string };
+	| { kind: "tunnel"; id: string }
+	// Cloud Workspace resources. Their routes are declared now so opening a
+	// cluster, a node or a VM can later expose resource-specific destinations
+	// without changing the navigation model.
+	| { kind: "cluster"; id: string }
+	| { kind: "node"; id: string }
+	| { kind: "cloudVm"; id: string };
 
 type ContextualDestination = {
 	label: string;
@@ -936,6 +999,54 @@ const RESOURCE_WORKSPACES: Record<
 			{ label: "Routes", path: "routes" },
 			{ label: "Connectors", path: "connectors" },
 			{ label: "Analytics", path: "analytics" },
+		],
+	},
+	// Resource workspaces of the Cloud Workspace. The list pages and these
+	// contextual pages do not exist yet; declaring them here keeps the model
+	// ready for the cluster/node/VM screens without linking to a missing route.
+	cluster: {
+		label: "Cluster",
+		basePath: "cloud/clusters",
+		match: ["cloud", "clusters"],
+		items: [
+			{ label: "Overview", path: "overview" },
+			{ label: "Nodes", path: "nodes" },
+			{ label: "Virtual Machines", path: "virtual-machines" },
+			{ label: "Storage", path: "storage" },
+			{ label: "Networking", path: "networking" },
+			{ label: "High Availability", path: "high-availability" },
+			{ label: "Tasks", path: "tasks" },
+			{ label: "Settings", path: "settings" },
+		],
+	},
+	node: {
+		label: "Node",
+		basePath: "cloud/nodes",
+		match: ["cloud", "nodes"],
+		items: [
+			{ label: "Overview", path: "overview" },
+			{ label: "Virtual Machines", path: "virtual-machines" },
+			{ label: "Containers", path: "containers" },
+			{ label: "Storage", path: "storage" },
+			{ label: "Networking", path: "networking" },
+			{ label: "Tasks", path: "tasks" },
+			{ label: "Updates", path: "updates" },
+			{ label: "Settings", path: "settings" },
+		],
+	},
+	cloudVm: {
+		label: "Virtual Machine",
+		basePath: "cloud/virtual-machines",
+		match: ["cloud", "virtual-machines"],
+		items: [
+			{ label: "Overview", path: "overview" },
+			{ label: "Monitoring", path: "monitoring" },
+			{ label: "Configuration", path: "configuration" },
+			{ label: "Networking", path: "networking" },
+			{ label: "Storage", path: "storage" },
+			{ label: "Snapshots", path: "snapshots" },
+			{ label: "Backups", path: "backups" },
+			{ label: "Activity", path: "activity" },
 		],
 	},
 };
@@ -1083,14 +1194,24 @@ const GLOBAL_WORKSPACE: NavigationWorkspace = {
 };
 
 type WorkspaceEntryDefinition = {
+	/** Stable id scoped to the section. Defaults to the route path. */
+	id?: string;
 	label: string;
 	path: string;
 	implemented?: boolean;
+	/** Optional icon for an entry that groups other destinations. */
+	icon?: Icon;
+	/**
+	 * Destinations of a functional domain. A parent with children is rendered
+	 * as a disclosure, so its own landing page may remain unimplemented.
+	 */
+	children?: readonly WorkspaceEntryDefinition[];
 };
 
 type WorkspaceSectionDefinition = {
 	id: string;
-	label: string;
+	/** Omitted when the workspace header already names the section. */
+	label?: string;
 	items: readonly WorkspaceEntryDefinition[];
 };
 
@@ -1101,8 +1222,48 @@ type DomainWorkspaceDefinition = {
 	basePath: string;
 	/** Destination used when returning to this workspace from a resource. */
 	parentPath?: string;
+	/**
+	 * Whether the workspace owns the whole sidebar. Cloud uses this so its
+	 * complete navigation is shown on every Cloud page instead of being
+	 * appended below the organization-wide tree.
+	 */
+	exclusive?: boolean;
+	/** Destination used to leave an exclusive workspace. */
+	parent?: { label: string; path: string };
 	sections: readonly WorkspaceSectionDefinition[];
 };
+
+function buildWorkspaceChild(
+	organizationId: string,
+	parentId: string,
+	entry: WorkspaceEntryDefinition,
+): PanelNavigationChild {
+	return {
+		id: `${parentId}.${entry.id ?? entry.path}`,
+		label: entry.label,
+		href: organizationPath(organizationId, entry.path),
+		implemented: entry.implemented === true,
+	};
+}
+
+function buildWorkspaceItem(
+	organizationId: string,
+	sectionId: string,
+	entry: WorkspaceEntryDefinition,
+): PanelNavigationItem {
+	const id = `${sectionId}.${entry.id ?? entry.path}`;
+	return {
+		id,
+		label: entry.label,
+		href: organizationPath(organizationId, entry.path),
+		icon: entry.icon ?? buildContextualIcon(entry.path.split("/").pop() ?? ""),
+		implemented: entry.implemented === true,
+		expandable: Boolean(entry.children?.length),
+		children: entry.children?.map((child) =>
+			buildWorkspaceChild(organizationId, id, child),
+		),
+	};
+}
 
 function buildWorkspaceSection(
 	organizationId: string,
@@ -1111,14 +1272,9 @@ function buildWorkspaceSection(
 	return {
 		id: definition.id,
 		label: definition.label,
-		items: definition.items.map((entry) => ({
-			id: `${definition.id}.${entry.path}`,
-			label: entry.label,
-			href: organizationPath(organizationId, entry.path),
-			icon: buildContextualIcon(entry.path.split("/").pop() ?? ""),
-			implemented: entry.implemented === true,
-			expandable: false,
-		})),
+		items: definition.items.map((entry) =>
+			buildWorkspaceItem(organizationId, definition.id, entry),
+		),
 	};
 }
 
@@ -1212,12 +1368,476 @@ const INFRASTRUCTURE_WORKSPACE: {
 
 /** Product surfaces that open a workspace of their own. */
 /**
+ * The Cloud Workspace is the operational environment for infrastructure
+ * administration. Its sidebar keeps the same depth as the domain workspace
+ * (18 entries including Overview). Every functional group from Compute to
+ * Providers & Integrations owns its own set of child menus.
+ */
+const CLOUD_WORKSPACE: DomainWorkspaceDefinition = {
+	id: "cloud",
+	label: "Cloud",
+	basePath: "cloud",
+	parentPath: "cloud/overview",
+	// Cloud owns the whole sidebar: opening Overview must show the complete
+	// Cloud navigation instead of appending it under the global tree.
+	exclusive: true,
+	parent: { label: "Global Workspace", path: "home" },
+	sections: [
+		{
+			id: "cloud",
+			items: [
+				{
+					id: "overview",
+					label: "Overview",
+					path: "cloud/overview",
+					icon: HouseIcon,
+					implemented: true,
+				},
+				{
+					id: "compute",
+					label: "Compute",
+					path: "cloud/compute",
+					icon: CpuIcon,
+					children: [
+						{
+							id: "virtual-machines",
+							label: "Virtual Machines",
+							path: "cloud/virtual-machines",
+						},
+						{
+							id: "containers",
+							label: "Containers",
+							path: "cloud/containers",
+						},
+						{
+							id: "resource-pools",
+							label: "Resource Pools",
+							path: "cloud/resource-pools",
+						},
+						{
+							id: "clusters",
+							label: "Clusters",
+							path: "cloud/clusters",
+						},
+						{ id: "nodes", label: "Nodes", path: "cloud/nodes" },
+						{
+							id: "images",
+							label: "Images & Templates",
+							path: "cloud/images",
+						},
+					],
+				},
+				{
+					id: "storage",
+					label: "Storage",
+					path: "cloud/storage",
+					icon: DatabaseIcon,
+					children: [
+						{
+							id: "pools",
+							label: "Storage Pools",
+							path: "cloud/storage/pools",
+						},
+						{
+							id: "volumes",
+							label: "Volumes & Disks",
+							path: "cloud/storage/volumes",
+						},
+						{
+							id: "backups",
+							label: "Backups",
+							path: "cloud/storage/backups",
+						},
+						{
+							id: "snapshots",
+							label: "Snapshots",
+							path: "cloud/storage/snapshots",
+						},
+					],
+				},
+				{
+					id: "networking",
+					label: "Network & Security",
+					path: "cloud/networking",
+					icon: NetworkIcon,
+					children: [
+						{
+							id: "interfaces",
+							label: "Interfaces",
+							path: "cloud/networking/interfaces",
+						},
+						{
+							id: "virtual-networks",
+							label: "Virtual Networks",
+							path: "cloud/networking/virtual-networks",
+						},
+						{
+							id: "vlans",
+							label: "VLANs & Bridges",
+							path: "cloud/networking/vlans",
+						},
+						{
+							id: "ip-addresses",
+							label: "IP Addresses",
+							path: "cloud/networking/ip-addresses",
+						},
+						{
+							id: "dns-dhcp",
+							label: "DNS & DHCP",
+							path: "cloud/networking/dns-dhcp",
+						},
+						{
+							id: "firewalls",
+							label: "Firewalls",
+							path: "cloud/networking/firewalls",
+						},
+						{
+							id: "vpn",
+							label: "VPN",
+							path: "cloud/networking/vpn",
+						},
+						{
+							id: "load-balancers",
+							label: "Load Balancers",
+							path: "cloud/networking/load-balancers",
+						},
+					],
+				},
+				{
+					id: "high-availability",
+					label: "High Availability",
+					path: "cloud/availability/high-availability",
+					icon: ArrowsClockwiseIcon,
+					children: [
+						{
+							id: "groups",
+							label: "HA Groups",
+							path: "cloud/availability/high-availability/groups",
+						},
+						{
+							id: "status",
+							label: "HA Status",
+							path: "cloud/availability/high-availability/status",
+						},
+						{
+							id: "fencing",
+							label: "Fencing",
+							path: "cloud/availability/high-availability/fencing",
+						},
+					],
+				},
+				{
+					id: "replication",
+					label: "Replication",
+					path: "cloud/availability/replication",
+					icon: CopyIcon,
+					children: [
+						{
+							id: "jobs",
+							label: "Replication Jobs",
+							path: "cloud/availability/replication/jobs",
+						},
+						{
+							id: "targets",
+							label: "Replication Targets",
+							path: "cloud/availability/replication/targets",
+						},
+						{
+							id: "schedules",
+							label: "Schedules",
+							path: "cloud/availability/replication/schedules",
+						},
+					],
+				},
+				{
+					id: "migration",
+					label: "Migration",
+					path: "cloud/availability/migration",
+					icon: ArrowsLeftRightIcon,
+					children: [
+						{
+							id: "live",
+							label: "Live Migration",
+							path: "cloud/availability/migration/live",
+						},
+						{
+							id: "cold",
+							label: "Cold Migration",
+							path: "cloud/availability/migration/cold",
+						},
+						{
+							id: "history",
+							label: "Migration History",
+							path: "cloud/availability/migration/history",
+						},
+					],
+				},
+				{
+					id: "disaster-recovery",
+					label: "Disaster Recovery",
+					path: "cloud/availability/disaster-recovery",
+					icon: LifebuoyIcon,
+					children: [
+						{
+							id: "plans",
+							label: "Recovery Plans",
+							path: "cloud/availability/disaster-recovery/plans",
+						},
+						{
+							id: "tests",
+							label: "Recovery Tests",
+							path: "cloud/availability/disaster-recovery/tests",
+						},
+						{
+							id: "runbooks",
+							label: "Runbooks",
+							path: "cloud/availability/disaster-recovery/runbooks",
+						},
+					],
+				},
+				{
+					id: "tasks",
+					label: "Tasks & Jobs",
+					path: "cloud/operations/tasks",
+					icon: ListChecksIcon,
+					children: [
+						{
+							id: "active",
+							label: "Active Tasks",
+							path: "cloud/operations/tasks/active",
+						},
+						{
+							id: "scheduled",
+							label: "Scheduled Jobs",
+							path: "cloud/operations/tasks/scheduled",
+						},
+						{
+							id: "history",
+							label: "Task History",
+							path: "cloud/operations/tasks/history",
+						},
+					],
+				},
+				{
+					id: "events",
+					label: "Events & Audit",
+					path: "cloud/operations/events",
+					icon: ClockCounterClockwiseIcon,
+					children: [
+						{
+							id: "events",
+							label: "Events",
+							path: "cloud/operations/events/events",
+						},
+						{
+							id: "audit",
+							label: "Audit Log",
+							path: "cloud/operations/events/audit",
+						},
+						{
+							id: "alerts",
+							label: "Alerts",
+							path: "cloud/operations/events/alerts",
+						},
+					],
+				},
+				{
+					id: "health",
+					label: "Health & Metrics",
+					path: "cloud/operations/health",
+					icon: PulseIcon,
+					children: [
+						{
+							id: "health",
+							label: "Health",
+							path: "cloud/operations/health/health",
+						},
+						{
+							id: "metrics",
+							label: "Metrics",
+							path: "cloud/operations/health/metrics",
+						},
+						{
+							id: "servers",
+							label: "Metric Servers",
+							path: "cloud/operations/health/metric-servers",
+						},
+					],
+				},
+				{
+					id: "maintenance",
+					label: "Maintenance",
+					path: "cloud/operations/maintenance",
+					icon: WrenchIcon,
+					children: [
+						{
+							id: "windows",
+							label: "Maintenance Windows",
+							path: "cloud/operations/maintenance/windows",
+						},
+						{
+							id: "plans",
+							label: "Maintenance Plans",
+							path: "cloud/operations/maintenance/plans",
+						},
+					],
+				},
+				{
+					id: "updates",
+					label: "Updates",
+					path: "cloud/operations/updates",
+					icon: ArrowCircleUpIcon,
+					children: [
+						{
+							id: "available",
+							label: "Available Updates",
+							path: "cloud/operations/updates/available",
+						},
+						{
+							id: "history",
+							label: "Update History",
+							path: "cloud/operations/updates/history",
+						},
+						{
+							id: "policies",
+							label: "Upgrade Policies",
+							path: "cloud/operations/updates/policies",
+						},
+					],
+				},
+				{
+					id: "notifications",
+					label: "Notifications",
+					path: "cloud/operations/notifications",
+					icon: BellIcon,
+					children: [
+						{
+							id: "targets",
+							label: "Notification Targets",
+							path: "cloud/operations/notifications/targets",
+						},
+						{
+							id: "rules",
+							label: "Notification Rules",
+							path: "cloud/operations/notifications/rules",
+						},
+						{
+							id: "history",
+							label: "Notification History",
+							path: "cloud/operations/notifications/history",
+						},
+					],
+				},
+				{
+					id: "access-control",
+					label: "Access Control",
+					path: "cloud/administration/access-control",
+					icon: ShieldCheckIcon,
+					children: [
+						{
+							id: "users",
+							label: "Users",
+							path: "cloud/administration/access-control/users",
+						},
+						{
+							id: "groups",
+							label: "Groups",
+							path: "cloud/administration/access-control/groups",
+						},
+						{
+							id: "roles",
+							label: "Roles",
+							path: "cloud/administration/access-control/roles",
+						},
+						{
+							id: "api-tokens",
+							label: "API Tokens",
+							path: "cloud/administration/access-control/api-tokens",
+						},
+						{
+							id: "permissions",
+							label: "Permissions",
+							path: "cloud/administration/access-control/permissions",
+						},
+					],
+				},
+				{
+					id: "resource-policies",
+					label: "Resource Policies",
+					path: "cloud/administration/resource-policies",
+					icon: ScalesIcon,
+					children: [
+						{
+							id: "policies",
+							label: "Policies",
+							path: "cloud/administration/resource-policies/policies",
+						},
+						{
+							id: "assignments",
+							label: "Assignments",
+							path: "cloud/administration/resource-policies/assignments",
+						},
+						{
+							id: "quotas",
+							label: "Quotas",
+							path: "cloud/administration/resource-policies/quotas",
+						},
+					],
+				},
+				{
+					id: "certificates",
+					label: "Certificates",
+					path: "cloud/administration/certificates",
+					icon: CertificateIcon,
+					children: [
+						{
+							id: "list",
+							label: "Certificates",
+							path: "cloud/administration/certificates/list",
+						},
+						{
+							id: "acme",
+							label: "ACME",
+							path: "cloud/administration/certificates/acme",
+						},
+						{
+							id: "authorities",
+							label: "Certificate Authorities",
+							path: "cloud/administration/certificates/authorities",
+						},
+					],
+				},
+				{
+					id: "providers-integrations",
+					label: "Providers & Integrations",
+					path: "cloud/administration",
+					icon: GlobeIcon,
+					children: [
+						{
+							id: "providers",
+							label: "Providers",
+							path: "cloud/administration/providers",
+						},
+						{
+							id: "integrations",
+							label: "Integrations",
+							path: "cloud/administration/integrations",
+						},
+					],
+				},
+			],
+		},
+	],
+};
+
+/**
  * Standalone pages of the Domains sub-menu. They are reachable from the global
  * navigation only, so they must not be detected as a domain resource.
  */
 const DOMAIN_STATIC_PAGES = new Set(["overview", "registrations", "transfers"]);
 
 const DOMAIN_WORKSPACES: readonly DomainWorkspaceDefinition[] = [
+	CLOUD_WORKSPACE,
 	{
 		id: "domains",
 		label: "Domains",
@@ -1748,6 +2368,10 @@ function resolveDestinationChildren(
 		return resolveComputeChildren(organizationId);
 	}
 
+	if (destination === "development") {
+		return resolveDevelopmentChildren(organizationId);
+	}
+
 	if (destination === "history") {
 		return recentPages.map((page) => ({
 			id: `history.recent.${page.path.replaceAll("/", ".")}`,
@@ -1758,6 +2382,10 @@ function resolveDestinationChildren(
 	}
 
 	if (destination === "telecom") return undefined;
+
+	if (destination === "infrastructure") {
+		return resolveCloudChildren(organizationId);
+	}
 
 	if (destination === "domains") {
 		return resolveDomainChildren(organizationId);
@@ -1929,11 +2557,19 @@ export function resolveWorkspaceNavigation(opts: {
 				id: `domain:${domain.id}`,
 				label: domain.label,
 				basePath: domain.basePath,
+				parent:
+					domain.exclusive && domain.parent
+						? {
+								id: "global",
+								label: domain.parent.label,
+								href: organizationPath(opts.organizationId, domain.parent.path),
+							}
+						: undefined,
 			},
 			contextual: domain.sections.map((section) =>
 				buildWorkspaceSection(opts.organizationId, section),
 			),
-			exclusive: false,
+			exclusive: domain.exclusive === true,
 		};
 	}
 

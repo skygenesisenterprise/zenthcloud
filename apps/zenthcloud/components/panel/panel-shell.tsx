@@ -6,13 +6,7 @@ import {
 	CaretUpDownIcon,
 	MagnifyingGlassIcon,
 } from "@phosphor-icons/react";
-import {
-	Button,
-	DropdownMenu,
-	LinkProvider,
-	Sidebar,
-	ZenthcloudLogo,
-} from "@zenthcloud/react";
+import { Button, DropdownMenu, LinkProvider, Sidebar } from "@zenthcloud/react";
 import { Check, X } from "lucide-react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
@@ -382,14 +376,9 @@ export function PanelShell({
 									aria-label={`Switch account (${organization.name})`}
 									className="min-h-9 w-full min-w-0 justify-start gap-2 px-1.5 py-1.5 text-sm font-normal group-data-[state=collapsed]/sidebar:justify-center group-data-[state=collapsed]/sidebar:px-0"
 								>
-									<ZenthcloudLogo
-										variant="glyph"
-										className="h-5 w-auto shrink-0"
-										aria-hidden
-									/>
 									{/* One line, like the reference header: the name never wraps
-									    under the logo. It ellipsizes when the rail is too narrow,
-									    and the full value stays available in the tooltip. */}
+									    and ellipsizes when the rail is too narrow. The full value
+									    stays available in the tooltip. */}
 									<span
 										title={organization.name}
 										className="min-w-0 flex-1 overflow-hidden text-left text-sm leading-tight font-normal whitespace-nowrap group-data-[state=collapsed]/sidebar:hidden"
@@ -498,6 +487,12 @@ export function PanelShell({
 								</Sidebar.Menu>
 							</div>
 						)}
+
+						{navigation.exclusive &&
+							navigation.workspace.parent &&
+							contextual.length > 0 && (
+								<div className="mx-2 my-2 border-t border-zenth-line group-data-[state=collapsed]/sidebar:hidden" />
+							)}
 
 						{/* Contextual workspace: the URL decides which product surface is
 						    active. It is appended below the global tree, or replaces it

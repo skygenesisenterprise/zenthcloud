@@ -105,10 +105,9 @@ describe("panel navigation structure", () => {
 			"history",
 			"domains",
 			"observability",
-			"compute",
 			"infrastructure",
 			"telecom",
-			"ai",
+			"compute",
 			"storage",
 			"media",
 			"realtime",
@@ -117,9 +116,37 @@ describe("panel navigation structure", () => {
 			"zeroTrust",
 			"networks",
 			"threats",
-			"monetize",
 			"delivery",
 		]);
+	});
+
+	it("splits worker services between Compute and Development & Runtime", () => {
+		const all = items(create());
+		const compute = all.find((item) => item.id === "compute");
+		const development = all.find((item) => item.id === "development");
+
+		expect(compute?.children?.map((child) => child.label)).toEqual([
+			"Workers & Pages",
+			"Workers for Platforms",
+			"Containers",
+			"Durable Objects",
+			"Browser Rendering",
+			"VPC",
+		]);
+		expect(development?.children?.map((child) => child.label)).toEqual([
+			"Queues",
+			"Workflows",
+			"Observability",
+			"Feature Flags",
+			"Plans",
+		]);
+
+		const hrefs = all.flatMap(
+			(item) =>
+				item.children?.filter((child) => child.implemented).map((child) => child.href) ??
+				[],
+		);
+		expect(new Set(hrefs).size).toBe(hrefs.length);
 	});
 
 	it("keeps the prescribed global hierarchy and order", () => {
@@ -138,10 +165,9 @@ describe("panel navigation structure", () => {
 			{
 				label: "Infrastructure",
 				items: [
-					"Compute",
 					"Cloud",
 					"Telecom",
-					"AI",
+					"Compute",
 					"Data & Storage",
 					"Media",
 					"Realtime",
@@ -155,7 +181,6 @@ describe("panel navigation structure", () => {
 					"Identity & Access",
 					"Networks",
 					"Threat Detection & Response",
-					"Commerce",
 					"Delivery & Performance",
 				],
 			},
@@ -179,7 +204,6 @@ describe("panel navigation structure", () => {
 		const childItems = (id: string) =>
 			navigationItems.find((item) => item.id === id)?.children ?? [];
 
-		expect(childItems("ai").every((child) => child.implemented)).toBe(true);
 		expect(childItems("applicationSecurity").every((child) => child.implemented))
 			.toBe(true);
 		expect(childItems("networks").every((child) => child.implemented)).toBe(true);
@@ -192,7 +216,7 @@ describe("panel navigation structure", () => {
 		expect(childItems("telecom")).toEqual([]);
 	});
 
-	it("keeps Cloud and Telecom as active simple workspace links", () => {
+	it("gives Cloud a dropdown and keeps Telecom a simple workspace link", () => {
 		const navigationItems = items(create());
 		const cloud = navigationItems.find((item) => item.id === "infrastructure");
 		const telecom = navigationItems.find((item) => item.id === "telecom");
@@ -202,9 +226,19 @@ describe("panel navigation structure", () => {
 			label: "Cloud",
 			href: `/${ORG}/cloud/overview`,
 			implemented: true,
-			expandable: false,
+			expandable: true,
 		});
-		expect(cloud?.children).toBeUndefined();
+		expect(cloud?.children?.map((child) => child.label)).toEqual([
+			"Overview",
+			"Access Control",
+			"Settings",
+		]);
+		expect(cloud?.children?.map((child) => child.href)).toEqual([
+			`/${ORG}/cloud/overview`,
+			`/${ORG}/account/members`,
+			`/${ORG}/account/configurations`,
+		]);
+		expect(cloud?.children?.every((child) => child.implemented)).toBe(true);
 		expect(telecom).toMatchObject({
 			id: "telecom",
 			label: "Telecom",
@@ -263,7 +297,11 @@ describe("panel navigation organization scope", () => {
 	it("shows recent visits in the Activity dropdown", () => {
 		const navigation = create({
 			recentPages: [
-				{ path: "ai/agents", section: "AI", item: "Agents" },
+				{
+					path: "workers/containers",
+					section: "Compute",
+					item: "Containers",
+				},
 				{ path: "domains/overview", section: "Domains", item: "Overview" },
 				{
 					path: "domains/example.com",
@@ -276,9 +314,9 @@ describe("panel navigation organization scope", () => {
 
 		expect(activity?.children).toMatchObject([
 			{
-				id: "history.recent.ai.agents",
-				label: "AI / Agents",
-				href: `/${ORG}/ai/agents`,
+				id: "history.recent.workers.containers",
+				label: "Compute / Containers",
+				href: `/${ORG}/workers/containers`,
 				implemented: true,
 			},
 			{
@@ -300,14 +338,18 @@ describe("panel navigation organization scope", () => {
 		const navigation = create({
 			license: "free",
 			recentPages: [
-				{ path: "ai/agents", section: "AI", item: "Agents" },
+				{
+					path: "workers/containers",
+					section: "Compute",
+					item: "Containers",
+				},
 				{ path: "r2/overview", section: "Data & Storage", item: "Overview" },
 			],
 		});
 		const activity = items(navigation).find((item) => item.id === "history");
 
 		expect(activity?.children?.map((child) => child.href)).toEqual([
-			`/${ORG}/ai/agents`,
+			`/${ORG}/workers/containers`,
 		]);
 	});
 
@@ -317,11 +359,18 @@ describe("panel navigation organization scope", () => {
 		expect(
 			resolveRecentNavigationPage(
 				navigation,
-				`/${ORG}/ai/agents?tab=deployments`,
+				`/${ORG}/workers/containers?tab=deployments`,
 			),
-		).toEqual({ path: "ai/agents", section: "AI", item: "Agents" });
+		).toEqual({
+			path: "workers/containers",
+			section: "Compute",
+			item: "Containers",
+		});
 		expect(
-			resolveRecentNavigationPage(navigation, `/${OTHER_ORG}/ai/agents`),
+			resolveRecentNavigationPage(
+				navigation,
+				`/${OTHER_ORG}/workers/containers`,
+			),
 		).toBeUndefined();
 		expect(
 			resolveRecentNavigationPage(navigation, `/${ORG}/domains/example.com`),
@@ -390,7 +439,7 @@ describe("panel navigation organization scope", () => {
 		}
 	});
 
-	it("keeps Cloud and Telecom simple while other destinations can expand", () => {
+	it("keeps Telecom simple while Cloud and other destinations expand", () => {
 		const navigation = create();
 		// `account` is pinned to the footer, outside the scrollable tree.
 		const expandable = [...items(navigation), ...navigation.footer]
@@ -404,10 +453,10 @@ describe("panel navigation organization scope", () => {
 				"domains",
 				"observability",
 				"compute",
+				"infrastructure",
 				"account",
 			]),
 		);
-		expect(expandable).not.toContain("infrastructure");
 		expect(expandable).not.toContain("telecom");
 	});
 
@@ -420,21 +469,54 @@ describe("panel navigation active entry", () => {
 	it("does not mark Activity active in the global workspace", () => {
 		const activity = items(
 			create({
-				recentPages: [{ path: "ai/agents", section: "AI", item: "Agents" }],
+				recentPages: [
+					{
+						path: "workers/containers",
+						section: "Compute",
+						item: "Containers",
+					},
+				],
 			}),
 		).find((item) => item.id === "history");
 		if (!activity) throw new Error("Activity navigation item is missing");
 
 		expect(
-			isNavigationItemActive(activity, { pathname: `/${ORG}/ai/agents` }),
+			isNavigationItemActive(activity, {
+				pathname: `/${ORG}/workers/containers`,
+			}),
 		).toBe(false);
 		const recentChild = activity.children?.[0];
 		if (!recentChild) throw new Error("Recent Activity link is missing");
 		expect(
 			isNavigationChildActive(activity, recentChild, {
-				pathname: `/${ORG}/ai/agents`,
+				pathname: `/${ORG}/workers/containers`,
 			}),
 		).toBe(false);
+	});
+
+	it("selects the Cloud overview inside its dropdown", () => {
+		const cloud = items(create()).find((item) => item.id === "infrastructure");
+		const overview = cloud?.children?.[0];
+		const accessControl = cloud?.children?.[1];
+		if (!cloud || !overview || !accessControl) {
+			throw new Error("Cloud navigation is missing");
+		}
+
+		expect(
+			isNavigationChildActive(cloud, overview, {
+				pathname: `/${ORG}/cloud/overview`,
+			}),
+		).toBe(true);
+		expect(
+			isNavigationChildActive(cloud, overview, {
+				pathname: `/${ORG}/cloud/compute`,
+			}),
+		).toBe(false);
+		expect(
+			isNavigationChildActive(cloud, accessControl, {
+				pathname: `/${ORG}/account/members`,
+			}),
+		).toBe(true);
 	});
 
 	it("selects Accueil on the workspace home", () => {
@@ -667,7 +749,7 @@ describe("workspace navigation", () => {
 			href: `/${ORG}/domains/overview`,
 		});
 		expect(resolved.contextual[0]?.items[0]).toMatchObject({
-			label: "Vue d’ensemble",
+			label: "Overview",
 			href: `/${ORG}/domains/dom_123`,
 			implemented: true,
 		});
@@ -684,7 +766,7 @@ describe("workspace navigation", () => {
 		expect(dns?.children).toEqual([
 			{
 				id: "domain.dns.records",
-				label: "Enregistrements",
+				label: "Records",
 				href: `/${ORG}/domains/dom_123/dns/records`,
 				implemented: true,
 			},
@@ -696,7 +778,7 @@ describe("workspace navigation", () => {
 			},
 			{
 				id: "domain.dns.settings",
-				label: "Paramètres",
+				label: "Settings",
 				href: `/${ORG}/domains/dom_123/dns/settings`,
 				implemented: false,
 			},
@@ -740,31 +822,31 @@ describe("panel contextual navigation", () => {
 		expect(section.id).toBe("contextual-domain");
 		expect(section.label).toBe("Domain");
 		expect(section.items.map((item) => item.label)).toEqual([
-			"Vue d’ensemble",
-			"Historique",
+			"Overview",
+			"History",
 			"AI Crawl Control",
-			"Préparation pour agents",
+			"Agent Readiness",
 			"Analytics",
 			"Observability",
 			"DNS",
-			"E-mail",
+			"Email",
 			"SSL/TLS",
-			"Sécurité",
+			"Security",
 			"Access",
 			"Speed",
 			"Caching",
-			"Routes Workers",
-			"Règles",
-			"Pages d’erreur",
-			"Réseau",
-			"Trafic",
+			"Workers Routes",
+			"Rules",
+			"Error Pages",
+			"Network",
+			"Traffic",
 			"Web3",
 		]);
 		expect(section.items.find((item) => item.label === "Observability")?.badge).toBe(
-			"Nouveau",
+			"New",
 		);
-		expect(section.items.find((item) => item.label === "Pages d’erreur")?.badge).toBe(
-			"Nouveau",
+		expect(section.items.find((item) => item.label === "Error Pages")?.badge).toBe(
+			"New",
 		);
 		expect(section.items.map((item) => item.href)).toEqual([
 			`/${ORG}/domains/dom_123`,
@@ -911,6 +993,138 @@ describe("panel workspace navigation", () => {
 		expect(resolved.workspace.id).toBe("domain:networks");
 	});
 
+	it("opens the Cloud workspace from its global Overview entry", () => {
+		const resolved = resolve(`/${ORG}/cloud/overview`);
+
+		expect(resolved.workspace).toMatchObject({
+			kind: "domain",
+			id: "domain:cloud",
+			label: "Cloud",
+			basePath: "cloud",
+			parent: {
+				id: "global",
+				label: "Global Workspace",
+				href: `/${ORG}/home`,
+			},
+		});
+		expect(resolved.exclusive).toBe(true);
+		expect(resolved.sections).toEqual(create().sections);
+		expect(resolved.contextual).toHaveLength(1);
+
+		const items = resolved.contextual[0]?.items ?? [];
+		expect(items).toHaveLength(18);
+		expect(items.map((item) => item.label)).toEqual([
+			"Overview",
+			"Compute",
+			"Storage",
+			"Network & Security",
+			"High Availability",
+			"Replication",
+			"Migration",
+			"Disaster Recovery",
+			"Tasks & Jobs",
+			"Events & Audit",
+			"Health & Metrics",
+			"Maintenance",
+			"Updates",
+			"Notifications",
+			"Access Control",
+			"Resource Policies",
+			"Certificates",
+			"Providers & Integrations",
+		]);
+		expect(items[0]).toMatchObject({
+			label: "Overview",
+			href: `/${ORG}/cloud/overview`,
+			implemented: true,
+		});
+		expect(items.filter((item) => item.implemented)).toHaveLength(1);
+		expect(
+			items.find((item) => item.label === "Compute")?.children?.map(
+				(child) => child.label,
+			),
+		).toEqual([
+			"Virtual Machines",
+			"Containers",
+			"Resource Pools",
+			"Clusters",
+			"Nodes",
+			"Images & Templates",
+		]);
+		expect(
+			items.find((item) => item.label === "Storage")?.children?.map(
+				(child) => child.label,
+			),
+		).toEqual([
+			"Storage Pools",
+			"Volumes & Disks",
+			"Backups",
+			"Snapshots",
+		]);
+		expect(
+			items.find((item) => item.label === "Network & Security")?.children?.map(
+				(child) => child.label,
+			),
+		).toEqual([
+			"Interfaces",
+			"Virtual Networks",
+			"VLANs & Bridges",
+			"IP Addresses",
+			"DNS & DHCP",
+			"Firewalls",
+			"VPN",
+			"Load Balancers",
+		]);
+		expect(
+			items
+				.find((item) => item.label === "Providers & Integrations")
+				?.children?.map((child) => child.label),
+		).toEqual(["Providers", "Integrations"]);
+		expect(
+			Object.fromEntries(
+				items
+					.filter((item) => item.expandable)
+					.map((item) => [item.label, item.children?.length ?? 0]),
+			),
+		).toEqual({
+			Compute: 6,
+			Storage: 4,
+			"Network & Security": 8,
+			"High Availability": 3,
+			Replication: 3,
+			Migration: 3,
+			"Disaster Recovery": 3,
+			"Tasks & Jobs": 3,
+			"Events & Audit": 3,
+			"Health & Metrics": 3,
+			Maintenance: 2,
+			Updates: 3,
+			Notifications: 3,
+			"Access Control": 5,
+			"Resource Policies": 3,
+			Certificates: 3,
+			"Providers & Integrations": 2,
+		});
+		expect(new Set(items.map((item) => item.icon)).size).toBe(items.length);
+	});
+
+	it("prepares contextual navigation for Cloud clusters and nodes", () => {
+		const cluster = resolve(`/${ORG}/cloud/clusters/cl_1/overview`);
+		const node = resolve(`/${ORG}/cloud/nodes/node_1/overview`);
+
+		expect(cluster.workspace.id).toBe("resource:cluster:cl_1");
+		expect(cluster.workspace.parent).toMatchObject({
+			id: "domain:cloud",
+			label: "Cloud",
+			href: `/${ORG}/cloud/overview`,
+		});
+		expect(
+			cluster.contextual[0]?.items.every((item) => !item.implemented),
+		).toBe(true);
+		expect(node.workspace.id).toBe("resource:node:node_1");
+		expect(node.workspace.parent?.id).toBe("domain:cloud");
+	});
+
 	it("opens a resource workspace under its parent", () => {
 		const resolved = resolve(`/${ORG}/domains/dom_123/dns`);
 
@@ -926,10 +1140,12 @@ describe("panel workspace navigation", () => {
 
 	it("makes a domain workspace exclusive so it replaces the global tree", () => {
 		const domain = resolve(`/${ORG}/domains/dom_123`);
+		const cloud = resolve(`/${ORG}/cloud/overview`);
 		const product = resolve(`/${ORG}/ai/agents`);
 		const organization = resolve(`/${ORG}/home`);
 
 		expect(domain.exclusive).toBe(true);
+		expect(cloud.exclusive).toBe(true);
 		expect(product.exclusive).toBe(false);
 		expect(organization.exclusive).toBe(false);
 	});
@@ -949,7 +1165,7 @@ describe("panel workspace navigation", () => {
 			},
 		});
 		expect(overview).toMatchObject({
-			label: "Vue d’ensemble",
+			label: "Overview",
 			href: pathname,
 			implemented: true,
 		});
